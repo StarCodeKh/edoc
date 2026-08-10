@@ -1,0 +1,89 @@
+.view__menus{
+    a{
+        &:hover{
+            background-color: #dfe1e629;
+            //color: #000000;
+            svg{
+                //fill: #000000;
+            }
+        }
+    }
+    .active{
+        background-color: #dfe1e629;
+        //color: #000000;
+        svg{
+            //fill: #000000;
+        }
+        //color: #7366ff;
+        //fill: #7366ff;
+    }
+}
+.table__view{
+    @apply overflow-auto border border-gray-200 dark:border-gray-700 md:rounded-lg h-full bg-white md:overflow-x-hidden;
+    table{
+        @apply min-w-full max-h-full divide-y divide-gray-200 dark:divide-gray-700 overflow-hidden overflow-y-auto;
+        width: 100%;
+        position: relative;
+        border-collapse: collapse;
+        thead{
+            @apply bg-gray-50 dark:bg-gray-800 w-full;
+            tr{
+                th{
+                    @apply px-2 py-2 text-sm font-normal text-left rtl:text-right text-gray-500 dark:text-gray-400;
+                    :first-child{
+                        @apply px-0 py-0 pl-2 pr-0;
+                    }
+                }
+            }
+            th{
+                top: 0;
+                @apply bg-gray-50 dark:bg-gray-800;
+                z-index: 7;
+                position: -webkit-sticky;
+                position: sticky;
+            }
+        }
+        thead, tbody{
+            width: 100%;
+        }
+        .t__drag{
+            @apply bg-white divide-y divide-gray-200 dark:divide-gray-700 dark:bg-gray-900 h-[40%] overflow-y-auto;
+            tr{
+
+            }
+        }
+    }
+    td{
+        overflow: visible;
+        .t__title__area{
+            @apply flex w-full gap-1;
+            .checklist-box{
+                width: 16px;
+                height: 16px;
+                margin-top: 3px;
+            }
+            .t__title{
+                @apply flex-1;
+                text-wrap: pretty;
+            }
+        }
+    }
+    .t_label{
+        .task__labels{
+            .color{
+                padding: 0 3px;
+            }
+            margin-bottom: 0;
+            gap: 3px;
+        }
+    }
+}
+.tiny__time__log__bar{
+    padding-bottom: 5px;
+    input{
+        padding: 7px 12px;
+    }
+    button{
+        color: #e5e7eb;
+    }
+}

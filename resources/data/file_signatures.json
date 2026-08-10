@@ -1,0 +1,317 @@
+[
+  {
+    "ext": "pdf",
+    "mime": "application/pdf",
+    "signature": "255044462D"
+  },
+  {
+    "ext": "doc",
+    "mime": "application/msword",
+    "signature": "D0CF11E0A1B11AE1"
+  },
+  {
+    "ext": "docx",
+    "mime": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "signature": "504B0304"
+  },
+  {
+    "ext": "xls",
+    "mime": "application/vnd.ms-excel",
+    "signature": "D0CF11E0A1B11AE1"
+  },
+  {
+    "ext": "xlsx",
+    "mime": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "signature": "504B0304"
+  },
+  {
+    "ext": "ppt",
+    "mime": "application/vnd.ms-powerpoint",
+    "signature": "D0CF11E0A1B11AE1"
+  },
+  {
+    "ext": "pptx",
+    "mime": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    "signature": "504B0304"
+  },
+  {
+    "ext": "txt",
+    "mime": "text/plain",
+    "signature": "Hello World"
+  },
+  {
+    "ext": "csv",
+    "mime": "text/csv",
+    "signature": "name,email"
+  },
+  {
+    "ext": "rtf",
+    "mime": "application/rtf",
+    "signature": "7B5C72746631"
+  },
+  {
+    "ext": "odt",
+    "mime": "application/vnd.oasis.opendocument.text",
+    "signature": "504B0304"
+  },
+  {
+    "ext": "ods",
+    "mime": "application/vnd.oasis.opendocument.spreadsheet",
+    "signature": "504B0304"
+  },
+  {
+    "ext": "odp",
+    "mime": "application/vnd.oasis.opendocument.presentation",
+    "signature": "504B0304"
+  },
+  {
+    "ext": "md",
+    "mime": "text/markdown",
+    "signature": "# Markdown"
+  },
+  {
+    "ext": "log",
+    "mime": "text/plain",
+    "signature": "Log entry"
+  },
+  {
+    "ext": "jpg",
+    "mime": "image/jpeg",
+    "signature": "FFD8FF"
+  },
+  {
+    "ext": "jpeg",
+    "mime": "image/jpeg",
+    "signature": "FFD8FF"
+  },
+  {
+    "ext": "png",
+    "mime": "image/png",
+    "signature": "89504E470D0A1A0A"
+  },
+  {
+    "ext": "gif",
+    "mime": "image/gif",
+    "signature": "47494638"
+  },
+  {
+    "ext": "webp",
+    "mime": "image/webp",
+    "signature": "52494646"
+  },
+  {
+    "ext": "svg",
+    "mime": "image/svg+xml",
+    "signature": "<svg"
+  },
+  {
+    "ext": "heic",
+    "mime": "image/heic",
+    "signature": "000000186674797068656963"
+  },
+  {
+    "ext": "ico",
+    "mime": "image/x-icon",
+    "signature": "00000100"
+  },
+  {
+    "ext": "tif",
+    "mime": "image/tiff",
+    "signature": "49492A00"
+  },
+  {
+    "ext": "tiff",
+    "mime": "image/tiff",
+    "signature": "49492A00"
+  },
+  {
+    "ext": "bmp",
+    "mime": "image/bmp",
+    "signature": "424D"
+  },
+  {
+    "ext": "mp3",
+    "mime": "audio/mpeg",
+    "signature": "494433"
+  },
+  {
+    "ext": "wav",
+    "mime": "audio/wav",
+    "signature": "52494646"
+  },
+  {
+    "ext": "ogg",
+    "mime": "audio/ogg",
+    "signature": "4F676753"
+  },
+  {
+    "ext": "flac",
+    "mime": "audio/flac",
+    "signature": "664C6143"
+  },
+  {
+    "ext": "m4a",
+    "mime": "audio/mp4",
+    "signature": "00000020667479704D3441"
+  },
+  {
+    "ext": "aac",
+    "mime": "audio/aac",
+    "signature": "FFF1"
+  },
+  {
+    "ext": "amr",
+    "mime": "audio/amr",
+    "signature": "2321414D52"
+  },
+  {
+    "ext": "mp4",
+    "mime": "video/mp4",
+    "signature": "0000001866747970"
+  },
+  {
+    "ext": "mkv",
+    "mime": "video/x-matroska",
+    "signature": "1A45DFA3"
+  },
+  {
+    "ext": "webm",
+    "mime": "video/webm",
+    "signature": "1A45DFA3"
+  },
+  {
+    "ext": "avi",
+    "mime": "video/x-msvideo",
+    "signature": "52494646"
+  },
+  {
+    "ext": "mov",
+    "mime": "video/quicktime",
+    "signature": "000000146674797071742020"
+  },
+  {
+    "ext": "3gp",
+    "mime": "video/3gpp",
+    "signature": "0000002066747970336770"
+  },
+  {
+    "ext": "wmv",
+    "mime": "video/x-ms-wmv",
+    "signature": "3026B2758E66CF11"
+  },
+  {
+    "ext": "zip",
+    "mime": "application/zip",
+    "signature": "504B0304"
+  },
+  {
+    "ext": "rar",
+    "mime": "application/x-rar-compressed",
+    "signature": "52617221"
+  },
+  {
+    "ext": "7z",
+    "mime": "application/x-7z-compressed",
+    "signature": "377ABCAF271C"
+  },
+  {
+    "ext": "tar",
+    "mime": "application/x-tar",
+    "signature": "7573746172"
+  },
+  {
+    "ext": "gz",
+    "mime": "application/gzip",
+    "signature": "1F8B"
+  },
+  {
+    "ext": "bz2",
+    "mime": "application/x-bzip2",
+    "signature": "425A68"
+  },
+  {
+    "ext": "html",
+    "mime": "text/html",
+    "signature": "<!DOCTYPE html"
+  },
+  {
+    "ext": "css",
+    "mime": "text/css",
+    "signature": "body {"
+  },
+  {
+    "ext": "js",
+    "mime": "application/javascript",
+    "signature": "function"
+  },
+  {
+    "ext": "json",
+    "mime": "application/json",
+    "signature": "{"
+  },
+  {
+    "ext": "xml",
+    "mime": "application/xml",
+    "signature": "<?xml"
+  },
+  {
+    "ext": "php",
+    "mime": "application/x-httpd-php",
+    "signature": "<?php"
+  },
+  {
+    "ext": "py",
+    "mime": "text/x-python",
+    "signature": "#!/usr/bin/env python"
+  },
+  {
+    "ext": "sh",
+    "mime": "application/x-sh",
+    "signature": "#!/bin/sh"
+  },
+  {
+    "ext": "rb",
+    "mime": "application/x-ruby",
+    "signature": "#!/usr/bin/env ruby"
+  },
+  {
+    "ext": "pl",
+    "mime": "application/x-perl",
+    "signature": "#!/usr/bin/perl"
+  },
+  {
+    "ext": "java",
+    "mime": "text/x-java-source",
+    "signature": "public class"
+  },
+  {
+    "ext": "c",
+    "mime": "text/x-c",
+    "signature": "#include"
+  },
+  {
+    "ext": "cpp",
+    "mime": "text/x-c++",
+    "signature": "#include"
+  },
+  {
+    "ext": "ttf",
+    "mime": "font/ttf",
+    "signature": "00010000"
+  },
+  {
+    "ext": "otf",
+    "mime": "font/otf",
+    "signature": "4F54544F"
+  },
+  {
+    "ext": "woff",
+    "mime": "font/woff",
+    "signature": "774F4646"
+  },
+  {
+    "ext": "woff2",
+    "mime": "font/woff2",
+    "signature": "774F4632"
+  }
+]

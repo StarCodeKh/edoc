@@ -1,0 +1,101 @@
+.layout-app{
+    &.light{
+        background-color: rgb(241, 245, 249);
+        //background-color: #838c91;
+    }
+    &.main{
+        // Default beautiful gradient background for non-project pages
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%);
+        background-size: 400% 400%;
+        animation: gradientShift 15s ease infinite;
+    }
+}
+
+@keyframes gradientShift {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+.dark{
+    .chat_public{
+        .bg-white{
+            background-color: rgb(15 23 42 / 1);
+        }
+        nav{
+            border-bottom: 1px solid #374558;
+        }
+        .chat_b_footer{
+            input{
+                background-color: rgb(15 23 42 / 1);
+            }
+        }
+    }
+}
+body{
+    .dark{
+        .bg-white{
+            background-color: #262932;
+            svg{
+                fill: #ffffffb3;
+            }
+        }
+        &.layout_landing{
+            .bg-white{
+                border: initial;
+            }
+        }
+        .top_bar{
+            border: none;
+        }
+        .cdc-overlay{
+            background-color: #262932 !important;
+        }
+        .dd_container{
+            background-color: #374558;
+        }
+        .chat-top-icon{
+            fill: rgba(255, 255, 255, 0.6980392157);
+        }
+        .drop-down-caret-icon{
+            fill: rgba(255, 255, 255, 0.6980392157);
+        }
+        .container-head{
+            border-color: #374558;
+        }
+        .hover\:bg-gray-100{
+            &:hover{
+                background-color: #7366ff9e;
+            }
+        }
+        input, button.button{
+            background-color: #1d1e26;
+        }
+        .bg-gray-50{
+            background-color: #262932;
+        }
+        .border-gray-100, .border-gray-200{
+            border-color: #374558;
+        }
+        .comment-box{
+            .chat-header{
+                border-color: #374558;
+            }
+        }
+        .sec_chat{
+            .chat-area{
+                .chat-header{
+                    border-color: #374558;
+                }
+            }
+        }
+        .sec_chat .sidebar .chat-left-aside .c-top .about .name{
+            color: #ffffffb3;
+        }
+    }
+}

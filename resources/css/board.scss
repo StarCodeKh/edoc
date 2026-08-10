@@ -1,0 +1,141 @@
+.add__new__list{
+    .add_new{
+        background-color: #ffffff3d;
+        border-radius: 12px;
+        color: #ffffff;
+        &:hover{
+            background-color: #A6C5E229;
+        }
+        &.active{
+            background-color: #ffffff;
+            color: #000000;
+            input{
+                box-shadow: inset 0 0 0 2px #388bff;
+            }
+        }
+        button {
+            outline: 0;
+        }
+    }
+}
+.task_board{
+    @apply flex h-[calc(100%-52px)] flex-col relative flex-1 overflow-y-auto flex flex-col lg:flex-row gap-5;
+    .board_width{
+        @apply h-full flex flex-grow px-5 py-4 space-x-4;
+        .top_list{
+            @apply flex flex-col flex-shrink-0 w-72 inline-block max-h-full;
+            .b__list{
+                @apply flex items-center flex-shrink-0;
+            }
+            .dragArea{
+                @apply flex flex min-h-0 overflow-x-hidden overflow-y-auto flex-col pb-2;
+                .t__box{
+                    @apply w-full mb-2 bg-white rounded-lg cursor-pointer bg-opacity-90 relative;
+                    box-shadow: 0px 1px 1px #091E4240, 0px 0px 1px #091E424F;
+                    &:focus, &:hover{
+                        opacity: 1;
+                        outline-color: -webkit-focus-ring-color;
+                        outline-style: solid;
+                        outline-width: 1px;
+                    }
+
+                    .m__archive{
+                        @apply flex w-full items-center rounded bg-gray-200 hover:bg-gray-300 px-3 py-2 text-xs font-medium focus:outline-none focus:ring-0;
+                    }
+                    .show__more{
+                        @apply absolute top-0 right-0 z-10 items-center justify-center w-5 h-5 mt-1 mr-1 rounded text-gray-700 bg-gray-200 hover:bg-gray-300;
+                        svg{
+                            fill: #000000;
+                        }
+                    }
+                    .t__cover{
+                        @apply w-full h-auto bg-cover bg-center min-h-[50px] max-h-[300px] rounded-t-lg;
+                    }
+                    .t__details{
+                        @apply flow-root relative flex flex-col items-start;
+                        padding: 8px 12px 4px;
+                        .t__title__area{
+                            @apply flex w-full gap-1;
+                            .checklist-box{
+                                width: 16px;
+                                height: 16px;
+                                margin-top: 3px;
+                            }
+                            .t__title{
+                                @apply flex-1;
+                            }
+                        }
+                        .t__title{
+                            @apply text-sm font-medium mb-1;
+                        }
+                        .card__footer{
+                            @apply flex flex-wrap float-left items-center mb-1 text-xs font-medium;
+                            .__item{
+                                @apply flex items-center;
+                            }
+                        }
+                        .pop__assignee{
+                            @apply flex flex-wrap float-right gap-1 mb-1 mr-[-4px] justify-end;
+                        }
+                    }
+                }
+            }
+        }
+        .l__b{
+            @apply max-w-sm p-4 rounded md:p-6 dark:border-gray-700;
+            .__img{
+                @apply flex items-center justify-center w-full h-24 mb-4 bg-gray-300 rounded dark:bg-gray-700;
+                .__i{
+                    @apply w-10 h-10 text-gray-200 dark:text-gray-600;
+                }
+            }
+            .__t1{
+                @apply h-2 w-full bg-gray-200 rounded-full dark:bg-gray-700 mb-2.5;
+            }
+            .__t2{
+                @apply flex items-center justify-between w-48 mt-4;
+                .__t_l_1{
+                    @apply h-2 bg-gray-200 rounded-full dark:bg-gray-700 w-36 mb-2;
+                }
+                .__t_l_2{
+                    @apply w-36 h-2 bg-gray-200 rounded-full dark:bg-gray-700;
+                }
+                .__t_l_r{
+                    @apply w-7 h-7 text-gray-200 dark:text-gray-700;
+                }
+            }
+        }
+    }
+}
+body{
+    .dark{
+        .task_board{
+            .board_width{
+                .top_list{
+                    .dragArea{
+                        .t__box{
+                            .show__more{
+                                svg {
+                                    fill: #000000;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        .task__details{
+            .wrapper{
+                .container{
+                    .content{
+                        .custom-datetime-picker{
+                            svg{
+                                fill: #000000;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

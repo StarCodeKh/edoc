@@ -1,0 +1,102 @@
+:root {
+    --theme-deafult: #7366ff;
+    --dark-text: #ffffffb3;
+    --white: #ffffff;
+    --gray: #f1f5f9;
+}
+.card {
+    margin-bottom: 30px;
+    border: none;
+    -webkit-transition: all 0.3s ease;
+    transition: all 0.3s ease;
+    letter-spacing: 0.5px;
+    border-radius: 15px;
+    -webkit-box-shadow: 0 0 20px rgb(8 21 66 / 5%);
+    box-shadow: 0 0 20px rgb(8 21 66 / 5%);
+    padding: 26px;
+    background-color: #ffffff;
+}
+.sec-cont{
+    transition: 0.5s;
+    position: relative;
+    //margin-top: 16px;
+    padding: 20px 26px 0 26px;
+}
+.sidebar{
+    background: #fff;
+    //background: #00000029;
+    -webkit-transition: 0.3s;
+    transition: 0.3s;
+    -webkit-box-shadow: 0 0 21px 0 rgb(89 102 122 / 10%);
+    box-shadow: 0 0 21px 0 rgb(89 102 122 / 10%);
+    padding-top: 8px;
+    border-right: 0.03rem solid #ffffff29;
+}
+.sidebar-left-top{
+    background: #fff;
+    -webkit-box-shadow: 0 0 21px 0 rgb(89 102 122 / 10%);
+    box-shadow: 0 0 21px 0 rgb(89 102 122 / 10%);
+    z-index: 9;
+}
+.bg-primary{
+    --tw-bg-opacity: 1;
+    background-color: rgb(48 86 211 / var(--tw-bg-opacity));
+}
+.text-primary {
+    --tw-bg-opacity: 1;
+    color: rgb(48 86 211 / var(--tw-bg-opacity));
+}
+.bg-footer-black {
+    --tw-bg-opacity: 1;
+    background-color: rgb(33 43 54 / var(--tw-bg-opacity));
+}
+.hover\:text-primary:hover {
+    color: rgb(48 86 211 / 1);
+}
+.site-logo{
+    width: auto;
+    height: 30px;
+    &.dark{
+        display: none;
+    }
+}
+.bg-dark{
+    background-color: #1d1e26;
+}
+.prose{
+    color: #0f172a;
+}
+.dark{
+    background-color: #262932;
+    color: var(--dark-text);
+    .sidebar-left-top, .sidebar{
+        background: #262932;
+    }
+    .prose{
+        color: var(--dark-text);
+        blockquote{
+            color: var(--dark-text);
+        }
+    }
+    .site-logo{
+        &.light{
+            display: none;
+        }
+        &.dark{
+            display: block;
+        }
+    }
+    .card{
+        background-color: #262932;
+    }
+    .hover-bg-gray{
+        &:hover{
+            background-color: #1d1e26;
+        }
+    }
+    .focus-bg-gray{
+        &:focus{
+            background-color: #1d1e26;
+        }
+    }
+}

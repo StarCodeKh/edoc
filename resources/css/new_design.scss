@@ -1,0 +1,24 @@
+.task_board{
+    .board_width{
+        .top_list{
+            border-radius: 0;
+            .task__labels{
+                display: none;
+            }
+            .dragArea{
+                .t__box{
+                    border-radius: 0;
+                }
+            }
+            .card__footer{
+                .due,.check{
+                    background-color: transparent;
+                    color: #111111;
+                }
+            }
+            .t__cover{
+                display: none;
+            }
+        }
+    }
+}

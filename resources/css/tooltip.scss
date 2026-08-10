@@ -1,0 +1,190 @@
+@use "sass:map";
+//
+// Variables
+// -----------------------------------------
+
+$balloon-bg: #3c4045;
+$balloon-base-size: 12px !default;
+$balloon-arrow-size: 0 !default;
+$balloon-move: 4px !default;
+$balloon-text-color: #fff;
+
+//
+// Mixins
+// -----------------------------------------
+
+$ARROW_DIRECTIONS: (
+    down: top,
+    up: bottom,
+    left: right,
+    right: left,
+);
+
+@mixin arrow($direction) {
+    @if not map.has-key($ARROW_DIRECTIONS, $direction) {
+        @error '[balloon] The $direction parameter must be one of: `#{map.keys($DIRECTIONS)}, `#{$direction}` was given.';
+    }
+
+    width: 0;
+    height: 0;
+    //border: $balloon-arrow-size solid transparent;
+    border-#{map.get($ARROW_DIRECTIONS, $direction)}-color: var(--balloon-color);
+}
+
+@mixin base-effects() {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .1s ease-out .1s, transform .1s ease-out .1s;
+}
+
+@mixin no-effects() {
+    transition: none;
+}
+
+@mixin normalized-text() {
+    text-indent: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    font-weight: normal;
+    font-style: normal;
+    text-shadow: none;
+    font-size: var(--balloon-font-size);
+}
+
+
+//
+// Styles
+// -----------------------------------------
+
+:root {
+    --balloon-border-radius: 3px;
+    --balloon-color: #{$balloon-bg};
+    --balloon-text-color: #{$balloon-text-color};
+    --balloon-font-size: #{$balloon-base-size};
+    --balloon-move: #{$balloon-move};
+}
+
+// IE 11 button bugfix
+button[aria-label], img[aria-label] {
+    &[data-a] {
+        overflow: visible;
+    }
+}
+
+[aria-label] {
+    position: relative; // alt. absolute or fixed
+
+    &:after {
+        @include base-effects();
+        background: var(--balloon-color);
+        border-radius: 2px;
+        color: var(--balloon-text-color);
+        border-radius: var(--balloon-border-radius);
+        content: attr(aria-label);
+        padding: 3px 6px;
+        position: absolute;
+        white-space: nowrap;
+        z-index: 999;
+        line-height: normal;
+        font-size: 12px;
+    }
+
+    &:before {
+        @include arrow(down);
+        @include base-effects();
+
+        content: "";
+        position: absolute;
+        z-index: 999;
+    }
+
+    &:hover, &[data-balloon-visible], :focus {
+        &:before,
+        &:after {
+            opacity: 1;
+            pointer-events: none;
+        }
+    }
+
+    &.font-awesome:after {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    }
+
+    &[data-balloon-break] {
+        &:after {
+            white-space: pre;
+        }
+
+        &[data-balloon-length] {
+            &:after {
+                white-space: pre-line;
+                word-break: break-word;
+            }
+        }
+    }
+
+    &[data-balloon-blunt] {
+        &:before,
+        &:after {
+            @include no-effects();
+        }
+    }
+
+    &:hover, &[data-balloon-visible] {
+        &:after { transform: translate(-50%, 0); }
+        &:before { transform: translate(-50%, 0); }
+    }
+
+    &:before,
+    &:after {
+        top: 100%;
+        transform: translate(0, calc(var(--balloon-move) * -1));
+    }
+
+    &:after { margin-top: $balloon-arrow-size + 6px; }
+    &:before { @include arrow(up); }
+
+    &:after,
+    &:before {
+        left: 50%;
+        transform: translate(-50%, calc(var(--balloon-move) * -1));
+    }
+
+    &[data-balloon-length] {
+        &:after { white-space: normal; }
+    }
+
+    &[data-balloon-length="small"] {
+        &:after { width: 80px; }
+    }
+
+    &[data-balloon-length="medium"] {
+        &:after { width: 150px; }
+    }
+
+    &[data-balloon-length="large"] {
+        &:after { width: 260px; }
+    }
+
+    &[data-balloon-length="xlarge"] {
+        &:after {
+            width: 380px;
+
+            @media screen and (max-width: 768px) {
+                width: 90vw;
+            }
+        }
+    }
+
+    &[data-balloon-length="fit"] {
+        &:after { width: 100%; }
+    }
+}
+
+.dp__main{
+    [aria-label]{
+        &:after {
+            content: none;
+        }
+    }
+}

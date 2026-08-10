@@ -1,0 +1,29 @@
+.create__project{
+    font-size: 13px;
+    font-weight: 500;
+    input[type=text], textarea{
+        outline: none;
+        border: none;
+        box-sizing: border-box;
+        color: var(--ds-text, #172b4d);
+        margin-top: 8px;
+        font-size: 14px;
+        transition-property: background-color, border-color, box-shadow;
+        transition-duration: 85ms;
+        transition-timing-function: ease;
+        border-radius: 3px;
+        padding: 8px 12px;
+        box-shadow: inset 0 0 0 2px var(--ds-border-input, #091e4224);
+        background-color: var(--ds-background-input, #ffffff);
+        width: 100%;
+        margin-bottom: 0;
+    }
+    select{
+        margin-top: 8px;
+        height: 32px;
+        font-size: 14px;
+    }
+    @media (min-width: 250px) and (max-width: 768px) {
+        left: 30% !important;
+    }
+}

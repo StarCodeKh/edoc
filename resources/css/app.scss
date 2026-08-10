@@ -1,0 +1,59 @@
+@use "sass:meta";
+/* Reset */
+//@import 'tailwindcss/base';
+@tailwind base;
+@include meta.load-css("reset");
+@include meta.load-css('browser_default');
+
+
+/* Components */
+//@import 'tailwindcss/components';
+@tailwind components;
+@include meta.load-css('buttons');
+@include meta.load-css('form');
+@include meta.load-css('font');
+
+/** Typography */
+//@import "";
+
+/* Utilities */
+//@import 'tailwindcss/utilities';
+@tailwind utilities;
+//@import 'tailwindcss/screens';
+@tailwind screens;
+
+/** Landing Site */
+@include meta.load-css("landing/custom.scss");
+//@import 'landing/_buttons';
+//@import 'landing/_choices';
+//@import 'landing/_contact';
+//@import 'landing/_footer';
+//@import 'landing/_general';
+//@import 'landing/_helper';
+//@import 'landing/_hero';
+//@import 'landing/_portfolio';
+//@import 'landing/_topnav';
+
+/* Modules */
+@include meta.load-css("loader");
+@include meta.load-css("variables");
+@include meta.load-css("tooltip");
+@include meta.load-css("switch");
+@include meta.load-css("scrolbar_style");
+@include meta.load-css("menu");
+@include meta.load-css("tables");
+@include meta.load-css("chat");
+@include meta.load-css("dashboard");
+@include meta.load-css('custom');
+@include meta.load-css('dark_screen');
+@include meta.load-css('mediaQuery');
+@include meta.load-css("dad");
+@include meta.load-css("task_details");
+@include meta.load-css("modals");
+@include meta.load-css("board");
+@include meta.load-css("layout");
+@include meta.load-css("table_view");
+@include meta.load-css("calendar_view");
+@include meta.load-css("dad_dark");
+@include meta.load-css("sidebar");
+@include meta.load-css("workspace");

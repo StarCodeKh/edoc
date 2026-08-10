@@ -1,0 +1,63 @@
+.layout-app{
+    &.dark{
+        background-blend-mode: darken;
+    }
+}
+.left__bar{
+    position: relative;
+    background-color: #00000029;
+    cursor: pointer;
+    z-index: 999;
+    &:hover{
+        background-color: #091e4224;
+    }
+    .arr{
+        top: 10px;
+        left: 0;
+        position: absolute;
+        border-radius: 50%;
+        height: 24px;
+        width: 24px;
+        display: flex;
+        background-color: rgba(255, 255, 255, 0.16);
+        justify-content: center;
+        align-items: center;
+        backdrop-filter: blur(16px);
+        border: 1px solid #DFE1E6;
+        color: #ffffff;
+        fill: #ffffff;
+    }
+}
+.project__view__menu{
+    background: #0000003d;
+    color: #ffffff;
+    backdrop-filter: blur(4px);
+    .__filter{
+        span{
+            padding: 6px;
+        }
+        .filter_clear{
+            display: none;
+        }
+        &.active{
+            background-color: #dfe1e6;
+            color: #000000;
+            .filter_clear{
+                display: flex;
+                align-items: center;
+                gap: 2px;
+                padding-right: 0;
+                &:hover{
+                    background-color: #ffffff;
+                }
+            }
+        }
+    }
+}
+.sidebar{
+    transition: transform 100ms ease-in;
+    &.__hide{
+        transform: translate3d(-100%, 0, 0);
+        display: none;
+    }
+}
