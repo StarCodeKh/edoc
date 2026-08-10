@@ -1,0 +1,53 @@
+## PHP / Composer
+/vendor
+composer.phar
+auth.json
+
+## Laravel
+/bootstrap/cache/*.php
+/storage/*.key
+/storage/app/*
+!/storage/app/public
+!/storage/app/.gitignore
+/storage/framework/cache/*
+!/storage/framework/cache/.gitignore
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitignore
+/storage/framework/testing/*
+!/storage/framework/testing/.gitignore
+/storage/framework/views/*
+!/storage/framework/views/.gitignore
+/storage/logs/*
+!/storage/logs/.gitignore
+/public/hot
+/public/storage
+/public/build
+.phpunit.cache
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+
+## Environment / secrets
+.env
+.env.*
+!.env.example
+
+## Node / JS build tooling
+/node_modules
+npm-debug.log
+yarn-error.log
+yarn-debug.log*
+.pnpm-debug.log*
+
+## Editors / OS
+.DS_Store
+Thumbs.db
+/.idea
+/.vscode
+/.fleet
+*.sublime-project
+*.sublime-workspace
+
+## Misc
+*.log
+*.cache
