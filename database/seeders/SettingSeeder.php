@@ -15,7 +15,7 @@ class SettingSeeder extends Seeder
     public function run()
     {
         DB::table('settings')->truncate();
-        DB::table('settings')->insert(['name' => 'E-Document', 'slug' => 'app_name', 'type' => 'text', 'value' => 'E-Document']);
+        DB::table('settings')->insert(['name' => 'eDoc', 'slug' => 'app_name', 'type' => 'text', 'value' => 'eDoc']);
         DB::table('settings')->insert(['name' => 'Enable Registration', 'slug' => 'enable_registration', 'type' => 'text', 'value' => '1']);
         DB::table('settings')->insert(['name' => 'Enable Pre-made Board', 'slug' => 'enable_pre_made_board', 'type' => 'text', 'value' => '1']);
         DB::table('settings')->insert(['name' => 'Default Language', 'slug' => 'default_language', 'type' => 'text', 'value' => 'en']);
