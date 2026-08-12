@@ -67,7 +67,12 @@
             <div class="flex justify-start select-none gap-3" @click="hide_projects=!hide_projects">
                 <icon v-if="!hide_projects" name="arrow-down" class="w-4 h-4" />
                 <icon v-if="hide_projects" name="arrow-right" class="w-4 h-4" />
-                <div class="flex cursor-pointer uppercase font-semibold">{{ $t('Projects') }}</div>
+                <div class="flex items-center gap-1.5 cursor-pointer uppercase font-semibold">
+                    {{ $t('Projects') }}
+                    <span v-if="projects.length" class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-indigo-600 text-white text-[10px] font-semibold normal-case">
+                        {{ projects.length }}
+                    </span>
+                </div>
             </div>
             <div class="flex">
                 <Link :href="route('workspace.view', workspace.id)" class="flex w-7 h-7 cursor-pointer rounded justify-center items-center add__plus">

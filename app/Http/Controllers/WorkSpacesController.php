@@ -25,7 +25,6 @@ use Inertia\Inertia;
 
 class WorkSpacesController extends Controller
 {
-    //
     public function index(){
         $user_id = auth()->id();
         $workspaceIds = Workspace::where('user_id', $user_id)->orWhereHas('member')->pluck('id');
@@ -47,7 +46,7 @@ class WorkSpacesController extends Controller
     }
     public function jsonAll(){
         $user_id = auth()->id();
-        $workSpaces = Workspace::where('user_id', $user_id)->orWhereHas('member')->with('member')->orderBy('name')->get()->toArray();
+        $workSpaces = Workspace::where('user_id', $user_id)->orWhereHas('member')->with('member')->withCount('projects')->orderBy('name')->get()->toArray();
         return response()->json($workSpaces);
     }
 

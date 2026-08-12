@@ -11,8 +11,14 @@
                                 <div v-else class="logo flex justify-center items-center w-9 h-9 rounded-full bg-indigo-600 text-white text-lg">
                                     {{ workspace.name.charAt(0) }}
                                 </div>
-                                <div class="name">
+                                <div class="name flex items-center gap-1.5">
                                     {{ workspace.name }}
+                                    <!-- Total project count for this workspace. Prefers a
+                                         `projects_count` field (e.g. Laravel's withCount('projects'))
+                                         and falls back to counting a `projects` array if present. -->
+                                    <span class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-indigo-600 text-white text-[10px] font-semibold">
+                                        {{ workspaceProjectCount(workspace) }}
+                                    </span>
                                 </div>
                             </div>
                         </Link>
@@ -48,6 +54,11 @@ export default {
                     this.loading = false;
                 }
             });
+        },
+        workspaceProjectCount(workspace){
+            if (typeof workspace.projects_count === 'number') return workspace.projects_count;
+            if (Array.isArray(workspace.projects)) return workspace.projects.length;
+            return 0;
         },
     },
     created() {
