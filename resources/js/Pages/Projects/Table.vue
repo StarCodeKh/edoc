@@ -7,7 +7,6 @@
             <div class="flex flex-col task__table overflow-y-auto h-full">
                 <div class="inline-block min-w-full h-full py-4 align-middle md:px-3 lg:px-4">
                     <div class="table__view">
-
                         <div class="flex flex-wrap gap-2 md:gap-3 mb-5">
                             <button
                                 v-for="(listItem, idx) in lists"
@@ -19,9 +18,12 @@
                                 :style="statusButtonStyle(listItem.id, idx)"
                             >
                                 {{ listItem.title }}
+                                <span
+                                    class="inline-flex items-center justify-center min-w-[20px] h-[20px] px-1.5 ml-1.5 rounded-full text-[11px] font-bold bg-white/85 align-middle"
+                                    :style="{ color: statusColor(idx) }"
+                                >{{ (listItem.tasks || []).length }}</span>
                             </button>
                         </div>
-
                         <div class="doc-table rounded-xl shadow-sm overflow-x-auto">
                             <div class="doc-row doc-row--head hidden md:grid gap-3 px-4 py-3 text-sm font-semibold text-white">
                                 <div></div>
@@ -33,7 +35,6 @@
                                 <div>{{ $t('បាកូដ') }}</div>
                                 <div>{{ $t('បោះពុម្ព') }}</div>
                             </div>
-
                             <draggable v-model="pageRows" tag="div" class="doc-rows flex flex-col gap-2 p-2" handle=".doc-drag-handle" item-key="id" @end="afterDrop">
                                 <template #item="{ element, index }">
                                     <div class="doc-row md:grid gap-1.5 md:gap-3 md:items-center px-4 py-3 md:py-3.5 rounded-lg bg-slate-200/70 dark:bg-slate-700/40 hover:bg-slate-200 dark:hover:bg-slate-700/70 hover:shadow-md transition-all duration-200 ease-out md:hover:-translate-y-0.5">
@@ -75,8 +76,6 @@
                                             </span>
                                         </div>
                                         <div :data-label="$t('បាកូដ')">
-                                            <!-- Rendered client-side via JsBarcode in mounted/updated
-                                                 (see renderBarcodes()) — needs `npm install jsbarcode`. -->
                                             <div class="doc-barcode bg-white rounded px-2 py-1.5 shadow-inner w-full max-w-[180px]">
                                                 <svg :ref="setBarcodeRef(element.id)" :data-barcode-value="documentCode(element)"></svg>
                                             </div>
@@ -152,8 +151,8 @@
                                         <img v-if="userObject.user.photo_path" :aria-label="userObject.user.name" :alt="userObject.user.name" class="w-6 h-6 rounded-full" :src="userObject.user.photo_path" />
                                         <img v-else :aria-label="userObject.user.name" :alt="userObject.user.name" class="w-6 h-6 rounded-full" src="/images/user.svg" />
                                         <span data-a="" class="p-1" type="button" :tabindex="user_index">
-                                            {{ userObject.user.name }}
-                                        </span>
+                                                                  {{ userObject.user.name }}
+                                                              </span>
                                     </label>
                                 </li>
                             </ul>
@@ -300,15 +299,20 @@
                 return this.taskDetailsOpen;
             },
 
+            isAdmin() {
+                return this?.project?.member?.role === 'admin';
+            },
+
             allTasks() {
                 if (!this.lists) return [];
-                return this.lists.flatMap(listItem =>
+                const flattened = this.lists.flatMap(listItem =>
                     (listItem.tasks || []).map(task => {
                         if (!task.list) task.list = { id: listItem.id, title: listItem.title };
                         if (!task.list_id) task.list_id = listItem.id;
                         return task;
                     })
                 );
+                return this.isAdmin ? flattened : flattened.filter(t => this.isAssignedToMe(t));
             },
 
             totalPages() {
@@ -391,9 +395,13 @@
 
             syncTaskRows(){
                 const sorted = [...this.allTasks].sort((a, b) => (a.order || 0) - (b.order || 0));
-                this.taskRows = this.selectedStatus
-                    ? sorted.filter(t => t.list_id === this.selectedStatus)
-                    : sorted;
+                if (!this.selectedStatus) {
+                    this.taskRows = sorted;
+                } else {
+                    const activeList = (this.lists || []).find(l => l.id === this.selectedStatus);
+                    const groupTasks = activeList ? (activeList.tasks || []) : [];
+                    this.taskRows = [...groupTasks].sort((a, b) => (a.order || 0) - (b.order || 0));
+                }
                 this.syncPageRows();
             },
 
@@ -412,7 +420,6 @@
             },
 
             afterDrop(){
-
                 const start = (this.currentPage - 1) * this.pageSize;
                 const payload = this.pageRows.map((task, idx) => {
                     task.order = start + idx + 1;
@@ -427,8 +434,14 @@
             },
 
             statusColorFor(element){
-                if (!this.lists || !element.list_id) return this.statusPalette[0];
-                const idx = this.lists.findIndex(l => l.id === element.list_id);
+                if (!this.lists) return this.statusPalette[0];
+                let idx = this.lists.findIndex(l => l.id === element.list_id);
+                if (idx === -1) {
+                    // Fall back to finding which status group actually contains
+                    // this task (handles lists grouped by title, where a task's
+                    // real list_id may differ from the group's representative id).
+                    idx = this.lists.findIndex(l => (l.tasks || []).some(t => t.id === element.id));
+                }
                 return this.statusColor(idx === -1 ? 0 : idx);
             },
 
@@ -464,6 +477,12 @@
             documentCode(element){
                 if (element.task_code) return element.task_code;
                 return 'CGMC-' + String(element.id).padStart(9, '0');
+            },
+
+            isAssignedToMe(task){
+                const userId = this.$page?.props?.auth?.user?.id;
+                if (!userId) return false;
+                return (task.assignees || []).some(a => Number(a.user_id) === Number(userId));
             },
 
             setBarcodeRef(id){
@@ -651,7 +670,6 @@
 
 <style scoped>
     @media (min-width: 768px) {
-
         .doc-row {
             grid-template-columns: 40px 60px minmax(150px, 1fr) minmax(220px, 1.6fr) 120px 130px 190px 110px;
             min-width: 980px;
@@ -716,6 +734,9 @@
         display: block;
     }
 
+    /* Print column button — small pill matching the indigo tracking-chip
+       look used on the board view, so print actions feel consistent
+       across both views. */
     .doc-print-btn {
         display: inline-flex;
         align-items: center;
