@@ -427,6 +427,47 @@
                                                         </button>
                                                     </div>
 
+                                                    <!-- Tool bar: color swatches + big Sketch/Text tool buttons.
+                                                         Moved up here (right under the top bar) so the tool you
+                                                         want is always visible without scrolling past the page,
+                                                         instead of being tucked below it. -->
+                                                    <div class="px-4 py-4 bg-gray-900 border-b border-white/10">
+                                                        <div v-if="drawTool === 'pen' || drawTool === 'highlighter'" class="flex items-center justify-center gap-3 mb-4">
+                                                            <button v-for="c in swatchColors" :key="c" type="button" @click="drawSettings.color = c" class="w-6 h-6 rounded-full border-2" :style="{ background: c, borderColor: drawSettings.color === c ? '#fff' : 'transparent' }" :title="c"></button>
+                                                        </div>
+
+                                                        <!-- Sub-tool row for Sketch: Pen / Highlight / Eraser + size + clear -->
+                                                        <div v-if="drawTool === 'pen' || drawTool === 'highlighter' || drawTool === 'eraser'" class="flex items-center justify-center gap-2 mb-4 flex-wrap">
+                                                            <button type="button" @click="drawTool = 'pen'" class="px-3 py-1.5 rounded-full text-xs font-medium" :class="drawTool === 'pen' ? 'bg-white text-gray-900' : 'bg-white/10 text-white/80'">{{ $t('Pen') }}</button>
+                                                            <button type="button" @click="drawTool = 'highlighter'" class="px-3 py-1.5 rounded-full text-xs font-medium" :class="drawTool === 'highlighter' ? 'bg-white text-gray-900' : 'bg-white/10 text-white/80'">{{ $t('Highlight') }}</button>
+                                                            <button type="button" @click="drawTool = 'eraser'" class="px-3 py-1.5 rounded-full text-xs font-medium" :class="drawTool === 'eraser' ? 'bg-white text-gray-900' : 'bg-white/10 text-white/80'">{{ $t('Eraser') }}</button>
+                                                            <button type="button" @click="clearCanvas" class="px-3 py-1.5 rounded-full text-xs font-medium bg-white/10 text-white/80">{{ $t('Clear') }}</button>
+                                                            <div class="flex items-center gap-2 ml-1">
+                                                                <label class="text-[11px] text-white/60">{{ $t('Size') }}</label>
+                                                                <input type="range" min="1" max="20" v-model.number="drawSettings.size" class="w-20" />
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="flex items-center justify-center gap-10">
+                                                            <button type="button" @click="toggleSketch" class="flex flex-col items-center gap-1.5">
+                                                                <span class="w-12 h-12 rounded-full flex items-center justify-center" :class="['pen','highlighter','eraser'].includes(drawTool) ? 'bg-white text-gray-900' : 'bg-white/10 text-white'">
+                                                                    <svg viewBox="0 0 24 24" fill="none" class="w-5 h-5"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="currentColor"/></svg>
+                                                                </span>
+                                                                <span class="text-[11px] text-white/80">{{ $t('Sketch') }}</span>
+                                                            </button>
+                                                            <button type="button" @click="toggleTextTool" class="flex flex-col items-center gap-1.5">
+                                                                <span class="w-12 h-12 rounded-full flex items-center justify-center" :class="drawTool === 'text' ? 'bg-white text-gray-900' : 'bg-white/10 text-white'">
+                                                                    <svg viewBox="0 0 24 24" fill="none" class="w-5 h-5"><rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" stroke-width="1.6"/><path d="M8 8h8M12 8v8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                                                                </span>
+                                                                <span class="text-[11px] text-white/80">{{ $t('Text') }}</span>
+                                                            </button>
+                                                        </div>
+
+                                                        <p class="text-center text-[11px] text-white/40 mt-3">
+                                                            {{ drawTool === 'view' ? $t('Scroll to browse every page. Pick Sketch or Text to add a note.') : $t('Use the page arrows below to note a different page.') }}
+                                                        </p>
+                                                    </div>
+
                                                     <!-- Page navigator: the browser's native PDF viewer doesn't let
                                                          scripts read what page you've scrolled to, so free scrolling
                                                          in View can't be tracked automatically — use these arrows
@@ -584,44 +625,6 @@
                                                                 </div>
                                                             </template>
                                                         </div>
-                                                    </div>
-
-                                                    <!-- Bottom bar: color swatches + big Sketch/Text tool buttons -->
-                                                    <div class="px-4 py-4 bg-gray-900 border-t border-white/10">
-                                                        <div v-if="drawTool === 'pen' || drawTool === 'highlighter'" class="flex items-center justify-center gap-3 mb-4">
-                                                            <button v-for="c in swatchColors" :key="c" type="button" @click="drawSettings.color = c" class="w-6 h-6 rounded-full border-2" :style="{ background: c, borderColor: drawSettings.color === c ? '#fff' : 'transparent' }" :title="c"></button>
-                                                        </div>
-
-                                                        <!-- Sub-tool row for Sketch: Pen / Highlight / Eraser + size + clear -->
-                                                        <div v-if="drawTool === 'pen' || drawTool === 'highlighter' || drawTool === 'eraser'" class="flex items-center justify-center gap-2 mb-4 flex-wrap">
-                                                            <button type="button" @click="drawTool = 'pen'" class="px-3 py-1.5 rounded-full text-xs font-medium" :class="drawTool === 'pen' ? 'bg-white text-gray-900' : 'bg-white/10 text-white/80'">{{ $t('Pen') }}</button>
-                                                            <button type="button" @click="drawTool = 'highlighter'" class="px-3 py-1.5 rounded-full text-xs font-medium" :class="drawTool === 'highlighter' ? 'bg-white text-gray-900' : 'bg-white/10 text-white/80'">{{ $t('Highlight') }}</button>
-                                                            <button type="button" @click="drawTool = 'eraser'" class="px-3 py-1.5 rounded-full text-xs font-medium" :class="drawTool === 'eraser' ? 'bg-white text-gray-900' : 'bg-white/10 text-white/80'">{{ $t('Eraser') }}</button>
-                                                            <button type="button" @click="clearCanvas" class="px-3 py-1.5 rounded-full text-xs font-medium bg-white/10 text-white/80">{{ $t('Clear') }}</button>
-                                                            <div class="flex items-center gap-2 ml-1">
-                                                                <label class="text-[11px] text-white/60">{{ $t('Size') }}</label>
-                                                                <input type="range" min="1" max="20" v-model.number="drawSettings.size" class="w-20" />
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="flex items-center justify-center gap-10">
-                                                            <button type="button" @click="toggleSketch" class="flex flex-col items-center gap-1.5">
-                                                                <span class="w-12 h-12 rounded-full flex items-center justify-center" :class="['pen','highlighter','eraser'].includes(drawTool) ? 'bg-white text-gray-900' : 'bg-white/10 text-white'">
-                                                                    <svg viewBox="0 0 24 24" fill="none" class="w-5 h-5"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="currentColor"/></svg>
-                                                                </span>
-                                                                <span class="text-[11px] text-white/80">{{ $t('Sketch') }}</span>
-                                                            </button>
-                                                            <button type="button" @click="toggleTextTool" class="flex flex-col items-center gap-1.5">
-                                                                <span class="w-12 h-12 rounded-full flex items-center justify-center" :class="drawTool === 'text' ? 'bg-white text-gray-900' : 'bg-white/10 text-white'">
-                                                                    <svg viewBox="0 0 24 24" fill="none" class="w-5 h-5"><rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" stroke-width="1.6"/><path d="M8 8h8M12 8v8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-                                                                </span>
-                                                                <span class="text-[11px] text-white/80">{{ $t('Text') }}</span>
-                                                            </button>
-                                                        </div>
-
-                                                        <p class="text-center text-[11px] text-white/40 mt-3">
-                                                            {{ drawTool === 'view' ? $t('Scroll to browse every page. Pick Sketch or Text to add a note.') : $t('Use the page arrows above to note a different page.') }}
-                                                        </p>
                                                     </div>
                                                 </div>
 
@@ -1118,40 +1121,16 @@
     import WatchButton from '@/Components/WatchButton.vue';
     import axios from 'axios'
 
-    // Used only to build a brand-new standalone PDF from your drawing when
-    // saving — no pdfjs-dist here, so no worker/version bundling issues.
     import { PDFDocument } from 'pdf-lib';
 
-    // Renders the real page as a <canvas> so the drawing overlay lines up
-    // pixel-for-pixel with it (the native browser PDF viewer used for
-    // View mode doesn't expose enough control over its own margins/toolbar
-    // to guarantee that — this is what actually fixes notes landing in the
-    // wrong spot). The worker is resolved locally from the installed
-    // pdfjs-dist package via Vite's asset URL handling, so it always
-    // matches the installed version exactly (no CDN version mismatch).
-    // Requires `npm install pdfjs-dist` if not already a dependency.
     import * as pdfjsLib from 'pdfjs-dist';
     const pdfWorkerUrl = new URL(
         'pdfjs-dist/build/pdf.worker.min.mjs',
         import.meta.url
     ).toString();
-    // Set as a first-pass fallback; ensureWorkerBlobSrc() below overrides
-    // this with a same-origin blob URL before the first PDF is opened,
-    // which is what actually needs to succeed for drawing to work.
+
     pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
-    // Some production servers (misconfigured nginx/Apache mime.types) send
-    // .mjs files back as "application/octet-stream" instead of a JS mime
-    // type. Browsers strictly enforce the mime type for *module* scripts —
-    // which is exactly what the pdf.js worker is — so that single wrong
-    // header on the server is enough to make both the real worker and
-    // pdf.js's own "fake worker" fallback fail with "Failed to load module
-    // script". A plain fetch() doesn't care about the response's
-    // Content-Type at all, so we fetch the worker's bytes ourselves, wrap
-    // them in a Blob with the correct type set client-side, and hand
-    // pdf.js a blob: URL instead of the direct server URL — the browser
-    // trusts the Blob's own declared type, not any server header, so this
-    // works even if the server is never fixed. Cached so it only runs once.
     let workerBlobSrcPromise = null;
     function ensureWorkerBlobSrc() {
         if (!workerBlobSrcPromise) {
@@ -1167,8 +1146,6 @@
                     return blobUrl;
                 })
                 .catch(err => {
-                    // Fall back to the direct URL — if the server mime type
-                    // is fine (or gets fixed) this still works either way.
                     console.error('Falling back to direct pdf.worker URL, blob wrap failed:', err);
                     pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
                     return pdfWorkerUrl;
@@ -1216,11 +1193,7 @@
                 label: {},
                 task: {},
                 allowed_file_types: (() => {
-                    // Always keep PDF + common screenshot/image formats in the
-                    // picker's filter, on top of whatever the backend
-                    // "allowed_file_types" setting adds — otherwise, if that
-                    // setting only lists ".pdf", screenshots can't even be
-                    // selected in the native file dialog.
+    
                     const base = ['.pdf', '.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
                     const types = this?.$page?.props?.settings?.allowed_file_types;
                     try {
@@ -1266,46 +1239,27 @@
                     size: 4
                 },
                 isDrawing: false,
-                // Which tool is active in the single toolbar. 'view' lets
-                // the native PDF viewer scroll through every page; picking
-                // any other tool switches to drawing on page 1.
-                drawTool: 'view', // 'view' | 'pen' | 'highlighter' | 'eraser' | 'text'
+
+                drawTool: 'view', 
                 historyStack: [],
                 redoStack: [],
                 textInput: { visible: false, cssX: 0, cssY: 0, value: '' },
-                // Placed text notes — kept as separate, draggable objects
-                // (not baked into the canvas bitmap) so they can be moved
-                // around after being added, like a standard PDF note tool.
+
                 textNotes: [],
                 textNoteIdCounter: 0,
                 draggingNote: null,
-                // Quick-pick color swatches for the redesigned markup
-                // toolbar (black, red, yellow, green, blue, purple, gray).
+
                 swatchColors: ['#000000', '#ef4444', '#eab308', '#22c55e', '#3b82f6', '#a855f7', '#9ca3af'],
-                // Multi-page notes: which page you're currently sketching/
-                // noting on, how many pages the PDF has, a per-page store
-                // of what's been drawn/noted so far (so switching pages
-                // doesn't lose anything), and which pages actually have
-                // real edits worth baking in on Save.
+
                 currentDrawPage: 1,
                 totalPdfPages: 1,
-                pageAnnotations: {}, // { [pageNum]: { canvasImage, notes } }
-                dirtyPages: {}, // { [pageNum]: true }
-                // pdf.js document handle used to render the exact page
-                // pixel-for-pixel while a drawing tool is active.
+                pageAnnotations: {}, 
+                dirtyPages: {}, 
                 pdfDocProxy: null,
                 canvasCtx: null,
                 autoSaving: false,
-                // Shows a spinner over the page stage while pdf.js is
-                // loading the document or rendering a page, so switching
-                // tools/pages never looks like a silent blank freeze.
+
                 isRenderingPage: false,
-                // Ratio between the draw canvas's actual backing-store
-                // resolution and its on-screen (CSS) size — set by
-                // renderDrawPage. Stroke widths/eraser size get multiplied
-                // by this so pen thickness still looks right on screen even
-                // though the canvas itself is rendered at a higher
-                // resolution for a crisp/HD final saved PDF.
                 canvasPixelRatio: 1,
 
                 // --- Toast notification state ---
@@ -1370,30 +1324,18 @@
                 return this.composedStart && this.composedEnd && !this.manualTimeError;
             },
 
-            // Only used in View mode now — drawing tools render the page
-            // themselves via pdf.js instead (see renderDrawPage), which is
-            // what makes notes land exactly where you drew them. This just
-            // jumps the native viewer to currentDrawPage so the page
-            // arrows still move what you're looking at while browsing.
             pdfIframeSrc() {
                 const path = this.viewModal.attachment?.path;
                 if (!path) return path;
                 return this.currentDrawPage > 1 ? `${path}#page=${this.currentDrawPage}` : path;
             },
 
-            // "family" name shared by an original PDF and every annotated
-            // copy saved from it, e.g. "annotated_annotated_report.pdf" and
-            // "report.pdf" both resolve to "report" — used to group all
-            // versions of the same document together.
             documentFamilyName() {
                 const name = this.viewModal.attachment?.name;
                 if (!name) return null;
                 return name.replace(/\.[^/.]+$/, '').replace(/^(annotated_)+/i, '');
             },
 
-            // Every saved version of the document currently open in the
-            // preview modal (the original plus each "Save" from Draw mode),
-            // newest first.
             documentVersions() {
                 if (!this.documentFamilyName || !this.task?.attachments) return [];
                 return [...this.task.attachments]
@@ -1402,10 +1344,6 @@
                     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
             },
 
-            // Comments that were posted with this document attached (the
-            // comment box embeds an <a href="..."> link to the uploaded
-            // file — see uploadAttachment's is_comment branch), matched
-            // against any version of this same document.
             documentComments() {
                 if (!this.documentVersions.length) return [];
                 const paths = this.documentVersions.map(v => v.path);
@@ -1417,15 +1355,9 @@
             },
 
             documentNotesCount() {
-                // Annotated versions (excluding the original itself) plus
-                // related comments — i.e. everything that counts as a
-                // "note" someone added to this document.
                 return this.documentVersions.filter(v => !v.isOriginal).length + this.documentComments.length;
             },
 
-            // True once any page has an actual unsaved sketch/note on it.
-            // Used to hide the Save button until there's something to save —
-            // no point showing it while just browsing in View mode.
             hasUnsavedAnnotations() {
                 return Object.values(this.dirtyPages).some(Boolean);
             },
@@ -1440,10 +1372,13 @@
             'manual_time.date'() {
                 this.manualTimeError = null;
             },
-            // Switching between View (native scrollable viewer) and any
-            // drawing tool needs a different stage: View just resizes the
-            // frame; a drawing tool needs the exact page rendered fresh.
-            async drawTool(newTool) {
+
+            async drawTool(newTool, oldTool) {
+
+                if (oldTool) {
+                    this.saveCurrentPageAnnotationState();
+                }
+
                 if (newTool === 'view') {
                     this.$nextTick(() => this.initViewFrame());
                     return;
@@ -1530,10 +1465,6 @@
                 return this.isImage(filename) || this.isPdf(filename);
             },
 
-            // --- View Modal Methods ---
-            // The PDF itself is shown via the iframe (native browser
-            // rendering, not pdf.js), with a transparent canvas layered on
-            // top sized to match — that's what captures the drawing.
             openViewModal(attachment) {
                 this.viewModal.open = true;
                 this.viewModal.attachment = attachment;
@@ -1551,10 +1482,6 @@
 
                 this.$nextTick(async () => {
                     if (this.isPdf(attachment.name)) {
-                        // Loads page-count metadata now so the page
-                        // navigator works immediately; the actual page
-                        // render only happens once a drawing tool is
-                        // picked (View mode uses the native viewer).
                         await this.ensurePdfDocProxy();
                         this.initViewFrame();
                         window.addEventListener('resize', this.handleResize);
@@ -1570,16 +1497,11 @@
                 window.removeEventListener('resize', this.handleResize);
             },
 
-            // Loads the PDF once via pdf.js so pages can be rendered
-            // pixel-exact for drawing. Cheap to call repeatedly — it's a
-            // no-op once already loaded for the current attachment.
             async ensurePdfDocProxy() {
                 if (this.pdfDocProxy || !this.viewModal.attachment) return;
 
                 const url = this.viewModal.attachment.path;
                 if (!url) {
-                    // Surfaces exactly what's missing next time this
-                    // happens, instead of a generic pdf.js validation error.
                     console.error('PDF render: attachment has no usable path/url. attachment =', this.viewModal.attachment);
                     this.toastError(this.$t('Failed to load the PDF for drawing.'));
                     return;
@@ -1587,42 +1509,20 @@
 
                 this.isRenderingPage = true;
                 try {
-                    // Fetch the PDF's actual bytes ourselves (same
-                    // credentials as everywhere else in this file — see
-                    // saveAnnotatedImage) instead of handing pdf.js a bare
-                    // URL. pdf.js's `{ url }` mode streams the file using
-                    // HTTP Range requests; some production setups (reverse
-                    // proxies, CDNs, cloud storage) don't support/advertise
-                    // Range the same way a local dev server does, which is
-                    // exactly the kind of thing that loads fine locally and
-                    // silently fails once deployed. Downloading the whole
-                    // file up front and handing pdf.js the bytes directly
-                    // sidesteps that dependency entirely, and also makes
-                    // sure the request carries the session cookie in case
-                    // the attachment route requires auth.
                     const fileRes = await fetch(url, { credentials: 'same-origin' });
                     if (!fileRes.ok) {
                         throw new Error(`HTTP ${fileRes.status} while downloading the PDF`);
                     }
                     const bytes = await fileRes.arrayBuffer();
 
-                    // Must resolve before getDocument() spins up the
-                    // worker — see ensureWorkerBlobSrc() above for why.
                     await ensureWorkerBlobSrc();
 
                     const loadingTask = pdfjsLib.getDocument({ data: bytes });
-                    // markRaw is required here — pdf.js's internal classes
-                    // use native JS private fields (#foo), which break with
-                    // "Cannot read from private field" the moment Vue's
-                    // reactivity system wraps the object in a Proxy.
+   
                     this.pdfDocProxy = markRaw(await loadingTask.promise);
                     this.totalPdfPages = this.pdfDocProxy.numPages;
                 } catch (err) {
                     console.error('Failed to load the PDF for rendering. url was:', url, 'error:', err);
-                    // Surfaces the real reason (network/CORS/HTTP status)
-                    // directly in the toast, so it doesn't take a trip to
-                    // DevTools every time this happens on a server you
-                    // don't have console access to.
                     const reason = err?.message || String(err);
                     this.toastError(this.$t('Failed to load the PDF for drawing') + ': ' + reason);
                 } finally {
@@ -1630,11 +1530,6 @@
                 }
             },
 
-            // Renders the given page as an actual <canvas> at the stage's
-            // real pixel width. Because the drawing overlay is sized to
-            // match this render exactly, a stroke always lands on the
-            // exact spot you clicked once baked back into the real PDF —
-            // no more guessing at the native viewer's toolbar/margins.
             async renderDrawPage(pageNumber) {
                 if (!this.pdfDocProxy) return;
                 const stage = this.$refs.drawStage;
@@ -1648,18 +1543,6 @@
                     const baseViewport = page.getViewport({ scale: 1 });
                     const targetWidth = Math.min(stage.clientWidth || 880, 880);
 
-                    // Background PDF preview (what you actually see while
-                    // browsing/drawing): supersample at 1.5x the device's
-                    // own pixel density, then let the browser's canvas
-                    // downscale it back to the display size — this is a
-                    // standard supersampling technique that measurably
-                    // sharpens anti-aliased text/lines versus rendering at
-                    // 1:1 device density. Note: pdf.js is a different
-                    // rendering engine than the browser's native PDF plugin
-                    // (used in View mode), so even at high resolution its
-                    // text will read very slightly softer — that gap can't
-                    // be fully closed while still rendering to a <canvas>,
-                    // which is what makes pixel-exact drawing possible.
                     const bgPixelRatio = Math.min((window.devicePixelRatio || 1) * 1.5, 3);
                     const bgScale = (targetWidth * bgPixelRatio) / baseViewport.width;
                     const bgViewport = page.getViewport({ scale: bgScale });
@@ -1675,14 +1558,6 @@
                     renderCanvas.style.width = '100%';
                     renderCanvas.style.height = displayHeight + 'px';
 
-                    // Strokes/notes overlay: kept independently at a higher
-                    // resolution, since THIS is the canvas whose content
-                    // gets baked into the saved PDF and stretched across the
-                    // full original page size — unlike the background, it
-                    // has no fine PDF text to over-blur, so more pixels here
-                    // only helps the final saved quality. Same on-screen
-                    // size as the background canvas (for pointer/visual
-                    // alignment); just backed by more actual pixels.
                     const overlayPixelRatio = Math.min((window.devicePixelRatio || 1) * 2, 3);
                     this.canvasPixelRatio = overlayPixelRatio;
                     const overlayScale = (targetWidth * overlayPixelRatio) / baseViewport.width;
@@ -1704,9 +1579,6 @@
                 }
             },
 
-            // View mode's frame: tall and natively scrollable, so the
-            // browser's own PDF viewer can handle paging/scrolling/zooming
-            // through the whole document.
             initViewFrame() {
                 const stage = this.$refs.drawStage;
                 if (!stage) return;
@@ -1722,10 +1594,6 @@
                 }
             },
 
-            // Switches which page you're sketching/noting on. Stores the
-            // page you're leaving into pageAnnotations (so it's not lost),
-            // renders the new page fresh, then restores whatever was
-            // previously drawn/noted there, if anything.
             async goToDrawPage(delta) {
                 if (!this.viewModal.attachment) return;
                 const next = this.currentDrawPage + delta;
@@ -1747,21 +1615,12 @@
                 }
             },
 
-            // Snapshots whatever's currently drawn/noted so switching pages
-            // (or saving) doesn't lose it.
             saveCurrentPageAnnotationState() {
                 const canvas = this.$refs.drawCanvas;
                 if (!canvas || !canvas.width || !canvas.height) return;
                 this.pageAnnotations[this.currentDrawPage] = {
                     canvasImage: canvas.toDataURL(),
                     notes: this.textNotes.map(n => ({ ...n })),
-                    // Text notes are stored/positioned in on-screen CSS
-                    // pixels (see confirmTextInput), but the canvas backing
-                    // store this page was rendered at is canvasPixelRatio×
-                    // larger for HD output. Remember that ratio now so
-                    // buildFinalDataUrlForEntry can convert notes back to
-                    // the matching canvas-pixel scale when baking them in,
-                    // even if the page isn't the one currently on screen.
                     pixelRatio: this.canvasPixelRatio || 1,
                 };
             },
@@ -1783,8 +1642,6 @@
             startDrawing(e) {
                 if (!this.canvasCtx || this.drawTool === 'view') return;
 
-                // Text tool doesn't drag a stroke — a single click/tap
-                // opens the floating note input instead.
                 if (this.drawTool === 'text') {
                     this.placeTextAt(e);
                     return;
@@ -1799,25 +1656,16 @@
 
             draw(e) {
                 if (!this.isDrawing) return;
-                // Only swallow the touch gesture once a stroke is actually
-                // in progress — that's what let a Text-tool tap (or any
-                // idle touch) fall through as a normal scroll before.
+
                 if (e.cancelable) e.preventDefault();
                 const pos = this.getCanvasCoordinates(e);
                 const ctx = this.canvasCtx;
                 ctx.lineCap = 'round';
                 ctx.lineJoin = 'round';
 
-                // Line widths are chosen on the 1-20 slider assuming
-                // on-screen pixels, but the canvas itself now renders at
-                // canvasPixelRatio× that resolution for HD output — so
-                // multiply here to keep strokes looking the same thickness
-                // on screen (and proportionally crisp once saved).
                 const pr = this.canvasPixelRatio || 1;
                 if (this.drawTool === 'eraser') {
-                    // destination-out punches transparent holes instead of
-                    // painting, so it actually removes ink rather than
-                    // drawing white over it.
+
                     ctx.globalCompositeOperation = 'destination-out';
                     ctx.globalAlpha = 1;
                     ctx.lineWidth = this.drawSettings.size * 5 * pr;
@@ -1853,16 +1701,6 @@
                 this.canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
             },
 
-            // --- Text note tool: place a typed note on the canvas ---
-            // Notes are positioned and dragged in plain on-screen CSS
-            // pixels (same space the floating input box already used for
-            // cssX/cssY) — NOT canvas backing-store pixels. The drawing
-            // canvas renders at canvasPixelRatio× the on-screen size for
-            // HD output, so a canvas-space coordinate could be 2-3x too
-            // large once used as a raw `left/top` CSS value on the note's
-            // <div>, pushing it outside the visible (overflow:hidden)
-            // stage entirely — that's what made notes disappear after
-            // being placed, and made dragging track the pointer incorrectly.
             placeTextAt(e) {
                 const canvas = this.$refs.drawCanvas;
                 const rect = canvas.getBoundingClientRect();
@@ -1882,14 +1720,9 @@
             confirmTextInput() {
                 const text = (this.textInput.value || '').trim();
                 if (text) {
-                    // Plain CSS px, matching where the note is actually
-                    // rendered on screen (buildFinalDataUrlForEntry scales
-                    // this back up to canvas-pixel space at save time).
+
                     const fontSize = Math.max(14, this.drawSettings.size * 4);
 
-                    // Kept as a separate, draggable object rather than
-                    // baked straight onto the canvas — that's what lets it
-                    // be moved around afterwards like a standard PDF note.
                     this.textNotes.push({
                         id: ++this.textNoteIdCounter,
                         x: this.textInput.cssX,
@@ -1952,7 +1785,6 @@
                 if (idx > -1) this.textNotes.splice(idx, 1);
             },
 
-            // --- Bottom-bar tool toggles (Sketch groups Pen/Highlight/Eraser) ---
             toggleSketch() {
                 if (['pen', 'highlighter', 'eraser'].includes(this.drawTool)) {
                     this.drawTool = 'view';
@@ -1965,8 +1797,6 @@
                 this.drawTool = this.drawTool === 'text' ? 'view' : 'text';
             },
 
-            // --- Undo / Redo: snapshot-based, matches the simplicity of
-            // the rest of the draw feature (no per-stroke vector model). ---
             pushHistory() {
                 const canvas = this.$refs.drawCanvas;
                 if (!canvas) return;
@@ -2006,8 +1836,6 @@
                 await this.restoreFromDataUrl(next);
             },
 
-            // Explicit "Save" button: uploads the drawing as a brand new
-            // attachment. Nothing saves automatically while drawing.
             async manualSaveAnnotation() {
                 this.autoSaving = true;
                 try {
@@ -2017,12 +1845,6 @@
                 }
             },
 
-            // Saves a free-text note about the document currently open in
-            // the preview modal. Reuses the same "comments.new" endpoint as
-            // the regular Activities comment box, but tags the comment with
-            // a hidden reference to this document's path so it shows up in
-            // the "Notes for this document" panel (via documentComments)
-            // instead of only in the general Activities feed.
             saveDocumentNote(){
                 const text = (this.newDocumentNote || '').trim();
                 if (!text || !this.viewModal.attachment || this.savingDocumentNote) return;
@@ -2055,16 +1877,6 @@
                 });
             },
 
-            // Loads the REAL original PDF (all its pages, untouched) and
-            // draws your annotation directly onto page 1 of it, then
-            // uploads the result as a new attachment. This is plain
-            // fetch + pdf-lib — no pdf.js, no worker, no rendering of the
-            // original file involved, so it can't hit that earlier bug.
-            // Composites one page's stored raster strokes (pen/highlighter/
-            // eraser) together with its draggable text notes into one
-            // flattened image — used per-page at Save time, without
-            // touching the live canvas, so notes stay movable in the UI
-            // even after you've saved.
             buildFinalDataUrlForEntry(entry) {
                 return new Promise((resolve) => {
                     if (!entry || !entry.canvasImage) { resolve(null); return; }
@@ -2076,12 +1888,6 @@
                         const tctx = temp.getContext('2d');
                         tctx.drawImage(img, 0, 0);
 
-                        // note.x/y/fontSize are stored in on-screen CSS
-                        // pixels; this temp canvas is at the full HD
-                        // backing-store resolution (img.naturalWidth/Height),
-                        // so scale everything up by the same ratio the page
-                        // was rendered at or the text lands in the wrong
-                        // spot / wrong size in the saved PDF.
                         const ratio = entry.pixelRatio || 1;
                         (entry.notes || []).forEach(note => {
                             tctx.globalCompositeOperation = 'source-over';
@@ -2102,10 +1908,6 @@
                 });
             },
 
-            // Bakes every page you actually sketched or added a note on —
-            // not just page 1 — back into a copy of the real PDF, each on
-            // its own matching page, then uploads the result as a new
-            // attachment. The original file itself is left untouched.
             async saveAnnotatedImage() {
                 const canvas = this.$refs.drawCanvas;
                 if (!canvas || !this.viewModal.attachment) return;
@@ -2139,10 +1941,6 @@
 
                         const pngImage = await pdfDoc.embedPng(finalDataUrl);
 
-                        // Stretch the drawing over the full page — the
-                        // canvas covered the same visible area that page
-                        // was shown in, so this lines up with what you saw
-                        // while drawing on it.
                         const pageIndex = Math.min(pageNum - 1, pdfDoc.getPageCount() - 1);
                         const page = pdfDoc.getPage(pageIndex);
                         const { width, height } = page.getSize();
@@ -2153,9 +1951,7 @@
                     const blob = new Blob([pdfBytes], { type: 'application/pdf' });
 
                     const formData = new FormData();
-                    // Uploads as a brand new attachment on the task, using the
-                    // same "add attachment" endpoint as the regular attachment
-                    // uploader.
+
                     formData.append('file', blob, `annotated_${originalName}.pdf`);
 
                     const res = await axios.post(this.route('task.attachment.add', this.task.id), formData);
@@ -2163,8 +1959,6 @@
                         this.task.attachments.push(res.data);
                         this.toastSuccess(this.$t('Annotated PDF attached.'), { duration: 2000 });
                         this.dirtyPages = {};
-                        // The toast is teleported to <body>, so it stays
-                        // visible even after the modal itself closes.
                         this.closeViewModal();
                     } else {
                         this.toastError(res.data?.message || this.$t('Failed to save the annotated PDF.'));
@@ -2398,13 +2192,6 @@
             },
             onEditorReady(editor){editor.focus();},
             deleteAttachment(id){
-                // `index` used to be the position inside the *sorted* display
-                // list (sortedAttachments), but we splice the real
-                // this.task.attachments array — those two orders don't match,
-                // so the wrong item (or nothing) got removed and it looked
-                // like delete "wasn't real time". Look the item up by id in
-                // the real array instead, and remove it immediately (optimistic
-                // UI) rather than waiting on the response.
                 const realIndex = this.task.attachments.findIndex(a => a.id === id);
                 if (realIndex === -1) return;
 
@@ -2433,17 +2220,8 @@
                 let uploadedCount = 0;
                 let failedCount = 0;
 
-                // Upload every selected file (the input now allows picking
-                // more than one at a time), one after another so attachments
-                // land in the order they were picked and the file input
-                // isn't reset mid-batch.
                 for (const file of files) {
                     const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
-                    // Screenshots/images are valid attachments too — the file
-                    // picker's accept filter previously only advertised PDFs
-                    // (plus whatever the backend "allowed_file_types" setting
-                    // listed), so screenshots didn't even show up as
-                    // selectable in some browsers' file dialogs.
                     const isImageFile = file.type.startsWith('image/') || this.isImage(file.name);
 
                     // 1. Validate File Type (PDF or image)
@@ -3319,9 +3097,6 @@
         }
     }
 
-    /* Preview / draw modal: fade the backdrop in, pop the panel in
-       slightly scaled + lifted, so opening it feels intentional rather
-       than an instant hard cut. Reverses on close. */
     .modal-pop-enter-active {
         transition: opacity 0.2s ease-out;
     }
