@@ -83,7 +83,7 @@ class Task extends Model
      */
     private function generateUniqueSlug($title, $ignoreId = null)
     {
-        $slug = Str::slug($title, '-', null);
+        $slug = $this->slugify($title);
 
         if ($slug === '') {
             $slug = 'task';
@@ -97,6 +97,16 @@ class Task extends Model
         }
 
         return $slug;
+    }
+
+    private function slugify($title, $separator = '-')
+    {
+        $title = mb_strtolower(trim((string) $title));
+        $title = preg_replace('/[\s_]+/u', $separator, $title);
+        $title = preg_replace('/[^'.preg_quote($separator, '/').'\pL\pN\p{M}]+/u', '', $title);
+        $title = preg_replace('/'.preg_quote($separator, '/').'+/u', $separator, $title);
+
+        return trim($title, $separator);
     }
 
     protected static function boot()
