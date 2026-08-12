@@ -34,9 +34,9 @@
                              than a flat bordered table — matches the reference design
                              and gives a smoother, more modern feel. On small screens
                              the grid collapses into stacked label/value cards instead
-                             of squeezing 6 columns into a narrow viewport (see the
+                             of squeezing columns into a narrow viewport (see the
                              .doc-row rules in <style> for the breakpoint). -->
-                        <div class="doc-table rounded-xl overflow-hidden shadow-sm">
+                        <div class="doc-table rounded-xl shadow-sm overflow-x-auto">
                             <div class="doc-row doc-row--head hidden md:grid gap-3 px-4 py-3 text-sm font-semibold text-white">
                                 <div></div>
                                 <div>{{ $t('No.') }}</div>
@@ -45,6 +45,7 @@
                                 <div>{{ $t('Date Entered') }}</div>
                                 <div>{{ $t('Status') }}</div>
                                 <div>{{ $t('Barcode') }}</div>
+                                <div>{{ $t('Print') }}</div>
                             </div>
 
                             <!-- Drag-and-drop reordering, restored from the original
@@ -53,14 +54,14 @@
                                  (filtered) set, so the handle drives taskRows and
                                  afterDrop() persists the new order via the same
                                  task.update.order endpoint the board view used. -->
-                            <draggable v-model="taskRows" tag="div" class="doc-rows flex flex-col gap-2 p-2" handle=".doc-drag-handle" item-key="id" @end="afterDrop">
+                            <draggable v-model="pageRows" tag="div" class="doc-rows flex flex-col gap-2 p-2" handle=".doc-drag-handle" item-key="id" @end="afterDrop">
                                 <template #item="{ element, index }">
                                     <div class="doc-row md:grid gap-1.5 md:gap-3 md:items-center px-4 py-3 md:py-3.5 rounded-lg bg-slate-200/70 dark:bg-slate-700/40 hover:bg-slate-200 dark:hover:bg-slate-700/70 hover:shadow-md transition-all duration-200 ease-out md:hover:-translate-y-0.5">
                                         <div class="doc-drag-handle hidden md:flex items-center justify-center cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600">
                                             <icon class="w-5 h-5" name="drag" />
                                         </div>
                                         <div class="text-sm font-medium" :data-label="$t('No.')">
-                                            #{{ index + 1 }}
+                                            #{{ (currentPage - 1) * pageSize + index + 1 }}
                                         </div>
                                         <div class="text-sm font-medium" :data-label="$t('Document Code')">
                                             <span class="cursor-pointer hover:text-blue-600 hover:underline underline-offset-2 transition-colors" @click="taskDetailsPopup(element.slug || element.id)">{{ documentCode(element) }}</span>
@@ -100,12 +101,49 @@
                                                 <svg :ref="setBarcodeRef(element.id)" :data-barcode-value="documentCode(element)"></svg>
                                             </div>
                                         </div>
+                                        <div :data-label="$t('Print')">
+                                            <!-- Opens the same printable receipt/tracking document used on
+                                                 the board view (DocumentReceipt) — stopPropagation so it
+                                                 doesn't also trigger the row's other click handlers. -->
+                                            <button
+                                                type="button"
+                                                @click.stop="openReceiptModal(element, $event)"
+                                                class="doc-print-btn"
+                                                :title="$t('Print tracking document')"
+                                                :aria-label="$t('Print tracking document')"
+                                            >
+                                                <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4"><path d="M7 8.5V3.5h10v5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><rect x="4" y="8.5" width="16" height="7.5" rx="1.4" stroke="currentColor" stroke-width="1.6"/><rect x="7" y="13.5" width="10" height="7" rx="0.6" stroke="currentColor" stroke-width="1.6"/><circle cx="17" cy="11" r="0.9" fill="currentColor"/></svg>
+                                                <span class="hidden md:inline">{{ $t('Print') }}</span>
+                                            </button>
+                                        </div>
                                     </div>
                                 </template>
                             </draggable>
 
                             <div v-if="!taskRows.length" class="text-center py-8 text-sm text-gray-500 dark:text-gray-400">
                                 {{ $t('No documents found!') }}
+                            </div>
+                        </div>
+
+                        <!-- Pagination — only shown once there's more than one page.
+                             Reordering via drag only affects the currently visible
+                             page (see afterDrop()); this is the standard tradeoff
+                             any paginated drag-and-drop list makes. -->
+                        <div v-if="totalPages > 1" class="doc-pagination flex flex-wrap items-center justify-between gap-3 mt-4 px-1">
+                            <div class="text-xs text-gray-500 dark:text-gray-400">
+                                {{ $t('Showing') }} {{ paginationStart }}–{{ paginationEnd }} {{ $t('of') }} {{ taskRows.length }}
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <button type="button" class="doc-page-btn" :disabled="currentPage === 1" @click="goToPage(currentPage - 1)" :aria-label="$t('Previous page')">
+                                    <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </button>
+                                <template v-for="(p, i) in paginationPages" :key="'pg_'+i">
+                                    <span v-if="p === '...'" class="doc-page-ellipsis">…</span>
+                                    <button v-else type="button" class="doc-page-btn" :class="{ 'doc-page-btn--active': p === currentPage }" @click="goToPage(p)">{{ p }}</button>
+                                </template>
+                                <button type="button" class="doc-page-btn" :disabled="currentPage === totalPages" @click="goToPage(currentPage + 1)" :aria-label="$t('Next page')">
+                                    <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </button>
                             </div>
                         </div>
 
@@ -177,6 +215,13 @@
         <task-details v-if="taskDetailsOpen" :id="taskDetailsId" view="table" :isPopup="td_pop" @closeModal="closeDetails()"  />
         <right-menu v-if="show_right_menu" :project="project" @menu-toggle="show_right_menu = !show_right_menu" @openTask="(id)=>taskDetailsPopup(id)" />
 
+        <!-- Same printable tracking document used on the board view. -->
+        <DocumentReceipt
+            v-if="receiptModalOpen"
+            :task="selectedReceiptTask"
+            @close="closeReceiptModal"
+        />
+
     </div>
 </template>
 
@@ -197,11 +242,12 @@
     import draggable from 'vuedraggable'
 
     import JsBarcode from 'jsbarcode';
+    import DocumentReceipt from '@/Shared/Modals/DocumentReceipt.vue'
 
 
     export default {
     metaInfo: { title: 'Dashboard' },
-        components: {RightMenu, BoardFilter, Head, Icon, Link, TaskDetails, DatePicker, BoardViewMenu, draggable},
+        components: {RightMenu, BoardFilter, Head, Icon, Link, TaskDetails, DatePicker, BoardViewMenu, draggable, DocumentReceipt},
     layout: Layout,
         props: {
             auth: Object,
@@ -247,6 +293,13 @@
                 barcodeRefs: {},
                 taskRows: [],
 
+                currentPage: 1,
+                pageSize: 10,
+                pageRows: [],
+
+                receiptModalOpen: false,
+                selectedReceiptTask: null,
+
                 statusPalette: ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4', '#ec4899', '#6366f1'],
                 form: {
                     user: this.filters.user,
@@ -284,6 +337,34 @@
                     })
                 );
             },
+
+            totalPages() {
+                return Math.max(1, Math.ceil(this.taskRows.length / this.pageSize));
+            },
+
+            paginationStart() {
+                return this.taskRows.length ? (this.currentPage - 1) * this.pageSize + 1 : 0;
+            },
+
+            paginationEnd() {
+                return Math.min(this.currentPage * this.pageSize, this.taskRows.length);
+            },
+
+            paginationPages() {
+                const total = this.totalPages;
+                const current = this.currentPage;
+                const delta = 2;
+                const range = [];
+                for (let i = Math.max(2, current - delta); i <= Math.min(total - 1, current + delta); i++) {
+                    range.push(i);
+                }
+                const pages = [1];
+                if (range[0] > 2) pages.push('...');
+                pages.push(...range);
+                if (range.length && range[range.length - 1] < total - 1) pages.push('...');
+                if (total > 1) pages.push(total);
+                return pages;
+            },
         },
         created() {
             this.moment = moment
@@ -300,6 +381,18 @@
             this.$nextTick(() => this.renderBarcodes());
         },
         methods: {
+            openReceiptModal(task, e){
+                if (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                this.selectedReceiptTask = task;
+                this.receiptModalOpen = true;
+            },
+            closeReceiptModal(){
+                this.receiptModalOpen = false;
+                this.selectedReceiptTask = null;
+            },
             taskDetailsPopup(id){
                 this.form.task = id;
                 this.td_pop = true;
@@ -319,6 +412,7 @@
 
             selectStatus(listId){
                 this.selectedStatus = this.selectedStatus === listId ? null : listId;
+                this.currentPage = 1;
                 this.syncTaskRows();
             },
 
@@ -327,13 +421,38 @@
                 this.taskRows = this.selectedStatus
                     ? sorted.filter(t => t.list_id === this.selectedStatus)
                     : sorted;
+                this.syncPageRows();
+            },
+
+            // Slices taskRows down to just the current page, clamping the
+            // page number first in case the filtered set got smaller (e.g.
+            // a task was archived) and the old page no longer exists.
+            syncPageRows(){
+                if (this.currentPage > this.totalPages) {
+                    this.currentPage = this.totalPages;
+                }
+                const start = (this.currentPage - 1) * this.pageSize;
+                this.pageRows = this.taskRows.slice(start, start + this.pageSize);
+            },
+
+            goToPage(page){
+                if (page === '...' || page < 1 || page > this.totalPages || page === this.currentPage) return;
+                this.currentPage = page;
+                this.syncPageRows();
             },
 
             afterDrop(){
-                const payload = this.taskRows.map((task, idx) => {
-                    task.order = idx + 1;
+                // Only this page's rows were actually dragged — number them
+                // starting from this page's offset so order stays correct
+                // relative to every other page, then fold the new order
+                // back into the full (unpaginated) taskRows so switching
+                // pages/filters doesn't lose it.
+                const start = (this.currentPage - 1) * this.pageSize;
+                const payload = this.pageRows.map((task, idx) => {
+                    task.order = start + idx + 1;
                     return { id: task.id, order: task.order };
                 });
+                this.taskRows.splice(start, this.pageRows.length, ...this.pageRows);
                 this.saveOrder(payload);
             },
 
@@ -497,8 +616,8 @@
                 for (const list of this.lists) {
                     const task = list.tasks.find(t => t.id === taskId)
                     if (task) {
-                        Object.assign(task, newData)  // merge updates
-                        return task                   // return updated task
+                        Object.assign(task, newData)
+                        return task
                     }
                 }
                 return null
@@ -567,7 +686,8 @@
 <style scoped>
     @media (min-width: 768px) {
         .doc-row {
-            grid-template-columns: 4% 6% 16% 26% 14% 14% 20%;
+            grid-template-columns: 40px 60px minmax(150px, 1fr) minmax(220px, 1.6fr) 120px 130px 190px 110px;
+            min-width: 980px;
         }
     }
 
@@ -627,5 +747,90 @@
         width: 100%;
         height: 32px;
         display: block;
+    }
+
+    .doc-print-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        border-radius: 8px;
+        background: #eef2ff;
+        border: 1px solid #e0e7ff;
+        color: #4f46e5;
+        font-size: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+    }
+    .doc-print-btn:hover {
+        background: #e0e7ff;
+        border-color: #c7d2fe;
+        transform: translateY(-1px);
+    }
+    .doc-print-btn:active {
+        transform: translateY(0);
+    }
+    .dark .doc-print-btn {
+        background: rgba(99, 102, 241, 0.12);
+        border-color: rgba(99, 102, 241, 0.25);
+        color: #a5b4fc;
+    }
+    .dark .doc-print-btn:hover {
+        background: rgba(99, 102, 241, 0.2);
+    }
+
+    /* Pagination controls */
+    .doc-page-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 32px;
+        height: 32px;
+        padding: 0 8px;
+        border-radius: 8px;
+        border: 1px solid transparent;
+        background: transparent;
+        color: #475569;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    }
+    .doc-page-btn:hover:not(:disabled) {
+        background: #eef2ff;
+        color: #4338ca;
+    }
+    .doc-page-btn:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+    }
+    .doc-page-btn--active {
+        background: #4f46e5;
+        border-color: #4f46e5;
+        color: #ffffff;
+    }
+    .doc-page-btn--active:hover {
+        background: #4f46e5;
+        color: #ffffff;
+    }
+    .doc-page-ellipsis {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 24px;
+        height: 32px;
+        color: #94a3b8;
+        font-size: 0.8rem;
+    }
+    .dark .doc-page-btn {
+        color: #cbd5e1;
+    }
+    .dark .doc-page-btn:hover:not(:disabled) {
+        background: rgba(99, 102, 241, 0.15);
+        color: #a5b4fc;
+    }
+    .dark .doc-page-ellipsis {
+        color: #64748b;
     }
 </style>
