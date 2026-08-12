@@ -1,39 +1,44 @@
 <template>
     <Head title="ចុះឈ្មោះ - E-Document System" />
 
-    <!-- Strict 2-color (green + gold) cool register -->
-    <div class="min-h-screen bg-white flex items-center justify-center p-4 sm:p-6 relative overflow-hidden">
+    <!-- Strict 2-color (green + gold) cool register — building photo background -->
+    <div class="min-h-screen flex items-center justify-center p-4 sm:p-6 relative overflow-hidden">
 
-        <!-- Ambient glow orbs — green + gold only -->
-        <div class="pointer-events-none absolute -top-32 -left-32 w-[440px] h-[440px] rounded-full bg-[#149954] opacity-[0.22] blur-[110px]"></div>
-        <div class="pointer-events-none absolute -bottom-40 -right-32 w-[460px] h-[460px] rounded-full bg-[#D4AF37] opacity-[0.22] blur-[120px]"></div>
-        <div class="pointer-events-none absolute top-1/3 right-1/4 w-[260px] h-[260px] rounded-full bg-[#149954] opacity-[0.12] blur-[100px]"></div>
+        <!-- Background photo -->
+        <img
+            src="/images/hero-building.jpg"
+            alt=""
+            class="absolute inset-0 w-full h-full object-cover"
+        />
+
+        <!-- Brand tint overlay -->
+        <div class="absolute inset-0" style="background: linear-gradient(180deg, rgba(6,20,12,0.65) 0%, rgba(11,92,50,0.45) 45%, rgba(6,20,12,0.75) 100%);"></div>
 
         <!-- Faint dot texture -->
-        <div class="pointer-events-none absolute inset-0" style="background-image: radial-gradient(#149954 0.6px, transparent 0.6px); background-size: 26px 26px; opacity: 0.05;"></div>
+        <div class="pointer-events-none absolute inset-0" style="background-image: radial-gradient(#D4AF37 0.6px, transparent 0.6px); background-size: 26px 26px; opacity: 0.12;"></div>
 
         <div class="relative w-full max-w-xl">
 
             <!-- Emblem -->
             <div class="text-center mb-6">
                 <Link :href="route('dashboard')" class="inline-block group">
-                    <div class="mx-auto w-24 h-24 flex items-center justify-center rounded-full bg-white border-2 border-[#149954] shadow-[0_8px_25px_-8px_rgba(20,153,84,0.4)] transition-transform duration-300 group-hover:scale-105">
+                    <div class="mx-auto w-24 h-24 flex items-center justify-center rounded-full bg-white border-2 border-[#D4AF37] shadow-[0_8px_25px_-8px_rgba(0,0,0,0.5)] transition-transform duration-300 group-hover:scale-105">
                         <Logo class="w-12 h-12 fill-[#149954]" />
                     </div>
                 </Link>
-                <h1 class="mt-4 text-3xl font-bold text-[#0E4429]">
+                <p class="mt-6 text-[11px] tracking-[0.3em] uppercase text-[#F1C74F] font-semibold">
+                    E-Document System
+                </p>
+                <h1 class="mt-2 text-3xl font-bold text-white drop-shadow-md">
                     ចុះឈ្មោះ
                 </h1>
-                <p class="mt-2 text-[#149954]/70 text-sm">
+                <p class="mt-2 text-white/80 text-sm">
                     បង្កើតគណនីថ្មីដើម្បីចាប់ផ្តើមប្រើប្រាស់ប្រព័ន្ធ
-                </p>
-                <p class="mt-2 text-[11px] tracking-[0.3em] uppercase text-[#B8901E] font-semibold">
-                    E-Document System
                 </p>
             </div>
 
-            <!-- Register Card — single-color border -->
-            <div class="relative rounded-[28px] bg-white border-2 border-[#149954] shadow-[0_25px_60px_-15px_rgba(20,153,84,0.25)]">
+            <!-- Register Card — frosted glass -->
+            <div class="relative rounded-[10px] bg-white/10 border-1 border-white/10 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.55)]">
                 <flash-messages />
                 <form class="px-8 sm:px-10 pt-8 pb-8" @submit.prevent="login">
                     <div class="flex flex-wrap">
@@ -129,7 +134,7 @@
                         </loading-button>
                     </div>
 
-                    <div class="mt-6 text-center text-sm text-[#0E4429]/60">
+                    <div class="mt-6 text-center text-sm text-white/80">
                         មានគណនីរួចហើយ?
                         <Link class="ml-1 font-semibold text-[#149954] hover:text-[#B8901E] transition-colors" :href="route('login')">
                             ចូលប្រើប្រាស់
@@ -139,8 +144,8 @@
             </div>
 
             <!-- Footer -->
-            <p class="mt-8 text-center text-xs text-[#0E4429]/40">
-                មានសុវត្ថិភាព និងស្ថិតក្រោមការគ្រប់គ្រង
+            <p class="mt-8 text-center text-xs text-white/80">
+                គណៈកម្មការគ្រប់គ្រងល្បែងពាណិជ្ជកម្មកម្ពុជា អគ្គលេខាធិការដ្ឋាន
             </p>
         </div>
     </div>
@@ -222,7 +227,8 @@ export default {
 }
 
 .login-input :deep(.form-input) {
-    @apply border-[#149954]/20 focus:border-[#149954] focus:ring-[#149954] rounded-2xl shadow-sm transition-all duration-200 py-3;
+    @apply border-[#149954]/25 focus:border-[#149954] focus:ring-[#149954] rounded-2xl shadow-sm transition-all duration-200 py-3;
+    background-color: rgba(255, 255, 255, 0.451);
 }
 
 .login-input :deep(.form-input):focus {

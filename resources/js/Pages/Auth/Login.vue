@@ -1,70 +1,85 @@
 <template>
     <Head title="ចូលប្រើប្រាស់ - E-Document System" />
 
-    <!-- Strict 2-color (green + gold) cool login -->
-    <div class="min-h-screen bg-white flex items-center justify-center p-4 relative overflow-hidden">
+    <!-- Centered login, building photo as full background -->
+    <div class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
 
-        <!-- Ambient glow orbs — green + gold only -->
-        <div class="pointer-events-none absolute -top-32 -left-32 w-[440px] h-[440px] rounded-full bg-[#149954] opacity-[0.22] blur-[110px]"></div>
-        <div class="pointer-events-none absolute -bottom-40 -right-32 w-[460px] h-[460px] rounded-full bg-[#D4AF37] opacity-[0.22] blur-[120px]"></div>
-        <div class="pointer-events-none absolute top-1/3 right-1/4 w-[260px] h-[260px] rounded-full bg-[#149954] opacity-[0.12] blur-[100px]"></div>
+        <!-- Background photo -->
+        <img
+            src="/images/hero-building.jpg"
+            alt=""
+            class="absolute inset-0 w-full h-full object-cover"
+        />
 
-        <!-- Faint dot texture -->
-        <div class="pointer-events-none absolute inset-0" style="background-image: radial-gradient(#149954 0.6px, transparent 0.6px); background-size: 26px 26px; opacity: 0.05;"></div>
+        <!-- Brand tint overlay so the photo reads as background, not a distraction -->
+        <div class="absolute inset-0" style="background: linear-gradient(180deg, rgba(6,20,12,0.65) 0%, rgba(11,92,50,0.45) 45%, rgba(6,20,12,0.75) 100%);"></div>
+
+        <!-- Faint dot texture on top of the tint -->
+        <div class="pointer-events-none absolute inset-0" style="background-image: radial-gradient(#D4AF37 0.6px, transparent 0.6px); background-size: 26px 26px; opacity: 0.12;"></div>
 
         <!-- Flash Messages -->
         <flash-messages />
 
         <div class="relative w-full max-w-md">
 
-            <!-- Emblem with spinning two-tone ring -->
+            <!-- Emblem -->
             <div class="text-center mb-8">
                 <Link :href="route('home')" class="inline-block group relative">
-                    <div class="mx-auto w-24 h-24 flex items-center justify-center rounded-full bg-white border-2 border-[#149954] shadow-[0_8px_25px_-8px_rgba(20,153,84,0.4)] transition-transform duration-300 group-hover:scale-105">
+                    <div class="mx-auto w-24 h-24 flex items-center justify-center rounded-full bg-white border-2 border-[#D4AF37] shadow-[0_8px_25px_-8px_rgba(0,0,0,0.5)] transition-transform duration-300 group-hover:scale-105">
                         <Logo class="w-12 h-12 fill-[#149954]" />
                     </div>
                 </Link>
-                <h1 class="mt-4 text-3xl font-bold text-[#0E4429]">
+                <h1 class="mt-4 text-3xl font-bold text-white drop-shadow-md">
                     ចូលប្រើប្រាស់ប្រព័ន្ធ
                 </h1>
-                <p class="mt-2 text-[#149954]/70 text-sm">
+                <p class="mt-2 text-white/80 text-sm">
                     សូមបញ្ចូលគណនីរបស់អ្នកដើម្បីបន្តទៅកាន់ផ្ទាំងគ្រប់គ្រង
                 </p>
-                <p class="mt-2 text-[11px] tracking-[0.3em] uppercase text-[#B8901E] font-semibold">
+                <p class="mt-2 text-[11px] tracking-[0.3em] uppercase text-[#F1C74F] font-semibold">
                     E-Document System
                 </p>
             </div>
 
-            <!-- Login Card — single-color border -->
-            <div class="relative rounded-[28px] bg-white border-2 border-[#149954] shadow-[0_25px_60px_-15px_rgba(20,153,84,0.25)]">
+            <!-- Login Card — frosted glass so the photo shows through -->
+            <div class="relative rounded-[10px] bg-white/10 border-1 border-white/10 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.55)]">
                     <form @submit.prevent="login" class="px-8 pt-8 pb-8">
 
                         <!-- Email Field -->
                         <div class="mb-5">
                             <label class="block mb-2 text-sm font-semibold text-[#0E4429]">អ៊ីមែល</label>
-                            <text-input
-                                v-model="form.email"
-                                :error="form.errors.email"
-                                type="email"
-                                autofocus
-                                autocapitalize="off"
-                                placeholder="បញ្ចូលអ៊ីមែលរបស់អ្នក"
-                                class="w-full login-input"
-                                @input="clearError"
-                            />
+                            <div class="relative">
+                                <svg class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#ffffff]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                </svg>
+                                <text-input
+                                    v-model="form.email"
+                                    :error="form.errors.email"
+                                    type="email"
+                                    autofocus
+                                    autocapitalize="off"
+                                    placeholder="បញ្ចូលអ៊ីមែលរបស់អ្នក"
+                                    class="w-full login-input has-icon"
+                                    @input="clearError"
+                                />
+                            </div>
                         </div>
 
                         <!-- Password Field -->
                         <div class="mb-5">
                             <label class="block mb-2 text-sm font-semibold text-[#0E4429]">លេខសម្ងាត់</label>
-                            <text-input
-                                v-model="form.password"
-                                :error="form.errors.password"
-                                type="password"
-                                placeholder="បញ្ចូលលេខសម្ងាត់"
-                                class="w-full login-input"
-                                @input="clearError"
-                            />
+                            <div class="relative">
+                                <svg class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#ffffff]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                </svg>
+                                <text-input
+                                    v-model="form.password"
+                                    :error="form.errors.password"
+                                    type="password"
+                                    placeholder="បញ្ចូលលេខសម្ងាត់"
+                                    class="w-full login-input has-icon"
+                                    @input="clearError"
+                                />
+                            </div>
                         </div>
 
                         <!-- Remember Me & Forgot Password -->
@@ -76,7 +91,7 @@
                                     type="checkbox"
                                     class="w-4 h-4 text-[#149954] bg-white border-[#D4AF37]/50 rounded focus:ring-[#149954] focus:ring-2"
                                 />
-                                <span class="ml-2 text-[#0E4429]/70 group-hover:text-[#0E4429] transition-colors">
+                                <span class="ml-2 text-[#0E4429]/80 group-hover:text-[#0E4429] transition-colors">
                                     ចងចាំខ្ញុំ
                                 </span>
                             </label>
@@ -102,7 +117,7 @@
                             />
                         </div>
 
-                        <!-- Login Error Message (kept neutral to respect the 2-color rule) -->
+                        <!-- Login Error Message -->
                         <div v-if="loginError" class="mb-5 p-3 bg-[#0E4429]/5 border border-[#0E4429]/20 text-[#0E4429] rounded-xl text-sm">
                             <div class="flex items-center">
                                 <svg class="w-4 h-4 mr-2 shrink-0" fill="currentColor" viewBox="0 0 20 20">
@@ -128,7 +143,7 @@
 
                         <!-- Registration Link -->
                         <div v-if="enable_registration" class="mt-6 text-center">
-                            <p class="text-sm text-[#0E4429]/60">
+                            <p class="text-sm text-white/80">
                                 មិនទាន់មានគណនីមែនទេ?
                                 <Link
                                     :href="route('register')"
@@ -142,8 +157,8 @@
             </div>
 
             <!-- Demo Credentials Section -->
-            <div v-if="is_demo" class="mt-6 rounded-[28px] bg-white border-2 border-[#149954] overflow-hidden">
-                    <div class="px-6 py-4 border-b border-[#149954]/10">
+            <div v-if="is_demo" class="mt-6 rounded-[28px] bg-white/75 backdrop-blur-xl border-2 border-white/40 overflow-hidden shadow-[0_20px_50px_-15px_rgba(0,0,0,0.5)]">
+                    <div class="px-6 py-4 border-b border-white/30">
                         <h3 class="text-sm font-semibold text-[#0E4429] text-center">
                             ព័ត៌មានសម្គាល់សាកល្បង
                         </h3>
@@ -205,8 +220,8 @@
             </div>
 
             <!-- Footer -->
-            <p class="mt-8 text-center text-xs text-[#0E4429]/40">
-                មានសុវត្ថិភាព និងស្ថិតក្រោមការគ្រប់គ្រង
+            <p class="mt-8 text-center text-xs text-white/80">
+                គណៈកម្មការគ្រប់គ្រងល្បែងពាណិជ្ជកម្មកម្ពុជា អគ្គលេខាធិការដ្ឋាន
             </p>
         </div>
     </div>
@@ -312,11 +327,21 @@ export default {
 }
 
 .login-input :deep(.form-input) {
-    @apply border-[#149954]/20 focus:border-[#149954] focus:ring-[#149954] rounded-2xl shadow-sm transition-all duration-200 py-3;
+    @apply border-[#149954]/25 focus:border-[#149954] focus:ring-[#149954] rounded-2xl shadow-sm transition-all duration-200 py-3.5 text-[15px];
+    background-color: rgba(255, 255, 255, 0.451);
+}
+
+.login-input.has-icon :deep(.form-input) {
+    padding-left: 2.75rem;
 }
 
 .login-input :deep(.form-input):focus {
-    box-shadow: 0 0 0 3px rgba(20, 153, 84, 0.12);
+    box-shadow: 0 0 0 4px rgba(20, 153, 84, 0.14);
+    transform: translateY(-1px);
+}
+
+.login-input :deep(.form-input::placeholder) {
+    @apply text-[#ffffff];
 }
 
 .loading-button:disabled {
