@@ -16,59 +16,60 @@ class AppIntegrityValidator
 {
     public function handle(Request $request, Closure $next)
     {
-        if (! $this->isDatabaseConnected() || ! Schema::hasTable('settings')) {
-            return $next($request);
-        }
+        // if (! $this->isDatabaseConnected() || ! Schema::hasTable('settings')) {
+        //     return $next($request);
+        // }
 
-        if ($this->isLocalEnvironment() || app()->runningInConsole()) {
-            return $next($request);
-        }
+        // if ($this->isLocalEnvironment() || app()->runningInConsole()) {
+        //     return $next($request);
+        // }
 
-        $allowedRoutes = [
-            'license.show',
-            'license.activate',
-            'license.settings',
-            'license.deactivate',
-        ];
+        // $allowedRoutes = [
+        //     'license.show',
+        //     'license.activate',
+        //     'license.settings',
+        //     'license.deactivate',
+        // ];
 
-        if (in_array(Route::currentRouteName(), $allowedRoutes)) {
-            return $next($request);
-        }
+        // if (in_array(Route::currentRouteName(), $allowedRoutes)) {
+        //     return $next($request);
+        // }
 
-        $licenseKey = Cache::remember('license_key', now()->addHours(6), function () {
-            return Setting::where('slug', 'license_key')->value('value');
-        });
+        // $licenseKey = Cache::remember('license_key', now()->addHours(6), function () {
+        //     return Setting::where('slug', 'license_key')->value('value');
+        // });
 
-        if (empty($licenseKey)) {
-            return Redirect::route('license.show')->with('license_error', 'Your application is not activated. Please enter your purchase code.');
-        }
+        // if (empty($licenseKey)) {
+        //     return Redirect::route('license.show')->with('license_error', 'Your application is not activated. Please enter your purchase code.');
+        // }
 
-        $cacheKey = 'license_verification_status';
-        if (Cache::get($cacheKey)) {
-            return $next($request);
-        }
+        // $cacheKey = 'license_verification_status';
+        // if (Cache::get($cacheKey)) {
+        //     return $next($request);
+        // }
 
 
-        $licenseServerUrl = config('services.license.server_url');
-        $itemId = config('services.license.item_id');
-        $currentDomain = $request->getHttpHost();
+        // $licenseServerUrl = config('services.license.server_url');
+        // $itemId = config('services.license.item_id');
+        // $currentDomain = $request->getHttpHost();
 
-        $response = Http::post($licenseServerUrl . '/api/verify', [
-            'purchase_code' => $licenseKey,
-            'domain'        => $currentDomain,
-            'item_id'       => $itemId,
-        ]);
+        // $response = Http::post($licenseServerUrl . '/api/verify', [
+        //     'purchase_code' => $licenseKey,
+        //     'domain'        => $currentDomain,
+        //     'item_id'       => $itemId,
+        // ]);
 
-        if ($response->successful() && $response->json('valid') === true) {
-            Cache::put($cacheKey, true, now()->addDay());
-            return $next($request);
-        }
+        // if ($response->successful() && $response->json('valid') === true) {
+        //     Cache::put($cacheKey, true, now()->addDay());
+        //     return $next($request);
+        // }
 
-        $errorMessage = $response->json('message', 'License verification failed. Please check your settings.');
-        Cache::forget('license_key');
-        Cache::forget($cacheKey);
+        // $errorMessage = $response->json('message', 'License verification failed. Please check your settings.');
+        // Cache::forget('license_key');
+        // Cache::forget($cacheKey);
 
-        return Redirect::route('license.settings')->with('error', $errorMessage);
+        // return Redirect::route('license.settings')->with('error', $errorMessage);
+        return $next($request);
     }
 
     private function isDatabaseConnected(): bool
