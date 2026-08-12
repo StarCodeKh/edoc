@@ -48,7 +48,7 @@
                         <div class="mb-5">
                             <label class="block mb-2 text-sm font-semibold text-[#ffffff]">អ៊ីមែល</label>
                             <div class="relative">
-                                <svg class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#ffffff]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="pointer-events-none absolute left-4 top-[26px] -translate-y-1/2 w-5 h-5 text-[#ffffff]" style="filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6));" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                                 </svg>
                                 <text-input
@@ -68,7 +68,7 @@
                         <div class="mb-5">
                             <label class="block mb-2 text-sm font-semibold text-[#ffffff]">លេខសម្ងាត់</label>
                             <div class="relative">
-                                <svg class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#ffffff]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="pointer-events-none absolute left-4 top-[26px] -translate-y-1/2 w-5 h-5 text-[#ffffff]" style="filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6));" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                                 </svg>
                                 <text-input
@@ -91,7 +91,7 @@
                                     type="checkbox"
                                     class="w-4 h-4 text-[#149954] bg-white border-[#D4AF37]/50 rounded focus:ring-[#149954] focus:ring-2"
                                 />
-                                <span class="ml-2 text-[#ffffff] group-hover:text-[#ffffff] transition-colors">
+                                <span class="ml-2 text-[#ffffff] group-hover:text-[#0E4429] transition-colors">
                                     ចងចាំខ្ញុំ
                                 </span>
                             </label>
@@ -129,16 +129,22 @@
 
                         <!-- Login Button -->
                         <loading-button
-                            :disabled="(disable_login_button && site_key) || isLoggingIn"
-                            :loading="isLoggingIn"
+                            :disabled="(disable_login_button && site_key) || form.processing"
+                            :loading="form.processing"
                             class="w-full bg-[#149954] hover:bg-[#0E7A42] text-white text-center font-semibold py-3.5 px-4 rounded-2xl transition-all duration-200 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-[#149954] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-[0_15px_35px_-10px_rgba(20,153,84,0.5)] border-2 border-[#149954]"
                             type="submit"
                         >
-                            <span v-if="!isLoggingIn" class="w-full inline-flex items-center justify-center gap-2">
+                            <span v-if="!form.processing" class="w-full inline-flex items-center justify-center gap-2">
                                 <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
                                 ចូលប្រើប្រាស់
                             </span>
-                            <span v-else class="w-full inline-flex items-center justify-center">កំពុងចូល...</span>
+                            <span v-else class="w-full inline-flex items-center justify-center gap-2">
+                                <svg class="w-4 h-4 shrink-0 animate-spin" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+                                    <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                </svg>
+                                កំពុងចូល...
+                            </span>
                         </loading-button>
 
                         <!-- Registration Link -->
@@ -228,128 +234,127 @@
 </template>
 
 <script>
-import Logo from '@/Shared/Logo.vue'
-import TextInput from '@/Shared/TextInput.vue'
-import LoadingButton from '@/Shared/LoadingButton.vue'
-import { Head, Link } from '@inertiajs/vue3'
-import FlashMessages from '@/Shared/FlashMessages.vue'
-import vueRecaptcha from 'vue3-recaptcha2'
-import { Crown, Shield, User, Users } from 'lucide-vue-next'
+    import Logo from '@/Shared/Logo.vue'
+    import TextInput from '@/Shared/TextInput.vue'
+    import LoadingButton from '@/Shared/LoadingButton.vue'
+    import { Head, Link } from '@inertiajs/vue3'
+    import FlashMessages from '@/Shared/FlashMessages.vue'
+    import vueRecaptcha from 'vue3-recaptcha2'
+    import { Crown, Shield, User, Users } from 'lucide-vue-next'
 
-export default {
-    metaInfo: { title: 'ចូលប្រើប្រាស់ - E-Document System' },
-    components: {
-        FlashMessages,
-        LoadingButton,
-        Logo,
-        TextInput,
-        Head,
-        Link,
-        vueRecaptcha,
-        Crown,
-        Shield,
-        User,
-        Users,
-    },
-    props: {
-        is_demo: Number,
-        site_key: String,
-        enable_registration: {
-            type: Boolean,
-            default: true
-        }
-    },
-    data() {
-        return {
-            loadingTimeout: 30000,
-            disable_login_button: true,
-            isLoggingIn: false,
-            loginError: null,
-            form: this.$inertia.form({
-                email: '',
-                password: '',
-                remember: false,
-            }),
-            demoCredentials: {
-                admin: {
-                    label: 'អ្នកគ្រប់គ្រង',
-                    email: 'john.due.helo@mail.com',
-                    icon: Crown
-                },
-                normal: {
-                    label: 'អ្នកប្រើទូទៅ',
-                    email: 'sabbir@example.com',
-                    icon: Shield
-                },
+    export default {
+        metaInfo: { title: 'ចូលប្រើប្រាស់ - E-Document System' },
+        components: {
+            FlashMessages,
+            LoadingButton,
+            Logo,
+            TextInput,
+            Head,
+            Link,
+            vueRecaptcha,
+            Crown,
+            Shield,
+            User,
+            Users,
+        },
+        props: {
+            is_demo: Number,
+            site_key: String,
+            enable_registration: {
+                type: Boolean,
+                default: true
             }
-        }
-    },
-    methods: {
-        login() {
-            this.form.post(this.route('login.store'))
         },
-        recaptchaVerified(response) {
-            this.disable_login_button = false
+        data() {
+            return {
+                loadingTimeout: 30000,
+                disable_login_button: true,
+                loginError: null,
+                form: this.$inertia.form({
+                    email: '',
+                    password: '',
+                    remember: false,
+                }),
+                demoCredentials: {
+                    admin: {
+                        label: 'អ្នកគ្រប់គ្រង',
+                        email: 'john.due.helo@mail.com',
+                        icon: Crown
+                    },
+                    normal: {
+                        label: 'អ្នកប្រើទូទៅ',
+                        email: 'sabbir@example.com',
+                        icon: Shield
+                    },
+                }
+            }
         },
-        recaptchaExpired() {
-            this.$refs.vueRecaptcha.reset();
-        },
-        recaptchaFailed() {
-            // Handle recaptcha failure
-        },
-        recaptchaError(reason) {
-            console.log(reason)
-        },
-        clearError() {
-            this.loginError = null
-        },
-        autofillLogin(e, role, login = false) {
-            e.preventDefault()
-            const roleEmails = {
-                'admin': {email: 'john.due.helo@mail.com', password: 's6J5WQR9ZlpvG7'},
-                'normal': {email: 'sabbir@example.com', password: 'SY7Ta85KTV2e0n'}
-            };
-            this.form.email = roleEmails[role]['email']
-            this.form.password = roleEmails[role]['password']
-            if (login) {
-                this.login();
+        methods: {
+            login() {
+                this.form.post(this.route('login.store'))
+            },
+            recaptchaVerified(response) {
+                this.disable_login_button = false
+            },
+            recaptchaExpired() {
+                this.$refs.vueRecaptcha.reset();
+            },
+            recaptchaFailed() {
+                // Handle recaptcha failure
+            },
+            recaptchaError(reason) {
+                console.log(reason)
+            },
+            clearError() {
+                this.loginError = null
+            },
+            autofillLogin(e, role, login = false) {
+                e.preventDefault()
+                const roleEmails = {
+                    'admin': {email: 'john.due.helo@mail.com', password: 's6J5WQR9ZlpvG7'},
+                    'normal': {email: 'sabbir@example.com', password: 'SY7Ta85KTV2e0n'}
+                };
+                this.form.email = roleEmails[role]['email']
+                this.form.password = roleEmails[role]['password']
+                if (login) {
+                    this.login();
+                }
             }
         }
     }
-}
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Khmer:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Khmer:wght@400;500;600;700&display=swap');
 
-* {
-    font-family: 'Noto Sans Khmer', 'Kantumruy Pro', ui-sans-serif, sans-serif;
-}
+    * {
+        font-family: 'Noto Sans Khmer', 'Kantumruy Pro', ui-sans-serif, sans-serif;
+    }
 
-.login-input :deep(.form-input) {
-    @apply border-[#149954]/25 focus:border-[#149954] focus:ring-[#149954] rounded-2xl shadow-sm transition-all duration-200 py-3.5 text-[15px];
-    background-color: rgba(255, 255, 255, 0.451);
-}
+    .login-input :deep(.form-input) {
+        @apply border-[#149954]/25 focus:border-[#149954] focus:ring-[#149954] rounded-2xl shadow-sm transition-all duration-200 py-3.5 text-[15px];
+        background-color: rgba(255, 255, 255, 0.451);
+    }
 
-.login-input.has-icon :deep(.form-input) {
-    padding-left: 2.75rem;
-}
+    .login-input.has-icon :deep(.form-input) {
+        padding-left: 2.75rem;
+    }
 
-.login-input :deep(.form-input):focus {
-    box-shadow: 0 0 0 4px rgba(20, 153, 84, 0.14);
-    transform: translateY(-1px);
-}
+    .login-input :deep(.form-input):focus {
+        box-shadow: 0 0 0 4px rgba(20, 153, 84, 0.14);
+        transform: translateY(-1px);
+    }
 
-.login-input :deep(.form-input::placeholder) {
-    @apply text-[#ffffff];
-}
+    .login-input :deep(.form-input::placeholder) {
+        @apply text-[#ffffff];
+    }
 
-.loading-button:disabled {
-    @apply cursor-not-allowed;
-}
+    .loading-button:disabled {
+        @apply cursor-not-allowed;
+    }
 
-input:focus,
-button:focus {
-    outline: none;
-}
+    input:focus,
+    button:focus {
+        outline: none;
+    }
 </style>
