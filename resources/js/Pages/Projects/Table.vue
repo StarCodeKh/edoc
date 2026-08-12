@@ -5,62 +5,98 @@
             <board-view-menu :project="project" @filter-toggle="open_filter = !open_filter" @menu-toggle="show_right_menu = !show_right_menu" @fClear="reset()" :filters="filters" view="table" />
             <board-filter :project="project" @board-filter="open_filter = false" :filters="filters" v-if="open_filter" @do-filter="doFilter" options="user,due,label"  />
             <div class="flex flex-col task__table overflow-y-auto h-full">
-                <div class="inline-block min-w-full h-full py-4 align-middle md:px-2 lg:px-4">
+                <div class="inline-block min-w-full h-full py-4 align-middle md:px-3 lg:px-4">
                     <div class="table__view">
-                        <div class="flex flex-wrap gap-2 md:gap-2 py-2">
+
+                        <!-- Status filter buttons — one per board list, so this stays
+                             in sync with whatever lists/stages this project actually
+                             has instead of a hardcoded set of labels. The first list
+                             is highlighted green (matches "Approved" being first in
+                             most approval workflows); the rest are blue. Clicking a
+                             button filters the table to that status; clicking the
+                             active one again clears the filter. -->
+                        <div class="flex flex-wrap gap-2 md:gap-3 mb-5">
                             <button
                                 v-for="(listItem, idx) in lists"
                                 :key="'status_'+listItem.id"
                                 type="button"
                                 @click="selectStatus(listItem.id)"
-                                class="doc-status-btn px-4 py-2 text-xs md:px-6 md:py-2.5 md:text-sm rounded-lg text-white font-semibold shadow-sm hover:shadow-md transition-all duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0"
-                                :class="selectedStatus && selectedStatus !== listItem.id ? 'opacity-45 hover:opacity-80' : 'opacity-100 doc-status-btn--active'"
-                                :style="{ backgroundColor: idx === 0 ? '#10b981' : '#3b82f6' }"
+                                class="doc-status-btn px-4 py-2 text-xs md:px-6 md:py-2.5 md:text-sm rounded-lg border font-semibold shadow-sm hover:shadow-md transition-all duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0"
+                                :class="{ 'doc-status-btn--active': !selectedStatus || selectedStatus === listItem.id }"
+                                :style="statusButtonStyle(listItem.id, idx)"
                             >
                                 {{ listItem.title }}
                             </button>
                         </div>
 
+                        <!-- Card-style document table: a soft rounded header bar plus
+                             individually-rounded, gently-hoverable row "cards" rather
+                             than a flat bordered table — matches the reference design
+                             and gives a smoother, more modern feel. On small screens
+                             the grid collapses into stacked label/value cards instead
+                             of squeezing 6 columns into a narrow viewport (see the
+                             .doc-row rules in <style> for the breakpoint). -->
                         <div class="doc-table rounded-xl overflow-hidden shadow-sm">
                             <div class="doc-row doc-row--head hidden md:grid gap-3 px-4 py-3 text-sm font-semibold text-white">
                                 <div></div>
-                                <div>{{ $t('ល.រ.') }}</div>
-                                <div>{{ $t('លេខកូដឯកសារ') }}</div>
-                                <div>{{ $t('កម្មវត្ថុ') }}</div>
-                                <div>{{ $t('កាលបរិច្ឆេទចូល') }}</div>
-                                <div>{{ $t('ស្ថានភាព') }}</div>
-                                <div>{{ $t('បាកូដ') }}</div>
+                                <div>{{ $t('No.') }}</div>
+                                <div>{{ $t('Document Code') }}</div>
+                                <div>{{ $t('Subject') }}</div>
+                                <div>{{ $t('Date Entered') }}</div>
+                                <div>{{ $t('Status') }}</div>
+                                <div>{{ $t('Barcode') }}</div>
                             </div>
 
+                            <!-- Drag-and-drop reordering, restored from the original
+                                 board table (the ≡ handle icon). Reordering only
+                                 makes unambiguous sense within the currently visible
+                                 (filtered) set, so the handle drives taskRows and
+                                 afterDrop() persists the new order via the same
+                                 task.update.order endpoint the board view used. -->
                             <draggable v-model="taskRows" tag="div" class="doc-rows flex flex-col gap-2 p-2" handle=".doc-drag-handle" item-key="id" @end="afterDrop">
                                 <template #item="{ element, index }">
-                                    <div class="doc-row md:grid gap-1.5 md:gap-3 md:items-center px-4 py-3 md:py-3 rounded-lg bg-slate-200/70 dark:bg-slate-700/40 hover:bg-slate-200 dark:hover:bg-slate-700/70 hover:shadow-md transition-all duration-200 ease-out md:hover:-translate-y-0.5">
+                                    <div class="doc-row md:grid gap-1.5 md:gap-3 md:items-center px-4 py-3 md:py-3.5 rounded-lg bg-slate-200/70 dark:bg-slate-700/40 hover:bg-slate-200 dark:hover:bg-slate-700/70 hover:shadow-md transition-all duration-200 ease-out md:hover:-translate-y-0.5">
                                         <div class="doc-drag-handle hidden md:flex items-center justify-center cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600">
                                             <icon class="w-5 h-5" name="drag" />
                                         </div>
-                                        <div class="text-sm font-medium" :data-label="$t('ល.រ.')">
+                                        <div class="text-sm font-medium" :data-label="$t('No.')">
                                             #{{ index + 1 }}
                                         </div>
-                                        
-                                        <div class="text-sm font-medium" :data-label="$t('លេខកូដឯកសារ')">
-                                            <span class="cursor-pointer hover:text-blue-600 underline-offset-2 transition-colors" @click="taskDetailsPopup(element.slug || element.id)">{{ documentCode(element) }}</span>
+                                        <div class="text-sm font-medium" :data-label="$t('Document Code')">
+                                            <span class="cursor-pointer hover:text-blue-600 hover:underline underline-offset-2 transition-colors" @click="taskDetailsPopup(element.slug || element.id)">{{ documentCode(element) }}</span>
+                                            <div class="flex items-center gap-1.5 mt-1 flex-wrap">
+                                                <span v-if="element.description" class="inline-flex items-center text-gray-500 dark:text-gray-400" :aria-label="$t('This task has a description.')">
+                                                    <icon class="w-3.5 h-3.5" name="details" />
+                                                </span>
+                                                <span v-if="element.comments_count" class="inline-flex items-center gap-1 text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-full px-2 py-0.5" :aria-label="$t('Comments')">
+                                                    <icon class="w-3.5 h-3.5" name="comment" />{{ element.comments_count }}
+                                                </span>
+                                                <span v-if="element.attachments_count" class="inline-flex items-center gap-1 text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-full px-2 py-0.5" :aria-label="$t('Attachments')">
+                                                    <icon class="w-3.5 h-3.5" name="attachment" />{{ element.attachments_count }}
+                                                </span>
+                                                <span v-if="element.checklists_count" class="inline-flex items-center gap-1 text-xs font-medium rounded-full px-2 py-0.5" :class="element.checklist_done_count === element.checklists_count ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300' : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300'" :aria-label="$t('Checklist items')">
+                                                    <icon class="w-3.5 h-3.5" name="checklist" />{{ element.checklist_done_count + '/' + element.checklists_count }}
+                                                </span>
+                                            </div>
                                         </div>
-                                        <div class="text-sm" :data-label="$t('កម្មវត្ថុ')">
-                                            <span class="cursor-pointer hover:text-blue-600 underline-offset-2 transition-colors" @click="taskDetailsPopup(element.slug || element.id)">{{ element.title }}</span>
+                                        <div class="text-sm" :data-label="$t('Subject')">
+                                            <span class="cursor-pointer hover:text-blue-600 hover:underline underline-offset-2 transition-colors" @click="taskDetailsPopup(element.slug || element.id)">{{ element.title }}</span>
                                             <span v-if="element.attachments_count" class="inline-flex items-center gap-1 text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-full px-2 py-0.5 ml-1.5 align-middle">
                                                 <icon class="w-3.5 h-3.5" name="attachment" />{{ element.attachments_count }}
                                             </span>
                                         </div>
-                                        <div class="text-sm" :data-label="$t('កាលបរិច្ឆេទចូល')">
+                                        <div class="text-sm" :data-label="$t('Date Entered')">
                                             {{ element.created_at ? moment(element.created_at).format('DD MMM YYYY') : '' }}
                                         </div>
-                                        <div :data-label="$t('ស្ថានភាព')">
+                                        <div :data-label="$t('Status')">
                                             <span class="inline-block px-3 py-1 rounded-full text-xs font-medium text-white shadow-sm" :style="{ backgroundColor: statusColorFor(element) }">
                                                 {{ element.list ? element.list.title : '' }}
                                             </span>
                                         </div>
-                                        <div :data-label="$t('បាកូដ')">
-                                            <div class="doc-barcode bg-white rounded px-2 py-1 shadow-inner w-full max-w-[180px]">
+                                        <div :data-label="$t('Barcode')">
+                                            <!-- Rendered client-side via JsBarcode in mounted/updated
+                                                 (see renderBarcodes()) — needs `npm install jsbarcode`. -->
+                                            <div class="doc-barcode bg-white rounded px-2 py-1.5 shadow-inner w-full max-w-[180px]">
                                                 <svg :ref="setBarcodeRef(element.id)" :data-barcode-value="documentCode(element)"></svg>
                                             </div>
                                         </div>
@@ -91,7 +127,6 @@
                             </ul>
                         </div>
                         <!-- List Popup Board -->
-
                         <!-- List Popup Assignee -->
                         <div class="absolute flex w-[300px] z-10 text-sm flex-col bg-white px-4 py-4 rounded shadow" :style="{top: selected.top, left: selected.left}" v-if="showAssigneeBox">
                             <h4 class="text-center mb-3 font-bold">Assignee</h4>
@@ -106,14 +141,13 @@
                                         <img v-if="userObject.user.photo_path" :aria-label="userObject.user.name" :alt="userObject.user.name" class="w-6 h-6 rounded-full" :src="userObject.user.photo_path" />
                                         <img v-else :aria-label="userObject.user.name" :alt="userObject.user.name" class="w-6 h-6 rounded-full" src="/images/user.svg" />
                                         <span data-a="" class="p-1" type="button" :tabindex="user_index">
-                                            {{ userObject.user.name }}
-                                        </span>
+                                                                  {{ userObject.user.name }}
+                                                              </span>
                                     </label>
                                 </li>
                             </ul>
                         </div>
                         <!-- List Popup Assignee -->
-
                         <!-- Label Search -->
                         <div class="absolute flex w-[300px] z-10 text-sm flex-col bg-white px-4 py-4 rounded shadow" :style="{top: selected.top, left: selected.left}" v-if="showLabelBox">
                             <h4 class="text-center mb-3 font-bold">Labels</h4>
@@ -161,6 +195,7 @@
     import RightMenu from "@/Shared/RightMenu.vue";
     import axios from 'axios'
     import draggable from 'vuedraggable'
+
     import JsBarcode from 'jsbarcode';
 
 
@@ -211,6 +246,8 @@
                 selectedStatus: null,
                 barcodeRefs: {},
                 taskRows: [],
+
+                statusPalette: ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4', '#ec4899', '#6366f1'],
                 form: {
                     user: this.filters.user,
                     due: this.filters.due,
@@ -300,10 +337,43 @@
                 this.saveOrder(payload);
             },
 
+            statusColor(idx){
+                return this.statusPalette[((idx % this.statusPalette.length) + this.statusPalette.length) % this.statusPalette.length];
+            },
+
             statusColorFor(element){
-                if (!this.lists || !element.list_id) return '#3b82f6';
+                if (!this.lists || !element.list_id) return this.statusPalette[0];
                 const idx = this.lists.findIndex(l => l.id === element.list_id);
-                return idx === 0 ? '#10b981' : '#3b82f6';
+                return this.statusColor(idx === -1 ? 0 : idx);
+            },
+
+            hexToRgba(hex, alpha){
+                const clean = (hex || '').replace('#', '');
+                const full = clean.length === 3 ? clean.split('').map(c => c + c).join('') : clean;
+                const num = parseInt(full, 16) || 0;
+                const r = (num >> 16) & 255;
+                const g = (num >> 8) & 255;
+                const b = num & 255;
+                return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+            },
+
+            statusButtonStyle(listId, idx){
+                const color = this.statusColor(idx);
+                const isActive = !this.selectedStatus || this.selectedStatus === listId;
+                if (isActive) {
+                    return {
+                        backgroundColor: color,
+                        borderColor: color,
+                        color: '#ffffff',
+                        boxShadow: `0 4px 14px -4px ${this.hexToRgba(color, 0.55)}`,
+                    };
+                }
+                return {
+                    backgroundColor: this.hexToRgba(color, 0.12),
+                    borderColor: this.hexToRgba(color, 0.25),
+                    color: color,
+                    boxShadow: 'none',
+                };
             },
 
             documentCode(element){
@@ -427,8 +497,8 @@
                 for (const list of this.lists) {
                     const task = list.tasks.find(t => t.id === taskId)
                     if (task) {
-                        Object.assign(task, newData)
-                        return task
+                        Object.assign(task, newData)  // merge updates
+                        return task                   // return updated task
                     }
                 }
                 return null
@@ -495,15 +565,6 @@
 </script>
 
 <style scoped>
-
-    @import url('https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;600;700&display=swap');
-
-    .doc-table,
-    .doc-row {
-        font-family: 'Kantumruy Pro', 'KHMER OS Battambang', 'Segoe UI', system-ui, sans-serif;
-        line-height: 1.6;
-    }
-
     @media (min-width: 768px) {
         .doc-row {
             grid-template-columns: 4% 6% 16% 26% 14% 14% 20%;
@@ -542,6 +603,7 @@
         background: transparent;
     }
 
+    /* Subtle stagger-in on first render so the list doesn't just pop in flat. */
     .doc-rows > .doc-row {
         animation: doc-row-in 0.25s ease-out backwards;
     }

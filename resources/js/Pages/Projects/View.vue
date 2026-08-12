@@ -59,7 +59,7 @@
                               </button>
                               <icon v-if="element.timer" name="blink" class="w-2 h-2 absolute top-2 right-2 z-20" />
                               <div v-if="element.cover" @click="taskDetailsPopup(element.slug || element.id)" class="t__cover" :style="{backgroundImage: 'url('+element.cover.path+')', height: element.cover.width?element.cover.height/(element.cover.width/246)+'px':'auto'}"></div>
-                              
+
                               <div class="t__details" @click="taskDetailsPopup(element.slug || element.id)">
                                   <div class="task__labels" v-if="element.task_labels.length">
                                       <button @click="visibleLabel($event)" class="color" v-for="(la, l_index) in element.task_labels" :style="{backgroundColor: la.label.color}" :aria-label="la.label.name">{{ la.label.name }}</button>
@@ -72,12 +72,19 @@
                                       <h4 class="t__title">{{ element.title }}</h4>
                                   </div>
 
-                                  <div 
-                                      v-if="element.task_code" 
-                                      @click.stop="openReceiptModal(element, $event)" 
-                                      class="__item text-xs font-mono text-gray-500 font-medium hover:text-indigo-600 cursor-pointer"
+                                  <div
+                                      v-if="element.task_code"
+                                      @click.stop="openReceiptModal(element, $event)"
+                                      class="doc-track-chip"
+                                      :title="$t('Print tracking document')"
                                   >
-                                      {{ element.task_code }}
+                                      <span class="doc-track-chip__icon">
+                                          <svg viewBox="0 0 24 24" fill="none" class="w-3.5 h-3.5"><path d="M7 8.5V3.5h10v5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><rect x="4" y="8.5" width="16" height="7.5" rx="1.4" stroke="currentColor" stroke-width="1.6"/><rect x="7" y="13.5" width="10" height="7" rx="0.6" stroke="currentColor" stroke-width="1.6"/><circle cx="17" cy="11" r="0.9" fill="currentColor"/></svg>
+                                      </span>
+                                      <span class="doc-track-chip__text">
+                                          <span class="doc-track-chip__label">{{ $t('Tracking Document') }}</span>
+                                          <span class="doc-track-chip__code">{{ element.task_code }}</span>
+                                      </span>
                                   </div>
 
                                   <div class="card__footer" @click="taskDetailsPopup(element.slug || element.id)">
@@ -108,7 +115,7 @@
                                       </span>
                                   </div>
                               </div>
-                              
+
                           </div>
                       </template>
                       <template #footer>
@@ -154,14 +161,14 @@
               <div class="flex-shrink-0 w-6"></div>
           </div>
       </div>
-      
+
       <!-- Modals at the root level -->
       <task-details v-if="taskDetailsOpen" :id="taskDetailsId" view="board" :isPopup="td_pop" @closeModal="closeDetails()" />
-      
-      <DocumentReceipt 
-          v-if="receiptModalOpen" 
-          :task="selectedReceiptTask" 
-          @close="closeReceiptModal" 
+
+      <DocumentReceipt
+          v-if="receiptModalOpen"
+          :task="selectedReceiptTask"
+          @close="closeReceiptModal"
       />
 
       <right-menu v-if="show_right_menu" :project="project" @menu-toggle="show_right_menu = !show_right_menu" @openTask="(id)=>taskDetailsPopup(id)" />
@@ -188,11 +195,11 @@
     export default {
     metaInfo: { title: 'Dashboard' },
         components: {
-            RightMenu, 
-            BoardFilter, 
+            RightMenu,
+            BoardFilter,
             Head,
-            Icon, 
-            Link, 
+            Icon,
+            Link,
             draggable,
             TaskDetails,
             BoardViewMenu,
@@ -222,7 +229,7 @@
                 new_list_open: false,
                 td_pop: false,
                 showLabelName: false,
-                
+
                 // State for Document Receipt Modal
                 receiptModalOpen: false,
                 selectedReceiptTask: null,
@@ -501,3 +508,65 @@
         },
     }
 </script>
+
+<style scoped>
+    .doc-track-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin: 4px 0;
+        padding: 4px 8px;
+        border-radius: 6px;
+        background: #eef2ff;
+        border: 1px solid #e0e7ff;
+        cursor: pointer;
+        transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+        width: fit-content;
+    }
+
+    .doc-track-chip:hover {
+        background: #e0e7ff;
+        border-color: #c7d2fe;
+        transform: translateY(-1px);
+    }
+
+    .doc-track-chip__icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #4f46e5;
+        flex-shrink: 0;
+    }
+
+    .doc-track-chip__text {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.15;
+    }
+
+    .doc-track-chip__label {
+        font-size: 8.5px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #6366f1;
+    }
+
+    .doc-track-chip__code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 11px;
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .dark .doc-track-chip {
+        background: rgba(99, 102, 241, 0.12);
+        border-color: rgba(99, 102, 241, 0.25);
+    }
+    .dark .doc-track-chip:hover {
+        background: rgba(99, 102, 241, 0.2);
+    }
+    .dark .doc-track-chip__code {
+        color: #e5e7eb;
+    }
+</style>

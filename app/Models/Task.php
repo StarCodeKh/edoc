@@ -33,7 +33,7 @@ class Task extends Model
     private function generateTaskCode()
     {
         $prefix = "CGMC-";
-        
+
         // Get the highest current numeric ID/count to calculate the next sequence number
         $latestTask = static::latest('id')->first();
         $nextNumber = $latestTask ? $latestTask->id + 1 : 1;
@@ -53,12 +53,15 @@ class Task extends Model
         return $code;
     }
 
-    /**
-     * Generate QR Code containing TITLE + TASK_CODE
-     */
     private function generateQrCode($title, $taskCode)
     {
-        $qrData = "Code: {$taskCode}\nTitle: {$title}";
+        $taskUid = $this->slug ?: ($this->id ?: $taskCode);
+
+        $qrData = route('projects.table.with.task', [
+            'projectUid' => $this->project_id,
+            'taskUid'    => $taskUid,
+        ]);
+
         $svg = QrCode::format('svg')->size(200)->generate($qrData);
 
         return 'data:image/svg+xml;base64,' . base64_encode($svg);
@@ -301,7 +304,7 @@ class Task extends Model
         })->when($filters['due'] ?? null, function ($query, $due) {
             $due_dates = explode(',', $due);
             $hasConditions = false;
-            
+
             if(in_array('over', $due_dates)){
                 $query->where(function($q) {
                     $q->where('is_done', 0)
