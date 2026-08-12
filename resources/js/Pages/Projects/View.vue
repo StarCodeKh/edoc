@@ -515,21 +515,6 @@
         display: flex;
         flex-direction: column;
     }
-    :deep(.add_new) {
-        position: sticky;
-        bottom: 0;
-        z-index: 5;
-        background: #f4f5f7;
-        margin-top: auto;
-    }
-    .dark :deep(.add_new) {
-        background: #1f2937;
-    }
-
-    /* Kanban card's document tracking chip: a small pill combining a
-       print icon, an uppercase "Tracking Document" label, and the actual
-       code — replaces the old plain gray text so it reads as a proper
-       printable document reference rather than an unlabeled code. */
     .doc-track-chip {
         display: inline-flex;
         align-items: center;
