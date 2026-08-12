@@ -47,8 +47,8 @@
                         <!-- Email Field -->
                         <div class="mb-5">
                             <label class="block mb-2 text-sm font-semibold text-[#ffffff]">អ៊ីមែល</label>
-                            <div class="relative">
-                                <svg class="pointer-events-none absolute left-4 top-[26px] -translate-y-1/2 w-5 h-5 text-[#ffffff]" style="filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6));" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="grid">
+                                <svg class="col-start-1 row-start-1 self-center justify-self-start ml-4 z-10 pointer-events-none w-5 h-5 text-[#ffffff]" style="filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6));" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                                 </svg>
                                 <text-input
@@ -58,7 +58,7 @@
                                     autofocus
                                     autocapitalize="off"
                                     placeholder="បញ្ចូលអ៊ីមែលរបស់អ្នក"
-                                    class="w-full login-input has-icon"
+                                    class="col-start-1 row-start-1 w-full login-input has-icon"
                                     @input="clearError"
                                 />
                             </div>
@@ -67,8 +67,8 @@
                         <!-- Password Field -->
                         <div class="mb-5">
                             <label class="block mb-2 text-sm font-semibold text-[#ffffff]">លេខសម្ងាត់</label>
-                            <div class="relative">
-                                <svg class="pointer-events-none absolute left-4 top-[26px] -translate-y-1/2 w-5 h-5 text-[#ffffff]" style="filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6));" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="grid">
+                                <svg class="col-start-1 row-start-1 self-center justify-self-start ml-4 z-10 pointer-events-none w-5 h-5 text-[#ffffff]" style="filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6));" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                                 </svg>
                                 <text-input
@@ -76,7 +76,7 @@
                                     :error="form.errors.password"
                                     type="password"
                                     placeholder="បញ្ចូលលេខសម្ងាត់"
-                                    class="w-full login-input has-icon"
+                                    class="col-start-1 row-start-1 w-full login-input has-icon"
                                     @input="clearError"
                                 />
                             </div>
