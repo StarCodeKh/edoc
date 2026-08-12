@@ -83,7 +83,12 @@ class Task extends Model
      */
     private function generateUniqueSlug($title, $ignoreId = null)
     {
-        $slug = Str::slug($title);
+        $slug = Str::slug($title, '-', null);
+
+        if ($slug === '') {
+            $slug = 'task';
+        }
+
         $original = $slug;
         $i = 1;
 
