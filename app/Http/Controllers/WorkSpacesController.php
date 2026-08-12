@@ -25,6 +25,7 @@ use Inertia\Inertia;
 
 class WorkSpacesController extends Controller
 {
+    //
     public function index(){
         $user_id = auth()->id();
         $workspaceIds = Workspace::where('user_id', $user_id)->orWhereHas('member')->pluck('id');
@@ -46,13 +47,18 @@ class WorkSpacesController extends Controller
     }
     public function jsonAll(){
         $user_id = auth()->id();
+        // withCount('projects') adds a `projects_count` field to each
+        // workspace so the "My Workspaces" dropdown (TopWorkspaceMenu.vue)
+        // can show a total-project badge per workspace.
         $workSpaces = Workspace::where('user_id', $user_id)->orWhereHas('member')->with('member')->withCount('projects')->orderBy('name')->get()->toArray();
         return response()->json($workSpaces);
     }
 
     public function viewMainDashboard($uid, Request $request){
         $requests = $request->all();
-        $workspace = Workspace::where('id', $uid)->orWhere('slug', $uid)->whereHas('member')->with('member')->first();
+        // withCount('projects') adds a `projects_count` field to the workspace
+        // object so the Main Dashboard can show a total-projects badge.
+        $workspace = Workspace::where('id', $uid)->orWhere('slug', $uid)->whereHas('member')->with('member')->withCount('projects')->first();
         if(empty($workspace)){
             return abort(404);
         }
