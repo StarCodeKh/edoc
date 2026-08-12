@@ -220,31 +220,31 @@ export default {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Khmer:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Khmer:wght@400;500;600;700&display=swap');
 
-* {
-    font-family: 'Noto Sans Khmer', 'Kantumruy Pro', ui-sans-serif, sans-serif;
-}
+    * {
+        font-family: 'Noto Sans Khmer', 'Kantumruy Pro', ui-sans-serif, sans-serif;
+    }
 
-.login-input :deep(.form-input) {
-    @apply border-[#149954]/25 focus:border-[#149954] focus:ring-[#149954] rounded-2xl shadow-sm transition-all duration-200 py-3;
-    background-color: rgba(255, 255, 255, 0.451);
-}
+    .login-input :deep(.form-input) {
+        @apply border-[#149954]/25 focus:border-[#149954] focus:ring-[#149954] rounded-2xl shadow-sm transition-all duration-200 py-3;
+        background-color: rgba(255, 255, 255, 0.451);
+    }
 
-.login-input :deep(.form-input):focus {
-    box-shadow: 0 0 0 3px rgba(20, 153, 84, 0.12);
-}
+    .login-input :deep(.form-input):focus {
+        box-shadow: 0 0 0 3px rgba(20, 153, 84, 0.12);
+    }
 
-.login-input :deep(.form-label) {
-    @apply text-[#0E4429] font-semibold text-sm;
-}
+    .login-input :deep(.form-label) {
+        @apply text-[#ffffff] font-semibold text-sm;
+    }
 
-.loading-button:disabled {
-    @apply cursor-not-allowed;
-}
+    .loading-button:disabled {
+        @apply cursor-not-allowed;
+    }
 
-input:focus,
-button:focus {
-    outline: none;
-}
+    input:focus,
+    button:focus {
+        outline: none;
+    }
 </style>

@@ -46,7 +46,7 @@
 
                         <!-- Email Field -->
                         <div class="mb-5">
-                            <label class="block mb-2 text-sm font-semibold text-[#0E4429]">អ៊ីមែល</label>
+                            <label class="block mb-2 text-sm font-semibold text-[#ffffff]">អ៊ីមែល</label>
                             <div class="relative">
                                 <svg class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#ffffff]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
@@ -66,7 +66,7 @@
 
                         <!-- Password Field -->
                         <div class="mb-5">
-                            <label class="block mb-2 text-sm font-semibold text-[#0E4429]">លេខសម្ងាត់</label>
+                            <label class="block mb-2 text-sm font-semibold text-[#ffffff]">លេខសម្ងាត់</label>
                             <div class="relative">
                                 <svg class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#ffffff]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
@@ -91,7 +91,7 @@
                                     type="checkbox"
                                     class="w-4 h-4 text-[#149954] bg-white border-[#D4AF37]/50 rounded focus:ring-[#149954] focus:ring-2"
                                 />
-                                <span class="ml-2 text-[#0E4429]/80 group-hover:text-[#0E4429] transition-colors">
+                                <span class="ml-2 text-[#ffffff] group-hover:text-[#ffffff] transition-colors">
                                     ចងចាំខ្ញុំ
                                 </span>
                             </label>

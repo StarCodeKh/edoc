@@ -44,7 +44,7 @@
             <div class="relative rounded-[10px] bg-white/10 border-1 border-white/40 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.55)]">
                 <form class="px-8 pt-8 pb-8" @submit.prevent="sendLink">
                     <div class="mb-6">
-                        <label class="block mb-2 text-sm font-semibold text-[#0E4429]">អ៊ីមែល</label>
+                        <label class="block mb-2 text-sm font-semibold text-[#ffffff]">អ៊ីមែល</label>
                         <text-input
                             v-model="form.email"
                             :error="form.errors.email"
