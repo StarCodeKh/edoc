@@ -106,7 +106,7 @@ class HandleInertiaRequests extends Middleware
                 // Skip database queries during installation
                 if (!config('app.installed')) {
                     return [
-                        'app_name' => config('app.name', 'ProTask'),
+                        'app_name' => config('app.name', 'eDoc'),
                         'default_language' => 'en',
                         'allowed_file_types' => []
                     ];
@@ -116,7 +116,7 @@ class HandleInertiaRequests extends Middleware
                     // Check if database is connected and settings table exists
                     if (!DB::connection()->getPdo()) {
                         return [
-                            'app_name' => config('app.name', 'ProTask'),
+                            'app_name' => config('app.name', 'eDoc'),
                             'default_language' => 'en',
                             'allowed_file_types' => []
                         ];
@@ -124,7 +124,7 @@ class HandleInertiaRequests extends Middleware
 
                     if (!Schema::hasTable('settings')) {
                         return [
-                            'app_name' => config('app.name', 'ProTask'),
+                            'app_name' => config('app.name', 'eDoc'),
                             'default_language' => 'en',
                             'allowed_file_types' => []
                         ];
@@ -136,7 +136,7 @@ class HandleInertiaRequests extends Middleware
                 } catch (\Exception $e) {
                     // If database query fails, return defaults
                     return [
-                        'app_name' => config('app.name', 'ProTask'),
+                        'app_name' => config('app.name', 'eDoc'),
                         'default_language' => 'en',
                         'allowed_file_types' => []
                     ];
