@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\Setting;
 use App\Services\KernelStatusService;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Inertia\Inertia;
@@ -28,6 +29,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(KernelStatusService $statusService)
     {
+        if (app()->environment('production')) {
+            URL::forceScheme('https');
+        }
+
         if (!$statusService->isVerified()) {
             View::share('license_invalid', true);
         } else {
