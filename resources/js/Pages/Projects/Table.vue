@@ -8,13 +8,6 @@
                 <div class="inline-block min-w-full h-full py-4 align-middle md:px-3 lg:px-4">
                     <div class="table__view">
 
-                        <!-- Status filter buttons — one per board list, so this stays
-                             in sync with whatever lists/stages this project actually
-                             has instead of a hardcoded set of labels. The first list
-                             is highlighted green (matches "Approved" being first in
-                             most approval workflows); the rest are blue. Clicking a
-                             button filters the table to that status; clicking the
-                             active one again clears the filter. -->
                         <div class="flex flex-wrap gap-2 md:gap-3 mb-5">
                             <button
                                 v-for="(listItem, idx) in lists"
@@ -29,41 +22,28 @@
                             </button>
                         </div>
 
-                        <!-- Card-style document table: a soft rounded header bar plus
-                             individually-rounded, gently-hoverable row "cards" rather
-                             than a flat bordered table — matches the reference design
-                             and gives a smoother, more modern feel. On small screens
-                             the grid collapses into stacked label/value cards instead
-                             of squeezing columns into a narrow viewport (see the
-                             .doc-row rules in <style> for the breakpoint). -->
                         <div class="doc-table rounded-xl shadow-sm overflow-x-auto">
                             <div class="doc-row doc-row--head hidden md:grid gap-3 px-4 py-3 text-sm font-semibold text-white">
                                 <div></div>
-                                <div>{{ $t('No.') }}</div>
-                                <div>{{ $t('Document Code') }}</div>
-                                <div>{{ $t('Subject') }}</div>
-                                <div>{{ $t('Date Entered') }}</div>
-                                <div>{{ $t('Status') }}</div>
-                                <div>{{ $t('Barcode') }}</div>
-                                <div>{{ $t('Print') }}</div>
+                                <div>{{ $t('ល.រ.') }}</div>
+                                <div>{{ $t('លេខកូដឯកសារ') }}</div>
+                                <div>{{ $t('កម្មវត្ថុ') }}</div>
+                                <div>{{ $t('កាលបរិច្ឆេទចូល') }}</div>
+                                <div>{{ $t('ស្ថានភាព') }}</div>
+                                <div>{{ $t('បាកូដ') }}</div>
+                                <div>{{ $t('បោះពុម្ព') }}</div>
                             </div>
 
-                            <!-- Drag-and-drop reordering, restored from the original
-                                 board table (the ≡ handle icon). Reordering only
-                                 makes unambiguous sense within the currently visible
-                                 (filtered) set, so the handle drives taskRows and
-                                 afterDrop() persists the new order via the same
-                                 task.update.order endpoint the board view used. -->
                             <draggable v-model="pageRows" tag="div" class="doc-rows flex flex-col gap-2 p-2" handle=".doc-drag-handle" item-key="id" @end="afterDrop">
                                 <template #item="{ element, index }">
                                     <div class="doc-row md:grid gap-1.5 md:gap-3 md:items-center px-4 py-3 md:py-3.5 rounded-lg bg-slate-200/70 dark:bg-slate-700/40 hover:bg-slate-200 dark:hover:bg-slate-700/70 hover:shadow-md transition-all duration-200 ease-out md:hover:-translate-y-0.5">
                                         <div class="doc-drag-handle hidden md:flex items-center justify-center cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600">
                                             <icon class="w-5 h-5" name="drag" />
                                         </div>
-                                        <div class="text-sm font-medium" :data-label="$t('No.')">
+                                        <div class="text-sm font-medium" :data-label="$t('ល.រ.')">
                                             #{{ (currentPage - 1) * pageSize + index + 1 }}
                                         </div>
-                                        <div class="text-sm font-medium" :data-label="$t('Document Code')">
+                                        <div class="text-sm font-medium" :data-label="$t('លេខកូដឯកសារ')">
                                             <span class="cursor-pointer hover:text-blue-600 hover:underline underline-offset-2 transition-colors" @click="taskDetailsPopup(element.slug || element.id)">{{ documentCode(element) }}</span>
                                             <div class="flex items-center gap-1.5 mt-1 flex-wrap">
                                                 <span v-if="element.description" class="inline-flex items-center text-gray-500 dark:text-gray-400" :aria-label="$t('This task has a description.')">
@@ -80,40 +60,37 @@
                                                 </span>
                                             </div>
                                         </div>
-                                        <div class="text-sm" :data-label="$t('Subject')">
+                                        <div class="text-sm" :data-label="$t('កម្មវត្ថុ')">
                                             <span class="cursor-pointer hover:text-blue-600 hover:underline underline-offset-2 transition-colors" @click="taskDetailsPopup(element.slug || element.id)">{{ element.title }}</span>
                                             <span v-if="element.attachments_count" class="inline-flex items-center gap-1 text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-full px-2 py-0.5 ml-1.5 align-middle">
                                                 <icon class="w-3.5 h-3.5" name="attachment" />{{ element.attachments_count }}
                                             </span>
                                         </div>
-                                        <div class="text-sm" :data-label="$t('Date Entered')">
+                                        <div class="text-sm" :data-label="$t('កាលបរិច្ឆេទចូល')">
                                             {{ element.created_at ? moment(element.created_at).format('DD MMM YYYY') : '' }}
                                         </div>
-                                        <div :data-label="$t('Status')">
+                                        <div :data-label="$t('ស្ថានភាព')">
                                             <span class="inline-block px-3 py-1 rounded-full text-xs font-medium text-white shadow-sm" :style="{ backgroundColor: statusColorFor(element) }">
                                                 {{ element.list ? element.list.title : '' }}
                                             </span>
                                         </div>
-                                        <div :data-label="$t('Barcode')">
+                                        <div :data-label="$t('បាកូដ')">
                                             <!-- Rendered client-side via JsBarcode in mounted/updated
                                                  (see renderBarcodes()) — needs `npm install jsbarcode`. -->
                                             <div class="doc-barcode bg-white rounded px-2 py-1.5 shadow-inner w-full max-w-[180px]">
                                                 <svg :ref="setBarcodeRef(element.id)" :data-barcode-value="documentCode(element)"></svg>
                                             </div>
                                         </div>
-                                        <div :data-label="$t('Print')">
-                                            <!-- Opens the same printable receipt/tracking document used on
-                                                 the board view (DocumentReceipt) — stopPropagation so it
-                                                 doesn't also trigger the row's other click handlers. -->
+                                        <div :data-label="$t('បោះពុម្ព')">
                                             <button
                                                 type="button"
                                                 @click.stop="openReceiptModal(element, $event)"
                                                 class="doc-print-btn"
-                                                :title="$t('Print tracking document')"
-                                                :aria-label="$t('Print tracking document')"
+                                                :title="$t('បោះពុម្ពឯកសារតាមដាន')"
+                                                :aria-label="$t('បោះពុម្ពឯកសារតាមដាន')"
                                             >
                                                 <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4"><path d="M7 8.5V3.5h10v5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><rect x="4" y="8.5" width="16" height="7.5" rx="1.4" stroke="currentColor" stroke-width="1.6"/><rect x="7" y="13.5" width="10" height="7" rx="0.6" stroke="currentColor" stroke-width="1.6"/><circle cx="17" cy="11" r="0.9" fill="currentColor"/></svg>
-                                                <span class="hidden md:inline">{{ $t('Print') }}</span>
+                                                <span class="hidden md:inline">{{ $t('បោះពុម្ព') }}</span>
                                             </button>
                                         </div>
                                     </div>
@@ -125,10 +102,6 @@
                             </div>
                         </div>
 
-                        <!-- Pagination — only shown once there's more than one page.
-                             Reordering via drag only affects the currently visible
-                             page (see afterDrop()); this is the standard tradeoff
-                             any paginated drag-and-drop list makes. -->
                         <div v-if="totalPages > 1" class="doc-pagination flex flex-wrap items-center justify-between gap-3 mt-4 px-1">
                             <div class="text-xs text-gray-500 dark:text-gray-400">
                                 {{ $t('Showing') }} {{ paginationStart }}–{{ paginationEnd }} {{ $t('of') }} {{ taskRows.length }}
@@ -179,8 +152,8 @@
                                         <img v-if="userObject.user.photo_path" :aria-label="userObject.user.name" :alt="userObject.user.name" class="w-6 h-6 rounded-full" :src="userObject.user.photo_path" />
                                         <img v-else :aria-label="userObject.user.name" :alt="userObject.user.name" class="w-6 h-6 rounded-full" src="/images/user.svg" />
                                         <span data-a="" class="p-1" type="button" :tabindex="user_index">
-                                                                  {{ userObject.user.name }}
-                                                              </span>
+                                            {{ userObject.user.name }}
+                                        </span>
                                     </label>
                                 </li>
                             </ul>
@@ -424,9 +397,6 @@
                 this.syncPageRows();
             },
 
-            // Slices taskRows down to just the current page, clamping the
-            // page number first in case the filtered set got smaller (e.g.
-            // a task was archived) and the old page no longer exists.
             syncPageRows(){
                 if (this.currentPage > this.totalPages) {
                     this.currentPage = this.totalPages;
@@ -442,11 +412,7 @@
             },
 
             afterDrop(){
-                // Only this page's rows were actually dragged — number them
-                // starting from this page's offset so order stays correct
-                // relative to every other page, then fold the new order
-                // back into the full (unpaginated) taskRows so switching
-                // pages/filters doesn't lose it.
+
                 const start = (this.currentPage - 1) * this.pageSize;
                 const payload = this.pageRows.map((task, idx) => {
                     task.order = start + idx + 1;
@@ -616,8 +582,8 @@
                 for (const list of this.lists) {
                     const task = list.tasks.find(t => t.id === taskId)
                     if (task) {
-                        Object.assign(task, newData)
-                        return task
+                        Object.assign(task, newData)  // merge updates
+                        return task                   // return updated task
                     }
                 }
                 return null
@@ -685,6 +651,7 @@
 
 <style scoped>
     @media (min-width: 768px) {
+
         .doc-row {
             grid-template-columns: 40px 60px minmax(150px, 1fr) minmax(220px, 1.6fr) 120px 130px 190px 110px;
             min-width: 980px;

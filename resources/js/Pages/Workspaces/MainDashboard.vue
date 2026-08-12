@@ -4,7 +4,7 @@
 
         <!-- Top status cards -->
         <div class="wdash__cards">
-            <div v-for="(card, cIdx) in statusCards" :key="'card_'+cIdx" class="wdash__card">
+            <div v-for="(card, cIdx) in resolvedStatusCards" :key="'card_'+cIdx" class="wdash__card">
                 <div class="wdash__card-title">{{ $t(card.title) }}</div>
                 <div class="wdash__card-total">{{ card.total }}</div>
                 <div class="wdash__rings">
@@ -46,10 +46,11 @@
                             transform="rotate(-90 100 100)"
                         />
                     </svg>
-                    <div class="wdash__donut-center">{{ summary.percent }}%</div>
+                    <div class="wdash__donut-center">{{ resolvedSummary.percent }}%</div>
                 </div>
                 <div class="wdash__legend">
-                    <div v-for="(seg, sIdx) in summary.segments" :key="'leg_'+sIdx" class="wdash__legend-item">
+                    <div v-if="!resolvedSummary.segments.length" class="wdash__empty-note">{{ $t('No documents yet.') }}</div>
+                    <div v-for="(seg, sIdx) in resolvedSummary.segments" :key="'leg_'+sIdx" class="wdash__legend-item">
                         <span class="wdash__legend-dot" :style="{ backgroundColor: seg.color }"></span>
                         <span>{{ $t(seg.label) }} {{ seg.max ? seg.value + '/' + seg.max : seg.value + ' (' + seg.percent + '%)' }}</span>
                     </div>
@@ -59,7 +60,8 @@
             <div class="wdash__panel wdash__panel--stats">
                 <div class="wdash__panel-title">{{ $t('Document Statistic') }}</div>
                 <div class="wdash__stat-list">
-                    <div v-for="(stat, stIdx) in statistics" :key="'stat_'+stIdx" class="wdash__stat-row">
+                    <div v-if="!resolvedStatistics.length" class="wdash__empty-note">{{ $t('No documents yet.') }}</div>
+                    <div v-for="(stat, stIdx) in resolvedStatistics" :key="'stat_'+stIdx" class="wdash__stat-row">
                         <div class="wdash__stat-label">{{ $t(stat.label) }}</div>
                         <div class="wdash__stat-bar-wrap">
                             <div class="wdash__stat-bar-track">
@@ -96,15 +98,16 @@
                     <div>{{ $t('កាលបរិច្ឆេទចូល') }}</div>
                     <div>{{ $t('ស្ថានភាព') }}</div>
                     <div>{{ $t('បាកូដ') }}</div>
+                    <div>{{ $t('បោះពុម្ព') }}</div>
                 </div>
 
-                <draggable v-model="taskRows" tag="div" class="wdash__doc-rows" handle=".wdash__drag-handle" item-key="id" @end="afterDrop">
+                <draggable v-model="pageRows" tag="div" class="wdash__doc-rows" handle=".wdash__drag-handle" item-key="id" @end="afterDrop">
                     <template #item="{ element, index }">
                         <div class="wdash__doc-row">
                             <div class="wdash__drag-handle hidden md:flex">
                                 <icon class="w-5 h-5" name="drag" />
                             </div>
-                            <div :data-label="$t('ល.រ.')">#{{ index + 1 }}</div>
+                            <div :data-label="$t('ល.រ.')">#{{ (currentPage - 1) * pageSize + index + 1 }}</div>
                             <div :data-label="$t('លេខកូដឯកសារ')">
                                 <span class="wdash__doc-code" @click="taskDetailsPopup(element)">{{ documentCode(element) }}</span>
                             </div>
@@ -127,13 +130,50 @@
                                     <svg :ref="setBarcodeRef(element.id)" :data-barcode-value="documentCode(element)"></svg>
                                 </div>
                             </div>
+                            <div :data-label="$t('បោះពុម្ព')">
+                                <button
+                                    type="button"
+                                    @click.stop="openReceiptModal(element, $event)"
+                                    class="wdash__print-btn"
+                                    :title="$t('បោះពុម្ពឯកសារតាមដាន')"
+                                    :aria-label="$t('បោះពុម្ពឯកសារតាមដាន')"
+                                >
+                                    <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4"><path d="M7 8.5V3.5h10v5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><rect x="4" y="8.5" width="16" height="7.5" rx="1.4" stroke="currentColor" stroke-width="1.6"/><rect x="7" y="13.5" width="10" height="7" rx="0.6" stroke="currentColor" stroke-width="1.6"/><circle cx="17" cy="11" r="0.9" fill="currentColor"/></svg>
+                                    <span class="hidden md:inline">{{ $t('បោះពុម្ព') }}</span>
+                                </button>
+                            </div>
                         </div>
                     </template>
                 </draggable>
 
                 <div v-if="!taskRows.length" class="wdash__doc-empty">{{ $t('No documents found!') }}</div>
+
+                <div v-if="totalPages > 1" class="wdash__pagination">
+                    <div class="wdash__pagination-info">
+                        {{ $t('Showing') }} {{ paginationStart }}–{{ paginationEnd }} {{ $t('of') }} {{ taskRows.length }}
+                    </div>
+                    <div class="wdash__pagination-controls">
+                        <button type="button" class="wdash__page-btn" :disabled="currentPage === 1" @click="goToPage(currentPage - 1)" :aria-label="$t('Previous page')">
+                            <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </button>
+                        <template v-for="(p, i) in paginationPages" :key="'pg_'+i">
+                            <span v-if="p === '...'" class="wdash__page-ellipsis">…</span>
+                            <button v-else type="button" class="wdash__page-btn" :class="{ 'wdash__page-btn--active': p === currentPage }" @click="goToPage(p)">{{ p }}</button>
+                        </template>
+                        <button type="button" class="wdash__page-btn" :disabled="currentPage === totalPages" @click="goToPage(currentPage + 1)" :aria-label="$t('Next page')">
+                            <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
+
+        <!-- Same printable tracking document used on the board and full table views. -->
+        <DocumentReceipt
+            v-if="receiptModalOpen"
+            :task="selectedReceiptTask"
+            @close="closeReceiptModal"
+        />
     </div>
 </template>
 
@@ -145,74 +185,31 @@
     import draggable from 'vuedraggable'
     import moment from 'moment'
     import axios from 'axios'
+    import DocumentReceipt from '@/Shared/Modals/DocumentReceipt.vue'
 
     export default {
         name: 'workspace-dashboard',
-        components: { Head, Icon, draggable },
+        components: { Head, Icon, draggable, DocumentReceipt },
         layout: Layout,
         emits: ['add-document', 'toggle-filter', 'open-document'],
         props: {
             title: { type: String, default: 'Dashboard' },
             workspace: { type: Object, default: null },
             lists: { type: Array, default: () => [] },
-            statusCards: {
-                type: Array,
-                default: () => ([
-                    {
-                        title: 'Document Status', total: 233, items: [
-                            { label: 'Submitted', value: 12, color: '#4a90d9' },
-                            { label: 'Reviewing', value: 15, color: '#c9d94d' },
-                            { label: 'Approved', value: 20, color: '#4caf50' },
-                            { label: 'Rejected', value: 10, color: '#e0503a' },
-                        ]
-                    },
-                    {
-                        title: 'Administrative Document', total: 233, items: [
-                            { label: 'Submitted', value: 12, color: '#4a90d9' },
-                            { label: 'Reviewing', value: 15, color: '#c9d94d' },
-                            { label: 'Approved', value: 20, color: '#4caf50' },
-                            { label: 'Rejected', value: 10, color: '#e0503a' },
-                        ]
-                    },
-                    {
-                        title: 'Casino Operators Document', total: 233, items: [
-                            { label: 'Submitted', value: 12, color: '#4a90d9' },
-                            { label: 'Reviewing', value: 15, color: '#c9d94d' },
-                            { label: 'Approved', value: 20, color: '#4caf50' },
-                            { label: 'Rejected', value: 10, color: '#e0503a' },
-                        ]
-                    },
-                ])
-            },
-            summary: {
-                type: Object,
-                default: () => ({
-                    percent: 65,
-                    segments: [
-                        { label: 'ដាក់ស្នើ', value: 28, max: 134, percent: 40, color: '#4a90d9' },
-                        { label: 'ពោះបង់', value: 16, percent: 5, color: '#f0a63a' },
-                        { label: 'បដិសេធ', value: 30, percent: 20, color: '#e0503a' },
-                        { label: 'ការអនុម័តបណ្ណសារ', value: 30, percent: 20, color: '#9b59b6' },
-                        { label: 'អនុម័ត', value: 30, percent: 20, color: '#7cb342' },
-                    ]
-                })
-            },
-            statistics: {
-                type: Array,
-                default: () => ([
-                    { label: 'នាយកដ្ឋានកិច្ចការទូទៅ', done: 13, total: 15, percent: 70 },
-                    { label: 'នាយកដ្ឋានកិច្ចការគតិយុត្ត និងអាជ្ញាប័ណ្ណ', done: 10, total: 20, percent: 50 },
-                    { label: 'នាយកដ្ឋានត្រួតពិនិត្យ និងគ្រប់គ្រងចំណូល', done: 17, total: 20, percent: 87 },
-                    { label: 'នាយកដ្ឋានត្រួតពិនិត្យបច្ចេកទេសល្បែង', done: 18, total: 20, percent: 85 },
-                    { label: 'នាយកដ្ឋានគ្រប់គ្រងសន្តិសុខ និងសណ្តាប់ធ្នាប់', done: 18, total: 20, percent: 90 },
-                    { label: 'អង្គភាពសវនកម្មផ្ទៃក្នុង', done: 5, total: 20, percent: 20 },
-                ])
-            },
+            statusCards: { type: Array, default: () => ([]) },
+            summary: { type: Object, default: () => ({ percent: 0, segments: [] }) },
+            statistics: { type: Array, default: () => ([]) },
         },
         data() {
             return {
                 barcodeRefs: {},
                 taskRows: [],
+                receiptModalOpen: false,
+                selectedReceiptTask: null,
+                currentPage: 1,
+                pageSize: 10,
+                pageRows: [],
+                statusPalette: ['#4a90d9', '#c9d94d', '#4caf50', '#e0503a', '#9b59b6', '#7cb342', '#f0a63a', '#06b6d4'],
             }
         },
         computed: {
@@ -220,11 +217,11 @@
                 return 2 * Math.PI * 80;
             },
             donutTotalPercent() {
-                return this.summary.segments.reduce((sum, s) => sum + (s.percent || 0), 0) || 1;
+                return this.resolvedSummary.segments.reduce((sum, s) => sum + (s.percent || 0), 0) || 1;
             },
             donutSegments() {
                 let cumulative = 0;
-                return this.summary.segments.map(seg => {
+                return this.resolvedSummary.segments.map(seg => {
                     const normalizedPercent = (seg.percent / this.donutTotalPercent) * 100;
                     const dash = (normalizedPercent / 100) * this.donutCircumference;
                     const offset = -((cumulative / 100) * this.donutCircumference);
@@ -232,15 +229,95 @@
                     return { ...seg, dash, offset };
                 });
             },
+
+            isAdmin() {
+                return this?.workspace?.member?.role === 'admin';
+            },
+
             allTasks() {
                 if (!this.lists) return [];
                 return this.lists.flatMap(listItem =>
-                    (listItem.tasks || []).map(task => {
+                    this.tasksForList(listItem).map(task => {
                         if (!task.list) task.list = { id: listItem.id, title: listItem.title };
                         if (!task.list_id) task.list_id = listItem.id;
                         return task;
                     })
                 );
+            },
+
+            dynamicStatusCard() {
+                const items = (this.lists || []).map((listItem, idx) => ({
+                    label: listItem.title,
+                    value: this.tasksForList(listItem).length,
+                    color: this.statusPalette[idx % this.statusPalette.length],
+                }));
+                const total = items.reduce((sum, i) => sum + i.value, 0);
+                return { title: 'Document Status', total, items };
+            },
+
+            resolvedStatusCards() {
+                return (this.statusCards && this.statusCards.length) ? this.statusCards : [this.dynamicStatusCard];
+            },
+
+            dynamicSummary() {
+                const tasks = this.allTasks;
+                const total = tasks.length;
+                const doneCount = tasks.filter(t => !!t.is_done).length;
+                const percent = total ? Math.round((doneCount / total) * 100) : 0;
+                const segments = (this.lists || []).map((listItem, idx) => {
+                    const count = this.tasksForList(listItem).length;
+                    const segPercent = total ? Math.round((count / total) * 100) : 0;
+                    return {
+                        label: listItem.title,
+                        value: count,
+                        percent: segPercent,
+                        color: this.statusPalette[idx % this.statusPalette.length],
+                    };
+                });
+                return { percent, segments };
+            },
+
+            resolvedSummary() {
+                return (this.summary && this.summary.segments && this.summary.segments.length) ? this.summary : this.dynamicSummary;
+            },
+
+            dynamicStatistics() {
+                return (this.lists || []).map(listItem => {
+                    const tasks = this.tasksForList(listItem);
+                    const total = tasks.length;
+                    const done = tasks.filter(t => !!t.is_done).length;
+                    const percent = total ? Math.round((done / total) * 100) : 0;
+                    return { label: listItem.title, done, total, percent };
+                });
+            },
+
+            resolvedStatistics() {
+                return (this.statistics && this.statistics.length) ? this.statistics : this.dynamicStatistics;
+            },
+
+            totalPages() {
+                return Math.max(1, Math.ceil(this.taskRows.length / this.pageSize));
+            },
+            paginationStart() {
+                return this.taskRows.length ? (this.currentPage - 1) * this.pageSize + 1 : 0;
+            },
+            paginationEnd() {
+                return Math.min(this.currentPage * this.pageSize, this.taskRows.length);
+            },
+            paginationPages() {
+                const total = this.totalPages;
+                const current = this.currentPage;
+                const delta = 2;
+                const range = [];
+                for (let i = Math.max(2, current - delta); i <= Math.min(total - 1, current + delta); i++) {
+                    range.push(i);
+                }
+                const pages = [1];
+                if (range[0] > 2) pages.push('...');
+                pages.push(...range);
+                if (range.length && range[range.length - 1] < total - 1) pages.push('...');
+                if (total > 1) pages.push(total);
+                return pages;
             },
         },
         watch: {
@@ -269,27 +346,67 @@
             },
             syncTaskRows() {
                 this.taskRows = [...this.allTasks].sort((a, b) => (a.order || 0) - (b.order || 0));
+                this.syncPageRows();
+            },
+
+            syncPageRows() {
+                if (this.currentPage > this.totalPages) {
+                    this.currentPage = this.totalPages;
+                }
+                const start = (this.currentPage - 1) * this.pageSize;
+                this.pageRows = this.taskRows.slice(start, start + this.pageSize);
+            },
+            goToPage(page) {
+                if (page === '...' || page < 1 || page > this.totalPages || page === this.currentPage) return;
+                this.currentPage = page;
+                this.syncPageRows();
             },
             afterDrop() {
-                const payload = this.taskRows.map((task, idx) => {
-                    task.order = idx + 1;
+                const start = (this.currentPage - 1) * this.pageSize;
+                const payload = this.pageRows.map((task, idx) => {
+                    task.order = start + idx + 1;
                     return { id: task.id, order: task.order };
                 });
+                this.taskRows.splice(start, this.pageRows.length, ...this.pageRows);
                 axios.post(this.route('task.update.order'), payload).catch((error) => {
                     console.log(error);
                 });
             },
             statusColorFor(element) {
-                if (!this.lists || !element.list_id) return '#3b82f6';
+                if (!this.lists || !element.list_id) return this.statusPalette[0];
                 const idx = this.lists.findIndex(l => l.id === element.list_id);
-                return idx === 0 ? '#10b981' : '#3b82f6';
+                return this.statusPalette[(idx === -1 ? 0 : idx) % this.statusPalette.length];
             },
             documentCode(element) {
                 if (element.task_code) return element.task_code;
                 return 'CGMC-' + String(element.id).padStart(9, '0');
             },
+
+            isAssignedToMe(task) {
+                const userId = this.$page?.props?.auth?.user?.id;
+                if (!userId) return false;
+                return (task.assignees || []).some(a => Number(a.user_id) === Number(userId));
+            },
+
+            tasksForList(listItem) {
+                const tasks = listItem.tasks || [];
+                return this.isAdmin ? tasks : tasks.filter(t => this.isAssignedToMe(t));
+            },
+
             taskDetailsPopup(element) {
                 this.$emit('open-document', element.slug || element.id);
+            },
+            openReceiptModal(task, e) {
+                if (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                this.selectedReceiptTask = task;
+                this.receiptModalOpen = true;
+            },
+            closeReceiptModal() {
+                this.receiptModalOpen = false;
+                this.selectedReceiptTask = null;
             },
             setBarcodeRef(id) {
                 return (el) => { if (el) this.barcodeRefs[id] = el; };
@@ -355,6 +472,7 @@
         display: flex;
         justify-content: space-between;
         gap: 0.5rem;
+        flex-wrap: wrap;
     }
     .wdash__ring {
         display: flex;
@@ -425,6 +543,10 @@
         border-radius: 999px;
         flex-shrink: 0;
     }
+    .wdash__empty-note {
+        font-size: 0.8rem;
+        opacity: 0.75;
+    }
     .wdash__stat-list {
         display: flex;
         flex-direction: column;
@@ -480,7 +602,7 @@
     .wdash__doc-rows { display: flex; flex-direction: column; gap: 0.5rem; padding-top: 0.5rem; }
     .wdash__doc-row {
         display: grid;
-        grid-template-columns: 4% 6% 16% 26% 14% 14% 20%;
+        grid-template-columns: 4% 6% 14% 22% 12% 12% 16% 14%;
         gap: 0.75rem;
         align-items: center;
         padding: 0.85rem 0.75rem;
@@ -536,8 +658,9 @@
         font-weight: 500;
     }
     .wdash__doc-code:hover, .wdash__doc-subject:hover {
-        color: #04b2f2;
-        text-decoration: none;
+        color: #235567;
+        text-decoration: underline;
+        text-underline-offset: 2px;
     }
     .wdash__doc-attach {
         display: inline-flex;
@@ -568,10 +691,102 @@
         max-width: 170px;
     }
     .wdash__barcode svg { width: 100%; height: 30px; display: block; }
+
+    /* Print column button — matches the indigo tracking-chip look used on
+    the board/full table views, so print actions feel consistent everywhere. */
+    .wdash__print-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        border-radius: 8px;
+        background: #eef2ff;
+        border: 1px solid #e0e7ff;
+        color: #4f46e5;
+        font-size: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+    }
+    .wdash__print-btn:hover {
+        background: #e0e7ff;
+        border-color: #c7d2fe;
+        transform: translateY(-1px);
+    }
+    .wdash__print-btn:active { transform: translateY(0); }
+    .dark .wdash__print-btn {
+        background: rgba(99, 102, 241, 0.12);
+        border-color: rgba(99, 102, 241, 0.25);
+        color: #a5b4fc;
+    }
+    .dark .wdash__print-btn:hover { background: rgba(99, 102, 241, 0.2); }
+
     .wdash__doc-empty {
         text-align: center;
         padding: 2rem;
         font-size: 0.85rem;
         color: #94a3b8;
+    }
+
+    /* Pagination */
+    .wdash__pagination {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-top: 1rem;
+        padding: 0 0.25rem;
+    }
+    .wdash__pagination-info {
+        font-size: 0.75rem;
+        color: #64748b;
+    }
+    .wdash__pagination-controls {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    .wdash__page-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 32px;
+        height: 32px;
+        padding: 0 8px;
+        border-radius: 8px;
+        border: 1px solid transparent;
+        background: transparent;
+        color: #475569;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.15s ease, color 0.15s ease;
+    }
+    .wdash__page-btn:hover:not(:disabled) {
+        background: #eef2ff;
+        color: #235567;
+    }
+    .wdash__page-btn:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+    }
+    .wdash__page-btn--active {
+        background: #235567;
+        border-color: #235567;
+        color: #fff;
+    }
+    .wdash__page-btn--active:hover {
+        background: #235567;
+        color: #fff;
+    }
+    .wdash__page-ellipsis {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 24px;
+        height: 32px;
+        color: #94a3b8;
+        font-size: 0.8rem;
     }
 </style>
