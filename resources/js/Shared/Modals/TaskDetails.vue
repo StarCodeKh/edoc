@@ -1131,10 +1131,51 @@
     // matches the installed version exactly (no CDN version mismatch).
     // Requires `npm install pdfjs-dist` if not already a dependency.
     import * as pdfjsLib from 'pdfjs-dist';
-    pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+    const pdfWorkerUrl = new URL(
         'pdfjs-dist/build/pdf.worker.min.mjs',
         import.meta.url
     ).toString();
+    // Set as a first-pass fallback; ensureWorkerBlobSrc() below overrides
+    // this with a same-origin blob URL before the first PDF is opened,
+    // which is what actually needs to succeed for drawing to work.
+    pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
+
+    // Some production servers (misconfigured nginx/Apache mime.types) send
+    // .mjs files back as "application/octet-stream" instead of a JS mime
+    // type. Browsers strictly enforce the mime type for *module* scripts —
+    // which is exactly what the pdf.js worker is — so that single wrong
+    // header on the server is enough to make both the real worker and
+    // pdf.js's own "fake worker" fallback fail with "Failed to load module
+    // script". A plain fetch() doesn't care about the response's
+    // Content-Type at all, so we fetch the worker's bytes ourselves, wrap
+    // them in a Blob with the correct type set client-side, and hand
+    // pdf.js a blob: URL instead of the direct server URL — the browser
+    // trusts the Blob's own declared type, not any server header, so this
+    // works even if the server is never fixed. Cached so it only runs once.
+    let workerBlobSrcPromise = null;
+    function ensureWorkerBlobSrc() {
+        if (!workerBlobSrcPromise) {
+            workerBlobSrcPromise = fetch(pdfWorkerUrl)
+                .then(res => {
+                    if (!res.ok) throw new Error(`HTTP ${res.status} fetching pdf.worker`);
+                    return res.blob();
+                })
+                .then(rawBlob => {
+                    const jsBlob = new Blob([rawBlob], { type: 'text/javascript' });
+                    const blobUrl = URL.createObjectURL(jsBlob);
+                    pdfjsLib.GlobalWorkerOptions.workerSrc = blobUrl;
+                    return blobUrl;
+                })
+                .catch(err => {
+                    // Fall back to the direct URL — if the server mime type
+                    // is fine (or gets fixed) this still works either way.
+                    console.error('Falling back to direct pdf.worker URL, blob wrap failed:', err);
+                    pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
+                    return pdfWorkerUrl;
+                });
+        }
+        return workerBlobSrcPromise;
+    }
 
     export default {
         props: {
@@ -1231,7 +1272,7 @@
                 drawTool: 'view', // 'view' | 'pen' | 'highlighter' | 'eraser' | 'text'
                 historyStack: [],
                 redoStack: [],
-                textInput: { visible: false, cssX: 0, cssY: 0, canvasX: 0, canvasY: 0, value: '' },
+                textInput: { visible: false, cssX: 0, cssY: 0, value: '' },
                 // Placed text notes — kept as separate, draggable objects
                 // (not baked into the canvas bitmap) so they can be moved
                 // around after being added, like a standard PDF note tool.
@@ -1259,6 +1300,13 @@
                 // loading the document or rendering a page, so switching
                 // tools/pages never looks like a silent blank freeze.
                 isRenderingPage: false,
+                // Ratio between the draw canvas's actual backing-store
+                // resolution and its on-screen (CSS) size — set by
+                // renderDrawPage. Stroke widths/eraser size get multiplied
+                // by this so pen thickness still looks right on screen even
+                // though the canvas itself is rendered at a higher
+                // resolution for a crisp/HD final saved PDF.
+                canvasPixelRatio: 1,
 
                 // --- Toast notification state ---
                 toasts: [],
@@ -1539,7 +1587,30 @@
 
                 this.isRenderingPage = true;
                 try {
-                    const loadingTask = pdfjsLib.getDocument({ url });
+                    // Fetch the PDF's actual bytes ourselves (same
+                    // credentials as everywhere else in this file — see
+                    // saveAnnotatedImage) instead of handing pdf.js a bare
+                    // URL. pdf.js's `{ url }` mode streams the file using
+                    // HTTP Range requests; some production setups (reverse
+                    // proxies, CDNs, cloud storage) don't support/advertise
+                    // Range the same way a local dev server does, which is
+                    // exactly the kind of thing that loads fine locally and
+                    // silently fails once deployed. Downloading the whole
+                    // file up front and handing pdf.js the bytes directly
+                    // sidesteps that dependency entirely, and also makes
+                    // sure the request carries the session cookie in case
+                    // the attachment route requires auth.
+                    const fileRes = await fetch(url, { credentials: 'same-origin' });
+                    if (!fileRes.ok) {
+                        throw new Error(`HTTP ${fileRes.status} while downloading the PDF`);
+                    }
+                    const bytes = await fileRes.arrayBuffer();
+
+                    // Must resolve before getDocument() spins up the
+                    // worker — see ensureWorkerBlobSrc() above for why.
+                    await ensureWorkerBlobSrc();
+
+                    const loadingTask = pdfjsLib.getDocument({ data: bytes });
                     // markRaw is required here — pdf.js's internal classes
                     // use native JS private fields (#foo), which break with
                     // "Cannot read from private field" the moment Vue's
@@ -1548,7 +1619,12 @@
                     this.totalPdfPages = this.pdfDocProxy.numPages;
                 } catch (err) {
                     console.error('Failed to load the PDF for rendering. url was:', url, 'error:', err);
-                    this.toastError(this.$t('Failed to load the PDF for drawing.'));
+                    // Surfaces the real reason (network/CORS/HTTP status)
+                    // directly in the toast, so it doesn't take a trip to
+                    // DevTools every time this happens on a server you
+                    // don't have console access to.
+                    const reason = err?.message || String(err);
+                    this.toastError(this.$t('Failed to load the PDF for drawing') + ': ' + reason);
                 } finally {
                     this.isRenderingPage = false;
                 }
@@ -1571,20 +1647,53 @@
                     const page = await this.pdfDocProxy.getPage(pageNumber);
                     const baseViewport = page.getViewport({ scale: 1 });
                     const targetWidth = Math.min(stage.clientWidth || 880, 880);
-                    const scale = targetWidth / baseViewport.width;
-                    const viewport = page.getViewport({ scale });
 
-                    const w = Math.round(viewport.width);
-                    const h = Math.round(viewport.height);
+                    // Background PDF preview (what you actually see while
+                    // browsing/drawing): supersample at 1.5x the device's
+                    // own pixel density, then let the browser's canvas
+                    // downscale it back to the display size — this is a
+                    // standard supersampling technique that measurably
+                    // sharpens anti-aliased text/lines versus rendering at
+                    // 1:1 device density. Note: pdf.js is a different
+                    // rendering engine than the browser's native PDF plugin
+                    // (used in View mode), so even at high resolution its
+                    // text will read very slightly softer — that gap can't
+                    // be fully closed while still rendering to a <canvas>,
+                    // which is what makes pixel-exact drawing possible.
+                    const bgPixelRatio = Math.min((window.devicePixelRatio || 1) * 1.5, 3);
+                    const bgScale = (targetWidth * bgPixelRatio) / baseViewport.width;
+                    const bgViewport = page.getViewport({ scale: bgScale });
+                    const bw = Math.round(bgViewport.width);
+                    const bh = Math.round(bgViewport.height);
+                    const displayHeight = bh / bgPixelRatio;
 
-                    stage.style.height = h + 'px';
+                    stage.style.height = displayHeight + 'px';
                     stage.style.overflow = 'hidden';
-                    renderCanvas.width = w;
-                    renderCanvas.height = h;
-                    drawCanvas.width = w;
-                    drawCanvas.height = h;
 
-                    const renderTask = page.render({ canvasContext: renderCanvas.getContext('2d'), viewport });
+                    renderCanvas.width = bw;
+                    renderCanvas.height = bh;
+                    renderCanvas.style.width = '100%';
+                    renderCanvas.style.height = displayHeight + 'px';
+
+                    // Strokes/notes overlay: kept independently at a higher
+                    // resolution, since THIS is the canvas whose content
+                    // gets baked into the saved PDF and stretched across the
+                    // full original page size — unlike the background, it
+                    // has no fine PDF text to over-blur, so more pixels here
+                    // only helps the final saved quality. Same on-screen
+                    // size as the background canvas (for pointer/visual
+                    // alignment); just backed by more actual pixels.
+                    const overlayPixelRatio = Math.min((window.devicePixelRatio || 1) * 2, 3);
+                    this.canvasPixelRatio = overlayPixelRatio;
+                    const overlayScale = (targetWidth * overlayPixelRatio) / baseViewport.width;
+                    const overlayViewport = page.getViewport({ scale: overlayScale });
+
+                    drawCanvas.width = Math.round(overlayViewport.width);
+                    drawCanvas.height = Math.round(overlayViewport.height);
+                    drawCanvas.style.width = '100%';
+                    drawCanvas.style.height = displayHeight + 'px';
+
+                    const renderTask = page.render({ canvasContext: renderCanvas.getContext('2d'), viewport: bgViewport });
                     await renderTask.promise;
                     this.canvasCtx = drawCanvas.getContext('2d');
                 } catch (err) {
@@ -1646,6 +1755,14 @@
                 this.pageAnnotations[this.currentDrawPage] = {
                     canvasImage: canvas.toDataURL(),
                     notes: this.textNotes.map(n => ({ ...n })),
+                    // Text notes are stored/positioned in on-screen CSS
+                    // pixels (see confirmTextInput), but the canvas backing
+                    // store this page was rendered at is canvasPixelRatio×
+                    // larger for HD output. Remember that ratio now so
+                    // buildFinalDataUrlForEntry can convert notes back to
+                    // the matching canvas-pixel scale when baking them in,
+                    // even if the page isn't the one currently on screen.
+                    pixelRatio: this.canvasPixelRatio || 1,
                 };
             },
 
@@ -1691,23 +1808,29 @@
                 ctx.lineCap = 'round';
                 ctx.lineJoin = 'round';
 
+                // Line widths are chosen on the 1-20 slider assuming
+                // on-screen pixels, but the canvas itself now renders at
+                // canvasPixelRatio× that resolution for HD output — so
+                // multiply here to keep strokes looking the same thickness
+                // on screen (and proportionally crisp once saved).
+                const pr = this.canvasPixelRatio || 1;
                 if (this.drawTool === 'eraser') {
                     // destination-out punches transparent holes instead of
                     // painting, so it actually removes ink rather than
                     // drawing white over it.
                     ctx.globalCompositeOperation = 'destination-out';
                     ctx.globalAlpha = 1;
-                    ctx.lineWidth = this.drawSettings.size * 5;
+                    ctx.lineWidth = this.drawSettings.size * 5 * pr;
                 } else if (this.drawTool === 'highlighter') {
                     ctx.globalCompositeOperation = 'source-over';
                     ctx.globalAlpha = 0.35;
                     ctx.strokeStyle = this.drawSettings.color;
-                    ctx.lineWidth = this.drawSettings.size * 4;
+                    ctx.lineWidth = this.drawSettings.size * 4 * pr;
                 } else {
                     ctx.globalCompositeOperation = 'source-over';
                     ctx.globalAlpha = 1;
                     ctx.strokeStyle = this.drawSettings.color;
-                    ctx.lineWidth = this.drawSettings.size;
+                    ctx.lineWidth = this.drawSettings.size * pr;
                 }
 
                 ctx.lineTo(pos.x, pos.y);
@@ -1731,17 +1854,23 @@
             },
 
             // --- Text note tool: place a typed note on the canvas ---
+            // Notes are positioned and dragged in plain on-screen CSS
+            // pixels (same space the floating input box already used for
+            // cssX/cssY) — NOT canvas backing-store pixels. The drawing
+            // canvas renders at canvasPixelRatio× the on-screen size for
+            // HD output, so a canvas-space coordinate could be 2-3x too
+            // large once used as a raw `left/top` CSS value on the note's
+            // <div>, pushing it outside the visible (overflow:hidden)
+            // stage entirely — that's what made notes disappear after
+            // being placed, and made dragging track the pointer incorrectly.
             placeTextAt(e) {
                 const canvas = this.$refs.drawCanvas;
                 const rect = canvas.getBoundingClientRect();
                 const clientX = e.touches ? e.touches[0].clientX : e.clientX;
                 const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                const pos = this.getCanvasCoordinates(e);
 
                 this.textInput.cssX = clientX - rect.left;
                 this.textInput.cssY = clientY - rect.top;
-                this.textInput.canvasX = pos.x;
-                this.textInput.canvasY = pos.y;
                 this.textInput.value = '';
                 this.textInput.visible = true;
 
@@ -1753,17 +1882,18 @@
             confirmTextInput() {
                 const text = (this.textInput.value || '').trim();
                 if (text) {
-                    const canvas = this.$refs.drawCanvas;
-                    const scaleX = canvas.width / canvas.getBoundingClientRect().width;
-                    const fontSize = Math.max(14, this.drawSettings.size * 4) * scaleX;
+                    // Plain CSS px, matching where the note is actually
+                    // rendered on screen (buildFinalDataUrlForEntry scales
+                    // this back up to canvas-pixel space at save time).
+                    const fontSize = Math.max(14, this.drawSettings.size * 4);
 
                     // Kept as a separate, draggable object rather than
                     // baked straight onto the canvas — that's what lets it
                     // be moved around afterwards like a standard PDF note.
                     this.textNotes.push({
                         id: ++this.textNoteIdCounter,
-                        x: this.textInput.canvasX,
-                        y: this.textInput.canvasY,
+                        x: this.textInput.cssX,
+                        y: this.textInput.cssY,
                         text,
                         color: this.drawSettings.color,
                         fontSize,
@@ -1946,14 +2076,22 @@
                         const tctx = temp.getContext('2d');
                         tctx.drawImage(img, 0, 0);
 
+                        // note.x/y/fontSize are stored in on-screen CSS
+                        // pixels; this temp canvas is at the full HD
+                        // backing-store resolution (img.naturalWidth/Height),
+                        // so scale everything up by the same ratio the page
+                        // was rendered at or the text lands in the wrong
+                        // spot / wrong size in the saved PDF.
+                        const ratio = entry.pixelRatio || 1;
                         (entry.notes || []).forEach(note => {
                             tctx.globalCompositeOperation = 'source-over';
                             tctx.globalAlpha = 1;
                             tctx.fillStyle = note.color;
-                            tctx.font = `${note.fontSize}px sans-serif`;
+                            const scaledFontSize = note.fontSize * ratio;
+                            tctx.font = `${scaledFontSize}px sans-serif`;
                             tctx.textBaseline = 'top';
                             note.text.split('\n').forEach((line, i) => {
-                                tctx.fillText(line, note.x, note.y + i * note.fontSize * 1.2);
+                                tctx.fillText(line, note.x * ratio, note.y * ratio + i * scaledFontSize * 1.2);
                             });
                         });
 
