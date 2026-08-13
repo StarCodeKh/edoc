@@ -79,9 +79,6 @@
                                 <span class="font-semibold sm:min-w-[150px] text-gray-900">កាលបរិច្ឆេទឯកសារចូល៖</span>
                                 <span class="flex-1 mt-0.5 sm:mt-0">{{ formatDate(task?.entry_date || task?.created_at) }}</span>
                             </div>
-                            <!-- ស្ថានភាព (Status) — new field from the sketch, taken
-                                 from the task's current list/column, same status
-                                 name shown on the Board/Table views. -->
                             <div class="flex flex-col sm:flex-row sm:items-baseline">
                                 <span class="font-semibold sm:min-w-[150px] text-gray-900">ស្ថានភាព៖</span>
                                 <span class="flex-1 mt-0.5 sm:mt-0">{{ task?.list?.title || 'N/A' }}</span>
@@ -112,13 +109,6 @@
                         </div>
                     </div>
 
-                    <!-- ជម្រាបជូន (Notify) section — static print-only markup
-                         (no v-model, not tied to any task field): one
-                         checkbox per department from the org chart
-                         (matches DocumentSourceSeeder's 6 departments),
-                         plus a "ផ្សេងៗ" (Other) line with a blank box for
-                         anything not on the list — ticked/filled by hand
-                         on the printed paper. -->
                     <div class="mt-6 pt-5 border-t border-gray-100 print-avoid-break">
                         <p class="font-semibold mb-3">ជម្រាបជូន ៖</p>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-sm sm:text-base">
@@ -177,14 +167,6 @@
                             <label class="flex items-center gap-1.5">
                                 <span class="receipt-checkbox"></span>
                                 <span>៥ ថ្ងៃ នៃថ្ងៃធ្វើការ</span>
-                            </label>
-                            <label class="flex items-center gap-1.5">
-                                <span class="receipt-checkbox"></span>
-                                <!-- Last option's wording was the hardest to read in
-                                     your screenshot — please double-check this one
-                                     against the original and let me know if it needs
-                                     a correction. -->
-                                <span>ប្អូនបានធាប់ហៅសាមដែលអាចធ្វើបាន</span>
                             </label>
                         </div>
                     </div>
