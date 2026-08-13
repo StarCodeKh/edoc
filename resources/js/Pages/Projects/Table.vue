@@ -7,7 +7,7 @@
             <div class="flex flex-col task__table overflow-y-auto h-full">
                 <div class="inline-block min-w-full h-full py-4 align-middle md:px-3 lg:px-4">
                     <div class="table__view">
-                        <div class="flex flex-wrap gap-2 md:gap-3 mb-5">
+                        <div class="flex flex-wrap gap-2 md:gap-2 mb-5">
                             <button
                                 v-for="(listItem, idx) in lists"
                                 :key="'status_'+listItem.id"
@@ -38,7 +38,7 @@
                             </div>
                             <draggable v-model="pageRows" tag="div" class="doc-rows flex flex-col gap-2 p-2" handle=".doc-drag-handle" item-key="id" @end="afterDrop">
                                 <template #item="{ element, index }">
-                                    <div class="doc-row md:grid gap-1.5 md:gap-3 md:items-center px-4 py-3 md:py-3.5 rounded-lg bg-slate-200/70 dark:bg-slate-700/40 hover:bg-slate-200 dark:hover:bg-slate-700/70 hover:shadow-md transition-all duration-200 ease-out md:hover:-translate-y-0.5">
+                                    <div class="doc-row md:grid gap-1.5 md:gap-2 md:items-center px-4 py-3 md:py-3.5 rounded-lg bg-slate-200/70 dark:bg-slate-700/40 hover:bg-slate-200 dark:hover:bg-slate-700/70 hover:shadow-md transition-all duration-200 ease-out md:hover:-translate-y-0.5">
                                         <div class="doc-drag-handle hidden md:flex items-center justify-center cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600">
                                             <icon class="w-5 h-5" name="drag" />
                                         </div>
