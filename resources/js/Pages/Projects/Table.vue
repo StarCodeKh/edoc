@@ -7,14 +7,6 @@
             <div class="flex flex-col task__table overflow-y-auto h-full">
                 <div class="inline-block min-w-full h-full py-4 align-middle md:px-3 lg:px-4">
                     <div class="table__view">
-
-                        <!-- Status filter buttons — one per board list, so this stays
-                             in sync with whatever lists/stages this project actually
-                             has instead of a hardcoded set of labels. The first list
-                             is highlighted green (matches "Approved" being first in
-                             most approval workflows); the rest are blue. Clicking a
-                             button filters the table to that status; clicking the
-                             active one again clears the filter. -->
                         <div class="flex flex-wrap gap-2 md:gap-3 mb-5">
                             <button
                                 v-for="(listItem, idx) in lists"
@@ -32,14 +24,6 @@
                                 >{{ (listItem.tasks || []).length }}</span>
                             </button>
                         </div>
-
-                        <!-- Card-style document table: a soft rounded header bar plus
-                             individually-rounded, gently-hoverable row "cards" rather
-                             than a flat bordered table — matches the reference design
-                             and gives a smoother, more modern feel. On small screens
-                             the grid collapses into stacked label/value cards instead
-                             of squeezing columns into a narrow viewport (see the
-                             .doc-row rules in <style> for the breakpoint). -->
                         <div class="doc-table rounded-xl shadow-sm overflow-x-auto">
                             <div class="doc-row doc-row--head hidden md:grid gap-3 px-4 py-3 text-sm font-semibold text-white">
                                 <div></div>
@@ -52,13 +36,6 @@
                                 <div>{{ $t('បាកូដ') }}</div>
                                 <div>{{ $t('បោះពុម្ព') }}</div>
                             </div>
-
-                            <!-- Drag-and-drop reordering, restored from the original
-                                 board table (the ≡ handle icon). Reordering only
-                                 makes unambiguous sense within the currently visible
-                                 (filtered) set, so the handle drives taskRows and
-                                 afterDrop() persists the new order via the same
-                                 task.update.order endpoint the board view used. -->
                             <draggable v-model="pageRows" tag="div" class="doc-rows flex flex-col gap-2 p-2" handle=".doc-drag-handle" item-key="id" @end="afterDrop">
                                 <template #item="{ element, index }">
                                     <div class="doc-row md:grid gap-1.5 md:gap-3 md:items-center px-4 py-3 md:py-3.5 rounded-lg bg-slate-200/70 dark:bg-slate-700/40 hover:bg-slate-200 dark:hover:bg-slate-700/70 hover:shadow-md transition-all duration-200 ease-out md:hover:-translate-y-0.5">
@@ -95,9 +72,6 @@
                                             {{ element.created_at ? moment(element.created_at).format('DD MMM YYYY') : '' }}
                                         </div>
                                         <div class="text-sm" :data-label="$t('ថ្ងៃឯកសារចូល')">
-                                            <!-- Manually-set document received date (tasks.entry_date),
-                                                 distinct from the record's own created_at above — set
-                                                 from the same field added in TaskDetails.vue. -->
                                             {{ element.entry_date ? moment(element.entry_date).format('DD MMM YYYY') : '' }}
                                         </div>
                                         <div :data-label="$t('ស្ថានភាព')">
@@ -106,16 +80,11 @@
                                             </span>
                                         </div>
                                         <div :data-label="$t('បាកូដ')">
-                                            <!-- Rendered client-side via JsBarcode in mounted/updated
-                                                 (see renderBarcodes()) — needs `npm install jsbarcode`. -->
                                             <div class="doc-barcode bg-white rounded px-2 py-1.5 shadow-inner w-full max-w-[180px]">
                                                 <svg :ref="setBarcodeRef(element.id)" :data-barcode-value="documentCode(element)"></svg>
                                             </div>
                                         </div>
                                         <div :data-label="$t('បោះពុម្ព')">
-                                            <!-- Opens the same printable receipt/tracking document used on
-                                                 the board view (DocumentReceipt) — stopPropagation so it
-                                                 doesn't also trigger the row's other click handlers. -->
                                             <button
                                                 type="button"
                                                 @click.stop="openReceiptModal(element, $event)"
@@ -136,10 +105,6 @@
                             </div>
                         </div>
 
-                        <!-- Pagination — only shown once there's more than one page.
-                             Reordering via drag only affects the currently visible
-                             page (see afterDrop()); this is the standard tradeoff
-                             any paginated drag-and-drop list makes. -->
                         <div v-if="totalPages > 1" class="doc-pagination flex flex-wrap items-center justify-between gap-3 mt-4 px-1">
                             <div class="text-xs text-gray-500 dark:text-gray-400">
                                 {{ $t('Showing') }} {{ paginationStart }}–{{ paginationEnd }} {{ $t('of') }} {{ taskRows.length }}

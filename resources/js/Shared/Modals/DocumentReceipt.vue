@@ -79,10 +79,6 @@
                                 <span class="font-semibold sm:min-w-[150px] text-gray-900">កាលបរិច្ឆេទឯកសារចូល៖</span>
                                 <span class="flex-1 mt-0.5 sm:mt-0">{{ formatDate(task?.entry_date || task?.created_at) }}</span>
                             </div>
-                            <div class="flex flex-col sm:flex-row sm:items-baseline">
-                                <span class="font-semibold sm:min-w-[150px] text-gray-900">ស្ថានភាព៖</span>
-                                <span class="flex-1 mt-0.5 sm:mt-0">{{ task?.list?.title || 'N/A' }}</span>
-                            </div>
                         </div>
 
                         <!-- Right column: QR on top, Barcode below it -->
@@ -192,6 +188,20 @@
                 type: Object,
                 required: true,
                 default: () => ({})
+            },
+
+            presetStatusLabel: {
+                type: String,
+                default: null
+            },
+            presetStatusColor: {
+                type: String,
+                default: null
+            },
+
+            lists: {
+                type: Array,
+                default: () => ([])
             }
         },
         computed: {
@@ -204,6 +214,36 @@
                 if (!source) return 'N/A';
                 const department = source.parent?.name;
                 return department ? `${department} — ${source.name}` : source.name;
+            },
+
+            matchedList() {
+                if (!Array.isArray(this.lists) || !this.lists.length || !this.task) return null;
+                const listId = this.task.list_id;
+                let idx = this.lists.findIndex(l => l.id === listId || (Array.isArray(l.list_ids) && l.list_ids.includes(listId)));
+                if (idx === -1) {
+                    idx = this.lists.findIndex(l => (l.tasks || []).some(t => t.id === this.task.id));
+                }
+                return idx === -1 ? null : { index: idx, list: this.lists[idx] };
+            },
+
+            statusLabel() {
+                if (this.presetStatusLabel) return this.presetStatusLabel;
+                if (this.task?.list?.title) return this.task.list.title;
+                if (this.matchedList) return this.matchedList.list.title;
+                return 'N/A';
+            },
+
+            statusColor() {
+                if (this.presetStatusColor) return this.presetStatusColor;
+                const palette = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4', '#ec4899', '#6366f1'];
+                if (this.matchedList) return palette[this.matchedList.index % palette.length];
+                const label = this.statusLabel;
+                if (!label || label === 'N/A') return '#9ca3af';
+                let hash = 0;
+                for (let i = 0; i < label.length; i++) {
+                    hash = (hash * 31 + label.charCodeAt(i)) >>> 0;
+                }
+                return palette[hash % palette.length];
             }
         },
         mounted() {

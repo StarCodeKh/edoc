@@ -53,19 +53,6 @@ class Task extends Model
         return $code;
     }
 
-    /**
-     * Generate QR Code that links straight to this task in the app.
-     *
-     * This used to encode plain "Code: ...\nTitle: ..." text, which a
-     * phone camera can only display — there's nothing to tap and nothing
-     * to search from. Encoding the task's own URL instead means scanning
-     * it opens the task directly (in the table view, with the details
-     * modal auto-opened via projects.table.with.task — see
-     * TaskDetails.vue's/Table.vue's existing checkTaskUri() handling of
-     * that same URL shape), where the title and code are both right
-     * there. $title is kept as a parameter so callers don't need to
-     * change, but the payload itself no longer needs to spell it out.
-     */
     private function generateQrCode($title, $taskCode)
     {
         // Prefer the slug (always set by this point — see boot()'s
@@ -121,28 +108,6 @@ class Task extends Model
         return $slug;
     }
 
-    /**
-     * Unicode-safe slugify — a drop-in replacement for Str::slug() when
-     * the title may contain Khmer script.
-     *
-     * Passing `null` as the language to Str::slug() (i.e.
-     * Str::slug($title, '-', null)) skips its Str::ascii() romanization
-     * step, which is necessary — Khmer has no entry in that
-     * transliteration table, so ascii() was silently deleting every
-     * Khmer character outright. But that alone still isn't enough:
-     * Str::slug()'s own character filter only keeps \pL (Unicode
-     * "Letter") and \pN ("Number") characters. Khmer vowel signs and the
-     * COENG sign that Khmer subscript-consonant clusters depend on are
-     * Unicode "Mark" (\p{M}) characters, not "Letter" — so Str::slug()
-     * strips them regardless of the language setting. The result is a
-     * slug with its diacritics/subscripts silently removed, which is
-     * exactly what produced the malformed/overlapping-looking Khmer text
-     * in the `?task=` URL: the base consonants survived, but the marks
-     * that combine with them to form correct clusters didn't.
-     *
-     * This filter additionally keeps \p{M}, so Khmer (and any other
-     * script that relies on combining marks) survives intact.
-     */
     private function slugify($title, $separator = '-')
     {
         $title = mb_strtolower(trim((string) $title));

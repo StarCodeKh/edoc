@@ -231,9 +231,6 @@ class ProjectsController extends Controller {
             ->with('timer')
             ->whereHas('list')
             ->with('cover')
-            // ប្រភពឯកសារ (Document Source) — kept consistent with the other
-            // task-list controllers so any Print/Receipt button added to
-            // this view later isn't stuck on N/A either.
             ->with('documentSource.parent')
             ->withCount('checklistDone')
             ->withCount('comments')
@@ -246,8 +243,6 @@ class ProjectsController extends Controller {
             }
         }
 
-        // Build real statusCards / summary / statistics from the actual lists & tasks
-        // (replaces the placeholder numbers the Dashboard.vue component defaults to).
         $palette = ['#4a90d9', '#c9d94d', '#4caf50', '#e0503a', '#9b59b6', '#f0a63a', '#7cb342', '#26a69a'];
         $totalTasks = count($tasks);
 
@@ -637,30 +632,7 @@ class ProjectsController extends Controller {
 
     public function csvExport($project_id)
     {
-        // New Version
         return (new TasksExport)->forProject($project_id)->download('tasks.csv', Excel::CSV);
-        // New Version
-//        $tasks = Task::where('project_id', $project_id)->limit(14)->orderBy('id', 'desc')->get();
-//        $csvFileName = 'tasks.csv';
-//
-//        $headers = [
-//            'Content-Type' => 'text/csv',
-//            'Content-Disposition' => 'attachment; filename="' . $csvFileName . '"',
-//        ];
-//
-//        $handle = fopen('php://output', 'w');
-//        fputcsv($handle, ['ID', 'Title', 'Slug', 'Description', 'Board', 'Project Name', 'Due Date', 'Order', 'User ID','List ID', 'Created At']);
-//
-//        foreach ($tasks as $task) {
-//            fputcsv($handle, [$task->id, $this->cleanCode($task->title), $this->cleanCode($task->slug),
-//                $this->cleanCode(strip_tags($task->description)), $task->list ? $this->cleanCode($task->list->title) : null,
-//                $task->project ? $this->cleanCode($task->project->title): null, $task->due_date,
-//                $task->order, $task->user_id, $task->list_id, $task->created_at
-//            ]);
-//        }
-//
-//        fclose($handle);
-//        return Response::make('', 200, $headers);
     }
 
 
