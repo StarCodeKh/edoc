@@ -49,7 +49,20 @@ class WorkSpacesController extends Controller
     public function jsonAll()
     {
         $user_id = auth()->id();
-        $workSpaces = Workspace::where('user_id', $user_id)->orWhereHas('member')->with('member')->withCount('projects')->orderBy('name')->get()->toArray();
+        $workSpaces = Workspace::where('user_id', $user_id)->orWhereHas('member')->with('member')->withCount('projects')->orderBy('name')->get();
+
+        $workSpaces->each(function ($workspace) use ($user_id) {
+            $projectIds = Project::where('workspace_id', $workspace->id)->pluck('id');
+            $listIds = BoardList::whereIn('project_id', $projectIds)->isOpen()->pluck('id');
+            $workspace->incomplete_tasks_count = Task::whereIn('list_id', $listIds)
+                ->where('is_done', 0)
+                ->whereHas('assignees', function ($q) use ($user_id) {
+                    $q->where('user_id', $user_id);
+                })
+                ->isOpen()
+                ->count();
+        });
+
         return response()->json($workSpaces);
     }
 
