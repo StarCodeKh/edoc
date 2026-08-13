@@ -1,27 +1,48 @@
 <template>
   <div>
       <div class="flex justify-center w-full flash-message">
-          <div v-if="$page.props.flash && $page.props.flash.success && show" class="mt-3 mb-3 flex items-center justify-between bg-green-500 rounded max-w-3xl">
-              <div class="flex items-center">
-                  <svg class="ml-4 mr-2 shrink-0 w-4 h-4 fill-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><polygon points="0 11 2 9 7 14 18 3 20 5 7 18" /></svg>
-                  <div class="py-4 text-white text-sm font-medium">{{ $page.props.flash.success }}</div>
-              </div>
-              <button type="button" class="group mr-2 p-2" @click="show = false">
-                  <svg class="block w-2 h-2 fill-green-800 group-hover:fill-white" xmlns="http://www.w3.org/2000/svg" width="235.908" height="235.908" viewBox="278.046 126.846 235.908 235.908"><path d="M506.784 134.017c-9.56-9.56-25.06-9.56-34.62 0L396 210.18l-76.164-76.164c-9.56-9.56-25.06-9.56-34.62 0-9.56 9.56-9.56 25.06 0 34.62L361.38 244.8l-76.164 76.165c-9.56 9.56-9.56 25.06 0 34.62 9.56 9.56 25.06 9.56 34.62 0L396 279.42l76.164 76.165c9.56 9.56 25.06 9.56 34.62 0 9.56-9.56 9.56-25.06 0-34.62L430.62 244.8l76.164-76.163c9.56-9.56 9.56-25.06 0-34.62z" /></svg>
+          <!-- Success -->
+          <div
+              v-if="$page.props.flash && $page.props.flash.success && show"
+              class="mt-3 mb-3 inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-white/20 backdrop-blur-xl shadow-[0_15px_35px_-10px_rgba(0,0,0,0.45)] max-w-3xl"
+          >
+              <span class="shrink-0 w-5 h-5 rounded-full bg-[#149954] flex items-center justify-center">
+                  <svg class="w-3 h-3 fill-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><polygon points="0 11 2 9 7 14 18 3 20 5 7 18" /></svg>
+              </span>
+              <div class="text-[15px] font-semibold text-[#149954]">{{ $page.props.flash.success }}</div>
+              <button type="button" class="group shrink-0 text-[#149954]/80 hover:text-[#0E7A42] transition-colors" @click="show = false">
+                  <svg class="w-3.5 h-3.5 fill-current" xmlns="http://www.w3.org/2000/svg" width="235.908" height="235.908" viewBox="278.046 126.846 235.908 235.908"><path d="M506.784 134.017c-9.56-9.56-25.06-9.56-34.62 0L396 210.18l-76.164-76.164c-9.56-9.56-25.06-9.56-34.62 0-9.56 9.56-9.56 25.06 0 34.62L361.38 244.8l-76.164 76.165c-9.56 9.56-9.56 25.06 0 34.62 9.56 9.56 25.06 9.56 34.62 0L396 279.42l76.164 76.165c9.56 9.56 25.06 9.56 34.62 0 9.56-9.56 9.56-25.06 0-34.62L430.62 244.8l76.164-76.163c9.56-9.56 9.56-25.06 0-34.62z" /></svg>
               </button>
           </div>
-          <div v-if="$page.props.flash && ($page.props.flash.error || Object.keys($page.props.errors).length > 0) && show" class="mb-8 flex items-center justify-between bg-red-400 rounded max-w-3xl">
-              <div class="flex items-center">
-                  <svg class="ml-4 mr-2 shrink-0 w-4 h-4 fill-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm1.41-1.41A8 8 0 1 0 15.66 4.34 8 8 0 0 0 4.34 15.66zm9.9-8.49L11.41 10l2.83 2.83-1.41 1.41L10 11.41l-2.83 2.83-1.41-1.41L8.59 10 5.76 7.17l1.41-1.41L10 8.59l2.83-2.83 1.41 1.41z" /></svg>
-                  <div v-if="$page.props.flash.error" class="py-4 text-white text-sm font-medium">{{ $page.props.flash.error }}</div>
-                  <div v-else class="py-4 text-white text-sm font-medium flex flex-col">
-                      <span v-if="Object.keys($page.props.errors).length === 1">There is one form error.</span>
-                      <span v-else>There are {{ Object.keys($page.props.errors).length }} form errors.</span>
-                      <span v-for="(error, ei) in $page.props.errors" :key="ei"> * {{ error }} </span>
-                  </div>
+
+          <!-- Error -->
+          <div
+              v-if="$page.props.flash && ($page.props.flash.error || Object.keys($page.props.errors).length > 0) && show"
+              class="mb-8 inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-white/20 backdrop-blur-xl shadow-[0_15px_35px_-10px_rgba(0,0,0,0.45)] max-w-3xl"
+              :class="{ 'items-start': Object.keys($page.props.errors).length > 1 }"
+          >
+              <span class="shrink-0 w-5 h-5 rounded-full bg-[#B3261E] flex items-center justify-center" :class="{ 'mt-0.5': Object.keys($page.props.errors).length > 1 }">
+                  <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 8v4m0 4h.01" />
+                  </svg>
+              </span>
+
+              <div v-if="$page.props.flash.error" class="text-[15px] font-semibold text-[#B3261E]">{{ $page.props.flash.error }}</div>
+              <div v-else class="text-[15px] font-semibold text-[#B3261E] flex flex-col leading-relaxed">
+                  <span v-if="Object.keys($page.props.errors).length === 1">{{ Object.values($page.props.errors)[0] }}</span>
+                  <template v-else>
+                      <span>There are {{ Object.keys($page.props.errors).length }} form errors.</span>
+                      <span v-for="(error, ei) in $page.props.errors" :key="ei" class="font-normal">* {{ error }}</span>
+                  </template>
               </div>
-              <button type="button" class="group mr-2 p-2" @click="show = false" :class="{'dir_top': Object.keys($page.props.errors).length > 1}">
-                  <svg class="block w-2 h-2 fill-red-800 group-hover:fill-white" xmlns="http://www.w3.org/2000/svg" width="235.908" height="235.908" viewBox="278.046 126.846 235.908 235.908"><path d="M506.784 134.017c-9.56-9.56-25.06-9.56-34.62 0L396 210.18l-76.164-76.164c-9.56-9.56-25.06-9.56-34.62 0-9.56 9.56-9.56 25.06 0 34.62L361.38 244.8l-76.164 76.165c-9.56 9.56-9.56 25.06 0 34.62 9.56 9.56 25.06 9.56 34.62 0L396 279.42l76.164 76.165c9.56 9.56 25.06 9.56 34.62 0 9.56-9.56 9.56-25.06 0-34.62L430.62 244.8l76.164-76.163c9.56-9.56 9.56-25.06 0-34.62z" /></svg>
+
+              <button
+                  type="button"
+                  class="group shrink-0 text-[#B3261E]/80 hover:text-[#8f1e18] transition-colors"
+                  :class="{ 'mt-0.5': Object.keys($page.props.errors).length > 1 }"
+                  @click="show = false"
+              >
+                  <svg class="w-3.5 h-3.5 fill-current" xmlns="http://www.w3.org/2000/svg" width="235.908" height="235.908" viewBox="278.046 126.846 235.908 235.908"><path d="M506.784 134.017c-9.56-9.56-25.06-9.56-34.62 0L396 210.18l-76.164-76.164c-9.56-9.56-25.06-9.56-34.62 0-9.56 9.56-9.56 25.06 0 34.62L361.38 244.8l-76.164 76.165c-9.56 9.56-9.56 25.06 0 34.62 9.56 9.56 25.06 9.56 34.62 0L396 279.42l76.164 76.165c9.56 9.56 25.06 9.56 34.62 0 9.56-9.56 9.56-25.06 0-34.62L430.62 244.8l76.164-76.163c9.56-9.56 9.56-25.06 0-34.62z" /></svg>
               </button>
           </div>
       </div>
@@ -29,21 +50,21 @@
 </template>
 
 <script>
-export default {
-  data() {
-    return {
-      show: true,
-    }
-  },
-  watch: {
-    '$page.props.flash': {
-      handler() {
-        this.show = true
-      },
-      deep: true,
+    export default {
+    data() {
+        return {
+        show: true,
+        }
     },
-  },
-    mounted() {
+    watch: {
+        '$page.props.flash': {
+        handler() {
+            this.show = true
+        },
+        deep: true,
+        },
+    },
+        mounted() {
+        }
     }
-}
 </script>

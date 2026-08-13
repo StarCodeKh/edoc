@@ -20,6 +20,22 @@
         <!-- Flash Messages -->
         <flash-messages />
 
+        <!-- Toast / snackbar notification -->
+        <Transition name="toast-fade">
+            <div
+                v-if="toast.show"
+                class="fixed top-6 left-1/2 -translate-x-1/2 z-50 inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-white/20 backdrop-blur-xl shadow-[0_15px_35px_-10px_rgba(0,0,0,0.45)] max-w-[92vw]"
+                role="alert"
+            >
+                <span class="shrink-0 w-5 h-5 rounded-full bg-[#B3261E] flex items-center justify-center">
+                    <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 8v4m0 4h.01" />
+                    </svg>
+                </span>
+                <span class="text-[15px] font-semibold text-[#B3261E] whitespace-nowrap">{{ toast.message }}</span>
+            </div>
+        </Transition>
+
         <div class="relative w-full max-w-md">
 
             <!-- Emblem -->
@@ -53,7 +69,6 @@
                                 </svg>
                                 <text-input
                                     v-model="form.email"
-                                    :error="form.errors.email"
                                     type="email"
                                     autofocus
                                     autocapitalize="off"
@@ -73,7 +88,6 @@
                                 </svg>
                                 <text-input
                                     v-model="form.password"
-                                    :error="form.errors.password"
                                     type="password"
                                     placeholder="បញ្ចូលលេខសម្ងាត់"
                                     class="col-start-1 row-start-1 w-full login-input has-icon"
@@ -148,7 +162,7 @@
                         </loading-button>
 
                         <!-- Registration Link -->
-                        <div v-if="enable_registration" class="mt-6 text-center">
+                        <!-- <div v-if="enable_registration" class="mt-6 text-center">
                             <p class="text-sm text-white/80">
                                 មិនទាន់មានគណនីមែនទេ?
                                 <Link
@@ -158,7 +172,7 @@
                                     ចុះឈ្មោះ
                                 </Link>
                             </p>
-                        </div>
+                        </div> -->
                     </form>
             </div>
 
@@ -270,6 +284,11 @@
                 loadingTimeout: 30000,
                 disable_login_button: true,
                 loginError: null,
+                toast: {
+                    show: false,
+                    message: '',
+                },
+                toastTimer: null,
                 form: this.$inertia.form({
                     email: '',
                     password: '',
@@ -291,7 +310,41 @@
         },
         methods: {
             login() {
+                if (!this.validateForm()) {
+                    return
+                }
                 this.form.post(this.route('login.store'))
+            },
+            // Client-side check for required fields before hitting the server.
+            // Returns true when the form is OK to submit, false otherwise
+            // (and shows a toast explaining what's missing).
+            validateForm() {
+                const emailEmpty = !this.form.email || !this.form.email.trim()
+                const passwordEmpty = !this.form.password || !this.form.password.trim()
+
+                if (!emailEmpty && !passwordEmpty) {
+                    return true
+                }
+
+                let message
+                if (emailEmpty && passwordEmpty) {
+                    message = 'សូមបញ្ចូលអ៊ីមែល និងលេខសម្ងាត់'
+                } else if (emailEmpty) {
+                    message = 'សូមបញ្ចូលអ៊ីមែល'
+                } else {
+                    message = 'សូមបញ្ចូលលេខសម្ងាត់'
+                }
+
+                this.showToast(message)
+                return false
+            },
+            showToast(message, duration = 3500) {
+                clearTimeout(this.toastTimer)
+                this.toast.message = message
+                this.toast.show = true
+                this.toastTimer = setTimeout(() => {
+                    this.toast.show = false
+                }, duration)
             },
             recaptchaVerified(response) {
                 this.disable_login_button = false
@@ -356,5 +409,17 @@
     input:focus,
     button:focus {
         outline: none;
+    }
+
+    /* Toast transition */
+    .toast-fade-enter-active,
+    .toast-fade-leave-active {
+        transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+
+    .toast-fade-enter-from,
+    .toast-fade-leave-to {
+        opacity: 0;
+        transform: translate(-50%, -12px);
     }
 </style>

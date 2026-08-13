@@ -39,92 +39,159 @@
             </div>
             <!-- Modal Content Body -->
             <div class="p-3 sm:p-8 overflow-x-auto">
-                <!-- Printable Document Receipt Area -->
-                <div id="printable-receipt" class="bg-white p-6 sm:p-12 border border-gray-200/80 rounded-xl shadow-sm text-gray-900 font-kantumruy relative min-h-[550px] sm:min-h-[650px] flex flex-col justify-between">
+                <div id="printable-receipt" class="bg-white p-6 sm:p-10 border-2 border-gray-300 rounded-xl shadow-sm text-gray-900 font-kantumruy relative">
 
                     <!-- Subtle corner accents for an "official seal" feel -->
                     <div class="pointer-events-none absolute top-0 left-0 w-20 h-20 sm:w-24 sm:h-24 border-t-4 border-l-4 border-emerald-600/20 rounded-tl-xl" style="border-top-left-radius: 0.75rem;"></div>
                     <div class="pointer-events-none absolute bottom-0 right-0 w-20 h-20 sm:w-24 sm:h-24 border-b-4 border-r-4 border-emerald-600/20 rounded-br-xl" style="border-bottom-right-radius: 0.75rem;"></div>
 
-                    <div>
-                        <!-- Header with Logo & Title -->
-                        <div class="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 border-b-2 border-emerald-600/30 pb-6 mb-6 sm:mb-8 text-center sm:text-left">
-                            <img src="/images/logo.png" alt="Logo" class="w-20 h-20 sm:w-24 sm:h-24 object-contain flex-shrink-0" />
+                    <div class="text-center border-b-2 border-emerald-600/30 pb-5 mb-6">
+                        <img src="/images/logo.png" alt="Logo" class="w-16 h-16 sm:w-20 sm:h-20 object-contain mx-auto" />
+                        <h2 class="font-battambang text-sm sm:text-lg font-bold text-gray-900 tracking-wide leading-relaxed mt-3">
+                            អគ្គលេខាធិការដ្ឋានគណៈកម្មាធិការគ្រប់គ្រងល្បែងពាណិជ្ជកម្មកម្ពុជា
+                        </h2>
+                        <h3 class="font-moul text-base sm:text-xl text-emerald-600 tracking-wider mt-2">
+                            លិខិតបញ្ជាក់ឯកសារ
+                        </h3>
+                    </div>
 
-                            <div class="flex-1 sm:pr-12">
-                                <h2 class="font-battambang text-base sm:text-xl font-bold text-gray-900 tracking-wide leading-relaxed">
-                                    អគ្គលេខាធិការដ្ឋានគណៈកម្មាធិការគ្រប់គ្រងល្បែងពាណិជ្ជកម្មកម្ពុជា
-                                </h2>
-                                <h3 class="font-moul text-lg sm:text-2xl text-emerald-600 tracking-wider mt-2 sm:mt-3">
-                                    លិខិតបញ្ជាក់ឯកសារ
-                                </h3>
-                            </div>
-                        </div>
-
-                        <!-- Document Details Layout -->
-                        <div class="space-y-3 text-sm sm:text-base text-gray-900 my-4 sm:my-6">
+                    <div class="flex flex-col sm:flex-row gap-6 sm:gap-10">
+                        <!-- Left column: document details -->
+                        <div class="flex-1 space-y-3 text-sm sm:text-base text-gray-900">
                             <div class="flex flex-col sm:flex-row sm:items-baseline">
-                                <span class="font-semibold sm:min-w-[160px] text-gray-900">លេខឯកសារ៖</span>
+                                <span class="font-semibold sm:min-w-[150px] text-gray-900">លេខឯកសារ៖</span>
                                 <span class="font-bold text-emerald-700 mt-0.5 sm:mt-0 tracking-wide">{{ getTaskCode }}</span>
                             </div>
                             <div class="flex flex-col sm:flex-row sm:items-baseline">
-                                <span class="font-semibold sm:min-w-[160px] text-gray-900">កម្មវត្ថុ៖</span>
+                                <span class="font-semibold sm:min-w-[150px] text-gray-900">កម្មវត្ថុ៖</span>
                                 <span class="flex-1 mt-0.5 sm:mt-0">{{ task?.title || 'N/A' }}</span>
                             </div>
                             <div v-if="task?.project" class="flex flex-col sm:flex-row sm:items-baseline">
-                                <span class="font-semibold sm:min-w-[160px] text-gray-900">គម្រោង៖</span>
+                                <span class="font-semibold sm:min-w-[150px] text-gray-900">គម្រោង៖</span>
                                 <span class="flex-1 mt-0.5 sm:mt-0">{{ task.project.name || task.project.title }}</span>
                             </div>
-                            <!-- ប្រភពឯកសារ (Document Source): the actual office/department
-                                 picked in the TaskDetails.vue org-chart picker
-                                 (task.document_source_id), shown as
-                                 "department — office". Falls back to "N/A" when
-                                 no source has been set on the task yet, so the
-                                 line is always present on the printed receipt. -->
+
                             <div class="flex flex-col sm:flex-row sm:items-baseline">
-                                <span class="font-semibold sm:min-w-[160px] text-gray-900">ប្រភពឯកសារ៖</span>
+                                <span class="font-semibold sm:min-w-[150px] text-gray-900">ប្រភពឯកសារ៖</span>
                                 <span class="flex-1 mt-0.5 sm:mt-0">{{ documentSourceLabel }}</span>
                             </div>
                             <div class="flex flex-col sm:flex-row sm:items-baseline">
-                                <span class="font-semibold sm:min-w-[160px] text-gray-900">កាលបរិច្ឆេទឯកសារចូល៖</span>
+                                <span class="font-semibold sm:min-w-[150px] text-gray-900">កាលបរិច្ឆេទឯកសារចូល៖</span>
                                 <span class="flex-1 mt-0.5 sm:mt-0">{{ formatDate(task?.entry_date || task?.created_at) }}</span>
                             </div>
+                            <!-- ស្ថានភាព (Status) — new field from the sketch, taken
+                                 from the task's current list/column, same status
+                                 name shown on the Board/Table views. -->
+                            <div class="flex flex-col sm:flex-row sm:items-baseline">
+                                <span class="font-semibold sm:min-w-[150px] text-gray-900">ស្ថានភាព៖</span>
+                                <span class="flex-1 mt-0.5 sm:mt-0">{{ task?.list?.title || 'N/A' }}</span>
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- Center QR and Bottom Barcode / Footer Layout -->
-                    <div class="mt-8 sm:mt-8 relative z-10 print-avoid-break">
-                        <!-- Codes Section (QR & Barcode Centered) -->
-                        <div class="flex flex-col items-center justify-center my-4 sm:my-6 space-y-3 sm:space-y-4">
-                            <!-- QR Code -->
-                            <div class="p-2 bg-white flex justify-center items-center border border-gray-100 rounded-lg shadow-sm">
-                                <img v-if="task?.qr_code" :src="task.qr_code" alt="QR Code" class="w-28 h-28 sm:w-32 sm:h-32 object-contain" />
+                        <!-- Right column: QR on top, Barcode below it -->
+                        <div class="flex flex-row sm:flex-col items-center justify-center gap-3 sm:gap-4 flex-shrink-0">
+                            <div class="p-2 bg-white flex justify-center items-center border border-gray-200 rounded-lg shadow-sm">
+                                <img v-if="task?.qr_code" :src="task.qr_code" alt="QR Code" class="w-20 h-20 sm:w-24 sm:h-24 object-contain" />
                                 <img
                                     v-else
                                     :src="`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(getTrackingUrl())}`"
                                     alt="QR Code"
-                                    class="w-28 h-28 sm:w-32 sm:h-32 object-contain"
+                                    class="w-20 h-20 sm:w-24 sm:h-24 object-contain"
                                 />
                             </div>
-
-                            <!-- 1D Barcode -->
-                            <div class="flex flex-col items-center mt-2 w-full overflow-hidden">
-                                <img v-if="task?.bar_code" :src="task.bar_code" alt="Barcode" class="h-10 sm:h-12 max-w-full w-56 sm:w-64 object-contain" />
+                            <div class="flex flex-col items-center w-full overflow-hidden">
+                                <img v-if="task?.bar_code" :src="task.bar_code" alt="Barcode" class="h-8 sm:h-10 max-w-full w-32 sm:w-40 object-contain" />
                                 <img
                                     v-else
                                     :src="`https://bwipjs-api.metafloor.com/?bcid=code128&text=${encodeURIComponent(getTaskCode)}&scale=2&height=10&includetext=false`"
                                     alt="Barcode"
-                                    class="h-10 sm:h-12 max-w-full w-56 sm:w-64 object-contain"
+                                    class="h-8 sm:h-10 max-w-full w-32 sm:w-40 object-contain"
                                 />
-                                <p class="text-[11px] sm:text-xs text-gray-800 mt-2 font-medium text-center">សូមស្កេន ដើម្បីតាមដានឯកសារ</p>
-                                <p class="text-[10px] sm:text-[11px] text-gray-500 font-sans tracking-wide text-center">Please, scan here to track document.</p>
+                                <p class="text-[10px] sm:text-[11px] text-gray-600 mt-1.5 font-medium text-center">សូមស្កេន ដើម្បីតាមដានឯកសារ</p>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- Footer / Thank you positioned precisely to the bottom right -->
-                        <div class="flex justify-end pt-3 sm:pt-4 mt-4 sm:mt-6 border-t border-gray-100">
-                            <span class="font-moul text-sm sm:text-lg text-gray-800 tracking-wider">សូមអរគុណ</span>
+                    <!-- ជម្រាបជូន (Notify) section — static print-only markup
+                         (no v-model, not tied to any task field): one
+                         checkbox per department from the org chart
+                         (matches DocumentSourceSeeder's 6 departments),
+                         plus a "ផ្សេងៗ" (Other) line with a blank box for
+                         anything not on the list — ticked/filled by hand
+                         on the printed paper. -->
+                    <div class="mt-6 pt-5 border-t border-gray-100 print-avoid-break">
+                        <p class="font-semibold mb-3">ជម្រាបជូន ៖</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-sm sm:text-base">
+                            <label class="flex items-start gap-2">
+                                <span class="receipt-checkbox"></span>
+                                <span>នាយកដ្ឋានកិច្ចការគតិយុត្ត និងគ្រប់គ្រងអាជ្ញាបណ្ណ</span>
+                            </label>
+                            <label class="flex items-start gap-2">
+                                <span class="receipt-checkbox"></span>
+                                <span>នាយកដ្ឋានកិច្ចការទូទៅ</span>
+                            </label>
+                            <label class="flex items-start gap-2">
+                                <span class="receipt-checkbox"></span>
+                                <span>នាយកដ្ឋានគ្រប់គ្រងបច្ចេកទេសល្បែង</span>
+                            </label>
+                            <label class="flex items-start gap-2">
+                                <span class="receipt-checkbox"></span>
+                                <span>នាយកដ្ឋានគ្រប់គ្រងសន្តិសុខ និងសណ្តាប់ធ្នាប់</span>
+                            </label>
+                            <label class="flex items-start gap-2">
+                                <span class="receipt-checkbox"></span>
+                                <span>នាយកដ្ឋានត្រួតពិនិត្យ និងគ្រប់គ្រងចំណូល</span>
+                            </label>
+                            <label class="flex items-start gap-2">
+                                <span class="receipt-checkbox"></span>
+                                <span>អង្គភាពសវនកម្មផ្ទៃក្នុង</span>
+                            </label>
                         </div>
+                        <label class="flex items-center gap-2 mt-4 text-sm sm:text-base">
+                            <span class="receipt-checkbox"></span>
+                            <span class="flex-shrink-0">ផ្សេងៗ</span>
+                            <span class="flex-1 border border-gray-400 rounded h-8"></span>
+                        </label>
+                    </div>
+
+                    <!-- Response-deadline note — also static print-only markup. -->
+                    <div class="mt-6 text-sm sm:text-base">
+                        <p>ខ្ញុំសូមស្នើសុំឯកសារនេះត្រូវរៀបចំចម្លើយតបចាំតាមចំណារខាងលើ ហើយបញ្ជូនត្រឡប់មកវិញក្នុងរយៈពេលៈ</p>
+                        <div class="flex flex-wrap gap-x-5 gap-y-2 mt-2">
+                            <label class="flex items-center gap-1.5">
+                                <span class="receipt-checkbox"></span>
+                                <span>១ ថ្ងៃ</span>
+                            </label>
+                            <label class="flex items-center gap-1.5">
+                                <span class="receipt-checkbox"></span>
+                                <span>២ ថ្ងៃ</span>
+                            </label>
+                            <label class="flex items-center gap-1.5">
+                                <span class="receipt-checkbox"></span>
+                                <span>៣ ថ្ងៃ</span>
+                            </label>
+                            <label class="flex items-center gap-1.5">
+                                <span class="receipt-checkbox"></span>
+                                <span>៤ ថ្ងៃ</span>
+                            </label>
+                            <label class="flex items-center gap-1.5">
+                                <span class="receipt-checkbox"></span>
+                                <span>៥ ថ្ងៃ នៃថ្ងៃធ្វើការ</span>
+                            </label>
+                            <label class="flex items-center gap-1.5">
+                                <span class="receipt-checkbox"></span>
+                                <!-- Last option's wording was the hardest to read in
+                                     your screenshot — please double-check this one
+                                     against the original and let me know if it needs
+                                     a correction. -->
+                                <span>ប្អូនបានធាប់ហៅសាមដែលអាចធ្វើបាន</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Footer / Thank you -->
+                    <div class="flex justify-end pt-4 mt-6 border-t border-gray-100">
+                        <span class="font-moul text-sm sm:text-lg text-gray-800 tracking-wider">សូមអរគុណ</span>
                     </div>
 
                 </div>
@@ -150,12 +217,6 @@
                 return this.task?.task_code || this.task?.id || 'N/A';
             },
 
-            // ប្រភពឯកសារ (Document Source): built from the office picked on
-            // the task (task.document_source_id) plus its parent department
-            // — loaded via the `documentSource.parent` relation on the
-            // backend (TasksController::getJsonTask/updateTask). Shown as
-            // "department — office" so the receipt reads the same way the
-            // TaskDetails.vue picker groups them.
             documentSourceLabel() {
                 const source = this.task?.document_source;
                 if (!source) return 'N/A';
@@ -223,6 +284,25 @@
         page-break-inside: avoid;
         break-inside: avoid;
     }
+
+    .receipt-checkbox {
+        display: inline-block;
+        flex-shrink: 0;
+        width: 16px;
+        height: 16px;
+        margin-top: 2px;
+        border: 1.5px solid #4b5563;
+        border-radius: 2px;
+    }
+
+    .receipt-radio {
+        display: inline-block;
+        flex-shrink: 0;
+        width: 16px;
+        height: 16px;
+        border: 1.5px solid #4b5563;
+        border-radius: 50%;
+    }
 </style>
 
 <style>
@@ -270,8 +350,6 @@
             overflow: visible !important;
         }
 
-        /* Keep the QR/barcode/footer block intact instead of letting a page
-        break slice through the middle of it */
         #printable-receipt > div {
             page-break-inside: avoid;
             break-inside: avoid;

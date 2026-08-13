@@ -59,9 +59,7 @@ Route::get('login', [AuthenticatedSessionController::class, 'create'])
     ->name('login')
     ->middleware('guest');
 
-Route::get('register', [AuthenticatedSessionController::class, 'register'])
-    ->name('register')
-    ->middleware('guest');
+Route::get('register', [AuthenticatedSessionController::class, 'register'])->name('register')->middleware('guest');
 
 Route::get('password-reset', [AuthenticatedSessionController::class, 'forgotPassword'])->name('password.reset')->middleware('guest');
 Route::post('password-reset-email', [AuthenticatedSessionController::class, 'forgotPasswordMail'])->name('password.reset.email')->middleware('guest');
