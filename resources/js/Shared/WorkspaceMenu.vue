@@ -53,7 +53,12 @@
                     <div class="flex h-5 relative">
                         <div v-if="project.background" :style="{ 'background-image' : 'url('+ project.background +')' }" class="flex bg-cover rounded-full w-5 h-5 border"></div>
                         <div class="flex w-full flex-1 justify-center flex-col pl-2 overflow-hidden text-ellipsis whitespace-nowrap">
-                            <div class="font-medium text-[13px] leading-[18px]">{{ project.title }}</div>
+                            <div class="font-medium text-[13px] leading-[18px]">
+                                {{ project.title }}
+                                <span v-if="projects.length" class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-indigo-600 text-white text-[10px] font-semibold normal-case">
+                                    {{ projects.length }}
+                                </span>
+                            </div>
                         </div>
                         <button class="flex w-7 items-center justify-center" @click="saveProject($event, project)">
                             <icon v-if="!!project.star" name="star" class="w-4 h-4 fill-yellow-500 text-yellow-500 hover:fill-none hover:scale-125" />
@@ -69,9 +74,6 @@
                 <icon v-if="hide_projects" name="arrow-right" class="w-4 h-4" />
                 <div class="flex items-center gap-1.5 cursor-pointer uppercase font-semibold">
                     {{ $t('Projects') }}
-                    <span v-if="projects.length" class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-indigo-600 text-white text-[10px] font-semibold normal-case">
-                        {{ projects.length }}
-                    </span>
                 </div>
             </div>
             <div class="flex">
@@ -93,7 +95,12 @@
                             :style="[project.background && project.background.image ?{backgroundImage: 'url('+project.background.image+')', backgroundSize: 'cover'}:{}]"
                             class="flex bg-cover rounded-full w-5 h-5 border"></div>
                         <div class="flex w-full flex-1 justify-center flex-col pl-2 overflow-hidden text-ellipsis whitespace-nowrap">
-                            <div class="font-medium text-[13px] leading-[18px]">{{ project.title }}</div>
+                            <div class="font-medium text-[13px] leading-[18px]">
+                                {{ project.title }}
+                                <span v-if="projects.length" class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-indigo-600 text-white text-[10px] font-semibold normal-case">
+                                    {{ projects.length }}
+                                </span>
+                            </div>
                         </div>
                         <button class="flex w-7 items-center justify-center" @click="saveProject($event, project)">
                             <icon v-if="!!project.star" name="star" class="w-4 h-4 fill-yellow-500 text-yellow-500 hover:fill-none hover:scale-125" />
