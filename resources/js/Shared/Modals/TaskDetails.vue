@@ -331,311 +331,276 @@
 
                                     <!-- Modal 1: Image / File Preview Modal -->
                                     <transition name="modal-pop" appear>
-                                    <div v-if="viewModal.open" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" @click.self="closeViewModal">
-                                        <div class="modal-pop__panel relative max-w-5xl xl:max-w-6xl max-h-[94vh] bg-white dark:bg-gray-800 rounded-lg overflow-hidden flex flex-col p-4 shadow-xl w-full">
+                                        <div v-if="viewModal.open" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" @click.self="closeViewModal">
+                                            <div class="modal-pop__panel relative max-w-5xl xl:max-w-6xl max-h-[94vh] bg-white dark:bg-gray-800 rounded-lg overflow-hidden flex flex-col p-4 shadow-xl w-full">
 
-                                            <!-- Modal Header -->
-                                            <div class="flex justify-between items-center pb-2 border-b dark:border-gray-700">
-                                                <h3 class="font-bold text-lg dark:text-gray-100 truncate pr-4">{{ viewModal.attachment?.name }}</h3>
-                                                <div class="flex items-center gap-2 flex-shrink-0">
-                                                    <a :href="viewModal.attachment?.path" :download="viewModal.attachment?.name" class="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded bg-gray-200 dark:bg-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600">
-                                                        <icon name="download" class="w-3.5 h-3.5" /> {{ $t('Download') }}
-                                                    </a>
-                                                    <button @click="closeViewModal" class="text-gray-500 hover:text-gray-800 dark:hover:text-white text-xl px-2">&times;</button>
-                                                </div>
-                                            </div>
-
-                                            <!-- Scrollable body: assignees + draw/preview -->
-                                            <div class="flex-1 overflow-y-auto">
-
-                                                <!-- Assignees (PDF only) -->
-                                                <div v-if="isPdf(viewModal.attachment?.name)" class="pt-3">
-                                                    <div class="flex items-center px-2">
-                                                        <h2 class="text-sm font-medium dark:text-gray-300">
-                                                            {{ $t('Assignees') }}
-                                                        </h2>
-
-                                                        <div class="relative ml-auto" modal="true" name="task-assign">
-                                                            <div>
-                                                                <span class="cursor-pointer" @click="showAssigneeBoxPreview = true"><icon class="h-5 w-5 hover:opacity-80 dark:text-gray-300" name="add" /></span>
-                                                            </div>
-
-                                                            <div class="absolute right-1 flex w-[300px] z-10 text-sm flex-col bg-white dark:bg-gray-800 px-4 py-4 rounded shadow dark:border dark:border-gray-700" v-if="showAssigneeBoxPreview">
-                                                                <h4 class="text-center mb-3 font-bold dark:text-white">{{ $t('Assignee') }}</h4>
-                                                                <div class="absolute cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 top-3 right-3 p-1.5 rounded" @click="showAssigneeBoxPreview = false">
-                                                                    <icon class="w-4 h-4 dark:text-gray-300" name="close" />
-                                                                </div>
-                                                                <input id="t_d_s_u_preview" v-model="user_search" class="border-[2px] px-2 py-1 border-gray-400 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-[3px] dark:placeholder-gray-400" :placeholder="$t('Search User')" />
-                                                                <ul class="flex flex-col mt-3 gap-1 h-48 max-h-48 overflow-y-auto">
-                                                                    <li v-for="(userObject, user_index) in searchUser(user_search)" :key="'preview_'+user_index">
-                                                                        <label :for="'td_u_id_preview_'+user_index" class="flex p-2 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 rounded">
-                                                                            <input :id="'td_u_id_preview_'+user_index" class="w-5 ml-1 mr-2" type="checkbox" :checked="task_assignees().includes(userObject.user_id)" @change="assignUserToTask($event.target.checked, userObject.user_id)">
-                                                                            <img v-if="userObject.user.photo_path" :aria-label="userObject.user.name" :alt="userObject.user.name" class="w-6 h-6 rounded-full" :src="userObject.user.photo_path" />
-                                                                            <img v-else :aria-label="userObject.user.name" :alt="userObject.user.name" class="w-6 h-6 rounded-full" src="/images/user.svg" />
-                                                                            <span data-a="" class="p-1 dark:text-gray-200" type="button" :tabindex="user_index">
-                                                                                {{ userObject.user.name }}
-                                                                            </span>
-                                                                        </label>
-                                                                    </li>
-                                                                </ul>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="flex flex-wrap gap-1 px-2 mt-2">
-                                                        <span v-for="assignee in task.assignees" :key="assignee.id" :aria-label="assignee.user.name" class="block rounded-full h-8 w-8 border-2 border-white dark:border-gray-800">
-                                                            <img v-if="assignee.user.photo_path" class="h-full w-full rounded-full" :src="assignee.user.photo_path" :alt="assignee.user.name">
-                                                            <img v-else class="h-full w-full rounded-full" src="/images/user.svg" :alt="assignee.user.name">
-                                                        </span>
-                                                        <span v-if="!task.assignees || !task.assignees.length" class="text-xs text-gray-500 dark:text-gray-400">{{ $t('No assignees yet.') }}</span>
+                                                <!-- Modal Header -->
+                                                <div class="flex justify-between items-center pb-2 border-b dark:border-gray-700">
+                                                    <h3 class="font-bold text-lg dark:text-gray-100 truncate pr-4">{{ viewModal.attachment?.name }}</h3>
+                                                    <div class="flex items-center gap-2 flex-shrink-0">
+                                                        <a :href="viewModal.attachment?.path" :download="viewModal.attachment?.name" class="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded bg-gray-200 dark:bg-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600">
+                                                            <icon name="download" class="w-3.5 h-3.5" /> {{ $t('Download') }}
+                                                        </a>
+                                                        <button @click="closeViewModal" class="text-gray-500 hover:text-gray-800 dark:hover:text-white text-xl px-2">&times;</button>
                                                     </div>
                                                 </div>
 
-                                                <!-- Preview Container (images) -->
-                                                <div v-if="isImage(viewModal.attachment?.name)" class="flex items-center justify-center p-4">
-                                                    <img :src="viewModal.attachment?.path" :alt="viewModal.attachment?.name" class="max-h-[65vh] object-contain rounded" />
-                                                </div>
+                                                <!-- Scrollable body: assignees + draw/preview -->
+                                                <div class="flex-1 overflow-y-auto">
 
-                                                <!-- Draw / Add Note (PDF only): a standard, self-contained markup
-                                                     editor — dark canvas with the page floating in the center,
-                                                     Undo/Redo/Save pinned to a top bar, and a bottom control bar
-                                                     with color swatches + big Sketch/Text tool buttons, matching a
-                                                     standard mobile markup tool. Real PDF shown via iframe (native
-                                                     browser rendering — no pdf.js, so no worker/version issues). -->
-                                                <div v-if="isPdf(viewModal.attachment?.name)" class="-mx-4 -mb-4 mt-3 rounded-b-lg overflow-hidden bg-gray-900">
+                                                    <!-- Assignees (PDF only) -->
+                                                    <div v-if="isPdf(viewModal.attachment?.name)" class="pt-3">
+                                                        <div class="flex items-center px-2">
+                                                            <h2 class="text-sm font-medium dark:text-gray-300">
+                                                                {{ $t('Assignees') }}
+                                                            </h2>
 
-                                                    <!-- Top bar: View toggle + Undo/Redo (left), Save (right) -->
-                                                    <div class="flex items-center justify-between px-4 py-2.5 bg-gray-900 border-b border-white/10">
-                                                        <div class="flex items-center gap-1.5">
-                                                            <button type="button" @click="drawTool = 'view'" :class="drawTool === 'view' ? 'bg-white/20 text-white' : 'text-white/70 hover:bg-white/10'" class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" :title="$t('View / scroll all pages')">
-                                                                <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4"><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/></svg>
-                                                            </button>
-                                                            <button type="button" @click="undoDraw" :disabled="!historyStack.length" class="w-8 h-8 rounded-full flex items-center justify-center text-white/70 hover:bg-white/10 disabled:opacity-30 disabled:hover:bg-transparent flex-shrink-0" :title="$t('Undo')">
-                                                                <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4"><path d="M9 7 4 12l5 5M4 12h10a6 6 0 010 12h-1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                                                            </button>
-                                                            <button type="button" @click="redoDraw" :disabled="!redoStack.length" class="w-8 h-8 rounded-full flex items-center justify-center text-white/70 hover:bg-white/10 disabled:opacity-30 disabled:hover:bg-transparent flex-shrink-0" :title="$t('Redo')">
-                                                                <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4"><path d="M15 7l5 5-5 5M20 12H10a6 6 0 000 12h1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                                                            </button>
-                                                            <button type="button" @click="showDocumentNotes = !showDocumentNotes" class="ml-1 h-8 px-3 rounded-full flex items-center gap-1 text-xs font-medium flex-shrink-0" :class="showDocumentNotes ? 'bg-white/20 text-white' : 'text-white/70 hover:bg-white/10'">
-                                                                <icon name="note" class="w-3.5 h-3.5" />
-                                                                {{ $t('Notes') }}
-                                                                <span v-if="documentNotesCount" class="px-1.5 rounded-full text-[10px] font-bold bg-blue-500 text-white">{{ documentNotesCount }}</span>
-                                                            </button>
-                                                        </div>
-                                                        <button v-if="drawTool !== 'view' || hasUnsavedAnnotations" type="button" @click="manualSaveAnnotation" :disabled="autoSaving" class="px-5 py-1.5 rounded-full bg-white text-gray-900 text-xs font-semibold disabled:opacity-50 flex-shrink-0">
-                                                            {{ autoSaving ? $t('Saving...') : $t('Save') }}
-                                                        </button>
-                                                    </div>
-
-                                                    <!-- Tool bar: color swatches + big Sketch/Text tool buttons.
-                                                         Moved up here (right under the top bar) so the tool you
-                                                         want is always visible without scrolling past the page,
-                                                         instead of being tucked below it. -->
-                                                    <div class="px-4 py-4 bg-gray-900 border-b border-white/10">
-                                                        <div v-if="drawTool === 'pen' || drawTool === 'highlighter'" class="flex items-center justify-center gap-3 mb-4">
-                                                            <button v-for="c in swatchColors" :key="c" type="button" @click="drawSettings.color = c" class="w-6 h-6 rounded-full border-2" :style="{ background: c, borderColor: drawSettings.color === c ? '#fff' : 'transparent' }" :title="c"></button>
-                                                        </div>
-
-                                                        <!-- Sub-tool row for Sketch: Pen / Highlight / Eraser + size + clear -->
-                                                        <div v-if="drawTool === 'pen' || drawTool === 'highlighter' || drawTool === 'eraser'" class="flex items-center justify-center gap-2 mb-4 flex-wrap">
-                                                            <button type="button" @click="drawTool = 'pen'" class="px-3 py-1.5 rounded-full text-xs font-medium" :class="drawTool === 'pen' ? 'bg-white text-gray-900' : 'bg-white/10 text-white/80'">{{ $t('Pen') }}</button>
-                                                            <button type="button" @click="drawTool = 'highlighter'" class="px-3 py-1.5 rounded-full text-xs font-medium" :class="drawTool === 'highlighter' ? 'bg-white text-gray-900' : 'bg-white/10 text-white/80'">{{ $t('Highlight') }}</button>
-                                                            <button type="button" @click="drawTool = 'eraser'" class="px-3 py-1.5 rounded-full text-xs font-medium" :class="drawTool === 'eraser' ? 'bg-white text-gray-900' : 'bg-white/10 text-white/80'">{{ $t('Eraser') }}</button>
-                                                            <button type="button" @click="clearCanvas" class="px-3 py-1.5 rounded-full text-xs font-medium bg-white/10 text-white/80">{{ $t('Clear') }}</button>
-                                                            <div class="flex items-center gap-2 ml-1">
-                                                                <label class="text-[11px] text-white/60">{{ $t('Size') }}</label>
-                                                                <input type="range" min="1" max="20" v-model.number="drawSettings.size" class="w-20" />
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="flex items-center justify-center gap-10">
-                                                            <button type="button" @click="toggleSketch" class="flex flex-col items-center gap-1.5">
-                                                                <span class="w-12 h-12 rounded-full flex items-center justify-center" :class="['pen','highlighter','eraser'].includes(drawTool) ? 'bg-white text-gray-900' : 'bg-white/10 text-white'">
-                                                                    <svg viewBox="0 0 24 24" fill="none" class="w-5 h-5"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="currentColor"/></svg>
-                                                                </span>
-                                                                <span class="text-[11px] text-white/80">{{ $t('Sketch') }}</span>
-                                                            </button>
-                                                            <button type="button" @click="toggleTextTool" class="flex flex-col items-center gap-1.5">
-                                                                <span class="w-12 h-12 rounded-full flex items-center justify-center" :class="drawTool === 'text' ? 'bg-white text-gray-900' : 'bg-white/10 text-white'">
-                                                                    <svg viewBox="0 0 24 24" fill="none" class="w-5 h-5"><rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" stroke-width="1.6"/><path d="M8 8h8M12 8v8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-                                                                </span>
-                                                                <span class="text-[11px] text-white/80">{{ $t('Text') }}</span>
-                                                            </button>
-                                                        </div>
-
-                                                        <p class="text-center text-[11px] text-white/40 mt-3">
-                                                            {{ drawTool === 'view' ? $t('Scroll to browse every page. Pick Sketch or Text to add a note.') : $t('Use the page arrows below to note a different page.') }}
-                                                        </p>
-                                                    </div>
-
-                                                    <!-- Page navigator: the browser's native PDF viewer doesn't let
-                                                         scripts read what page you've scrolled to, so free scrolling
-                                                         in View can't be tracked automatically — use these arrows
-                                                         instead and both View and any note tool stay on the same
-                                                         page, with sketches/notes always following this page number. -->
-                                                    <div v-if="totalPdfPages > 1" class="flex items-center justify-center gap-3 px-4 py-2 bg-gray-900 border-b border-white/10">
-                                                        <button type="button" @click="goToDrawPage(-1)" :disabled="currentDrawPage <= 1" class="w-7 h-7 rounded-full flex items-center justify-center bg-white/10 text-white disabled:opacity-30 disabled:cursor-not-allowed">
-                                                            <svg viewBox="0 0 24 24" fill="none" class="w-3.5 h-3.5"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                                                        </button>
-                                                        <span class="text-xs text-white/80 font-medium min-w-[70px] text-center">{{ $t('Page') }} {{ currentDrawPage }} / {{ totalPdfPages }}</span>
-                                                        <button type="button" @click="goToDrawPage(1)" :disabled="currentDrawPage >= totalPdfPages" class="w-7 h-7 rounded-full flex items-center justify-center bg-white/10 text-white disabled:opacity-30 disabled:cursor-not-allowed">
-                                                            <svg viewBox="0 0 24 24" fill="none" class="w-3.5 h-3.5"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                                                        </button>
-                                                        <span v-if="drawTool !== 'view' && dirtyPages[currentDrawPage]" class="w-1.5 h-1.5 rounded-full bg-blue-400" :title="$t('This page has unsaved notes')"></span>
-                                                    </div>
-
-                                                    <!-- Notes for this document: every saved annotated version of this
-                                                         PDF (from clicking Save), plus any comments that reference it. -->
-                                                    <div v-if="showDocumentNotes" class="border-b border-white/10 bg-gray-800">
-                                                        <div class="px-3 py-2.5 border-b border-white/10 flex gap-2 items-start">
-                                                            <textarea
-                                                                v-model="newDocumentNote"
-                                                                rows="2"
-                                                                :placeholder="$t('Write a note about this document...')"
-                                                                class="flex-1 text-xs border border-white/20 bg-gray-900 text-white placeholder-white/40 rounded px-2 py-1.5 resize-none focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                                                @keydown.enter.exact.prevent="saveDocumentNote"
-                                                            ></textarea>
-                                                            <button
-                                                                type="button"
-                                                                @click="saveDocumentNote"
-                                                                :disabled="!newDocumentNote.trim() || savingDocumentNote"
-                                                                class="px-2.5 py-1.5 text-xs font-medium rounded bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white flex-shrink-0 self-stretch"
-                                                            >
-                                                                {{ savingDocumentNote ? $t('Saving...') : $t('Save') }}
-                                                            </button>
-                                                        </div>
-
-                                                        <div class="max-h-[220px] overflow-y-auto divide-y divide-white/10">
-                                                            <div v-if="!documentVersions.length && !documentComments.length" class="px-3 py-4 text-xs text-white/50 text-center">
-                                                                {{ $t('No notes yet — pick Sketch or Text, add a note, then click Save.') }}
-                                                            </div>
-
-                                                            <button
-                                                                v-for="version in documentVersions"
-                                                                :key="'note_v_'+version.id"
-                                                                type="button"
-                                                                class="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-white/5"
-                                                                :class="{ 'bg-blue-500/10': viewModal.attachment && viewModal.attachment.id === version.id }"
-                                                                @click="openViewModal(version)"
-                                                            >
-                                                                <icon name="edit" class="w-3.5 h-3.5 flex-shrink-0 text-blue-400" />
-                                                                <div class="flex-1 min-w-0">
-                                                                    <div class="text-xs font-medium truncate text-white/90">
-                                                                        {{ version.isOriginal ? $t('Original document') : $t('Annotated version') }}
-                                                                    </div>
-                                                                    <div class="text-[11px] text-white/50">
-                                                                        {{ moment(version.created_at).format('MMM D, YYYY [at] h:mm A') }}
-                                                                    </div>
+                                                            <div class="relative ml-auto" modal="true" name="task-assign">
+                                                                <div>
+                                                                    <span class="cursor-pointer" @click="showAssigneeBoxPreview = true"><icon class="h-5 w-5 hover:opacity-80 dark:text-gray-300" name="add" /></span>
                                                                 </div>
-                                                                <span v-if="viewModal.attachment && viewModal.attachment.id === version.id" class="text-[10px] font-semibold text-blue-400 flex-shrink-0">{{ $t('Viewing') }}</span>
-                                                            </button>
 
-                                                            <div v-for="comment in documentComments" :key="'note_c_'+comment.id" class="flex gap-2.5 px-3 py-2.5">
-                                                                <img v-if="comment.user?.photo_path" class="w-6 h-6 rounded-full flex-shrink-0" :src="comment.user.photo_path" :alt="comment.user.first_name" />
-                                                                <img v-else class="w-6 h-6 rounded-full flex-shrink-0" src="/images/user.svg" alt="" />
-                                                                <div class="flex-1 min-w-0">
-                                                                    <div class="flex items-center gap-2">
-                                                                        <span class="text-xs font-medium text-white/90">{{ comment.user?.first_name }} {{ comment.user?.last_name }}</span>
-                                                                        <span class="text-[11px] text-white/50">{{ moment(comment.created_at).format('MMM D, YYYY [at] h:mm A') }}</span>
+                                                                <div class="absolute right-1 flex w-[300px] z-10 text-sm flex-col bg-white dark:bg-gray-800 px-4 py-4 rounded shadow dark:border dark:border-gray-700" v-if="showAssigneeBoxPreview">
+                                                                    <h4 class="text-center mb-3 font-bold dark:text-white">{{ $t('Assignee') }}</h4>
+                                                                    <div class="absolute cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 top-3 right-3 p-1.5 rounded" @click="showAssigneeBoxPreview = false">
+                                                                        <icon class="w-4 h-4 dark:text-gray-300" name="close" />
                                                                     </div>
-                                                                    <div class="prose prose-sm prose-invert text-xs text-white/80 t_a_h" v-html="comment.details"></div>
+                                                                    <input id="t_d_s_u_preview" v-model="user_search" class="border-[2px] px-2 py-1 border-gray-400 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-[3px] dark:placeholder-gray-400" :placeholder="$t('Search User')" />
+                                                                    <ul class="flex flex-col mt-3 gap-1 h-48 max-h-48 overflow-y-auto">
+                                                                        <li v-for="(userObject, user_index) in searchUser(user_search)" :key="'preview_'+user_index">
+                                                                            <label :for="'td_u_id_preview_'+user_index" class="flex p-2 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 rounded">
+                                                                                <input :id="'td_u_id_preview_'+user_index" class="w-5 ml-1 mr-2" type="checkbox" :checked="task_assignees().includes(userObject.user_id)" @change="assignUserToTask($event.target.checked, userObject.user_id)">
+                                                                                <img v-if="userObject.user.photo_path" :aria-label="userObject.user.name" :alt="userObject.user.name" class="w-6 h-6 rounded-full" :src="userObject.user.photo_path" />
+                                                                                <img v-else :aria-label="userObject.user.name" :alt="userObject.user.name" class="w-6 h-6 rounded-full" src="/images/user.svg" />
+                                                                                <span data-a="" class="p-1 dark:text-gray-200" type="button" :tabindex="user_index">
+                                                                                    {{ userObject.user.name }}
+                                                                                </span>
+                                                                            </label>
+                                                                        </li>
+                                                                    </ul>
                                                                 </div>
                                                             </div>
                                                         </div>
+
+                                                        <div class="flex flex-wrap gap-1 px-2 mt-2">
+                                                            <span v-for="assignee in task.assignees" :key="assignee.id" :aria-label="assignee.user.name" class="block rounded-full h-8 w-8 border-2 border-white dark:border-gray-800">
+                                                                <img v-if="assignee.user.photo_path" class="h-full w-full rounded-full" :src="assignee.user.photo_path" :alt="assignee.user.name">
+                                                                <img v-else class="h-full w-full rounded-full" src="/images/user.svg" :alt="assignee.user.name">
+                                                            </span>
+                                                            <span v-if="!task.assignees || !task.assignees.length" class="text-xs text-gray-500 dark:text-gray-400">{{ $t('No assignees yet.') }}</span>
+                                                        </div>
                                                     </div>
 
-                                                    <!-- Page stage: dark canvas, page centered with shadow.
-                                                         View mode uses the browser's native PDF viewer (fine for
-                                                         free scrolling). Any drawing tool instead renders the exact
-                                                         page as a real <canvas> via pdf.js — that's what fixes notes
-                                                         landing in the wrong spot: the native viewer's own toolbar/
-                                                         margins never lined up pixel-for-pixel with our overlay, but
-                                                         a page we render ourselves always matches exactly. -->
-                                                    <div class="flex items-center justify-center px-4 py-6">
-                                                        <div ref="drawStage" class="modal-pop__stage relative bg-white rounded shadow-2xl overflow-hidden mx-auto w-full" style="max-width: 880px;">
-                                                            <iframe v-if="drawTool === 'view'" :key="'view-' + currentDrawPage" :src="pdfIframeSrc" class="absolute inset-0 w-full h-full border-0"></iframe>
-                                                            <canvas v-show="drawTool !== 'view'" ref="pdfRenderCanvas" class="absolute inset-0 w-full h-full"></canvas>
-                                                            <canvas
-                                                                v-show="drawTool !== 'view'"
-                                                                ref="drawCanvas"
-                                                                class="absolute inset-0 w-full h-full touch-none"
-                                                                :class="drawTool === 'text' ? 'cursor-text pointer-events-auto' : 'cursor-crosshair pointer-events-auto'"
-                                                                @mousedown="startDrawing"
-                                                                @mousemove="draw"
-                                                                @mouseup="stopDrawing"
-                                                                @mouseleave="stopDrawing"
-                                                                @touchstart="startDrawing"
-                                                                @touchmove="draw"
-                                                                @touchend="stopDrawing"
-                                                            ></canvas>
+                                                    <!-- Preview Container (images) -->
+                                                    <div v-if="isImage(viewModal.attachment?.name)" class="flex items-center justify-center p-4">
+                                                        <img :src="viewModal.attachment?.path" :alt="viewModal.attachment?.name" class="max-h-[65vh] object-contain rounded" />
+                                                    </div>
 
-                                                            <!-- Loading overlay: shown while pdf.js is opening the
-                                                                 document or rendering a page, so tool/page switches
-                                                                 never look like a silent blank freeze. -->
-                                                            <transition name="modal-fade">
-                                                                <div v-if="isRenderingPage && drawTool !== 'view'" class="absolute inset-0 z-10 flex items-center justify-center bg-white/70">
-                                                                    <div class="w-8 h-8 rounded-full border-2 border-gray-300 border-t-gray-800 animate-spin"></div>
+                                                    <div v-if="isPdf(viewModal.attachment?.name)" class="-mx-4 -mb-4 mt-3 rounded-b-lg overflow-hidden bg-gray-900">
+                                                        <!-- Top bar: View toggle + Undo/Redo (left), Save (right) -->
+                                                        <div class="flex items-center justify-between px-4 py-2.5 bg-gray-900 border-b border-white/10">
+                                                            <div class="flex items-center gap-1.5">
+                                                                <button type="button" @click="drawTool = 'view'" :class="drawTool === 'view' ? 'bg-white/20 text-white' : 'text-white/70 hover:bg-white/10'" class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" :title="$t('View / scroll all pages')">
+                                                                    <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4"><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/></svg>
+                                                                </button>
+                                                                <button type="button" @click="undoDraw" :disabled="!historyStack.length" class="w-8 h-8 rounded-full flex items-center justify-center text-white/70 hover:bg-white/10 disabled:opacity-30 disabled:hover:bg-transparent flex-shrink-0" :title="$t('Undo')">
+                                                                    <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4"><path d="M9 7 4 12l5 5M4 12h10a6 6 0 010 12h-1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                                                </button>
+                                                                <button type="button" @click="redoDraw" :disabled="!redoStack.length" class="w-8 h-8 rounded-full flex items-center justify-center text-white/70 hover:bg-white/10 disabled:opacity-30 disabled:hover:bg-transparent flex-shrink-0" :title="$t('Redo')">
+                                                                    <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4"><path d="M15 7l5 5-5 5M20 12H10a6 6 0 000 12h1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                                                </button>
+                                                                <button type="button" @click="showDocumentNotes = !showDocumentNotes" class="ml-1 h-8 px-3 rounded-full flex items-center gap-1 text-xs font-medium flex-shrink-0" :class="showDocumentNotes ? 'bg-white/20 text-white' : 'text-white/70 hover:bg-white/10'">
+                                                                    <icon name="note" class="w-3.5 h-3.5" />
+                                                                    {{ $t('Notes') }}
+                                                                    <span v-if="documentNotesCount" class="px-1.5 rounded-full text-[10px] font-bold bg-blue-500 text-white">{{ documentNotesCount }}</span>
+                                                                </button>
+                                                            </div>
+                                                            <button v-if="drawTool !== 'view' || hasUnsavedAnnotations" type="button" @click="manualSaveAnnotation" :disabled="autoSaving" class="px-5 py-1.5 rounded-full bg-white text-gray-900 text-xs font-semibold disabled:opacity-50 flex-shrink-0">
+                                                                {{ autoSaving ? $t('Saving...') : $t('Save') }}
+                                                            </button>
+                                                        </div>
+
+                                                        <div class="px-4 py-4 bg-gray-900 border-b border-white/10">
+                                                            <div v-if="drawTool === 'pen' || drawTool === 'highlighter'" class="flex items-center justify-center gap-3 mb-4">
+                                                                <button v-for="c in swatchColors" :key="c" type="button" @click="drawSettings.color = c" class="w-6 h-6 rounded-full border-2" :style="{ background: c, borderColor: drawSettings.color === c ? '#fff' : 'transparent' }" :title="c"></button>
+                                                            </div>
+
+                                                            <!-- Sub-tool row for Sketch: Pen / Highlight / Eraser + size + clear -->
+                                                            <div v-if="drawTool === 'pen' || drawTool === 'highlighter' || drawTool === 'eraser'" class="flex items-center justify-center gap-2 mb-4 flex-wrap">
+                                                                <button type="button" @click="drawTool = 'pen'" class="px-3 py-1.5 rounded-full text-xs font-medium" :class="drawTool === 'pen' ? 'bg-white text-gray-900' : 'bg-white/10 text-white/80'">{{ $t('Pen') }}</button>
+                                                                <button type="button" @click="drawTool = 'highlighter'" class="px-3 py-1.5 rounded-full text-xs font-medium" :class="drawTool === 'highlighter' ? 'bg-white text-gray-900' : 'bg-white/10 text-white/80'">{{ $t('Highlight') }}</button>
+                                                                <button type="button" @click="drawTool = 'eraser'" class="px-3 py-1.5 rounded-full text-xs font-medium" :class="drawTool === 'eraser' ? 'bg-white text-gray-900' : 'bg-white/10 text-white/80'">{{ $t('Eraser') }}</button>
+                                                                <button type="button" @click="clearCanvas" class="px-3 py-1.5 rounded-full text-xs font-medium bg-white/10 text-white/80">{{ $t('Clear') }}</button>
+                                                                <div class="flex items-center gap-2 ml-1">
+                                                                    <label class="text-[11px] text-white/60">{{ $t('Size') }}</label>
+                                                                    <input type="range" min="1" max="20" v-model.number="drawSettings.size" class="w-20" />
                                                                 </div>
-                                                            </transition>
+                                                            </div>
 
-                                                            <!-- Floating input for the Text tool: appears where you
-                                                                 clicked; confirming adds it as a new draggable note
-                                                                 below (not baked onto the canvas until Save). -->
-                                                            <div
-                                                                v-if="textInput.visible"
-                                                                class="absolute z-20 bg-white border border-blue-500 rounded shadow-lg p-1.5"
-                                                                :style="{ left: textInput.cssX + 'px', top: textInput.cssY + 'px' }"
-                                                            >
+                                                            <div class="flex items-center justify-center gap-10">
+                                                                <button type="button" @click="toggleSketch" class="flex flex-col items-center gap-1.5">
+                                                                    <span class="w-12 h-12 rounded-full flex items-center justify-center" :class="['pen','highlighter','eraser'].includes(drawTool) ? 'bg-white text-gray-900' : 'bg-white/10 text-white'">
+                                                                        <svg viewBox="0 0 24 24" fill="none" class="w-5 h-5"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="currentColor"/></svg>
+                                                                    </span>
+                                                                    <span class="text-[11px] text-white/80">{{ $t('Sketch') }}</span>
+                                                                </button>
+                                                                <button type="button" @click="toggleTextTool" class="flex flex-col items-center gap-1.5">
+                                                                    <span class="w-12 h-12 rounded-full flex items-center justify-center" :class="drawTool === 'text' ? 'bg-white text-gray-900' : 'bg-white/10 text-white'">
+                                                                        <svg viewBox="0 0 24 24" fill="none" class="w-5 h-5"><rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" stroke-width="1.6"/><path d="M8 8h8M12 8v8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                                                                    </span>
+                                                                    <span class="text-[11px] text-white/80">{{ $t('Text') }}</span>
+                                                                </button>
+                                                            </div>
+
+                                                            <p class="text-center text-[11px] text-white/40 mt-3">
+                                                                {{ drawTool === 'view' ? $t('Scroll to browse every page. Pick Sketch or Text to add a note.') : $t('Use the page arrows below to note a different page.') }}
+                                                            </p>
+                                                        </div>
+
+                                                        <div v-if="totalPdfPages > 1" class="flex items-center justify-center gap-3 px-4 py-2 bg-gray-900 border-b border-white/10">
+                                                            <button type="button" @click="goToDrawPage(-1)" :disabled="currentDrawPage <= 1" class="w-7 h-7 rounded-full flex items-center justify-center bg-white/10 text-white disabled:opacity-30 disabled:cursor-not-allowed">
+                                                                <svg viewBox="0 0 24 24" fill="none" class="w-3.5 h-3.5"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                                            </button>
+                                                            <span class="text-xs text-white/80 font-medium min-w-[70px] text-center">{{ $t('Page') }} {{ currentDrawPage }} / {{ totalPdfPages }}</span>
+                                                            <button type="button" @click="goToDrawPage(1)" :disabled="currentDrawPage >= totalPdfPages" class="w-7 h-7 rounded-full flex items-center justify-center bg-white/10 text-white disabled:opacity-30 disabled:cursor-not-allowed">
+                                                                <svg viewBox="0 0 24 24" fill="none" class="w-3.5 h-3.5"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                                            </button>
+                                                            <span v-if="drawTool !== 'view' && dirtyPages[currentDrawPage]" class="w-1.5 h-1.5 rounded-full bg-blue-400" :title="$t('This page has unsaved notes')"></span>
+                                                        </div>
+
+                                                        <!-- Notes for this document: every saved annotated version of this
+                                                            PDF (from clicking Save), plus any comments that reference it. -->
+                                                        <div v-if="showDocumentNotes" class="border-b border-white/10 bg-gray-800">
+                                                            <div class="px-3 py-2.5 border-b border-white/10 flex gap-2 items-start">
                                                                 <textarea
-                                                                    ref="textInputBox"
-                                                                    v-model="textInput.value"
+                                                                    v-model="newDocumentNote"
                                                                     rows="2"
-                                                                    :placeholder="$t('Type a note...')"
-                                                                    class="text-xs w-40 border-0 focus:outline-none resize-none"
-                                                                    @keydown.enter.exact.prevent="confirmTextInput"
-                                                                    @keydown.esc.prevent="cancelTextInput"
+                                                                    :placeholder="$t('Write a note about this document...')"
+                                                                    class="flex-1 text-xs border border-white/20 bg-gray-900 text-white placeholder-white/40 rounded px-2 py-1.5 resize-none focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                                    @keydown.enter.exact.prevent="saveDocumentNote"
                                                                 ></textarea>
-                                                                <div class="flex justify-end gap-1 mt-1">
-                                                                    <button type="button" @click="cancelTextInput" class="text-[10px] px-1.5 py-0.5 rounded bg-gray-200 text-gray-700">{{ $t('Cancel') }}</button>
-                                                                    <button type="button" @click="confirmTextInput" class="text-[10px] px-1.5 py-0.5 rounded bg-blue-600 text-white">{{ $t('Add') }}</button>
-                                                                </div>
+                                                                <button
+                                                                    type="button"
+                                                                    @click="saveDocumentNote"
+                                                                    :disabled="!newDocumentNote.trim() || savingDocumentNote"
+                                                                    class="px-2.5 py-1.5 text-xs font-medium rounded bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white flex-shrink-0 self-stretch"
+                                                                >
+                                                                    {{ savingDocumentNote ? $t('Saving...') : $t('Save') }}
+                                                                </button>
                                                             </div>
 
-                                                            <!-- Placed text notes: draggable, like a standard PDF note
-                                                                 tool — grab and move anywhere on the page, or delete
-                                                                 via the × that appears on hover. Hidden in View mode
-                                                                 since they're positioned relative to the draw frame. -->
-                                                            <template v-if="drawTool !== 'view'">
-                                                                <div
-                                                                    v-for="note in textNotes"
-                                                                    :key="'tn_' + note.id"
-                                                                    class="absolute z-10 group select-none"
-                                                                    :style="{ left: note.x + 'px', top: note.y + 'px', color: note.color, fontSize: note.fontSize + 'px', cursor: draggingNote && draggingNote.id === note.id ? 'grabbing' : 'grab', lineHeight: 1.2 }"
-                                                                    @mousedown.stop.prevent="startNoteDrag(note, $event)"
-                                                                    @touchstart.stop.prevent="startNoteDrag(note, $event)"
-                                                                >
-                                                                    <span class="whitespace-pre" style="font-family: sans-serif;">{{ note.text }}</span>
-                                                                    <button
-                                                                        type="button"
-                                                                        class="absolute -top-2.5 -right-2.5 hidden group-hover:flex items-center justify-center w-4 h-4 rounded-full bg-red-600 text-white text-[10px] leading-none"
-                                                                        @mousedown.stop
-                                                                        @click.stop="removeTextNote(note.id)"
-                                                                        :title="$t('Remove note')"
-                                                                    >×</button>
+                                                            <div class="max-h-[220px] overflow-y-auto divide-y divide-white/10">
+                                                                <div v-if="!documentVersions.length && !documentComments.length" class="px-3 py-4 text-xs text-white/50 text-center">
+                                                                    {{ $t('No notes yet — pick Sketch or Text, add a note, then click Save.') }}
                                                                 </div>
-                                                            </template>
+
+                                                                <button
+                                                                    v-for="version in documentVersions"
+                                                                    :key="'note_v_'+version.id"
+                                                                    type="button"
+                                                                    class="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-white/5"
+                                                                    :class="{ 'bg-blue-500/10': viewModal.attachment && viewModal.attachment.id === version.id }"
+                                                                    @click="openViewModal(version)"
+                                                                >
+                                                                    <icon name="edit" class="w-3.5 h-3.5 flex-shrink-0 text-blue-400" />
+                                                                    <div class="flex-1 min-w-0">
+                                                                        <div class="text-xs font-medium truncate text-white/90">
+                                                                            {{ version.isOriginal ? $t('Original document') : $t('Annotated version') }}
+                                                                        </div>
+                                                                        <div class="text-[11px] text-white/50">
+                                                                            {{ moment(version.created_at).format('MMM D, YYYY [at] h:mm A') }}
+                                                                        </div>
+                                                                    </div>
+                                                                    <span v-if="viewModal.attachment && viewModal.attachment.id === version.id" class="text-[10px] font-semibold text-blue-400 flex-shrink-0">{{ $t('Viewing') }}</span>
+                                                                </button>
+
+                                                                <div v-for="comment in documentComments" :key="'note_c_'+comment.id" class="flex gap-2.5 px-3 py-2.5">
+                                                                    <img v-if="comment.user?.photo_path" class="w-6 h-6 rounded-full flex-shrink-0" :src="comment.user.photo_path" :alt="comment.user.first_name" />
+                                                                    <img v-else class="w-6 h-6 rounded-full flex-shrink-0" src="/images/user.svg" alt="" />
+                                                                    <div class="flex-1 min-w-0">
+                                                                        <div class="flex items-center gap-2">
+                                                                            <span class="text-xs font-medium text-white/90">{{ comment.user?.first_name }} {{ comment.user?.last_name }}</span>
+                                                                            <span class="text-[11px] text-white/50">{{ moment(comment.created_at).format('MMM D, YYYY [at] h:mm A') }}</span>
+                                                                        </div>
+                                                                        <div class="prose prose-sm prose-invert text-xs text-white/80 t_a_h" v-html="comment.details"></div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="flex items-center justify-center px-4 py-6">
+                                                            <div ref="drawStage" class="modal-pop__stage relative bg-white rounded shadow-2xl overflow-hidden mx-auto w-full" style="max-width: 880px;">
+                                                                <iframe v-if="drawTool === 'view'" :key="'view-' + currentDrawPage" :src="pdfIframeSrc" class="absolute inset-0 w-full h-full border-0"></iframe>
+                                                                <canvas v-show="drawTool !== 'view'" ref="pdfRenderCanvas" class="absolute inset-0 w-full h-full"></canvas>
+                                                                <canvas
+                                                                    v-show="drawTool !== 'view'"
+                                                                    ref="drawCanvas"
+                                                                    class="absolute inset-0 w-full h-full touch-none"
+                                                                    :class="drawTool === 'text' ? 'cursor-text pointer-events-auto' : 'cursor-crosshair pointer-events-auto'"
+                                                                    @mousedown="startDrawing"
+                                                                    @mousemove="draw"
+                                                                    @mouseup="stopDrawing"
+                                                                    @mouseleave="stopDrawing"
+                                                                    @touchstart="startDrawing"
+                                                                    @touchmove="draw"
+                                                                    @touchend="stopDrawing"
+                                                                ></canvas>
+
+                                                                <transition name="modal-fade">
+                                                                    <div v-if="isRenderingPage && drawTool !== 'view'" class="absolute inset-0 z-10 flex items-center justify-center bg-white/70">
+                                                                        <div class="w-8 h-8 rounded-full border-2 border-gray-300 border-t-gray-800 animate-spin"></div>
+                                                                    </div>
+                                                                </transition>
+
+                                                                <div
+                                                                    v-if="textInput.visible"
+                                                                    class="absolute z-20 bg-white border border-blue-500 rounded shadow-lg p-1.5"
+                                                                    :style="{ left: textInput.cssX + 'px', top: textInput.cssY + 'px' }"
+                                                                >
+                                                                    <textarea
+                                                                        ref="textInputBox"
+                                                                        v-model="textInput.value"
+                                                                        rows="2"
+                                                                        :placeholder="$t('Type a note...')"
+                                                                        class="text-xs w-40 border-0 focus:outline-none resize-none"
+                                                                        @keydown.enter.exact.prevent="confirmTextInput"
+                                                                        @keydown.esc.prevent="cancelTextInput"
+                                                                    ></textarea>
+                                                                    <div class="flex justify-end gap-1 mt-1">
+                                                                        <button type="button" @click="cancelTextInput" class="text-[10px] px-1.5 py-0.5 rounded bg-gray-200 text-gray-700">{{ $t('Cancel') }}</button>
+                                                                        <button type="button" @click="confirmTextInput" class="text-[10px] px-1.5 py-0.5 rounded bg-blue-600 text-white">{{ $t('Add') }}</button>
+                                                                    </div>
+                                                                </div>
+
+                                                                <template v-if="drawTool !== 'view'">
+                                                                    <div
+                                                                        v-for="note in textNotes"
+                                                                        :key="'tn_' + note.id"
+                                                                        class="absolute z-10 group select-none"
+                                                                        :style="{ left: note.x + 'px', top: note.y + 'px', color: note.color, fontSize: note.fontSize + 'px', cursor: draggingNote && draggingNote.id === note.id ? 'grabbing' : 'grab', lineHeight: 1.2 }"
+                                                                        @mousedown.stop.prevent="startNoteDrag(note, $event)"
+                                                                        @touchstart.stop.prevent="startNoteDrag(note, $event)"
+                                                                    >
+                                                                        <span class="whitespace-pre" style="font-family: sans-serif;">{{ note.text }}</span>
+                                                                        <button
+                                                                            type="button"
+                                                                            class="absolute -top-2.5 -right-2.5 hidden group-hover:flex items-center justify-center w-4 h-4 rounded-full bg-red-600 text-white text-[10px] leading-none"
+                                                                            @mousedown.stop
+                                                                            @click.stop="removeTextNote(note.id)"
+                                                                            :title="$t('Remove note')"
+                                                                        >×</button>
+                                                                    </div>
+                                                                </template>
+                                                            </div>
                                                         </div>
                                                     </div>
+
                                                 </div>
 
                                             </div>
-
                                         </div>
-                                    </div>
                                     </transition>
-
                                 </div>
-
 
                             </section>
 
@@ -987,7 +952,7 @@
                             </section>
                             <section class="py-3">
                                 <h2 class="px-2 text-sm font-medium dark:text-gray-300">
-                                    {{ $t('Due Date') }}
+                                    {{ $t('ថ្ងៃកំណត់យក') }}
                                 </h2>
                                 <div class="relative" modal="true">
                                     <div>
@@ -1019,6 +984,29 @@
                                             <DateTimePicker
                                                 v-model="task.entry_date"
                                                 @change="saveTask({entry_date: moment(task.entry_date).format('YYYY-MM-DD HH:mm')})"
+                                                @update:is24Hour="is24HourFormat = $event"
+                                                placeholder="Select Date & Time"
+                                                :is24Hour="is24HourFormat"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- ថ្ងៃឯកសារចេញ (Document Exit/Sent Date): mirrors ថ្ងៃឯកសារចូល —
+                                the date the document was sent out / dispatched, tracked
+                                separately from when it was received. Same DateTimePicker
+                                pattern as the other date fields. -->
+                            <section class="py-3">
+                                <h2 class="px-2 text-sm font-medium dark:text-gray-300">
+                                    {{ $t('ថ្ងៃឯកសារចេញ') }}
+                                </h2>
+                                <div class="relative" modal="true">
+                                    <div>
+                                        <div class="group mt-2 flex cursor-pointer items-center rounded-md py-1.5">
+                                            <DateTimePicker
+                                                v-model="task.exit_date"
+                                                @change="saveTask({exit_date: moment(task.exit_date).format('YYYY-MM-DD HH:mm')})"
                                                 @update:is24Hour="is24HourFormat = $event"
                                                 placeholder="Select Date & Time"
                                                 :is24Hour="is24HourFormat"
@@ -1191,40 +1179,15 @@
     import WatchButton from '@/Components/WatchButton.vue';
     import axios from 'axios'
 
-    // Used only to build a brand-new standalone PDF from your drawing when
-    // saving — no pdfjs-dist here, so no worker/version bundling issues.
     import { PDFDocument } from 'pdf-lib';
 
-    // Renders the real page as a <canvas> so the drawing overlay lines up
-    // pixel-for-pixel with it (the native browser PDF viewer used for
-    // View mode doesn't expose enough control over its own margins/toolbar
-    // to guarantee that — this is what actually fixes notes landing in the
-    // wrong spot). The worker is resolved locally from the installed
-    // pdfjs-dist package via Vite's asset URL handling, so it always
-    // matches the installed version exactly (no CDN version mismatch).
-    // Requires `npm install pdfjs-dist` if not already a dependency.
     import * as pdfjsLib from 'pdfjs-dist';
     const pdfWorkerUrl = new URL(
         'pdfjs-dist/build/pdf.worker.min.mjs',
         import.meta.url
     ).toString();
-    // Set as a first-pass fallback; ensureWorkerBlobSrc() below overrides
-    // this with a same-origin blob URL before the first PDF is opened,
-    // which is what actually needs to succeed for drawing to work.
     pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
-    // Some production servers (misconfigured nginx/Apache mime.types) send
-    // .mjs files back as "application/octet-stream" instead of a JS mime
-    // type. Browsers strictly enforce the mime type for *module* scripts —
-    // which is exactly what the pdf.js worker is — so that single wrong
-    // header on the server is enough to make both the real worker and
-    // pdf.js's own "fake worker" fallback fail with "Failed to load module
-    // script". A plain fetch() doesn't care about the response's
-    // Content-Type at all, so we fetch the worker's bytes ourselves, wrap
-    // them in a Blob with the correct type set client-side, and hand
-    // pdf.js a blob: URL instead of the direct server URL — the browser
-    // trusts the Blob's own declared type, not any server header, so this
-    // works even if the server is never fixed. Cached so it only runs once.
     let workerBlobSrcPromise = null;
     function ensureWorkerBlobSrc() {
         if (!workerBlobSrcPromise) {
@@ -1240,8 +1203,6 @@
                     return blobUrl;
                 })
                 .catch(err => {
-                    // Fall back to the direct URL — if the server mime type
-                    // is fine (or gets fixed) this still works either way.
                     console.error('Falling back to direct pdf.worker URL, blob wrap failed:', err);
                     pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
                     return pdfWorkerUrl;
@@ -1289,11 +1250,6 @@
                 label: {},
                 task: {},
                 allowed_file_types: (() => {
-                    // Always keep PDF + common screenshot/image formats in the
-                    // picker's filter, on top of whatever the backend
-                    // "allowed_file_types" setting adds — otherwise, if that
-                    // setting only lists ".pdf", screenshots can't even be
-                    // selected in the native file dialog.
                     const base = ['.pdf', '.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
                     const types = this?.$page?.props?.settings?.allowed_file_types;
                     try {
@@ -1355,30 +1311,15 @@
                 // Quick-pick color swatches for the redesigned markup
                 // toolbar (black, red, yellow, green, blue, purple, gray).
                 swatchColors: ['#000000', '#ef4444', '#eab308', '#22c55e', '#3b82f6', '#a855f7', '#9ca3af'],
-                // Multi-page notes: which page you're currently sketching/
-                // noting on, how many pages the PDF has, a per-page store
-                // of what's been drawn/noted so far (so switching pages
-                // doesn't lose anything), and which pages actually have
-                // real edits worth baking in on Save.
                 currentDrawPage: 1,
                 totalPdfPages: 1,
-                pageAnnotations: {}, // { [pageNum]: { canvasImage, notes } }
-                dirtyPages: {}, // { [pageNum]: true }
-                // pdf.js document handle used to render the exact page
-                // pixel-for-pixel while a drawing tool is active.
+                pageAnnotations: {},
+                dirtyPages: {},
+
                 pdfDocProxy: null,
                 canvasCtx: null,
                 autoSaving: false,
-                // Shows a spinner over the page stage while pdf.js is
-                // loading the document or rendering a page, so switching
-                // tools/pages never looks like a silent blank freeze.
                 isRenderingPage: false,
-                // Ratio between the draw canvas's actual backing-store
-                // resolution and its on-screen (CSS) size — set by
-                // renderDrawPage. Stroke widths/eraser size get multiplied
-                // by this so pen thickness still looks right on screen even
-                // though the canvas itself is rendered at a higher
-                // resolution for a crisp/HD final saved PDF.
                 canvasPixelRatio: 1,
 
                 // --- Toast notification state ---
@@ -1390,9 +1331,6 @@
                 showDocumentNotes: false,
                 newDocumentNote: '',
                 savingDocumentNote: false,
-
-                // ប្រភពឯកសារ (Document Source) — departments with nested
-                // offices, loaded from json.document-sources.all.
                 documentSources: [],
                 showSourceBox: false,
                 source_search: '',
@@ -1449,30 +1387,18 @@
                 return this.composedStart && this.composedEnd && !this.manualTimeError;
             },
 
-            // Only used in View mode now — drawing tools render the page
-            // themselves via pdf.js instead (see renderDrawPage), which is
-            // what makes notes land exactly where you drew them. This just
-            // jumps the native viewer to currentDrawPage so the page
-            // arrows still move what you're looking at while browsing.
             pdfIframeSrc() {
                 const path = this.viewModal.attachment?.path;
                 if (!path) return path;
                 return this.currentDrawPage > 1 ? `${path}#page=${this.currentDrawPage}` : path;
             },
 
-            // "family" name shared by an original PDF and every annotated
-            // copy saved from it, e.g. "annotated_annotated_report.pdf" and
-            // "report.pdf" both resolve to "report" — used to group all
-            // versions of the same document together.
             documentFamilyName() {
                 const name = this.viewModal.attachment?.name;
                 if (!name) return null;
                 return name.replace(/\.[^/.]+$/, '').replace(/^(annotated_)+/i, '');
             },
 
-            // Every saved version of the document currently open in the
-            // preview modal (the original plus each "Save" from Draw mode),
-            // newest first.
             documentVersions() {
                 if (!this.documentFamilyName || !this.task?.attachments) return [];
                 return [...this.task.attachments]
@@ -1481,10 +1407,6 @@
                     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
             },
 
-            // Comments that were posted with this document attached (the
-            // comment box embeds an <a href="..."> link to the uploaded
-            // file — see uploadAttachment's is_comment branch), matched
-            // against any version of this same document.
             documentComments() {
                 if (!this.documentVersions.length) return [];
                 const paths = this.documentVersions.map(v => v.path);
@@ -1496,15 +1418,9 @@
             },
 
             documentNotesCount() {
-                // Annotated versions (excluding the original itself) plus
-                // related comments — i.e. everything that counts as a
-                // "note" someone added to this document.
                 return this.documentVersions.filter(v => !v.isOriginal).length + this.documentComments.length;
             },
 
-            // True once any page has an actual unsaved sketch/note on it.
-            // Used to hide the Save button until there's something to save —
-            // no point showing it while just browsing in View mode.
             hasUnsavedAnnotations() {
                 return Object.values(this.dirtyPages).some(Boolean);
             },
@@ -1539,18 +1455,7 @@
             'manual_time.date'() {
                 this.manualTimeError = null;
             },
-            // Switching between View (native scrollable viewer) and any
-            // drawing tool needs a different stage: View just resizes the
-            // frame; a drawing tool needs the exact page rendered fresh.
             async drawTool(newTool, oldTool) {
-                // renderDrawPage() below resizes the draw canvas, which
-                // clears whatever's on it. pageAnnotations only otherwise
-                // gets updated when you change pages or hit Save — so
-                // switching tools (e.g. Sketch -> Text) without this would
-                // wipe out anything drawn/typed since the last page change,
-                // even though nothing was actually undone or cleared.
-                // Snapshot the tool you're leaving first so it's carried
-                // over and restored below.
                 if (oldTool) {
                     this.saveCurrentPageAnnotationState();
                 }
@@ -1641,10 +1546,6 @@
                 return this.isImage(filename) || this.isPdf(filename);
             },
 
-            // --- View Modal Methods ---
-            // The PDF itself is shown via the iframe (native browser
-            // rendering, not pdf.js), with a transparent canvas layered on
-            // top sized to match — that's what captures the drawing.
             openViewModal(attachment) {
                 this.viewModal.open = true;
                 this.viewModal.attachment = attachment;
@@ -1662,10 +1563,6 @@
 
                 this.$nextTick(async () => {
                     if (this.isPdf(attachment.name)) {
-                        // Loads page-count metadata now so the page
-                        // navigator works immediately; the actual page
-                        // render only happens once a drawing tool is
-                        // picked (View mode uses the native viewer).
                         await this.ensurePdfDocProxy();
                         this.initViewFrame();
                         window.addEventListener('resize', this.handleResize);
@@ -1681,16 +1578,11 @@
                 window.removeEventListener('resize', this.handleResize);
             },
 
-            // Loads the PDF once via pdf.js so pages can be rendered
-            // pixel-exact for drawing. Cheap to call repeatedly — it's a
-            // no-op once already loaded for the current attachment.
             async ensurePdfDocProxy() {
                 if (this.pdfDocProxy || !this.viewModal.attachment) return;
 
                 const url = this.viewModal.attachment.path;
                 if (!url) {
-                    // Surfaces exactly what's missing next time this
-                    // happens, instead of a generic pdf.js validation error.
                     console.error('PDF render: attachment has no usable path/url. attachment =', this.viewModal.attachment);
                     this.toastError(this.$t('Failed to load the PDF for drawing.'));
                     return;
@@ -1698,42 +1590,19 @@
 
                 this.isRenderingPage = true;
                 try {
-                    // Fetch the PDF's actual bytes ourselves (same
-                    // credentials as everywhere else in this file — see
-                    // saveAnnotatedImage) instead of handing pdf.js a bare
-                    // URL. pdf.js's `{ url }` mode streams the file using
-                    // HTTP Range requests; some production setups (reverse
-                    // proxies, CDNs, cloud storage) don't support/advertise
-                    // Range the same way a local dev server does, which is
-                    // exactly the kind of thing that loads fine locally and
-                    // silently fails once deployed. Downloading the whole
-                    // file up front and handing pdf.js the bytes directly
-                    // sidesteps that dependency entirely, and also makes
-                    // sure the request carries the session cookie in case
-                    // the attachment route requires auth.
                     const fileRes = await fetch(url, { credentials: 'same-origin' });
                     if (!fileRes.ok) {
                         throw new Error(`HTTP ${fileRes.status} while downloading the PDF`);
                     }
                     const bytes = await fileRes.arrayBuffer();
 
-                    // Must resolve before getDocument() spins up the
-                    // worker — see ensureWorkerBlobSrc() above for why.
                     await ensureWorkerBlobSrc();
 
                     const loadingTask = pdfjsLib.getDocument({ data: bytes });
-                    // markRaw is required here — pdf.js's internal classes
-                    // use native JS private fields (#foo), which break with
-                    // "Cannot read from private field" the moment Vue's
-                    // reactivity system wraps the object in a Proxy.
                     this.pdfDocProxy = markRaw(await loadingTask.promise);
                     this.totalPdfPages = this.pdfDocProxy.numPages;
                 } catch (err) {
                     console.error('Failed to load the PDF for rendering. url was:', url, 'error:', err);
-                    // Surfaces the real reason (network/CORS/HTTP status)
-                    // directly in the toast, so it doesn't take a trip to
-                    // DevTools every time this happens on a server you
-                    // don't have console access to.
                     const reason = err?.message || String(err);
                     this.toastError(this.$t('Failed to load the PDF for drawing') + ': ' + reason);
                 } finally {
@@ -1741,11 +1610,6 @@
                 }
             },
 
-            // Renders the given page as an actual <canvas> at the stage's
-            // real pixel width. Because the drawing overlay is sized to
-            // match this render exactly, a stroke always lands on the
-            // exact spot you clicked once baked back into the real PDF —
-            // no more guessing at the native viewer's toolbar/margins.
             async renderDrawPage(pageNumber) {
                 if (!this.pdfDocProxy) return;
                 const stage = this.$refs.drawStage;
@@ -1758,19 +1622,6 @@
                     const page = await this.pdfDocProxy.getPage(pageNumber);
                     const baseViewport = page.getViewport({ scale: 1 });
                     const targetWidth = Math.min(stage.clientWidth || 880, 880);
-
-                    // Background PDF preview (what you actually see while
-                    // browsing/drawing): supersample at 1.5x the device's
-                    // own pixel density, then let the browser's canvas
-                    // downscale it back to the display size — this is a
-                    // standard supersampling technique that measurably
-                    // sharpens anti-aliased text/lines versus rendering at
-                    // 1:1 device density. Note: pdf.js is a different
-                    // rendering engine than the browser's native PDF plugin
-                    // (used in View mode), so even at high resolution its
-                    // text will read very slightly softer — that gap can't
-                    // be fully closed while still rendering to a <canvas>,
-                    // which is what makes pixel-exact drawing possible.
                     const bgPixelRatio = Math.min((window.devicePixelRatio || 1) * 1.5, 3);
                     const bgScale = (targetWidth * bgPixelRatio) / baseViewport.width;
                     const bgViewport = page.getViewport({ scale: bgScale });
@@ -1786,14 +1637,6 @@
                     renderCanvas.style.width = '100%';
                     renderCanvas.style.height = displayHeight + 'px';
 
-                    // Strokes/notes overlay: kept independently at a higher
-                    // resolution, since THIS is the canvas whose content
-                    // gets baked into the saved PDF and stretched across the
-                    // full original page size — unlike the background, it
-                    // has no fine PDF text to over-blur, so more pixels here
-                    // only helps the final saved quality. Same on-screen
-                    // size as the background canvas (for pointer/visual
-                    // alignment); just backed by more actual pixels.
                     const overlayPixelRatio = Math.min((window.devicePixelRatio || 1) * 2, 3);
                     this.canvasPixelRatio = overlayPixelRatio;
                     const overlayScale = (targetWidth * overlayPixelRatio) / baseViewport.width;
@@ -1815,9 +1658,6 @@
                 }
             },
 
-            // View mode's frame: tall and natively scrollable, so the
-            // browser's own PDF viewer can handle paging/scrolling/zooming
-            // through the whole document.
             initViewFrame() {
                 const stage = this.$refs.drawStage;
                 if (!stage) return;
@@ -1833,10 +1673,6 @@
                 }
             },
 
-            // Switches which page you're sketching/noting on. Stores the
-            // page you're leaving into pageAnnotations (so it's not lost),
-            // renders the new page fresh, then restores whatever was
-            // previously drawn/noted there, if anything.
             async goToDrawPage(delta) {
                 if (!this.viewModal.attachment) return;
                 const next = this.currentDrawPage + delta;
@@ -1858,21 +1694,12 @@
                 }
             },
 
-            // Snapshots whatever's currently drawn/noted so switching pages
-            // (or saving) doesn't lose it.
             saveCurrentPageAnnotationState() {
                 const canvas = this.$refs.drawCanvas;
                 if (!canvas || !canvas.width || !canvas.height) return;
                 this.pageAnnotations[this.currentDrawPage] = {
                     canvasImage: canvas.toDataURL(),
                     notes: this.textNotes.map(n => ({ ...n })),
-                    // Text notes are stored/positioned in on-screen CSS
-                    // pixels (see confirmTextInput), but the canvas backing
-                    // store this page was rendered at is canvasPixelRatio×
-                    // larger for HD output. Remember that ratio now so
-                    // buildFinalDataUrlForEntry can convert notes back to
-                    // the matching canvas-pixel scale when baking them in,
-                    // even if the page isn't the one currently on screen.
                     pixelRatio: this.canvasPixelRatio || 1,
                 };
             },
@@ -1894,8 +1721,6 @@
             startDrawing(e) {
                 if (!this.canvasCtx || this.drawTool === 'view') return;
 
-                // Text tool doesn't drag a stroke — a single click/tap
-                // opens the floating note input instead.
                 if (this.drawTool === 'text') {
                     this.placeTextAt(e);
                     return;
@@ -1910,25 +1735,14 @@
 
             draw(e) {
                 if (!this.isDrawing) return;
-                // Only swallow the touch gesture once a stroke is actually
-                // in progress — that's what let a Text-tool tap (or any
-                // idle touch) fall through as a normal scroll before.
                 if (e.cancelable) e.preventDefault();
                 const pos = this.getCanvasCoordinates(e);
                 const ctx = this.canvasCtx;
                 ctx.lineCap = 'round';
                 ctx.lineJoin = 'round';
 
-                // Line widths are chosen on the 1-20 slider assuming
-                // on-screen pixels, but the canvas itself now renders at
-                // canvasPixelRatio× that resolution for HD output — so
-                // multiply here to keep strokes looking the same thickness
-                // on screen (and proportionally crisp once saved).
                 const pr = this.canvasPixelRatio || 1;
                 if (this.drawTool === 'eraser') {
-                    // destination-out punches transparent holes instead of
-                    // painting, so it actually removes ink rather than
-                    // drawing white over it.
                     ctx.globalCompositeOperation = 'destination-out';
                     ctx.globalAlpha = 1;
                     ctx.lineWidth = this.drawSettings.size * 5 * pr;
@@ -1964,16 +1778,6 @@
                 this.canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
             },
 
-            // --- Text note tool: place a typed note on the canvas ---
-            // Notes are positioned and dragged in plain on-screen CSS
-            // pixels (same space the floating input box already used for
-            // cssX/cssY) — NOT canvas backing-store pixels. The drawing
-            // canvas renders at canvasPixelRatio× the on-screen size for
-            // HD output, so a canvas-space coordinate could be 2-3x too
-            // large once used as a raw `left/top` CSS value on the note's
-            // <div>, pushing it outside the visible (overflow:hidden)
-            // stage entirely — that's what made notes disappear after
-            // being placed, and made dragging track the pointer incorrectly.
             placeTextAt(e) {
                 const canvas = this.$refs.drawCanvas;
                 const rect = canvas.getBoundingClientRect();
@@ -1993,14 +1797,8 @@
             confirmTextInput() {
                 const text = (this.textInput.value || '').trim();
                 if (text) {
-                    // Plain CSS px, matching where the note is actually
-                    // rendered on screen (buildFinalDataUrlForEntry scales
-                    // this back up to canvas-pixel space at save time).
                     const fontSize = Math.max(14, this.drawSettings.size * 4);
 
-                    // Kept as a separate, draggable object rather than
-                    // baked straight onto the canvas — that's what lets it
-                    // be moved around afterwards like a standard PDF note.
                     this.textNotes.push({
                         id: ++this.textNoteIdCounter,
                         x: this.textInput.cssX,
@@ -2076,8 +1874,6 @@
                 this.drawTool = this.drawTool === 'text' ? 'view' : 'text';
             },
 
-            // --- Undo / Redo: snapshot-based, matches the simplicity of
-            // the rest of the draw feature (no per-stroke vector model). ---
             pushHistory() {
                 const canvas = this.$refs.drawCanvas;
                 if (!canvas) return;
@@ -2128,12 +1924,6 @@
                 }
             },
 
-            // Saves a free-text note about the document currently open in
-            // the preview modal. Reuses the same "comments.new" endpoint as
-            // the regular Activities comment box, but tags the comment with
-            // a hidden reference to this document's path so it shows up in
-            // the "Notes for this document" panel (via documentComments)
-            // instead of only in the general Activities feed.
             saveDocumentNote(){
                 const text = (this.newDocumentNote || '').trim();
                 if (!text || !this.viewModal.attachment || this.savingDocumentNote) return;
@@ -2166,16 +1956,6 @@
                 });
             },
 
-            // Loads the REAL original PDF (all its pages, untouched) and
-            // draws your annotation directly onto page 1 of it, then
-            // uploads the result as a new attachment. This is plain
-            // fetch + pdf-lib — no pdf.js, no worker, no rendering of the
-            // original file involved, so it can't hit that earlier bug.
-            // Composites one page's stored raster strokes (pen/highlighter/
-            // eraser) together with its draggable text notes into one
-            // flattened image — used per-page at Save time, without
-            // touching the live canvas, so notes stay movable in the UI
-            // even after you've saved.
             buildFinalDataUrlForEntry(entry) {
                 return new Promise((resolve) => {
                     if (!entry || !entry.canvasImage) { resolve(null); return; }
@@ -2187,12 +1967,6 @@
                         const tctx = temp.getContext('2d');
                         tctx.drawImage(img, 0, 0);
 
-                        // note.x/y/fontSize are stored in on-screen CSS
-                        // pixels; this temp canvas is at the full HD
-                        // backing-store resolution (img.naturalWidth/Height),
-                        // so scale everything up by the same ratio the page
-                        // was rendered at or the text lands in the wrong
-                        // spot / wrong size in the saved PDF.
                         const ratio = entry.pixelRatio || 1;
                         (entry.notes || []).forEach(note => {
                             tctx.globalCompositeOperation = 'source-over';
@@ -2213,10 +1987,6 @@
                 });
             },
 
-            // Bakes every page you actually sketched or added a note on —
-            // not just page 1 — back into a copy of the real PDF, each on
-            // its own matching page, then uploads the result as a new
-            // attachment. The original file itself is left untouched.
             async saveAnnotatedImage() {
                 const canvas = this.$refs.drawCanvas;
                 if (!canvas || !this.viewModal.attachment) return;
@@ -2250,10 +2020,6 @@
 
                         const pngImage = await pdfDoc.embedPng(finalDataUrl);
 
-                        // Stretch the drawing over the full page — the
-                        // canvas covered the same visible area that page
-                        // was shown in, so this lines up with what you saw
-                        // while drawing on it.
                         const pageIndex = Math.min(pageNum - 1, pdfDoc.getPageCount() - 1);
                         const page = pdfDoc.getPage(pageIndex);
                         const { width, height } = page.getSize();
@@ -2264,9 +2030,6 @@
                     const blob = new Blob([pdfBytes], { type: 'application/pdf' });
 
                     const formData = new FormData();
-                    // Uploads as a brand new attachment on the task, using the
-                    // same "add attachment" endpoint as the regular attachment
-                    // uploader.
                     formData.append('file', blob, `annotated_${originalName}.pdf`);
 
                     const res = await axios.post(this.route('task.attachment.add', this.task.id), formData);
@@ -2274,8 +2037,6 @@
                         this.task.attachments.push(res.data);
                         this.toastSuccess(this.$t('Annotated PDF attached.'), { duration: 2000 });
                         this.dirtyPages = {};
-                        // The toast is teleported to <body>, so it stays
-                        // visible even after the modal itself closes.
                         this.closeViewModal();
                     } else {
                         this.toastError(res.data?.message || this.$t('Failed to save the annotated PDF.'));
@@ -2509,13 +2270,6 @@
             },
             onEditorReady(editor){editor.focus();},
             deleteAttachment(id){
-                // `index` used to be the position inside the *sorted* display
-                // list (sortedAttachments), but we splice the real
-                // this.task.attachments array — those two orders don't match,
-                // so the wrong item (or nothing) got removed and it looked
-                // like delete "wasn't real time". Look the item up by id in
-                // the real array instead, and remove it immediately (optimistic
-                // UI) rather than waiting on the response.
                 const realIndex = this.task.attachments.findIndex(a => a.id === id);
                 if (realIndex === -1) return;
 
@@ -2544,17 +2298,8 @@
                 let uploadedCount = 0;
                 let failedCount = 0;
 
-                // Upload every selected file (the input now allows picking
-                // more than one at a time), one after another so attachments
-                // land in the order they were picked and the file input
-                // isn't reset mid-batch.
                 for (const file of files) {
                     const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
-                    // Screenshots/images are valid attachments too — the file
-                    // picker's accept filter previously only advertised PDFs
-                    // (plus whatever the backend "allowed_file_types" setting
-                    // listed), so screenshots didn't even show up as
-                    // selectable in some browsers' file dialogs.
                     const isImageFile = file.type.startsWith('image/') || this.isImage(file.name);
 
                     // 1. Validate File Type (PDF or image)
@@ -2988,9 +2733,6 @@
                 this.counter.duration = res.duration || 0;
                 this.move_object.order = this.task.order;
 
-                // ប្រភពឯកសារ (Document Source): departments with nested
-                // offices, now returned directly from task.other.data
-                // alongside labels/lists/projects/team_members.
                 this.documentSources = res.document_sources || [];
 
                 this.loadAvailableUsers();
@@ -3444,9 +3186,6 @@
         }
     }
 
-    /* Preview / draw modal: fade the backdrop in, pop the panel in
-       slightly scaled + lifted, so opening it feels intentional rather
-       than an instant hard cut. Reverses on close. */
     .modal-pop-enter-active {
         transition: opacity 0.2s ease-out;
     }

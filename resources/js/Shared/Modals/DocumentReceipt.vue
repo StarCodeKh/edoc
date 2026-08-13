@@ -83,15 +83,21 @@
 
                         <!-- Right column: QR on top, Barcode below it -->
                         <div class="flex flex-row sm:flex-col items-center justify-center gap-3 sm:gap-4 flex-shrink-0">
-                            <div class="p-2 bg-white flex justify-center items-center border border-gray-200 rounded-lg shadow-sm">
-                                <img v-if="task?.qr_code" :src="task.qr_code" alt="QR Code" class="w-20 h-20 sm:w-24 sm:h-24 object-contain" />
-                                <img
-                                    v-else
-                                    :src="`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(getTrackingUrl())}`"
-                                    alt="QR Code"
-                                    class="w-20 h-20 sm:w-24 sm:h-24 object-contain"
-                                />
+                            <div class="flex flex-col items-center w-full overflow-hidden">
+                                <div class="p-2 bg-white flex justify-center items-center border border-gray-200 rounded-lg shadow-sm">
+                                    <img v-if="task?.qr_code" :src="task.qr_code" alt="QR Code" class="w-20 h-20 sm:w-24 sm:h-24 object-contain" />
+                                    <img
+                                        v-else
+                                        :src="`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(getTrackingUrl())}`"
+                                        alt="QR Code"
+                                        class="w-20 h-20 sm:w-24 sm:h-24 object-contain"
+                                    />
+                                </div>
+                                <p class="text-[10px] sm:text-[11px] text-gray-600 mt-1.5 font-medium text-center leading-snug max-w-[140px] sm:max-w-none mx-auto">
+                                    សូមស្កេន ដើម្បីតាមដានឯកសារ
+                                </p>
                             </div>
+
                             <div class="flex flex-col items-center w-full overflow-hidden">
                                 <img v-if="task?.bar_code" :src="task.bar_code" alt="Barcode" class="h-8 sm:h-10 max-w-full w-32 sm:w-40 object-contain" />
                                 <img
@@ -100,7 +106,6 @@
                                     alt="Barcode"
                                     class="h-8 sm:h-10 max-w-full w-32 sm:w-40 object-contain"
                                 />
-                                <p class="text-[10px] sm:text-[11px] text-gray-600 mt-1.5 font-medium text-center">សូមស្កេន ដើម្បីតាមដានឯកសារ</p>
                             </div>
                         </div>
                     </div>
@@ -140,6 +145,77 @@
                         </label>
                     </div>
 
+                    <div class="mt-6 pt-5 border-t border-gray-100 print-avoid-break">
+                        <p class="font-semibold mb-3">ដើម្បី ៖</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-3 text-sm sm:text-base">
+                            <div class="space-y-3">
+                                <label class="flex items-start gap-2">
+                                    <span class="receipt-checkbox"></span>
+                                    <span>ចាត់ចែងតាមមុខការ</span>
+                                </label>
+                                <label class="flex items-start gap-2">
+                                    <span class="receipt-checkbox"></span>
+                                    <span>ពិនិត្យ និងផ្តល់យោបល់</span>
+                                </label>
+                                <label class="flex items-start gap-2">
+                                    <span class="receipt-checkbox"></span>
+                                    <span>រៀបចំលិខិតឆ្លើយតប</span>
+                                </label>
+                                <label class="flex items-start gap-2">
+                                    <span class="receipt-checkbox"></span>
+                                    <span>ចុះស៊ើបអង្កេត និងស្រាវជ្រាវ</span>
+                                </label>
+                                <label class="flex items-start gap-2">
+                                    <span class="receipt-checkbox"></span>
+                                    <span>ចុះបញ្ជី និងធ្វើឯកសារពត៌មាន</span>
+                                </label>
+                            </div>
+                            <div class="space-y-3">
+                                <label class="flex items-start gap-2">
+                                    <span class="receipt-checkbox"></span>
+                                    <span>អនុវត្ត</span>
+                                </label>
+                                <label class="flex items-start gap-2">
+                                    <span class="receipt-checkbox"></span>
+                                    <span>ធ្វើរបាយការណ៍</span>
+                                </label>
+                                <label class="flex items-start gap-2">
+                                    <span class="receipt-checkbox"></span>
+                                    <span>ចូលរួម</span>
+                                </label>
+                                <label class="flex items-start gap-2">
+                                    <span class="receipt-checkbox"></span>
+                                    <span>ចុះរួម</span>
+                                </label>
+                                <label class="flex items-start flex-wrap gap-x-3 gap-y-1.5">
+                                    <span class="flex items-center gap-2"><span class="receipt-checkbox"></span><span>ធ្វើសន្លឹក ÷</span></span>
+                                    <span class="flex items-center gap-1.5"><span class="receipt-checkbox"></span><span>មានកម្រិត</span></span>
+                                    <span class="flex items-center gap-1.5"><span class="receipt-checkbox"></span><span>ពេញលេញ</span></span>
+                                    <span class="flex items-center gap-1.5"><span class="receipt-checkbox"></span><span>ពិសេស</span></span>
+                                </label>
+                            </div>
+                            <div class="space-y-3">
+                                <label class="flex items-start gap-2">
+                                    <span class="receipt-checkbox"></span>
+                                    <span>ដើម្បីទទួលជូប</span>
+                                </label>
+                                <label class="flex items-start gap-2">
+                                    <span class="receipt-checkbox"></span>
+                                    <span>ពិនិត្យលទ្ធភាព</span>
+                                </label>
+                                <label class="flex items-start gap-2">
+                                    <span class="receipt-checkbox"></span>
+                                    <span>បានយើពា</span>
+                                </label>
+                            </div>
+                        </div>
+                        <label class="flex items-center gap-2 mt-4 text-sm sm:text-base">
+                            <span class="receipt-checkbox"></span>
+                            <span class="flex-shrink-0">ផ្សេងៗ</span>
+                            <span class="flex-1 border border-gray-400 rounded h-8"></span>
+                        </label>
+                    </div>
+
                     <!-- Response-deadline note — also static print-only markup. -->
                     <div class="mt-6 text-sm sm:text-base">
                         <p>ខ្ញុំសូមស្នើសុំឯកសារនេះត្រូវរៀបចំចម្លើយតបចាំតាមចំណារខាងលើ ហើយបញ្ជូនត្រឡប់មកវិញក្នុងរយៈពេលៈ</p>
@@ -163,6 +239,10 @@
                             <label class="flex items-center gap-1.5">
                                 <span class="receipt-checkbox"></span>
                                 <span>៥ ថ្ងៃ នៃថ្ងៃធ្វើការ</span>
+                            </label>
+                            <label class="flex items-center gap-1.5">
+                                <span class="receipt-checkbox"></span>
+                                <span>ឬឱ្យបានឆាប់រហ័សតាមដែលអាចធ្វើបាន។</span>
                             </label>
                         </div>
                     </div>
