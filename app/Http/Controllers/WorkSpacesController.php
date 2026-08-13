@@ -53,10 +53,9 @@ class WorkSpacesController extends Controller
         return response()->json($workSpaces);
     }
 
-    public function viewMainDashboard($uid, Request $request)
-    {
+    public function viewMainDashboard($uid, Request $request){
         $requests = $request->all();
-        $workspace = Workspace::where('id', $uid)->orWhere('slug', $uid)->whereHas('member')->with('member')->withCount('projects')->first();
+        $workspace = Workspace::where('id', $uid)->orWhere('slug', $uid)->whereHas('member')->with('member')->first();
         if(empty($workspace)){
             return abort(404);
         }
@@ -72,6 +71,7 @@ class WorkSpacesController extends Controller
             ->with('cover')
             ->with('project.background')
             ->with('list')
+            ->with('documentSource.parent')
             ->withCount('checklistDone')
             ->withCount('comments')
             ->withCount('checklists')
@@ -81,7 +81,8 @@ class WorkSpacesController extends Controller
             ->get()
             ->toArray();
 
-
+        // Group tasks by list title (combining lists with same name across projects),
+        // same as workspaceBoard().
         $listsByTitle = [];
         $list_index = [];
         $orderCounter = 0;
@@ -125,6 +126,11 @@ class WorkSpacesController extends Controller
             'lists' => $board_lists,
             'list_index' => $list_index,
             'filters' => $requests,
+            // statusCards, summary, statistics — still using the component's
+            // built-in placeholder numbers below, since those need a real
+            // mapping of which lists count as "Submitted/Reviewing/Approved/Rejected"
+            // and which projects count as "Administrative" vs "Casino Operators".
+            // Tell me that mapping and I'll compute these from $board_lists too.
         ]);
     }
 
@@ -256,8 +262,7 @@ class WorkSpacesController extends Controller
         ]);
     }
 
-    public function workspaceTables($uid, Request $request)
-    {
+    public function workspaceTables($uid, Request $request){
         $user = auth()->user()->load('role');
         $requests = $request->all();
         if(!empty($user->role)){
@@ -268,27 +273,53 @@ class WorkSpacesController extends Controller
             return abort(404);
         }
 
-        $list_index = [];
-        $board_lists = BoardList::orderByOrder()->get();
         $workspace = Workspace::where('id', $uid)->orWhere('slug', $uid)->whereHas('member')->with('member')->first();
         if(empty($workspace)){
             return abort(404);
         }
+
+        $projectIds = Project::where('workspace_id', $workspace->id)->pluck('id');
+        $list_index = [];
+        $board_lists = BoardList::whereIn('project_id', $projectIds)->isOpen()->orderByOrder()->get()->toArray();
         $loopIndex = 0;
         foreach ($board_lists as &$listItem){
-            $list_index[$listItem->id] = $loopIndex;
+            $list_index[$listItem['id']] = $loopIndex;
             $listItem['tasks'] = [];
             $loopIndex+= 1;
         }
+
+        $tasks = Task::filter($requests)->whereHas('project', function ($q) use ($workspace) {
+                $q->where('workspace_id', $workspace->id);
+            })
+            ->with('list')
+            ->with('taskLabels.label')
+            ->with('project.background')
+            ->with('assignees')
+            ->with('timer')
+            ->with('documentSource.parent')
+            ->withCount('checklistDone')
+            ->withCount('comments')
+            ->withCount('checklists')
+            ->withCount('attachments')
+            ->isOpen()
+            ->orderByOrder()
+            ->get()
+            ->toArray();
+
+        foreach ($tasks as $task){
+            if(isset($list_index[$task['list_id']])){
+                $board_lists[$list_index[$task['list_id']]]['tasks'][] = $task;
+            }
+        }
+
         return Inertia::render('Workspaces/Table', [
             'title' => 'Tasks | '.$workspace->name,
             'board_lists' => $board_lists,
+            'lists' => $board_lists,
             'filters' => $requests,
             'list_index' => $list_index,
             'workspace' => $workspace,
-            'tasks' => Task::filter($requests)->whereHas('project', function ($q) use ($workspace) {
-                $q->where('workspace_id', $workspace->id);
-            })->with('list')->with('taskLabels.label')->with('project.background')->with('assignees')->with('timer')->isOpen()->orderByOrder()->get()
+            'tasks' => $tasks,
         ]);
     }
 

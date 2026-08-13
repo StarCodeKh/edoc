@@ -7,6 +7,7 @@ use App\Models\Attachment;
 use App\Models\BoardList;
 use App\Models\CheckList;
 use App\Models\Comment;
+use App\Models\DocumentSource;
 use App\Models\Label;
 use App\Models\Project;
 use App\Models\Setting;
@@ -51,7 +52,7 @@ class TasksController extends Controller
             $task->{$itemKey} = $itemValue;
         }
         $task->save();
-        $task->load('list')->load('taskLabels.label')->load('project.background')->load('assignees')->load('timer');
+        $task->load('list')->load('taskLabels.label')->load('project.background')->load('assignees')->load('timer')->load('documentSource.parent');
         return response()->json($task);
     }
 
@@ -151,7 +152,11 @@ class TasksController extends Controller
                 },
                 'attachments',
                 'assignees',
-                'taskLabels.label'
+                'taskLabels.label',
+                // ប្រភពឯកសារ (Document Source), with its parent department —
+                // needed so DocumentReceipt.vue can show the real office/
+                // department instead of the project name.
+                'documentSource.parent',
             ])
             ->withCount('checklistDone')
             ->first();
@@ -179,7 +184,16 @@ class TasksController extends Controller
         $teamMembers = TeamMember::with('user')->groupBy('user_id')->where('workspace_id', $project->workspace_id)->get();
         $timer = Timer::running()->mine()->where('task_id', '!=', $task_id)->first() ?? null;
         $duration = Timer::where('task_id', $task_id)->sum('duration');
-        return response()->json(['labels' => $labels, 'lists' => $lists, 'timer' => $timer, 'duration' => $duration, 'projects' => $projects, 'team_members' => $teamMembers]);
+        // ប្រភពឯកសារ (Document Source): only the department's id/name,
+        // with only id/name/parent_id selected on each nested office —
+        // the picker in TaskDetails.vue doesn't need order/timestamps/etc.
+        $documentSources = DocumentSource::departments()
+            ->select('id', 'name')
+            ->with(['children' => function ($query) {
+                $query->select('id', 'name', 'parent_id')->orderBy('order');
+            }])
+            ->get();
+        return response()->json(['labels' => $labels, 'lists' => $lists, 'timer' => $timer, 'duration' => $duration, 'projects' => $projects, 'team_members' => $teamMembers, 'document_sources' => $documentSources]);
     }
 
     public function addAttachment($id, Request $request)
@@ -190,7 +204,7 @@ class TasksController extends Controller
 
             $settingValue = optional(Setting::where('slug', 'allowed_file_types')->first())->value;
             $allowed_file_types = is_string($settingValue) ? json_decode($settingValue, true) : $settingValue;
-            
+
             // Force only PDF
             $allowed_file_types = ['pdf'];
 

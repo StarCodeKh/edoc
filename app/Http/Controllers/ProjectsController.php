@@ -231,6 +231,10 @@ class ProjectsController extends Controller {
             ->with('timer')
             ->whereHas('list')
             ->with('cover')
+            // ប្រភពឯកសារ (Document Source) — kept consistent with the other
+            // task-list controllers so any Print/Receipt button added to
+            // this view later isn't stuck on N/A either.
+            ->with('documentSource.parent')
             ->withCount('checklistDone')
             ->withCount('comments')
             ->withCount('checklists')
@@ -241,6 +245,54 @@ class ProjectsController extends Controller {
                 $board_lists[$list_index[$task['list_id']]]['tasks'][] = $task;
             }
         }
+
+        // Build real statusCards / summary / statistics from the actual lists & tasks
+        // (replaces the placeholder numbers the Dashboard.vue component defaults to).
+        $palette = ['#4a90d9', '#c9d94d', '#4caf50', '#e0503a', '#9b59b6', '#f0a63a', '#7cb342', '#26a69a'];
+        $totalTasks = count($tasks);
+
+        $statusItems = [];
+        $summarySegments = [];
+        $statistics = [];
+        foreach ($board_lists as $idx => $listItem){
+            $color = $palette[$idx % count($palette)];
+            $listTaskCount = count($listItem['tasks']);
+
+            $statusItems[] = [
+                'label' => $listItem['title'],
+                'value' => $listTaskCount,
+                'color' => $color,
+            ];
+
+            $summarySegments[] = [
+                'label' => $listItem['title'],
+                'value' => $listTaskCount,
+                'percent' => $totalTasks > 0 ? round(($listTaskCount / $totalTasks) * 100) : 0,
+                'color' => $color,
+            ];
+
+            $doneCount = collect($listItem['tasks'])->where('is_done', 1)->count();
+            $statistics[] = [
+                'label' => $listItem['title'],
+                'done' => $doneCount,
+                'total' => $listTaskCount,
+                'percent' => $listTaskCount > 0 ? round(($doneCount / $listTaskCount) * 100) : 0,
+            ];
+        }
+
+        $doneTotal = collect($tasks)->where('is_done', 1)->count();
+
+        $statusCards = [[
+            'title' => $project->title,
+            'total' => $totalTasks,
+            'items' => $statusItems,
+        ]];
+
+        $summary = [
+            'percent' => $totalTasks > 0 ? round(($doneTotal / $totalTasks) * 100) : 0,
+            'segments' => $summarySegments,
+        ];
+
         return Inertia::render('Projects/View', [
             'title' => 'Board | '.$project->title,
             'board_lists' => $board_lists,
@@ -249,6 +301,9 @@ class ProjectsController extends Controller {
             'filters' => $requests,
             'project' => $project,
             'tasks' => $tasks,
+            'statusCards' => $statusCards,
+            'summary' => $summary,
+            'statistics' => $statistics,
         ]);
     }
 
@@ -316,6 +371,11 @@ class ProjectsController extends Controller {
             ->whereHas('list')
             ->with('assignees')
             ->with('list')
+            ->with('documentSource.parent')
+            ->withCount('checklistDone')
+            ->withCount('comments')
+            ->withCount('checklists')
+            ->withCount('attachments')
             ->orderByOrder()
             ->get()->toArray();
         foreach ($tasks as $task){

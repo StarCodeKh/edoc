@@ -10,9 +10,9 @@
 
                 <div class="flex items-center gap-2">
                     <!-- Print Button (Icon Only - Clean Professional Slate/Blue Theme) -->
-                    <button 
+                    <button
                         type="button"
-                        @click="printDocument" 
+                        @click="printDocument"
                         :title="$t ? $t('Print') : 'បោះពុម្ព'"
                         class="p-2 bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 rounded-lg shadow-sm transition-all cursor-pointer active:scale-95 flex items-center justify-center"
                     >
@@ -24,9 +24,9 @@
                     </button>
 
                     <!-- Close / Cancel Button (Icon Only) -->
-                    <button 
+                    <button
                         type="button"
-                        @click="closeModal" 
+                        @click="closeModal"
                         :title="$t ? $t('Close') : 'បិទ'"
                         class="p-2 bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 rounded-lg shadow-sm transition-all cursor-pointer active:scale-95 flex items-center justify-center"
                     >
@@ -50,7 +50,7 @@
                         <!-- Header with Logo & Title -->
                         <div class="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 border-b-2 border-emerald-600/30 pb-6 mb-6 sm:mb-8 text-center sm:text-left">
                             <img src="/images/logo.png" alt="Logo" class="w-20 h-20 sm:w-24 sm:h-24 object-contain flex-shrink-0" />
-                            
+
                             <div class="flex-1 sm:pr-12">
                                 <h2 class="font-battambang text-base sm:text-xl font-bold text-gray-900 tracking-wide leading-relaxed">
                                     អគ្គលេខាធិការដ្ឋានគណៈកម្មាធិការគ្រប់គ្រងល្បែងពាណិជ្ជកម្មកម្ពុជា
@@ -64,20 +64,30 @@
                         <!-- Document Details Layout -->
                         <div class="space-y-3 text-sm sm:text-base text-gray-900 my-4 sm:my-6">
                             <div class="flex flex-col sm:flex-row sm:items-baseline">
-                                <span class="font-semibold sm:min-w-[160px] text-gray-900">លេខឯកសារ៖</span> 
+                                <span class="font-semibold sm:min-w-[160px] text-gray-900">លេខឯកសារ៖</span>
                                 <span class="font-bold text-emerald-700 mt-0.5 sm:mt-0 tracking-wide">{{ getTaskCode }}</span>
                             </div>
                             <div class="flex flex-col sm:flex-row sm:items-baseline">
-                                <span class="font-semibold sm:min-w-[160px] text-gray-900">កម្មវត្ថុ៖</span> 
+                                <span class="font-semibold sm:min-w-[160px] text-gray-900">កម្មវត្ថុ៖</span>
                                 <span class="flex-1 mt-0.5 sm:mt-0">{{ task?.title || 'N/A' }}</span>
                             </div>
                             <div v-if="task?.project" class="flex flex-col sm:flex-row sm:items-baseline">
-                                <span class="font-semibold sm:min-w-[160px] text-gray-900">ប្រភពឯកសារ៖</span> 
-                                <span class="flex-1 mt-0.5 sm:mt-0">{{ task.project.name }}</span>
+                                <span class="font-semibold sm:min-w-[160px] text-gray-900">គម្រោង៖</span>
+                                <span class="flex-1 mt-0.5 sm:mt-0">{{ task.project.name || task.project.title }}</span>
+                            </div>
+                            <!-- ប្រភពឯកសារ (Document Source): the actual office/department
+                                 picked in the TaskDetails.vue org-chart picker
+                                 (task.document_source_id), shown as
+                                 "department — office". Falls back to "N/A" when
+                                 no source has been set on the task yet, so the
+                                 line is always present on the printed receipt. -->
+                            <div class="flex flex-col sm:flex-row sm:items-baseline">
+                                <span class="font-semibold sm:min-w-[160px] text-gray-900">ប្រភពឯកសារ៖</span>
+                                <span class="flex-1 mt-0.5 sm:mt-0">{{ documentSourceLabel }}</span>
                             </div>
                             <div class="flex flex-col sm:flex-row sm:items-baseline">
-                                <span class="font-semibold sm:min-w-[160px] text-gray-900">កាលបរិច្ឆេទឯកសារចូល៖</span> 
-                                <span class="flex-1 mt-0.5 sm:mt-0">{{ formatDate(task?.created_at) }}</span>
+                                <span class="font-semibold sm:min-w-[160px] text-gray-900">កាលបរិច្ឆេទឯកសារចូល៖</span>
+                                <span class="flex-1 mt-0.5 sm:mt-0">{{ formatDate(task?.entry_date || task?.created_at) }}</span>
                             </div>
                         </div>
                     </div>
@@ -89,22 +99,22 @@
                             <!-- QR Code -->
                             <div class="p-2 bg-white flex justify-center items-center border border-gray-100 rounded-lg shadow-sm">
                                 <img v-if="task?.qr_code" :src="task.qr_code" alt="QR Code" class="w-28 h-28 sm:w-32 sm:h-32 object-contain" />
-                                <img 
-                                    v-else 
-                                    :src="`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(getTrackingUrl())}`" 
-                                    alt="QR Code" 
-                                    class="w-28 h-28 sm:w-32 sm:h-32 object-contain" 
+                                <img
+                                    v-else
+                                    :src="`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(getTrackingUrl())}`"
+                                    alt="QR Code"
+                                    class="w-28 h-28 sm:w-32 sm:h-32 object-contain"
                                 />
                             </div>
 
                             <!-- 1D Barcode -->
                             <div class="flex flex-col items-center mt-2 w-full overflow-hidden">
                                 <img v-if="task?.bar_code" :src="task.bar_code" alt="Barcode" class="h-10 sm:h-12 max-w-full w-56 sm:w-64 object-contain" />
-                                <img 
-                                    v-else 
-                                    :src="`https://bwipjs-api.metafloor.com/?bcid=code128&text=${encodeURIComponent(getTaskCode)}&scale=2&height=10&includetext=false`" 
-                                    alt="Barcode" 
-                                    class="h-10 sm:h-12 max-w-full w-56 sm:w-64 object-contain" 
+                                <img
+                                    v-else
+                                    :src="`https://bwipjs-api.metafloor.com/?bcid=code128&text=${encodeURIComponent(getTaskCode)}&scale=2&height=10&includetext=false`"
+                                    alt="Barcode"
+                                    class="h-10 sm:h-12 max-w-full w-56 sm:w-64 object-contain"
                                 />
                                 <p class="text-[11px] sm:text-xs text-gray-800 mt-2 font-medium text-center">សូមស្កេន ដើម្បីតាមដានឯកសារ</p>
                                 <p class="text-[10px] sm:text-[11px] text-gray-500 font-sans tracking-wide text-center">Please, scan here to track document.</p>
@@ -138,6 +148,19 @@
         computed: {
             getTaskCode() {
                 return this.task?.task_code || this.task?.id || 'N/A';
+            },
+
+            // ប្រភពឯកសារ (Document Source): built from the office picked on
+            // the task (task.document_source_id) plus its parent department
+            // — loaded via the `documentSource.parent` relation on the
+            // backend (TasksController::getJsonTask/updateTask). Shown as
+            // "department — office" so the receipt reads the same way the
+            // TaskDetails.vue picker groups them.
+            documentSourceLabel() {
+                const source = this.task?.document_source;
+                if (!source) return 'N/A';
+                const department = source.parent?.name;
+                return department ? `${department} — ${source.name}` : source.name;
             }
         },
         mounted() {
@@ -152,10 +175,10 @@
         methods: {
             formatDate(date) {
                 if (!date) return 'N/A';
-                
+
                 const khmerMonths = ['មករា', 'កុម្ភៈ', 'មីនា', 'មេសា', 'ឧសភា', 'មិថុនា', 'កក្កដា', 'សីហា', 'កញ្ញា', 'តុលា', 'វិច្ឆិកា', 'ធ្នូ'];
                 const khmerNumbers = ['០', '១', '២', '៣', '៤', '៥', '៦', '៧', '៨', '៩'];
-                
+
                 const toKhmerNumber = (num) => String(num).replace(/\d/g, (d) => khmerNumbers[d]);
 
                 const m = moment(date);
@@ -183,7 +206,7 @@
 
 <style scoped>
     @import url('https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;600;700&family=Battambang:wght@400;700&family=Moul&display=swap');
-    
+
     .font-kantumruy {
         font-family: 'Kantumruy Pro', sans-serif;
     }

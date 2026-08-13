@@ -35,6 +35,7 @@ class DatabaseSeeder extends Seeder
             SettingSeeder::class,
             WorkspaceTypeSeeder::class,
             NotificationSettingSeeder::class,
+            DocumentSourceSeeder::class,
         ]);
     }
 }
