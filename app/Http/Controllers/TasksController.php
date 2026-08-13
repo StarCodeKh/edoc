@@ -153,9 +153,6 @@ class TasksController extends Controller
                 'attachments',
                 'assignees',
                 'taskLabels.label',
-                // ប្រភពឯកសារ (Document Source), with its parent department —
-                // needed so DocumentReceipt.vue can show the real office/
-                // department instead of the project name.
                 'documentSource.parent',
             ])
             ->withCount('checklistDone')
@@ -184,9 +181,7 @@ class TasksController extends Controller
         $teamMembers = TeamMember::with('user')->groupBy('user_id')->where('workspace_id', $project->workspace_id)->get();
         $timer = Timer::running()->mine()->where('task_id', '!=', $task_id)->first() ?? null;
         $duration = Timer::where('task_id', $task_id)->sum('duration');
-        // ប្រភពឯកសារ (Document Source): only the department's id/name,
-        // with only id/name/parent_id selected on each nested office —
-        // the picker in TaskDetails.vue doesn't need order/timestamps/etc.
+
         $documentSources = DocumentSource::departments()
             ->select('id', 'name')
             ->with(['children' => function ($query) {
