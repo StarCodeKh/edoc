@@ -29,7 +29,12 @@
             <li>
                 <Link :href="route('workspace.view.my-tasks.board', workspace.slug || workspace.id)" class="flex items-center px-3 py-2 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 group" :class="{'active' : isMyTasksActive()}">
                     <icon class="w-4 h-4" name="list" />
-                    <span class="ml-3">{{ $t('My Tasks') }}</span>
+                    <span class="flex-1 ml-3">
+                        {{ $t('My Tasks') }}
+                    </span>
+                    <span class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 mr-1 rounded-full bg-indigo-600 text-white text-[10px] font-semibold">
+                        {{ my_tasks_count }}
+                    </span>
                 </Link>
             </li>
             <li class="relative" v-if="workspace.member.role === 'admin'">
@@ -55,9 +60,6 @@
                         <div class="flex w-full flex-1 justify-center flex-col pl-2 overflow-hidden text-ellipsis whitespace-nowrap">
                             <div class="font-medium text-[13px] leading-[18px]">
                                 {{ project.title }}
-                                <span v-if="projects.length" class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-indigo-600 text-white text-[10px] font-semibold normal-case">
-                                    {{ projects.length }}
-                                </span>
                             </div>
                         </div>
                         <button class="flex w-7 items-center justify-center" @click="saveProject($event, project)">
@@ -97,9 +99,6 @@
                         <div class="flex w-full flex-1 justify-center flex-col pl-2 overflow-hidden text-ellipsis whitespace-nowrap">
                             <div class="font-medium text-[13px] leading-[18px]">
                                 {{ project.title }}
-                                <span v-if="projects.length" class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-indigo-600 text-white text-[10px] font-semibold normal-case">
-                                    {{ projects.length }}
-                                </span>
                             </div>
                         </div>
                         <button class="flex w-7 items-center justify-center" @click="saveProject($event, project)">
@@ -144,6 +143,7 @@
             loading_items: [1,2,3,4,5],
             visible: {project_create: false},
             user: null,
+            my_tasks_count: 0,
             menu_items: [
                 {'name': 'Dashboard', 'route': 'dashboard', 'url': 'dashboard', 'icon': 'dashboard'},
                 {'name': 'Projects', 'route': 'projects.index', 'url': 'projects', 'icon': 'project'},
@@ -190,12 +190,9 @@
             }
         },
         isWorkspaceTasksActive(){
-            // Check if we're on any workspace task view (board, calendar, timeline, table)
-            // But NOT "My Tasks"
             const component = this.$page.component;
             const url = this.$page.url || '';
 
-            // Exclude My Tasks
             if (component === 'Workspaces/MyTasks' || url.includes('/tasks/my-tasks')) {
                 return false;
             }
@@ -209,12 +206,10 @@
                 'Workspaces/Table'
             ];
 
-            // Check component name
             if (workspaceTaskComponents.some(comp => component.includes(comp))) {
                 return true;
             }
 
-            // Also check URL pattern as fallback
             if (url.includes('/tasks/board') || url.includes('/tasks/calendar') ||
                 url.includes('/tasks/timeline') || url.includes('/tasks/table')) {
                 return true;
@@ -223,14 +218,12 @@
             return false;
         },
         isMyTasksActive(){
-            // Check if we're on the My Tasks page
             const component = this.$page.component;
             const url = this.$page.url || '';
 
             return component === 'Workspaces/MyTasks' || url.includes('/tasks/my-tasks');
         },
         isDashboardActive(){
-            // Check if we're on the workspace Main Dashboard page
             const component = this.$page.component;
             const url = this.$page.url || '';
 
@@ -263,11 +256,27 @@
                 this.loading = false;
             });
         },
+        getMyTasksCount(){
+            axios.get(this.route('json.workspace.my-tasks.count', this.workspace.id)).then((response) => {
+                if(response.data){
+                    this.my_tasks_count = response.data.count;
+                }
+            });
+        },
     },
         created() {
             this.workspace = this.$page.props.project ? this.$page.props.project.workspace : this.$page.props.workspace
             this.getProjects()
             this.getStarredProjects()
-        }
+            this.getMyTasksCount()
+        },
+        mounted() {
+            window.addEventListener('workspace-task-counts-changed', this.getProjects);
+            window.addEventListener('workspace-task-counts-changed', this.getMyTasksCount);
+        },
+        beforeUnmount() {
+            window.removeEventListener('workspace-task-counts-changed', this.getProjects);
+            window.removeEventListener('workspace-task-counts-changed', this.getMyTasksCount);
+        },
     }
 </script>

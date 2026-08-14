@@ -463,6 +463,27 @@ class WorkSpacesController extends Controller
         ]);
     }
 
+    public function jsonMyTasksCount($uid)
+    {
+        $user = auth()->user();
+        $workspace = Workspace::where('id', $uid)->orWhere('slug', $uid)->whereHas('member')->first();
+        if (empty($workspace)) {
+            return response()->json(['count' => 0]);
+        }
+
+        $count = Task::whereHas('project', function ($q) use ($workspace) {
+                $q->where('workspace_id', $workspace->id);
+            })
+            ->whereHas('assignees', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            })
+            ->where('is_done', 0)
+            ->isOpen()
+            ->count();
+
+        return response()->json(['count' => $count]);
+    }
+
     public function workspaceMyTasksCalendar($uid, Request $request)
     {
         $user = auth()->user();
