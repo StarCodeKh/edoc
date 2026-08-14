@@ -221,6 +221,8 @@ class ProjectsController extends Controller {
             $listItem['tasks'] = [];
             $loopIndex+= 1;
         }
+        unset($listItem);
+
         if($project->is_private && (auth()->user()['role_id'] != 1)){
             $requests['private_task'] = $auth_id;
         }
