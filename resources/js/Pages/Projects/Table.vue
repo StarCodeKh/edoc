@@ -268,16 +268,10 @@
                 selectedStatus: null,
                 barcodeRefs: {},
                 taskRows: [],
-                // Pagination: taskRows holds the full filtered/sorted set;
-                // pageRows is just the current page's slice, and is what
-                // <draggable> actually binds to (see afterDrop() for how a
-                // drag on this page gets folded back into taskRows/order).
                 currentPage: 1,
                 pageSize: 10,
                 pageRows: [],
 
-                // State for the Document Receipt (print) modal — same one
-                // used on the board view.
                 receiptModalOpen: false,
                 selectedReceiptTask: null,
 
@@ -308,10 +302,6 @@
                 return this.taskDetailsOpen;
             },
 
-            // Admins (project.member.role === 'admin') see every task in
-            // the project; anyone else only sees tasks they're actually
-            // assigned to — mirrors the same workspace.member.role check
-            // already used for the sidebar's admin-only menu items.
             isAdmin() {
                 return this?.project?.member?.role === 'admin';
             },
@@ -340,10 +330,6 @@
                 return Math.min(this.currentPage * this.pageSize, this.taskRows.length);
             },
 
-            // Windowed page-number list: always shows first/last page, a
-            // few pages around the current one, and "..." for any gap —
-            // keeps the pager usable even with a lot of pages instead of
-            // rendering a button per page.
             paginationPages() {
                 const total = this.totalPages;
                 const current = this.currentPage;
@@ -415,14 +401,6 @@
                 if (!this.selectedStatus) {
                     this.taskRows = sorted;
                 } else {
-                    // Filter using the exact same `listItem.tasks` array the status
-                    // button's count badge is built from, rather than comparing
-                    // `task.list_id` against the button's id. When several lists
-                    // share a title (grouped into one status, same as Board/
-                    // MainDashboard), that id is only one of several physical
-                    // list ids feeding this status — matching on it directly
-                    // silently dropped every task except those on that one list,
-                    // even though the badge count included them all.
                     const activeList = (this.lists || []).find(l => l.id === this.selectedStatus);
                     const groupTasks = activeList ? (activeList.tasks || []) : [];
                     this.taskRows = [...groupTasks].sort((a, b) => (a.order || 0) - (b.order || 0));
@@ -430,9 +408,6 @@
                 this.syncPageRows();
             },
 
-            // Slices taskRows down to just the current page, clamping the
-            // page number first in case the filtered set got smaller (e.g.
-            // a task was archived) and the old page no longer exists.
             syncPageRows(){
                 if (this.currentPage > this.totalPages) {
                     this.currentPage = this.totalPages;
@@ -448,11 +423,6 @@
             },
 
             afterDrop(){
-                // Only this page's rows were actually dragged — number them
-                // starting from this page's offset so order stays correct
-                // relative to every other page, then fold the new order
-                // back into the full (unpaginated) taskRows so switching
-                // pages/filters doesn't lose it.
                 const start = (this.currentPage - 1) * this.pageSize;
                 const payload = this.pageRows.map((task, idx) => {
                     task.order = start + idx + 1;
@@ -470,9 +440,6 @@
                 if (!this.lists) return this.statusPalette[0];
                 let idx = this.lists.findIndex(l => l.id === element.list_id);
                 if (idx === -1) {
-                    // Fall back to finding which status group actually contains
-                    // this task (handles lists grouped by title, where a task's
-                    // real list_id may differ from the group's representative id).
                     idx = this.lists.findIndex(l => (l.tasks || []).some(t => t.id === element.id));
                 }
                 return this.statusColor(idx === -1 ? 0 : idx);
