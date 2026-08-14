@@ -124,6 +124,24 @@ Route::get('w/{uid}/tasks/table', [WorkSpacesController::class, 'workspaceTables
 Route::get('w/{uid}/my-tasks/count', [WorkSpacesController::class, 'jsonMyTasksCount'])->name('json.workspace.my-tasks.count')->middleware('auth');
 Route::get('w/{uid}/tasks/my-tasks/board', [WorkSpacesController::class, 'workspaceMyTasksBoard'])->name('workspace.view.my-tasks.board')->middleware('auth');
 
+
+Route::get('/debug-my-tasks-count', function () {
+    return [
+        'step1' => App\Models\Task::whereHas('project', fn($q) => $q->where('workspace_id', 7))
+            ->whereHas('assignees', fn($q) => $q->where('user_id', 5))
+            ->count(),
+        'step2' => App\Models\Task::whereHas('project', fn($q) => $q->where('workspace_id', 7))
+            ->whereHas('assignees', fn($q) => $q->where('user_id', 5))
+            ->where('is_done', 0)
+            ->count(),
+        'step3' => App\Models\Task::whereHas('project', fn($q) => $q->where('workspace_id', 7))
+            ->whereHas('assignees', fn($q) => $q->where('user_id', 5))
+            ->where('is_done', 0)
+            ->isOpen()
+            ->count(),
+    ];
+});
+
 Route::get('w/{uid}/tasks/my-tasks/calendar', [WorkSpacesController::class, 'workspaceMyTasksCalendar'])->name('workspace.view.my-tasks.calendar')->middleware('auth');
 Route::get('w/{uid}/tasks/my-tasks/timeline', [WorkSpacesController::class, 'workspaceMyTasksTimeline'])->name('workspace.view.my-tasks.timeline')->middleware('auth');
 Route::get('w/{uid}/tasks/my-tasks/table', [WorkSpacesController::class, 'workspaceMyTasks'])->name('workspace.view.my-tasks.table')->middleware('auth');
