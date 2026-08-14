@@ -19,7 +19,7 @@ class SettingSeeder extends Seeder
         DB::table('settings')->insert(['name' => 'Enable Registration', 'slug' => 'enable_registration', 'type' => 'text', 'value' => '1']);
         DB::table('settings')->insert(['name' => 'Enable Pre-made Board', 'slug' => 'enable_pre_made_board', 'type' => 'text', 'value' => '1']);
         DB::table('settings')->insert(['name' => 'Default Language', 'slug' => 'default_language', 'type' => 'text', 'value' => 'en']);
-        DB::table('settings')->insert(['name' => 'Pre-made Board Lists', 'slug' => 'pre_made_board_list', 'type' => 'text', 'value' => json_encode(['ឯកសារចូល','កំពុងត្រួតពិនិត្យ', 'បញ្ចូលទៅឯឧត្តកម្មអគ្គ.រង', 'បញ្ចូលទៅឯឧត្តកម្មអគ្គ'])]);
+        DB::table('settings')->insert(['name' => 'Pre-made Board Lists', 'slug' => 'pre_made_board_list', 'type' => 'text', 'value' => json_encode(['ឯកសារព្រាង','ឯកសារចូល', 'បញ្ជូនទៅឯកឧត្តមអគ្គ.រង', 'បញ្ជូនទៅឯកឧត្តមអគ្គ.','ឯកភាព','បដិសេធ'])]);
 
         DB::table('settings')->insert([
             'name' => 'Allowed Upload Types', 'slug' => 'allowed_file_types', 'type' => 'json',

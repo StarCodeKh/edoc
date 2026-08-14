@@ -115,11 +115,15 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-sm sm:text-base">
                             <label class="flex items-start gap-2">
                                 <span class="receipt-checkbox"></span>
+                                <span>នាយកដ្ឋានកិច្ចការទូទៅ</span>
+                            </label>
+                            <label class="flex items-start gap-2">
+                                <span class="receipt-checkbox"></span>
                                 <span>នាយកដ្ឋានកិច្ចការគតិយុត្ត និងគ្រប់គ្រងអាជ្ញាបណ្ណ</span>
                             </label>
                             <label class="flex items-start gap-2">
                                 <span class="receipt-checkbox"></span>
-                                <span>នាយកដ្ឋានកិច្ចការទូទៅ</span>
+                                <span>នាយកដ្ឋានត្រួតពិនិត្យ និងគ្រប់គ្រងចំណូល</span>
                             </label>
                             <label class="flex items-start gap-2">
                                 <span class="receipt-checkbox"></span>
@@ -128,10 +132,6 @@
                             <label class="flex items-start gap-2">
                                 <span class="receipt-checkbox"></span>
                                 <span>នាយកដ្ឋានគ្រប់គ្រងសន្តិសុខ និងសណ្តាប់ធ្នាប់</span>
-                            </label>
-                            <label class="flex items-start gap-2">
-                                <span class="receipt-checkbox"></span>
-                                <span>នាយកដ្ឋានត្រួតពិនិត្យ និងគ្រប់គ្រងចំណូល</span>
                             </label>
                             <label class="flex items-start gap-2">
                                 <span class="receipt-checkbox"></span>
@@ -197,7 +197,7 @@
                             <div class="space-y-3">
                                 <label class="flex items-start gap-2">
                                     <span class="receipt-checkbox"></span>
-                                    <span>ដើម្បីទទួលជូប</span>
+                                    <span>ដើម្បីទទួលជួប</span>
                                 </label>
                                 <label class="flex items-start gap-2">
                                     <span class="receipt-checkbox"></span>
@@ -205,7 +205,7 @@
                                 </label>
                                 <label class="flex items-start gap-2">
                                     <span class="receipt-checkbox"></span>
-                                    <span>បានយើពា</span>
+                                    <span>បានយើញ</span>
                                 </label>
                             </div>
                         </div>
