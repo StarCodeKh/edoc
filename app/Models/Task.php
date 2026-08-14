@@ -28,21 +28,18 @@ class Task extends Model
     ];
 
     /**
-     * Generate Unique Task Code in the format: CGM-D-DD-MM-YYYY
+     * Generate Unique Task Code
      */
     private function generateTaskCode()
     {
         $prefix = "CGMC-";
 
-        // Get the highest current numeric ID/count to calculate the next sequence number
         $latestTask = static::latest('id')->first();
         $nextNumber = $latestTask ? $latestTask->id + 1 : 1;
 
-        // Pad the number to 9 digits (e.g. 001234567)
         $paddedNumber = str_pad($nextNumber, 9, '0', STR_PAD_LEFT);
         $code = "{$prefix}{$paddedNumber}";
 
-        // Ensure uniqueness as a fallback
         $counter = 1;
         while (static::where('task_code', $code)->exists()) {
             $paddedNumber = str_pad($nextNumber + $counter, 9, '0', STR_PAD_LEFT);
@@ -55,12 +52,6 @@ class Task extends Model
 
     private function generateQrCode($title, $taskCode)
     {
-        // Prefer the slug (always set by this point — see boot()'s
-        // creating() handler, which generates it before the QR code),
-        // matching how the rest of the app links to a task
-        // (`element.slug || element.id` in Table.vue/Board.vue). Falls
-        // back to the task code itself only in the unlikely case neither
-        // a slug nor an id is available yet.
         $taskUid = $this->slug ?: ($this->id ?: $taskCode);
 
         $qrData = route('projects.table.with.task', [
@@ -80,7 +71,6 @@ class Task extends Model
     {
         $generator = new BarcodeGeneratorSVG();
         $svg = $generator->getBarcode($taskCode, $generator::TYPE_CODE_128, 2, 60);
-
         return 'data:image/svg+xml;base64,' . base64_encode($svg);
     }
 
@@ -91,9 +81,6 @@ class Task extends Model
     {
         $slug = $this->slugify($title);
 
-        // A title that's only symbols/whitespace (or that otherwise still
-        // slugs down to nothing) would otherwise start the uniqueness
-        // loop below on an empty string.
         if ($slug === '') {
             $slug = 'task';
         }
@@ -124,22 +111,21 @@ class Task extends Model
 
         // --- CREATING EVENT ---
         static::creating(function ($task) {
-            // Auto-generate Slug if missing
             if (empty($task->slug) && !empty($task->title)) {
                 $task->slug = $task->generateUniqueSlug($task->title);
             }
 
-            // Auto-generate Task Code (CGM-D-DD-MM-YYYY)
+            // Auto-generate Task Code
             if (empty($task->task_code)) {
                 $task->task_code = $task->generateTaskCode();
             }
 
-            // Auto-generate QR Code (Title + Task Code)
+            // Auto-generate QR Code
             if (empty($task->qr_code)) {
                 $task->qr_code = $task->generateQrCode($task->title, $task->task_code);
             }
 
-            // Auto-generate Barcode (Task Code only)
+            // Auto-generate Barcode
             if (empty($task->bar_code)) {
                 $task->bar_code = $task->generateBarCode($task->task_code);
             }
@@ -147,7 +133,6 @@ class Task extends Model
 
         // --- UPDATING EVENT ---
         static::updating(function ($task) {
-            // Regenerate QR Code if Title changes
             if ($task->isDirty('title')) {
                 $task->qr_code = $task->generateQrCode($task->title, $task->task_code);
             }
@@ -250,10 +235,6 @@ class Task extends Model
         return $this->belongsTo(Project::class);
     }
 
-    /**
-     * ប្រភពឯកសារ (Document Source): the office picked in the
-     * TaskDetails.vue picker (org-chart department/office tree).
-     */
     public function documentSource()
     {
         return $this->belongsTo(DocumentSource::class, 'document_source_id');
