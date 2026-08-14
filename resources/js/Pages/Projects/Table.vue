@@ -216,10 +216,8 @@
     import RightMenu from "@/Shared/RightMenu.vue";
     import axios from 'axios'
     import draggable from 'vuedraggable'
-
     import JsBarcode from 'jsbarcode';
     import DocumentReceipt from '@/Shared/Modals/DocumentReceipt.vue'
-
 
     export default {
     metaInfo: { title: 'Dashboard' },
