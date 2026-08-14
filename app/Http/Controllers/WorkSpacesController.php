@@ -49,18 +49,24 @@ class WorkSpacesController extends Controller
     public function jsonAll()
     {
         $user_id = auth()->id();
+        $user = auth()->user();
         $workSpaces = Workspace::where('user_id', $user_id)->orWhereHas('member')->with('member')->withCount('projects')->orderBy('name')->get();
 
-        $workSpaces->each(function ($workspace) use ($user_id) {
+        $workSpaces->each(function ($workspace) use ($user_id, $user) {
             $projectIds = Project::where('workspace_id', $workspace->id)->pluck('id');
             $listIds = BoardList::whereIn('project_id', $projectIds)->isOpen()->pluck('id');
-            $workspace->incomplete_tasks_count = Task::whereIn('list_id', $listIds)
+
+            $query = Task::whereIn('list_id', $listIds)
                 ->where('is_done', 0)
-                ->whereHas('assignees', function ($q) use ($user_id) {
+                ->isOpen();
+
+            if ($user->role_id != 1) {
+                $query->whereHas('assignees', function ($q) use ($user_id) {
                     $q->where('user_id', $user_id);
-                })
-                ->isOpen()
-                ->count();
+                });
+            }
+
+            $workspace->incomplete_tasks_count = $query->count();
         });
 
         return response()->json($workSpaces);
@@ -471,15 +477,19 @@ class WorkSpacesController extends Controller
             return response()->json(['count' => 0]);
         }
 
-        $count = Task::whereHas('project', function ($q) use ($workspace) {
+        $query = Task::whereHas('project', function ($q) use ($workspace) {
                 $q->where('workspace_id', $workspace->id);
             })
-            ->whereHas('assignees', function ($q) use ($user) {
-                $q->where('user_id', $user->id);
-            })
             ->where('is_done', 0)
-            ->isOpen()
-            ->count();
+            ->isOpen();
+
+        if ($user->role_id != 1) {
+            $query->whereHas('assignees', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            });
+        }
+
+        $count = $query->count();
 
         return response()->json(['count' => $count]);
     }

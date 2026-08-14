@@ -6,7 +6,7 @@
         <div v-if="workspace" class="wdash__header">
             <h1 class="wdash__header-title">{{ workspace.name }}</h1>
             <div class="wdash__header-count">
-                {{ $t('Total Projects') }}
+                {{ $t('ថ្នាក់/ក្រុម/គម្រោង ឯកសារ') }}
                 <span class="wdash__header-count-badge">{{ workspaceProjectCount }}</span>
             </div>
         </div>
@@ -36,15 +36,12 @@
                 </div>
             </div>
 
-            <!-- Simple count cards (no rings) — total projects in this
-                 workspace, and total documents visible to the current
-                 user (role-filtered, same source as the table below). -->
             <div class="wdash__card wdash__card--simple">
-                <div class="wdash__card-title">{{ $t('Total Projects') }}</div>
+                <div class="wdash__card-title">{{ $t('ថ្នាក់/ក្រុម/គម្រោង ឯកសារ') }}</div>
                 <div class="wdash__card-total">{{ workspaceProjectCount }}</div>
             </div>
             <div class="wdash__card wdash__card--simple">
-                <div class="wdash__card-title">{{ $t('Total Documents') }}</div>
+                <div class="wdash__card-title">{{ $t('ឯកសារសរុប') }}</div>
                 <div class="wdash__card-total">{{ allTasks.length }}</div>
             </div>
         </div>
@@ -52,7 +49,7 @@
         <!-- Summary + Statistics -->
         <div class="wdash__row">
             <div class="wdash__panel wdash__panel--summary">
-                <div class="wdash__panel-title">{{ $t('Summary') }}</div>
+                <div class="wdash__panel-title">{{ $t('សេចក្តីសង្ខេប') }}</div>
                 <div class="wdash__donut-wrap">
                     <svg viewBox="0 0 200 200" class="wdash__donut">
                         <circle cx="100" cy="100" r="80" class="wdash__donut-bg" />
@@ -79,7 +76,7 @@
             </div>
 
             <div class="wdash__panel wdash__panel--stats">
-                <div class="wdash__panel-title">{{ $t('Document Statistic') }}</div>
+                <div class="wdash__panel-title">{{ $t('ស្ថិតិឯកសារ') }}</div>
                 <div class="wdash__stat-list">
                     <div v-if="!resolvedStatistics.length" class="wdash__empty-note">{{ $t('No documents yet.') }}</div>
                     <div v-for="(stat, stIdx) in resolvedStatistics" :key="'stat_'+stIdx" class="wdash__stat-row">
@@ -283,7 +280,7 @@
                     color: this.statusPalette[idx % this.statusPalette.length],
                 }));
                 const total = items.reduce((sum, i) => sum + i.value, 0);
-                return { title: 'Document Status', total, items };
+                return { title: 'ស្ថានភាពឯកសារ', total, items };
             },
 
             resolvedStatusCards() {

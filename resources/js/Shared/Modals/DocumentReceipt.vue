@@ -106,6 +106,9 @@
                                     alt="Barcode"
                                     class="h-8 sm:h-10 max-w-full w-32 sm:w-40 object-contain"
                                 />
+                                <p class="text-[12px] sm:text-[12px] text-gray-600 mt-1 font-medium text-center leading-snug max-w-[140px] sm:max-w-none mx-auto">
+                                    {{ getTaskCode }}
+                                </p>
                             </div>
                         </div>
                     </div>
