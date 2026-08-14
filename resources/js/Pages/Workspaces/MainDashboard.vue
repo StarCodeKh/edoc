@@ -2,15 +2,6 @@
     <div class="wdash">
         <Head :title="$t(title)" />
 
-        <!-- Workspace name + total-projects badge for this workspace. -->
-        <div v-if="workspace" class="wdash__header">
-            <h1 class="wdash__header-title">{{ workspace.name }}</h1>
-            <div class="wdash__header-count">
-                {{ $t('ថ្នាក់/ក្រុម/គម្រោង ឯកសារ') }}
-                <span class="wdash__header-count-badge">{{ workspaceProjectCount }}</span>
-            </div>
-        </div>
-
         <!-- Top status cards -->
         <div class="wdash__cards">
             <div v-for="(card, cIdx) in resolvedStatusCards" :key="'card_'+cIdx" class="wdash__card">

@@ -79,7 +79,9 @@ class WorkSpacesController extends Controller
             return abort(404);
         }
 
-        $tasks = Task::filter($requests)
+        $user = auth()->user();
+
+        $tasksQuery = Task::filter($requests)
             ->whereHas('project', function ($q) use ($workspace) {
                 $q->where('workspace_id', $workspace->id);
             })
@@ -96,12 +98,16 @@ class WorkSpacesController extends Controller
             ->withCount('checklists')
             ->withCount('attachments')
             ->with('assignees')
-            ->orderByOrder()
-            ->get()
-            ->toArray();
+            ->orderByOrder();
 
-        // Group tasks by list title (combining lists with same name across projects),
-        // same as workspaceBoard().
+        if ($user->role_id != 1) {
+            $tasksQuery->whereHas('assignees', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            });
+        }
+
+        $tasks = $tasksQuery->get()->toArray();
+
         $listsByTitle = [];
         $list_index = [];
         $orderCounter = 0;
@@ -145,14 +151,9 @@ class WorkSpacesController extends Controller
             'lists' => $board_lists,
             'list_index' => $list_index,
             'filters' => $requests,
-            // statusCards, summary, statistics — still using the component's
-            // built-in placeholder numbers below, since those need a real
-            // mapping of which lists count as "Submitted/Reviewing/Approved/Rejected"
-            // and which projects count as "Administrative" vs "Casino Operators".
-            // Tell me that mapping and I'll compute these from $board_lists too.
         ]);
     }
-
+    
     public function jsonMineAll()
     {
         $myWorkspaces = Workspace::where('user_id', auth()->id())->limit(50)->get()->toArray();
