@@ -528,8 +528,8 @@
                                                             </div>
                                                         </div>
 
-                                                        <div class="flex items-center justify-center px-4 py-6">
-                                                            <div ref="drawStage" class="modal-pop__stage relative bg-white rounded shadow-2xl overflow-hidden mx-auto w-full" style="max-width: 880px;">
+                                                        <div class="flex items-center justify-center px-4 py-6" @wheel="handleDrawWheel">
+                                                            <div ref="drawStage" class="modal-pop__stage relative bg-white rounded shadow-2xl overflow-hidden mx-auto w-full" :class="{ 'stage-transitioning': pageTransitioning }" style="max-width: 880px;">
                                                                 <iframe v-if="drawTool === 'view'" :key="'view-' + currentDrawPage" :src="pdfIframeSrc" class="absolute inset-0 w-full h-full border-0"></iframe>
                                                                 <canvas v-show="drawTool !== 'view'" ref="pdfRenderCanvas" class="absolute inset-0 w-full h-full"></canvas>
                                                                 <canvas
@@ -1188,29 +1188,6 @@
     ).toString();
     pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
-    let workerBlobSrcPromise = null;
-    function ensureWorkerBlobSrc() {
-        if (!workerBlobSrcPromise) {
-            workerBlobSrcPromise = fetch(pdfWorkerUrl)
-                .then(res => {
-                    if (!res.ok) throw new Error(`HTTP ${res.status} fetching pdf.worker`);
-                    return res.blob();
-                })
-                .then(rawBlob => {
-                    const jsBlob = new Blob([rawBlob], { type: 'text/javascript' });
-                    const blobUrl = URL.createObjectURL(jsBlob);
-                    pdfjsLib.GlobalWorkerOptions.workerSrc = blobUrl;
-                    return blobUrl;
-                })
-                .catch(err => {
-                    console.error('Falling back to direct pdf.worker URL, blob wrap failed:', err);
-                    pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
-                    return pdfWorkerUrl;
-                });
-        }
-        return workerBlobSrcPromise;
-    }
-
     export default {
         props: {
             id: {
@@ -1295,24 +1272,18 @@
                     size: 4
                 },
                 isDrawing: false,
-                // Which tool is active in the single toolbar. 'view' lets
-                // the native PDF viewer scroll through every page; picking
-                // any other tool switches to drawing on page 1.
-                drawTool: 'view', // 'view' | 'pen' | 'highlighter' | 'eraser' | 'text'
+                drawTool: 'view',
                 historyStack: [],
                 redoStack: [],
                 textInput: { visible: false, cssX: 0, cssY: 0, value: '' },
-                // Placed text notes — kept as separate, draggable objects
-                // (not baked into the canvas bitmap) so they can be moved
-                // around after being added, like a standard PDF note tool.
                 textNotes: [],
                 textNoteIdCounter: 0,
                 draggingNote: null,
-                // Quick-pick color swatches for the redesigned markup
-                // toolbar (black, red, yellow, green, blue, purple, gray).
                 swatchColors: ['#000000', '#ef4444', '#eab308', '#22c55e', '#3b82f6', '#a855f7', '#9ca3af'],
                 currentDrawPage: 1,
                 totalPdfPages: 1,
+                wheelCooldown: false,
+                pageTransitioning: false,
                 pageAnnotations: {},
                 dirtyPages: {},
 
@@ -1322,7 +1293,6 @@
                 isRenderingPage: false,
                 canvasPixelRatio: 1,
 
-                // --- Toast notification state ---
                 toasts: [],
                 toastIdCounter: 0,
 
@@ -1596,8 +1566,6 @@
                     }
                     const bytes = await fileRes.arrayBuffer();
 
-                    await ensureWorkerBlobSrc();
-
                     const loadingTask = pdfjsLib.getDocument({ data: bytes });
                     this.pdfDocProxy = markRaw(await loadingTask.promise);
                     this.totalPdfPages = this.pdfDocProxy.numPages;
@@ -1673,12 +1641,33 @@
                 }
             },
 
+            handleDrawWheel(e) {
+                if (this.drawTool === 'view') return;
+                if (this.isDrawing || this.textInput.visible || this.draggingNote) return;
+
+                const threshold = 12;
+                if (Math.abs(e.deltaY) < threshold) return;
+
+                e.preventDefault();
+                if (this.wheelCooldown) return;
+
+                const direction = e.deltaY > 0 ? 1 : -1;
+                const next = this.currentDrawPage + direction;
+                if (next < 1 || next > this.totalPdfPages) return;
+
+                this.wheelCooldown = true;
+                this.goToDrawPage(direction);
+                setTimeout(() => { this.wheelCooldown = false; }, 450);
+            },
+
             async goToDrawPage(delta) {
                 if (!this.viewModal.attachment) return;
                 const next = this.currentDrawPage + delta;
                 if (next < 1 || next > this.totalPdfPages) return;
 
                 this.saveCurrentPageAnnotationState();
+                this.pageTransitioning = true;
+
                 this.currentDrawPage = next;
                 this.historyStack = [];
                 this.redoStack = [];
@@ -1692,6 +1681,10 @@
                         await this.restoreFromDataUrl(saved);
                     }
                 }
+
+                this.$nextTick(() => {
+                    this.pageTransitioning = false;
+                });
             },
 
             saveCurrentPageAnnotationState() {
@@ -1913,8 +1906,6 @@
                 await this.restoreFromDataUrl(next);
             },
 
-            // Explicit "Save" button: uploads the drawing as a brand new
-            // attachment. Nothing saves automatically while drawing.
             async manualSaveAnnotation() {
                 this.autoSaving = true;
                 try {
@@ -3216,5 +3207,14 @@
     .modal-fade-enter-from,
     .modal-fade-leave-to {
         opacity: 0;
+    }
+
+    /* Wheel/trackpad page-turn transition while drawing on a PDF. */
+    .modal-pop__stage {
+        transition: opacity 0.18s ease, transform 0.18s ease;
+    }
+    .stage-transitioning {
+        opacity: 0.35;
+        transform: scale(0.985);
     }
 </style>
