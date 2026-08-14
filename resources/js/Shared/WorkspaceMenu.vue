@@ -152,35 +152,37 @@
         }
         },
         watch: {
-            '$page.props.project': {
-                handler() {
-                    if(this.$page.props.project){
-                        if(this.$page.props.project.workspace.id !== this.workspace.id){
-                            this.loading = true;
-                            this.workspace = this.$page.props.project.workspace
-                            this.projects = []
-                            this.getProjects()
-                        }else{
-                            const projectIndex = this.projects.findIndex(p=>p.id === this.$page.props.project.id)
-                            this.projects[projectIndex] = this.$page.props.project;
-                        }
-                        this.getStarredProjects();
-                    }
-                },
-                deep: true,
-            },
-            '$page.props.workspace.id': {
-                handler() {
-                    if(this.$page.props.workspace){
+        '$page.props.project': {
+            handler() {
+                if(this.$page.props.project){
+                    if(this.$page.props.project.workspace.id !== this.workspace.id){
                         this.loading = true;
-                        this.workspace = this.$page.props.workspace
+                        this.workspace = this.$page.props.project.workspace
                         this.projects = []
                         this.getProjects()
+                        this.getMyTasksCount()
+                    }else{
+                        const projectIndex = this.projects.findIndex(p=>p.id === this.$page.props.project.id)
+                        this.projects[projectIndex] = this.$page.props.project;
                     }
-                },
-                deep: true,
+                    this.getStarredProjects();
+                }
             },
+            deep: true,
         },
+        '$page.props.workspace.id': {
+            handler() {
+                if(this.$page.props.workspace){
+                    this.loading = true;
+                    this.workspace = this.$page.props.workspace
+                    this.projects = []
+                    this.getProjects()
+                    this.getMyTasksCount()
+                }
+            },
+            deep: true,
+        },
+    },
     methods: {
         checkActiveClass(type, name){
             if(type === 'filter' && this.$page.props.filters && (parseInt(this.$page.props.filters.user, 10) === this.$page.props.auth.user.id)){
