@@ -10,6 +10,15 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
+/**
+ * Team-role assignment updated to use your real role_id tiers instead
+ * of hardcoded user ids. Before: whichever user happened to have
+ * database id 1 became "admin" and id 2 became "manager" — coincidental
+ * and broken once more users get seeded ahead of them. Now:
+ *   role_id 1 (Super Admin) -> team role 'admin'
+ *   role_id 2 (Admin)       -> team role 'manager'
+ *   role_id 3 (Normal)      -> team role 'member'
+ */
 class WorkspaceSeeder extends Seeder
 {
     /**
@@ -95,37 +104,33 @@ class WorkspaceSeeder extends Seeder
             // Add team members to workspace
             $teamSize = $workspaceData['team_size'];
 
-            // Ensure user_id 1 and 2 are always included
             $requiredUsers = collect();
 
-            // Add user_id 1 as admin
-            if ($users->where('id', 1)->isNotEmpty()) {
-                $requiredUsers->push($users->where('id', 1)->first());
+            $superAdmin = $users->where('role_id', 1)->first();
+            if ($superAdmin) {
+                $requiredUsers->push($superAdmin);
             }
 
-            // Add user_id 2 as manager
-            if ($users->where('id', 2)->isNotEmpty()) {
-                $requiredUsers->push($users->where('id', 2)->first());
+            $admin = $users->where('role_id', 2)->first();
+            if ($admin) {
+                $requiredUsers->push($admin);
             }
 
-            // Add remaining users randomly
-            $remainingUsers = $users->whereNotIn('id', [1, 2])->random(min($teamSize - 2, $users->count() - 2))->unique('id');
-            $workspaceUsers = $requiredUsers->merge($remainingUsers);
+            $requiredIds = $requiredUsers->pluck('id')->all();
+            $remaining = $users->whereNotIn('id', $requiredIds);
+            $remainingUsers = $remaining->count() > 0
+                ? $remaining->random(min(max($teamSize - $requiredUsers->count(), 0), $remaining->count()))->unique('id')
+                : collect();
+            $workspaceUsers = $requiredUsers->merge($remainingUsers)->unique('id');
 
-            foreach ($workspaceUsers as $index => $user) {
-                // Assign roles: user_id 1 is admin, user_id 2 is manager, rest are members
-                $role = 'member';
-                if ($user->id === 1) {
-                    $role = 'admin';
-                } elseif ($user->id === 2) {
-                    $role = 'manager';
-                } elseif ($index === 0 && $user->id !== 1) {
-                    // If user_id 1 is not available, make first user admin
-                    $role = 'admin';
-                } elseif ($index === 1 && $user->id !== 2 && $teamSize > 5) {
-                    // If user_id 2 is not available, make second user manager
-                    $role = 'manager';
-                }
+            foreach ($workspaceUsers as $user) {
+                // Team role driven by the user's actual system role_id:
+                // Super Admin -> admin, Admin -> manager, Normal -> member.
+                $role = match ((int) $user->role_id) {
+                    1 => 'admin',
+                    2 => 'manager',
+                    default => 'member',
+                };
 
                 TeamMember::create([
                     'workspace_id' => $workspace->id,
@@ -137,8 +142,8 @@ class WorkspaceSeeder extends Seeder
             }
 
             // Log admin and manager assignments
-            $adminUser = $workspaceUsers->where('id', 1)->first();
-            $managerUser = $workspaceUsers->where('id', 2)->first();
+            $adminUser = $workspaceUsers->firstWhere('role_id', 1);
+            $managerUser = $workspaceUsers->firstWhere('role_id', 2);
 
             $roleInfo = [];
             if ($adminUser) {
@@ -156,7 +161,5 @@ class WorkspaceSeeder extends Seeder
 
         $this->command->info("🎉 Successfully created {$createdWorkspaces->count()} workspaces with team members!");
 
-        // Store workspace IDs for other seeders
-        // cache()->put('seeded_workspace_ids', $createdWorkspaces->pluck('id')->toArray(), 3600);
     }
 }

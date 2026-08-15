@@ -16,7 +16,8 @@ class RoleSeeder extends Seeder
      */
     public function run() {
         DB::table('roles')->truncate();
-        DB::table('roles')->insert([ 'id' => 1, 'name' => 'Admin', 'slug' => 'admin', 'create_workspace' => 1, 'create_project' => 1]);
-        DB::table('roles')->insert([ 'id' => 2,'name' => 'Normal', 'slug' => 'normal', 'create_workspace' => 0, 'create_project' => 0 ]);
+        DB::table('roles')->insert([ 'id' => 1, 'name' => 'Super Admin', 'slug' => 'admin', 'create_workspace' => 1, 'create_project' => 1]);
+        DB::table('roles')->insert([ 'id' => 2,'name' => 'Admin', 'slug' => 'admin', 'create_workspace' => 1, 'create_project' => 1 ]);
+        DB::table('roles')->insert([ 'id' => 3,'name' => 'Normal', 'slug' => 'normal', 'create_workspace' => 0, 'create_project' => 0 ]);
     }
 }
