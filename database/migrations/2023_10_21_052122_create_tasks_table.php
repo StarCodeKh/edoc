@@ -25,10 +25,13 @@ class CreateTasksTable extends Migration
             $table->text('description')->default(null)->nullable();
             $table->integer('cover')->default(null)->nullable();
             $table->integer('list_id')->index();
+            $table->foreignId('document_source_id')->nullable()->constrained('document_sources')->nullOnDelete();
             $table->integer('order')->default(0)->index();
             $table->integer('user_id')->index();
             $table->integer('project_id')->index();
             $table->timestamp('due_date')->default(null)->nullable();
+            $table->dateTime('entry_date')->nullable();
+             $table->dateTime('exit_date')->nullable();
             $table->timestamps();
         });
     }
