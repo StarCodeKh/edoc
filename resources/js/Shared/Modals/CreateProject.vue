@@ -1,9 +1,9 @@
 <template>
-    <div class="fixed top-[52px] w-[260px] left-[30%] z-[200] rounded-[8px] bg-white shadow overflow-hidden create__project" :style="{top: top, left: left}">
-        <div class="flex flex-col max-h-[calc(100vh-70px)]" v-if="!loading">
+    <div class="fixed inset-0 z-[200] flex items-start sm:items-center justify-center sm:justify-start bg-black/40 p-3 sm:pl-[250px] overflow-y-auto create__project" @click.self="$emit('createProject')">
+        <div class="flex flex-col w-full max-w-[320px] sm:max-w-[340px] max-h-[calc(100vh-24px)] my-auto rounded-[8px] bg-white shadow overflow-hidden" v-if="!loading">
 
             <!-- Sticky header -->
-            <div class="flex items-center justify-between gap-1 py-3 px-3 sticky top-0 bg-white z-10">
+            <div class="flex items-center justify-between gap-1 py-3 px-3 sticky top-0 bg-white z-10 border-b border-gray-100 shrink-0">
                 <div class="flex"></div>
                 <div class="flex text-center">
                     {{ $t('Create Project') }}
@@ -14,7 +14,7 @@
             </div>
 
             <!-- Scrollable body -->
-            <div class="flex flex-col gap-3 overflow-y-auto px-3 pb-3">
+            <div class="flex flex-col gap-3 overflow-y-auto px-3 pb-3 min-h-0">
                 <div class="flex justify-center">
                     <div class="w-[70%] h-[100px] p-3 flex rounded justify-center" :style="{backgroundImage: 'url('+project.color.image+')', backgroundColor: project.color.bg}">
                         <img src="/images/board.svg" class="w-auto max-h-full" alt="Board" />
@@ -42,19 +42,19 @@
                 <div class="flex">
                     <label class="w-full flex flex-col text-left">
                         <div>{{ $t('Project name') }} *</div>
-                        <input v-model="project.title" class="rounded border" type="text" required="" aria-required="true" autocomplete="off">
+                        <input v-model="project.title" class="rounded border w-full" type="text" required="" aria-required="true" autocomplete="off">
                     </label>
                 </div>
                 <div class="flex">
                     <label class="flex flex-col w-full">
                         <div>{{ $t('Workspace') }}</div>
-                        <select-input v-model="project.workspace_id" class=" mr-2 w-full">
+                        <select-input v-model="project.workspace_id" class="w-full">
                             <option v-for="(workspace, wi) in workspaces" :key="wi" :value="workspace.id">{{ workspace.name }}</option>
                         </select-input>
                     </label>
                 </div>
                 <div class="flex">
-                    <div class="flex items-center h-5">
+                    <div class="flex items-center h-5 shrink-0">
                         <input id="helper-checkbox" v-model="project.is_private" true-value="1" false-value="0" aria-describedby="helper-checkbox-text" type="checkbox" value="" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600">
                     </div>
                     <div class="ms-1 text-sm">
@@ -64,21 +64,21 @@
                 <div class="flex">
                     <label class="w-full flex flex-col">
                         <div>{{ $t('Project Details') }} <small>({{ $t('optional') }})</small></div>
-                        <textarea v-model="project.description" class="rounded border" type="text" required="" aria-required="true" autocomplete="off" />
+                        <textarea v-model="project.description" class="rounded border w-full" type="text" required="" aria-required="true" autocomplete="off" />
                     </label>
                 </div>
             </div>
 
             <!-- Sticky footer with Create button -->
-            <div class="flex px-3 py-3 sticky bottom-0 bg-white z-10 border-t border-gray-100">
+            <div class="flex px-3 py-3 sticky bottom-0 bg-white z-10 border-t border-gray-100 shrink-0">
                 <button class="bg-indigo-600 w-full text-white p-[9px] rounded disabled:opacity-50" :disabled="!project.title" @click="createProject()">
                     {{ $t('Create') }}</button>
             </div>
         </div>
 
         <!-- Styled alert modal, replaces window.alert -->
-        <div v-if="showAlert" class="fixed inset-0 z-[300] flex items-center justify-center bg-black/40">
-            <div class="bg-white rounded-[8px] shadow-lg w-[280px] p-4 flex flex-col gap-3">
+        <div v-if="showAlert" class="fixed inset-0 z-[300] flex items-center justify-center bg-black/40 p-3" @click.self="closeAlert()">
+            <div class="bg-white rounded-[8px] shadow-lg w-full max-w-[280px] p-4 flex flex-col gap-3">
                 <div class="flex items-center justify-between">
                     <div class="font-medium text-[14px] text-gray-900">{{ $t('Notice') }}</div>
                     <div @click="closeAlert()" class="flex hover:bg-gray-200 cursor-pointer rounded w-6 h-6 justify-center items-center">
@@ -100,16 +100,6 @@
     import axios from 'axios'
     export default {
         name: "create-project",
-        props: {
-            top: {
-                required: false,
-                default: '50px'
-            },
-            left: {
-                required: false,
-                default: '390px'
-            },
-        },
         components: { SelectInput, Icon },
         data() {
             return {
