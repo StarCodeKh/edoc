@@ -9,6 +9,7 @@
           <text-input v-model="form.email" :error="form.errors.email" class="pb-8 pr-6 w-full lg:w-1/3" :label="$t('Email')" />
           <text-input v-model="form.phone" :error="form.errors.phone" class="pb-8 pr-6 w-full lg:w-1/3" :label="$t('Phone')" />
           <text-input v-model="form.address" :error="form.errors.address" class="pb-8 pr-6 w-full lg:w-1/3" :label="$t('Address')" />
+          <text-input v-model="form.title" :error="form.errors.title" class="pb-8 pr-6 w-full lg:w-1/3" :label="$t('Title')" />
             <select-input v-model="form.role_id" :error="form.errors.role_id" class="pb-8 pr-6 w-full lg:w-1/3" :label="$t('Role')">
                 <option :value="null" />
                 <option v-for="(r, ri) in roles" :key="ri" :value="r.id">{{ r.name }}</option>
@@ -57,6 +58,7 @@ export default {
         phone: '',
         email: '',
         address: '',
+        title: '',
         role_id: null,
         password: '',
         photo: null

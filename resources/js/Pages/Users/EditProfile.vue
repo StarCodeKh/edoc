@@ -8,6 +8,7 @@
           <text-input v-model="form.last_name" :error="form.errors.last_name" class="pb-8 pr-6 w-full lg:w-1/3" :label="$t('Last name')" />
           <text-input v-model="form.email" :error="form.errors.email" class="pb-8 pr-6 w-full lg:w-1/3" :label="$t('Email')" />
           <text-input v-model="form.phone" :error="form.errors.phone" class="pb-8 pr-6 w-full lg:w-1/3" :label="$t('Phone')" />
+          <text-input v-model="form.title" :error="form.errors.title" class="pb-8 pr-6 w-full lg:w-1/3" :label="$t('Title')" />
             <select-input v-model="form.locale" :error="form.errors.locale" class="pr-6 pb-8 w-full lg:w-1/3" :label="$t('Language')">
                 <option :value="null" />
                 <option v-for="language in languages" :key="language.code" :value="language.code">{{ $t(language.name) }}</option>
@@ -62,8 +63,9 @@ export default {
         last_name: this.user.last_name,
         email: this.user.email,
         phone: this.user.phone,
-          locale: this.user.locale,
+        locale: this.user.locale,
         address: this.user.address,
+        title: this.user.title,
         password: '',
         role: this.user.role,
         role_id: this.user.role_id,

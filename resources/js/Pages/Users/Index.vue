@@ -20,6 +20,7 @@
             <th class="pb-4 pt-6 px-6">{{ $t('Name') }}</th>
             <th class="pb-4 pt-6 px-6">{{ $t('Email') }}</th>
             <th class="pb-4 pt-6 px-6">{{ $t('Phone') }}</th>
+            <th class="pb-4 pt-6 px-6">{{ $t('Title') }}</th>
             <th class="pb-4 pt-6 px-6" colspan="2">{{ $t('Role') }}</th>
         </tr>
         <tr v-for="user in users.data" :key="user.id" class="hover:bg-gray-100 focus-within:bg-gray-100">
@@ -37,6 +38,11 @@
             <td class="border-t">
                 <Link class="flex items-center px-6 py-4" :href="route('users.edit', user.id)" tabindex="-1">
                     {{ user.phone }}
+                </Link>
+            </td>
+            <td class="border-t">
+                <Link class="flex items-center px-6 py-4" :href="route('users.edit', user.id)" tabindex="-1">
+                    {{ user.title }}
                 </Link>
             </td>
             <td class="border-t capitalize">
@@ -61,51 +67,51 @@
 </template>
 
 <script>
-import { Head, Link } from '@inertiajs/vue3'
-import Icon from '@/Shared/Icon.vue'
-import pickBy from 'lodash/pickBy'
-import Layout from '@/Shared/Layout.vue'
-import throttle from 'lodash/throttle'
-import mapValues from 'lodash/mapValues'
-import Pagination from '@/Shared/Pagination.vue'
-import SearchInput from '@/Shared/SearchInput.vue'
-import SelectInput from '@/Shared/SelectInput.vue'
+    import { Head, Link } from '@inertiajs/vue3'
+    import Icon from '@/Shared/Icon.vue'
+    import pickBy from 'lodash/pickBy'
+    import Layout from '@/Shared/Layout.vue'
+    import throttle from 'lodash/throttle'
+    import mapValues from 'lodash/mapValues'
+    import Pagination from '@/Shared/Pagination.vue'
+    import SearchInput from '@/Shared/SearchInput.vue'
+    import SelectInput from '@/Shared/SelectInput.vue'
 
-export default {
-  components: {
-      SearchInput,
-    Head,
-    Icon,
-    Link,
-      SelectInput,
-      Pagination,
-  },
-  layout: Layout,
-  props: {
-    filters: Object,
-    users: Object,
-    roles: Array,
-  },
-  data() {
-    return {
-      form: {
-        search: this.filters.search,
-        role_id: this.filters.role_id ?? null,
-      },
+    export default {
+    components: {
+        SearchInput,
+        Head,
+        Icon,
+        Link,
+        SelectInput,
+        Pagination,
+    },
+    layout: Layout,
+    props: {
+        filters: Object,
+        users: Object,
+        roles: Array,
+    },
+    data() {
+        return {
+        form: {
+            search: this.filters.search,
+            role_id: this.filters.role_id ?? null,
+        },
+        }
+    },
+    watch: {
+        form: {
+        deep: true,
+        handler: throttle(function () {
+            this.$inertia.get(this.route('users'), pickBy(this.form), { preserveState: true })
+        }, 150),
+        },
+    },
+    methods: {
+        reset() {
+        this.form = mapValues(this.form, () => null)
+        },
+    },
     }
-  },
-  watch: {
-    form: {
-      deep: true,
-      handler: throttle(function () {
-        this.$inertia.get(this.route('users'), pickBy(this.form), { preserveState: true })
-      }, 150),
-    },
-  },
-  methods: {
-    reset() {
-      this.form = mapValues(this.form, () => null)
-    },
-  },
-}
 </script>

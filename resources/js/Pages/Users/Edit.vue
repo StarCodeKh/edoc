@@ -9,6 +9,7 @@
           <text-input v-model="form.email" :error="form.errors.email" class="pb-8 pr-6 w-full lg:w-1/3" :label="$t('Email')" />
           <text-input v-model="form.phone" :error="form.errors.phone" class="pb-8 pr-6 w-full lg:w-1/3" :label="$t('Phone')" />
           <text-input v-model="form.address" :error="form.errors.address" class="pb-8 pr-6 w-full lg:w-1/3" :label="$t('Address')" />
+          <text-input v-model="form.title" :error="form.errors.title" class="pb-8 pr-6 w-full lg:w-1/3" :label="$t('Title')" />
           <text-input v-model="form.password" :error="form.errors.password" class="pb-8 pr-6 w-full lg:w-1/3" type="password" autocomplete="new-password" :label="$t('Password')" />
           <select-input v-if="user.id !== auth.user.id" v-model="form.role_id" :error="form.errors.role" class="pb-8 pr-6 w-full lg:w-1/3" :label="$t('Role')">
               <option :value="null" />
@@ -63,6 +64,7 @@ export default {
         email: this.user.email,
         phone: this.user.phone,
         address: this.user.address,
+        title: this.user.title,
         country_id: this.user.country_id,
         password: '',
         role: this.user.role,

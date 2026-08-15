@@ -50,6 +50,7 @@ class UsersController extends Controller{
                     'name' => $user->name,
                     'email' => $user->email,
                     'phone' => $user->phone,
+                    'title' => $user->title,
                     'role' => $user->role,
                     'photo' => $user->photo_path ?? null,
                     'deleted_at' => $user->deleted_at,
@@ -76,6 +77,7 @@ class UsersController extends Controller{
             'password' => ['nullable'],
             'address' => ['nullable'],
             'role_id' => ['nullable'],
+            'title' => ['nullable', 'max:100'],
         ]);
 
         if(Request::file('photo')){
@@ -120,6 +122,7 @@ class UsersController extends Controller{
                 'last_name' => $user->last_name,
                 'email' => $user->email,
                 'phone' => $user->phone,
+                'title' => $user->title,
                 'role' => $user->role,
                 'role_id' => $user->role_id,
                 'address' => $user->address,
@@ -149,9 +152,10 @@ class UsersController extends Controller{
             'address' => ['nullable'],
             'photo' => ['nullable', 'image'],
             'locale' => ['nullable', 'max:5'],
+            'title' => ['nullable', 'max:100'],
         ]);
 
-        $user->update(Request::only(['first_name', 'last_name', 'phone', 'email', 'address', 'locale']));
+        $user->update(Request::only(['first_name', 'last_name', 'phone', 'email', 'address', 'locale', 'title']));
 
         if(!empty(Request::get('role_id'))){
             $user->update(['role_id' => Request::get('role_id')]);

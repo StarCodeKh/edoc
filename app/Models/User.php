@@ -46,17 +46,12 @@ class User extends Authenticatable
     protected $casts = [
         'role_id'             => 'integer',
         'email_verified_at'   => 'datetime',
-        // It's good practice to hide the password from any JSON serialization.
-        'password'            => 'hashed', // For Laravel 10+
+        'password'            => 'hashed',
     ];
 
     public function resolveRouteBinding($value, $field = null) {
         return $this->where($field ?? 'id', $value)->firstOrFail();
     }
-
-//    public function city(){
-//        return $this->belongsTo(City::class, 'city_id');
-//    }
 
     public function getNameAttribute()
     {
@@ -145,5 +140,10 @@ class User extends Authenticatable
         })->when($filters['role_id'] ?? null, function ($query, $role_id) {
             $query->whereRoleId($role_id);
         });
+    }
+
+    public function hasEdocRole(string $role): bool
+    {
+        return $this->edoc_role === $role;
     }
 }
