@@ -64,7 +64,7 @@ class UserSeeder extends Seeder
                 ['email' => $email],
                 [
                     'role_id'           => $roleId,
-                    'locale'            => 'km',
+                    'locale'            => 'kh',
                     'address'           => 'Phnom Penh, Cambodia',
                     'first_name'        => ucfirst($emailPrefix),
                     'last_name'         => (string) $n,
