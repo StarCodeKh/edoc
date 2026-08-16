@@ -172,7 +172,6 @@ import pickBy from "lodash/pickBy";
 import mapValues from "lodash/mapValues";
 import axios from 'axios'
 
-
 export default {
   metaInfo: { title: 'Dashboard' },
     components: { BoardFilter, Head, Icon, Link, draggable, TaskDetails, WorkspaceViewMenu },

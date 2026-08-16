@@ -66,16 +66,10 @@ Route::post('password-reset-email', [AuthenticatedSessionController::class, 'for
 Route::get('password-reset/{token}', [AuthenticatedSessionController::class, 'forgotPasswordToken'])->name('password.reset.token')->middleware('guest');
 Route::post('password-reset-confirm', [AuthenticatedSessionController::class, 'forgotPasswordStore'])->name('password.reset.store')->middleware('guest');
 
-Route::post('login', [AuthenticatedSessionController::class, 'store'])
-    ->name('login.store')
-    ->middleware('guest');
+Route::post('login', [AuthenticatedSessionController::class, 'store'])->name('login.store')->middleware('guest');
 
-Route::post('register', [AuthenticatedSessionController::class, 'registerStore'])
-    ->name('register.store')
-    ->middleware('guest');
-
-Route::delete('logout', [AuthenticatedSessionController::class, 'destroy'])
-    ->name('logout');
+Route::post('register', [AuthenticatedSessionController::class, 'registerStore'])->name('register.store')->middleware('guest');
+Route::delete('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
 // Dashboard
 Route::get('/', [WorkSpacesController::class, 'index'])->name('dashboard')->middleware('auth');
@@ -182,149 +176,59 @@ Route::post('comments/delete/{id}', [CommentsController::class, 'deleteItem'])->
 Route::post('comments/new', [CommentsController::class, 'saveNew'])->name('comments.new')->middleware('auth');
 Route::post('comments/update/{id}', [CommentsController::class, 'update'])->name('comment.update')->middleware('auth');
 
-
 /** Status Routing */
 
-Route::get('settings/filter/customers', [FilterController::class, 'customers'])
-    ->name('filter.customers')
-    ->middleware('auth');
-
-Route::get('settings/filter/assignees', [FilterController::class, 'assignees'])
-    ->name('filter.assignees')
-    ->middleware('auth');
-
-Route::get('settings/filter/users_except_customer', [FilterController::class, 'usersExceptCustomer'])
-    ->name('filter.users_except_customer')
-    ->middleware('auth');
-
-
+Route::get('settings/filter/customers', [FilterController::class, 'customers'])->name('filter.customers')->middleware('auth');
+Route::get('settings/filter/assignees', [FilterController::class, 'assignees'])->name('filter.assignees')->middleware('auth');
+Route::get('settings/filter/users_except_customer', [FilterController::class, 'usersExceptCustomer'])->name('filter.users_except_customer')->middleware('auth');
 
 // Email Templates
-Route::get('settings/templates', [EmailTemplatesController::class, 'index'])
-    ->name('templates')
-    ->middleware('auth');
-
-Route::get('settings/templates/{emailTemplate}/edit', [EmailTemplatesController::class, 'edit'])
-    ->name('templates.edit')
-    ->middleware('auth');
-
-Route::put('settings/templates/{emailTemplate}', [EmailTemplatesController::class, 'update'])
-    ->name('templates.update')
-    ->middleware('auth');
+Route::get('settings/templates', [EmailTemplatesController::class, 'index'])->name('templates')->middleware('auth');
+Route::get('settings/templates/{emailTemplate}/edit', [EmailTemplatesController::class, 'edit'])->name('templates.edit')->middleware('auth');
+Route::put('settings/templates/{emailTemplate}', [EmailTemplatesController::class, 'update'])->name('templates.update')->middleware('auth');
 // End - Email Template
 
 // Languages
-Route::get('settings/languages', [LanguagesController::class, 'index'])
-    ->name('languages')
-    ->middleware('auth');
-
-Route::get('settings/languages/create', [LanguagesController::class, 'create'])
-    ->name('languages.create')
-    ->middleware('auth');
-
-Route::post('settings/languages', [LanguagesController::class, 'store'])
-    ->name('languages.store')
-    ->middleware('auth');
-
-Route::get('settings/languages/{language}/edit', [LanguagesController::class, 'edit'])
-    ->name('languages.edit')
-    ->middleware('auth');
-
-Route::put('settings/languages/{language}', [LanguagesController::class, 'update'])
-    ->name('languages.update')
-    ->middleware('auth');
-
-Route::post('settings/languages/new_item', [LanguagesController::class, 'newItem'])
-    ->name('languages.newItem')
-    ->middleware('auth');
-
-Route::delete('settings/languages/delete_item/{value}', [LanguagesController::class, 'deleteItem'])
-    ->name('languages.deleteItem')
-    ->middleware('auth');
-
-Route::delete('settings/languages/{id}', [LanguagesController::class, 'delete'])
-    ->name('languages.delete')
-    ->middleware('auth');
+Route::get('settings/languages', [LanguagesController::class, 'index'])->name('languages')->middleware('auth');
+Route::get('settings/languages/create', [LanguagesController::class, 'create'])->name('languages.create')->middleware('auth');
+Route::post('settings/languages', [LanguagesController::class, 'store'])->name('languages.store')->middleware('auth');
+Route::get('settings/languages/{language}/edit', [LanguagesController::class, 'edit'])->name('languages.edit')->middleware('auth');
+Route::put('settings/languages/{language}', [LanguagesController::class, 'update'])->name('languages.update')->middleware('auth');
+Route::post('settings/languages/new_item', [LanguagesController::class, 'newItem'])->name('languages.newItem')->middleware('auth');
+Route::delete('settings/languages/delete_item/{value}', [LanguagesController::class, 'deleteItem'])->name('languages.deleteItem')->middleware('auth');
+Route::delete('settings/languages/{id}', [LanguagesController::class, 'delete'])->name('languages.delete')->middleware('auth');
 // End - Lanuages
 
-
-
-Route::get('settings/users', [UsersController::class, 'index'])
-    ->name('users')
-    ->middleware('auth');
-
-
-Route::get('settings/users/create', [UsersController::class, 'create'])
-    ->name('users.create')
-    ->middleware('auth');
-
-Route::post('settings/users', [UsersController::class, 'store'])
-    ->name('users.store')
-    ->middleware('auth');
-
-Route::get('settings/users/{user}/edit', [UsersController::class, 'edit'])
-    ->name('users.edit')
-    ->middleware('auth');
-
-Route::get('settings/edit-profile', [DashboardController::class, 'editProfile'])
-    ->name('users.edit.profile')
-    ->middleware('auth');
-
-Route::put('settings/edit-profile/{user}', [DashboardController::class, 'editProfileUpdate'])
-    ->name('users.edit.profile.update')
-    ->middleware('auth');
-
-Route::put('settings/users/{user}', [UsersController::class, 'update'])
-    ->name('users.update')
-    ->middleware('auth');
-
-Route::delete('settings/users/{user}', [UsersController::class, 'destroy'])
-    ->name('users.destroy')
-    ->middleware('auth');
-
-Route::put('settings/users/{user}/restore', [UsersController::class, 'restore'])
-    ->name('users.restore')
-    ->middleware('auth');
-
+Route::get('settings/users', [UsersController::class, 'index'])->name('users')->middleware('auth');
+Route::get('settings/users/create', [UsersController::class, 'create'])->name('users.create')->middleware('auth');
+Route::post('settings/users', [UsersController::class, 'store'])->name('users.store')->middleware('auth');
+Route::get('settings/users/{user}/edit', [UsersController::class, 'edit'])->name('users.edit')->middleware('auth');
+Route::get('settings/edit-profile', [DashboardController::class, 'editProfile'])->name('users.edit.profile')->middleware('auth');
+Route::put('settings/edit-profile/{user}', [DashboardController::class, 'editProfileUpdate'])->name('users.edit.profile.update')->middleware('auth');
+Route::put('settings/users/{user}', [UsersController::class, 'update'])->name('users.update')->middleware('auth');
+Route::delete('settings/users/{user}', [UsersController::class, 'destroy'])->name('users.destroy')->middleware('auth');
+Route::put('settings/users/{user}/restore', [UsersController::class, 'restore'])->name('users.restore')->middleware('auth');
 
 // Global Settings
-Route::get('settings/global', [SettingsController::class, 'index'])
-    ->name('global')
-    ->middleware('auth');
+Route::get('settings/global', [SettingsController::class, 'index'])->name('global')->middleware('auth');
 Route::post('settings/global', [SettingsController::class, 'update'])->name('global.update')->middleware('auth');
 Route::post('settings/pre_made_list', [SettingsController::class, 'updatePreMadeList'])->name('global.update.pre_made_list')->middleware('auth');
 Route::get('settings/smtp', [SettingsController::class, 'smtp'])->name('settings.smtp')->middleware('auth');
 Route::get('settings/update', [SettingsController::class, 'systemUpdate'])->name('settings.update')->middleware('auth');
 Route::get('settings/pre-made-boards', [SettingsController::class, 'preMadeBoards'])->name('pre-made-boards')->middleware('auth');
 Route::post('settings/update/check', [SettingsController::class, 'systemUpdateCheck'])->name('settings.update.check')->middleware('auth');
-Route::put('settings/smtp/update', [SettingsController::class, 'updateSmtp'])
-    ->name('settings.smtp.update')
-    ->middleware('auth');
+Route::put('settings/smtp/update', [SettingsController::class, 'updateSmtp'])->name('settings.smtp.update')->middleware('auth');
 
-Route::get('dev/setup/clear/{slug}', [SettingsController::class, 'clearCache'])
-    ->name('clear.cache');
+Route::get('dev/setup/clear/{slug}', [SettingsController::class, 'clearCache'])->name('clear.cache');
 // End - Global Settings
 
 /** User Roles */
-Route::get('settings/roles', [RolesController::class, 'index'])
-    ->name('roles')
-    ->middleware('auth');
-Route::get('settings/roles/create', [RolesController::class, 'create'])
-    ->name('roles.create')
-    ->middleware('auth');
-Route::post('settings/roles', [RolesController::class, 'store'])
-    ->name('roles.store')
-    ->middleware('auth');
-Route::get('settings/roles/{role}/edit', [RolesController::class, 'edit'])
-    ->name('roles.edit')
-    ->middleware('auth');
-Route::put('settings/roles/{role}', [RolesController::class, 'update'])
-    ->name('roles.update')
-    ->middleware('auth');
-Route::delete('settings/roles/{role}', [RolesController::class, 'destroy'])
-    ->name('roles.destroy')
-    ->middleware('auth');
-
+Route::get('settings/roles', [RolesController::class, 'index'])->name('roles')->middleware('auth');
+Route::get('settings/roles/create', [RolesController::class, 'create'])->name('roles.create')->middleware('auth');
+Route::post('settings/roles', [RolesController::class, 'store'])->name('roles.store')->middleware('auth');
+Route::get('settings/roles/{role}/edit', [RolesController::class, 'edit'])->name('roles.edit')->middleware('auth');
+Route::put('settings/roles/{role}', [RolesController::class, 'update'])->name('roles.update')->middleware('auth');
+Route::delete('settings/roles/{role}', [RolesController::class, 'destroy'])->name('roles.destroy')->middleware('auth');
 
 Route::resource('settings/workspace_types', WorkspaceTypesController::class);
 
@@ -333,11 +237,7 @@ Route::post('mail/send/comment/{id}', [MailController::class, 'comment'])->name(
 Route::post('mail/send/task_update/{id}', [MailController::class, 'task_update'])->name('send.mail.task_update')->middleware('auth');
 Route::post('mail/send/board_update/{id}', [MailController::class, 'board_update'])->name('send.mail.board_update')->middleware('auth');
 
-
-Route::get('/img/{path}', [ImagesController::class, 'show'])
-    ->where('path', '.*')
-    ->name('image');
-
+Route::get('/img/{path}', [ImagesController::class, 'show'])->where('path', '.*')->name('image');
 
 /** Language Selector  */
 Route::get('/language/{language}', [DashboardController::class, 'setLocale'])
@@ -356,14 +256,12 @@ Route::get('project/csv/export/{project_id}', [ProjectsController::class, 'csvEx
 Route::get('project/excel/export/{project_id}', [ProjectsController::class, 'excelExport'])->name('project.excel.export')
     ->middleware('auth');
 
-
 Route::get('/admin/import/demo', [DemoController::class, 'import'])->name('import.demo')->middleware('auth');
 
 // IMAP Custom
 Route::get('/cron/queue_work', [CronJobsController::class, 'queueWork'])->name('cron.queue_work');
 
 Route::post('/json/task/search', [TasksController::class, 'jsonTaskSearch'])->name('json.task.search');
-
 
 // New code for installer
 Route::group(['prefix' => 'install', 'as' => 'LaravelInstaller::', 'middleware' => ['web', 'install']], function () {

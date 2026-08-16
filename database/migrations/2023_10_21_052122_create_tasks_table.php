@@ -19,19 +19,21 @@ class CreateTasksTable extends Migration
             $table->text('qr_code')->nullable();
             $table->text('bar_code')->nullable();
             $table->string('title', 200);
-            $table->string('slug', 200)->default(null)->nullable();
-            $table->integer('is_done')->default(0);
-            $table->integer('is_archive')->default(0);
-            $table->text('description')->default(null)->nullable();
-            $table->integer('cover')->default(null)->nullable();
-            $table->integer('list_id')->index();
-            $table->foreignId('document_source_id')->nullable()->constrained('document_sources')->nullOnDelete();
+            $table->string('slug', 200)->nullable();
+            $table->boolean('is_done')->default(false);
+            $table->boolean('is_archive')->default(false);
+            $table->text('description')->nullable();
+            $table->unsignedBigInteger('cover_id')->nullable();
+            
+            $table->unsignedBigInteger('list_id')->index();
+            $table->unsignedBigInteger('document_source_id')->nullable()->index();
+            $table->unsignedBigInteger('user_id')->index();
+            $table->unsignedBigInteger('project_id')->index();
+            
             $table->integer('order')->default(0)->index();
-            $table->integer('user_id')->index();
-            $table->integer('project_id')->index();
-            $table->timestamp('due_date')->default(null)->nullable();
+            $table->timestamp('due_date')->nullable();
             $table->dateTime('entry_date')->nullable();
-             $table->dateTime('exit_date')->nullable();
+            $table->dateTime('exit_date')->nullable();
             $table->timestamps();
         });
     }
