@@ -7,13 +7,13 @@
             <div class="flex flex-col task__table overflow-y-auto h-full">
                 <div class="inline-block min-w-full h-full py-4 align-middle md:px-3 lg:px-4">
                     <div class="table__view">
-                        <div class="flex flex-wrap gap-2 md:gap-2 mb-5">
+                        <div class="flex flex-nowrap gap-2 md:gap-2 mb-5 overflow-x-auto scroll-smooth snap-x snap-mandatory no-scrollbar -mx-1 px-1">
                             <button
                                 v-for="(listItem, idx) in lists"
                                 :key="'status_'+listItem.id"
                                 type="button"
                                 @click="selectStatus(listItem.id)"
-                                class="doc-status-btn px-4 py-2 text-xs md:px-6 md:py-2.5 md:text-sm rounded-lg border font-semibold shadow-sm hover:shadow-md transition-all duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0"
+                                class="doc-status-btn shrink-0 snap-start whitespace-nowrap px-4 py-2 text-xs md:px-6 md:py-2.5 md:text-sm rounded-lg border font-semibold shadow-sm hover:shadow-md transition-all duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0"
                                 :class="{ 'doc-status-btn--active': !selectedStatus || selectedStatus === listItem.id }"
                                 :style="statusButtonStyle(listItem.id, idx)"
                             >
@@ -24,6 +24,7 @@
                                 >{{ (listItem.tasks || []).length }}</span>
                             </button>
                         </div>
+
                         <div class="doc-table rounded-xl shadow-sm overflow-x-auto">
                             <div class="doc-row doc-row--head hidden md:grid gap-3 px-4 py-3 text-sm font-semibold text-white">
                                 <div></div>
@@ -64,9 +65,6 @@
                                         </div>
                                         <div class="text-sm" :data-label="$t('កម្មវត្ថុ')">
                                             <span class="cursor-pointer hover:text-blue-600 hover:underline underline-offset-2 transition-colors" @click="taskDetailsPopup(element.slug || element.id)">{{ element.title }}</span>
-                                            <span v-if="element.attachments_count" class="inline-flex items-center gap-1 text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-full px-2 py-0.5 ml-1.5 align-middle">
-                                                <icon class="w-3.5 h-3.5" name="attachment" />{{ element.attachments_count }}
-                                            </span>
                                         </div>
                                         <div class="text-sm" :data-label="$t('កាលបរិច្ឆេទចូល')">
                                             {{ element.created_at ? moment(element.created_at).format('DD MMM YYYY') : '' }}
@@ -815,4 +813,13 @@
     .dark .doc-page-ellipsis {
         color: #64748b;
     }
+
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
 </style>
