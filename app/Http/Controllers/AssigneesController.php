@@ -17,10 +17,7 @@ class AssigneesController extends Controller
             'task_id' => 'required|exists:tasks,id',
         ]);
 
-        $assignee = Assignee::where('user_id', $validated['user_id'])
-                            ->where('task_id', $validated['task_id'])
-                            ->first();
-
+        $assignee = Assignee::where('user_id', $validated['user_id'])->where('task_id', $validated['task_id'])->first();
         $wasRemoved = false;
 
         if ($assignee) {
