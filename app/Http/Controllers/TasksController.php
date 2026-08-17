@@ -15,6 +15,7 @@ use App\Models\Task;
 use App\Models\TaskLabel;
 use App\Models\TeamMember;
 use App\Models\Timer;
+use App\Models\UserGroup;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -188,7 +189,19 @@ class TasksController extends Controller
                 $query->select('id', 'name', 'parent_id')->orderBy('order');
             }])
             ->get();
-        return response()->json(['labels' => $labels, 'lists' => $lists, 'timer' => $timer, 'duration' => $duration, 'projects' => $projects, 'team_members' => $teamMembers, 'document_sources' => $documentSources]);
+
+        $userGroups = UserGroup::select('id', 'name', 'edoc_role')->orderBy('name')->get();
+
+        return response()->json([
+            'labels' => $labels,
+            'lists' => $lists,
+            'timer' => $timer,
+            'duration' => $duration,
+            'projects' => $projects,
+            'team_members' => $teamMembers,
+            'document_sources' => $documentSources,
+            'user_groups' => $userGroups,
+        ]);
     }
 
     public function addAttachment($id, Request $request)
