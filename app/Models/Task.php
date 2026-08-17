@@ -27,9 +27,6 @@ class Task extends Model
         'due_date'      => 'datetime',
     ];
 
-    /**
-     * Generate Unique Task Code
-     */
     private function generateTaskCode()
     {
         $prefix = "CGMC-";
@@ -64,9 +61,6 @@ class Task extends Model
         return 'data:image/svg+xml;base64,' . base64_encode($svg);
     }
 
-    /**
-     * Generate 1D Barcode containing ONLY TASK_CODE (Code 128)
-     */
     private function generateBarCode($taskCode)
     {
         $generator = new BarcodeGeneratorSVG();
@@ -74,9 +68,6 @@ class Task extends Model
         return 'data:image/svg+xml;base64,' . base64_encode($svg);
     }
 
-    /**
-     * Generate Unique Slug
-     */
     private function generateUniqueSlug($title, $ignoreId = null)
     {
         $slug = $this->slugify($title);
@@ -201,25 +192,30 @@ class Task extends Model
         });
     }
 
-    public function resolveRouteBinding($value, $field = null) {
+    public function resolveRouteBinding($value, $field = null)
+    {
         return $this->where($field ?? 'id', $value)->firstOrFail();
     }
 
-    public function scopeByUser($query, $id) {
+    public function scopeByUser($query, $id)
+    {
         if(!empty($id)){
             $query->where('user_id', $id);
         }
     }
 
-    public function scopeOrderByOrder($query) {
+    public function scopeOrderByOrder($query)
+    {
         $query->orderBy('order');
     }
 
-    public function scopeIsOpen($query) {
+    public function scopeIsOpen($query)
+    {
         $query->where('is_archive', 0);
     }
 
-    public function scopeByProject($query, $id) {
+    public function scopeByProject($query, $id)
+    {
         if(!empty($id)){
             $query->where('project_id', $id);
         }
@@ -250,47 +246,58 @@ class Task extends Model
         return $this->belongsTo(Attachment::class, 'cover');
     }
 
-    public function checklists() {
+    public function checklists()
+    {
         return $this->hasMany(CheckList::class);
     }
 
-    public function comments() {
+    public function comments()
+    {
         return $this->hasMany(Comment::class);
     }
 
-    public function activities() {
+    public function activities()
+    {
         return $this->hasMany(Activity::class);
     }
 
-    public function timers() {
+    public function timers()
+    {
         return $this->hasMany(Timer::class)->where('user_id', auth()->id());
     }
 
-    public function timer() {
+    public function timer()
+    {
         return $this->hasOne(Timer::class, 'task_id')->where('user_id', auth()->id())->whereNull('stopped_at');
     }
 
-    public function assignees() {
+    public function assignees()
+    {
         return $this->hasMany(Assignee::class)->with('user');
     }
 
-    public function lastAssignee() {
+    public function lastAssignee()
+    {
         return $this->hasMany(Assignee::class)->latest('id')->limit(1);
     }
 
-    public function taskLabels() {
+    public function taskLabels()
+    {
         return $this->hasMany(TaskLabel::class, 'task_id');
     }
 
-    public function attachments() {
+    public function attachments()
+    {
         return $this->hasMany(Attachment::class);
     }
 
-    public function checklistDone(){
+    public function checklistDone()
+    {
         return $this->hasMany(CheckList::class)->where('check_lists.is_done', '=', 1);
     }
 
-    public function scopeFilter($query, array $filters){
+    public function scopeFilter($query, array $filters)
+    {
         $query->when($filters['search'] ?? null, function ($query, $search) {
             $query->where(function ($query) use ($search) {
                 $query->where('title', 'like', '%'.$search.'%')->orWhere('description', 'like', '%'.$search.'%');
@@ -365,5 +372,10 @@ class Task extends Model
             $f_projects = explode(',', $project);
             $query->whereIn('project_id', $f_projects);
         });
+    }
+
+    public function groupAssignees()
+    {
+        return $this->hasMany(\App\Models\GroupAssignee::class, 'task_id');
     }
 }
