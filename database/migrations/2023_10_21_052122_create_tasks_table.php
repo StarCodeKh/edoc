@@ -24,12 +24,10 @@ class CreateTasksTable extends Migration
             $table->boolean('is_archive')->default(false);
             $table->text('description')->nullable();
             $table->unsignedBigInteger('cover_id')->nullable();
-            
             $table->unsignedBigInteger('list_id')->index();
             $table->unsignedBigInteger('document_source_id')->nullable()->index();
             $table->unsignedBigInteger('user_id')->index();
             $table->unsignedBigInteger('project_id')->index();
-            
             $table->integer('order')->default(0)->index();
             $table->timestamp('due_date')->nullable();
             $table->dateTime('entry_date')->nullable();
