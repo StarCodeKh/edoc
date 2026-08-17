@@ -26,74 +26,72 @@
 </template>
 
 <script>
-import SelectInput from '@/Shared/SelectInput.vue'
-import Icon from '@/Shared/Icon.vue'
-import axios from 'axios'
-export default {
-    name: "invite-workspace-member",
-    props: {
-        top: {
-            required: false,
-            default: '132px'
+    import SelectInput from '@/Shared/SelectInput.vue'
+    import Icon from '@/Shared/Icon.vue'
+    import axios from 'axios'
+    export default {
+        name: "invite-workspace-member",
+        props: {
+            top: {
+                required: false,
+                default: '132px'
+            },
+            left: {
+                required: false,
+                default: '390px'
+            },
+            right: {
+                required: false,
+                default: 'inherit'
+            },
+            workspace: Object
         },
-        left: {
-            required: false,
-            default: '390px'
+        components: { SelectInput, Icon },
+        data() {
+            return {
+                project: {},
+                loading: true,
+                user_search: '',
+                role: '',
+                workspaces: [],
+                users: [],
+                workspace_users: [],
+                backgrounds: [],
+            }
         },
-        right: {
-            required: false,
-            default: 'inherit'
-        },
-        workspace: Object
-    },
-    components: { SelectInput, Icon },
-    data() {
-        return {
-            project: {},
-            loading: true,
-            user_search: '',
-            role: '',
-            workspaces: [],
-            users: [],
-            workspace_users: [],
-            backgrounds: [],
-        }
-    },
-    methods: {
-        inviteMember(checked, id, role){
-            axios.post(this.route('json.workspace.member.add'), {workspace_id: this.workspace.id, user_id: id, role}).then((response) => {
-                if(response.data){
-                    if(checked){
-                        this.workspace_users.push(id);
-                    }else{
-                        const findIndex = this.workspace_users.findIndex(a => a === id);
-                        if(findIndex > -1){
-                            this.workspace_users.splice(findIndex, 1);
+        methods: {
+            inviteMember(checked, id, role){
+                axios.post(this.route('json.workspace.member.add'), {workspace_id: this.workspace.id, user_id: id, role}).then((response) => {
+                    if(response.data){
+                        if(checked){
+                            this.workspace_users.push(id);
+                        }else{
+                            const findIndex = this.workspace_users.findIndex(a => a === id);
+                            if(findIndex > -1){
+                                this.workspace_users.splice(findIndex, 1);
+                            }
                         }
                     }
-                }
-            }).catch((error) => {
-                console.log(error)
-            })
+                }).catch((error) => {
+                    console.log(error)
+                })
+            },
+            searchUser(input){
+                return this.users.filter(u => u.name.toLowerCase().indexOf(input) > -1);
+            },
+            team__members(){
+                return this.workspace_users.map(item => item.id);
+            },
+            async getData(){
+                const dataResponse = await axios.get(this.route('json.workspaces.users.other', this.workspace.id));
+                const data = dataResponse.data;
+                this.users = data.users
+                this.workspace_users = data.workspace_users
+                this.loading = false;
+            },
         },
-        searchUser(input){
-            return this.users.filter(u => u.name.toLowerCase().indexOf(input) > -1);
+        created() {
+            this.getData();
         },
-        team__members(){
-            return this.workspace_users.map(item => item.id);
-        },
-        async getData(){
-            // NEw code
-            const dataResponse = await axios.get(this.route('json.workspaces.users.other', this.workspace.id));
-            const data = dataResponse.data;
-            this.users = data.users
-            this.workspace_users = data.workspace_users
-            this.loading = false;
-            // NEw code
-        },
-    },
-    created() {
-        this.getData();
-    },
-}
+    }
 </script>
