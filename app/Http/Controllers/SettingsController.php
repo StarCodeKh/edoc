@@ -21,16 +21,16 @@ use Jackiedo\DotenvEditor\Facades\DotenvEditor;
 
 class SettingsController extends Controller {
     public function __construct(){
-//        $this->middleware(RedirectIfNotParmittedMultiple::class.':global,smtp');
         $this->middleware(RedirectIfNotAdmin::class.':global,smtp');
     }
 
-    const BASE_URL = 'https://gitlab.com';
-    const TOKEN = 'glpat-ziRSG7-kAY1zfw6yTgH4';
-    const PROJECT_ID = '52426748';
-    const TOKEN_FULL = 'Bearer glpat-NNGd8mSrzsyi7xXAXm46';
+    // const BASE_URL = 'https://gitlab.com';
+    // const TOKEN = 'glpat-ziRSG7-kAY1zfw6yTgH4';
+    // const PROJECT_ID = '52426748';
+    // const TOKEN_FULL = 'Bearer glpat-NNGd8mSrzsyi7xXAXm46';
 
-    private function configExist($array){
+    private function configExist($array)
+    {
         $hasValue = true;
         $envLoad = DotenvEditor::load();
         $keys = $envLoad->getKeys($array);
@@ -54,14 +54,14 @@ class SettingsController extends Controller {
         ]);
     }
 
-    public function index(){
+    public function index()
+    {
         $settings = Setting::orderBy('id')->get();
         $settingData = [];
         foreach ($settings as $setting){
             $settingData[$setting['slug']] = ['id' => $setting->id, 'name' => $setting->name, 'slug' => $setting->slug, 'type' => $setting->type, 'value' => $setting->value];
             if ($setting->type === 'json') {
                 $value = $setting->value;
-                // Decode the value only if it's a string; otherwise, use it as is (since it's likely already an array or null).
                 $settingData[$setting['slug']]['value'] = is_string($value) ? json_decode($value, true) : $value;
             }
         }
@@ -111,7 +111,8 @@ class SettingsController extends Controller {
         return Redirect::route('pre-made-boards')->with('success', 'Pre-made list updated!');
     }
 
-    public function update(){
+    public function update()
+    {
         $requests = Request::all();
 
         $settings = Setting::orderBy('id')->get();
@@ -197,7 +198,8 @@ class SettingsController extends Controller {
         return Redirect::route('global')->with('success', 'Settings updated.');
     }
 
-    public function smtp(){
+    public function smtp()
+    {
         $demo = config('app.demo');
         $env = DotenvEditor::load();
         $keys = $env->getKeys(['MAIL_HOST','MAIL_PORT','MAIL_USERNAME','MAIL_PASSWORD','MAIL_ENCRYPTION','MAIL_FROM_ADDRESS','MAIL_FROM_NAME']);
@@ -208,49 +210,24 @@ class SettingsController extends Controller {
         ]);
     }
 
-    public function systemUpdate() {
-        $env = DotenvEditor::load();
-        $demo = config('app.demo');
-        return Inertia::render('Settings/Update', [
-            'title' => 'System Update',
-            'current_version' => $env->getValue('VERSION'),
-            'demo' => boolval($demo),
-        ]);
-    }
+    // protected function getVersionAvailable($current)
+    // {
+    //     $headers = [
+    //         'PRIVATE-TOKEN' => self::TOKEN,
+    //     ];
+    //     $response = Http::withHeaders($headers)->get(self::BASE_URL.'/api/v4/projects/'.self::PROJECT_ID.'/repository/tags');
+    //     $releaseCollection = collect(\json_decode($response->body()));
+    //     $tag = $releaseCollection->first();
+    //     if(!empty($tag)){
+    //         if (version_compare($current, $tag->name, '<')) {
+    //             return $tag->name;
+    //         }
+    //     }
+    //     return false;
+    // }
 
-    public function systemUpdateCheck()
+    public function updateSmtp()
     {
-        $env = DotenvEditor::load();
-        $current_tag = $env->getValue('VERSION');
-        $new_tag = $this->getVersionAvailable($current_tag);
-        $diffs = [];
-        if($new_tag) {
-            $headers = [
-                'PRIVATE-TOKEN' => self::TOKEN,
-            ];
-            $res = Http::withHeaders($headers)->get(self::BASE_URL.'/api/v4/projects/'.self::PROJECT_ID.'/repository/compare?from='.$current_tag.'&to='.$new_tag);
-            $json = $res->json();
-            $diffs = $json['diffs'];
-        }
-        return response()->json(['files'=> $diffs, 'version' => $new_tag]);
-    }
-
-    protected function getVersionAvailable($current){
-        $headers = [
-            'PRIVATE-TOKEN' => self::TOKEN,
-        ];
-        $response = Http::withHeaders($headers)->get(self::BASE_URL.'/api/v4/projects/'.self::PROJECT_ID.'/repository/tags');
-        $releaseCollection = collect(\json_decode($response->body()));
-        $tag = $releaseCollection->first();
-        if(!empty($tag)){
-            if (version_compare($current, $tag->name, '<')) {
-                return $tag->name;
-            }
-        }
-        return false;
-    }
-
-    public function updateSmtp(){
         if (config('app.demo')) {
             return Redirect::back()->with('error', 'Updating SMTP setup is not allowed for the live demo.');
         }
@@ -268,7 +245,8 @@ class SettingsController extends Controller {
         return Redirect::back()->with('success', 'SMTP configuration updated!');
     }
 
-    private function setEnvVariables($data) {
+    private function setEnvVariables($data)
+    {
         $env = DotenvEditor::load();
         foreach ($data as $data_key => $data_value){
             $env->setKey($data_key, $data_value);
@@ -276,15 +254,16 @@ class SettingsController extends Controller {
         $env->save();
     }
 
-    public function clearCache($slug){
-        // php artisan optimize && php artisan cache:clear && php artisan route:cache && php artisan view:clear && php artisan config:cache
+    public function clearCache($slug)
+    {
         $slugArray = [
             'config' => 'config:cache', 'optimize' => 'optimize', 'cache' => 'cache:clear',
             'route' => 'route:cache', 'view' => 'view:clear'
         ];
-        if(isset($slugArray[$slug])){
+
+        if(isset($slugArray[$slug])) {
             Artisan::call($slugArray[$slug]);
-        }elseif($slug == 'all'){
+        } elseif ($slug == 'all') {
             Artisan::call('optimize');
             Artisan::call('cache:clear');
             Artisan::call('route:cache');
