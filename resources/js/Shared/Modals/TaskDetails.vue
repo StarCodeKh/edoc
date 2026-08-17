@@ -64,6 +64,7 @@
                             <button type="button" class="small save" @click="moveTask()">{{ $t('Move') }}</button>
                         </div>
                     </div>
+
                     <div class="m__body w-full">
                         <main class="main">
                             <div class="s__1">
@@ -86,6 +87,7 @@
                                     </div>
                                 </div>
                             </div>
+
                             <div class="absolute flex w-[300px] z-10 text-sm flex-col bg-white dark:bg-gray-800 px-4 py-4 rounded shadow dark:border dark:border-gray-700" v-if="showLabelBox">
                                 <h4 class="text-center mb-3 font-bold dark:text-white">{{ $t('Labels') }}</h4>
                                 <div class="absolute cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 top-3 right-3 p-1.5 rounded" @click="showLabelBox = false" >
@@ -105,6 +107,7 @@
                                 </ul>
                                 <button class="w-full mt-4 px-3 py-2 rounded cursor-pointer bg-gray-300 dark:bg-gray-700 dark:text-white hover:opacity-80 dark:hover:bg-gray-600" @click="showLabelBox = false; showEditLabelBox = true; label = {}"> {{ $t('Create a new label') }} </button>
                             </div>
+
                             <div class="absolute flex w-[300px] z-10 text-sm flex-col bg-white dark:bg-gray-800 px-4 py-4 rounded shadow dark:border dark:border-gray-700" v-if="showEditLabelBox">
                                 <div class="absolute cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 top-3 left-3 p-1.5 rounded" @click="showEditLabelBox = false;showLabelBox = true"><icon class=" w-4 h-4 dark:text-gray-300" name="arrow-left" /></div>
                                 <h4 class="text-center mb-3 font-bold dark:text-white">{{ $t('Edit Labels') }}</h4>
@@ -150,7 +153,6 @@
                                         </div>
                                     </section>
                                 </div>
-
                             </section>
 
                             <section class="mt-6" id="checklist">
@@ -331,22 +333,24 @@
 
                                     <!-- Modal 1: Image / File Preview Modal -->
                                     <transition name="modal-pop" appear>
-                                        <div v-if="viewModal.open" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" @click.self="closeViewModal">
-                                            <div class="modal-pop__panel relative max-w-5xl xl:max-w-6xl max-h-[94vh] bg-white dark:bg-gray-800 rounded-lg overflow-hidden flex flex-col p-4 shadow-xl w-full">
+                                        <div v-if="viewModal.open" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" @click.self="closeViewModal">
+                                            <div class="modal-pop__panel relative max-w-5xl xl:max-w-6xl max-h-[94vh] w-full bg-white dark:bg-gray-800 rounded-2xl overflow-hidden flex flex-col shadow-2xl ring-1 ring-black/5 dark:ring-white/10">
 
                                                 <!-- Modal Header -->
-                                                <div class="flex justify-between items-center pb-2 border-b dark:border-gray-700">
+                                                <div class="flex justify-between items-center px-5 py-3.5 border-b border-gray-100 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
                                                     <h3 class="font-bold text-lg dark:text-gray-100 truncate pr-4">{{ viewModal.attachment?.name }}</h3>
                                                     <div class="flex items-center gap-2 flex-shrink-0">
-                                                        <a :href="viewModal.attachment?.path" :download="viewModal.attachment?.name" class="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded bg-gray-200 dark:bg-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600">
+                                                        <a :href="viewModal.attachment?.path" :download="viewModal.attachment?.name" class="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg bg-gray-100 dark:bg-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
                                                             <icon name="download" class="w-3.5 h-3.5" /> {{ $t('Download') }}
                                                         </a>
-                                                        <button @click="closeViewModal" class="text-gray-500 hover:text-gray-800 dark:hover:text-white text-xl px-2">&times;</button>
+                                                        <button @click="closeViewModal" class="flex items-center justify-center w-8 h-8 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 hover:text-gray-800 dark:hover:text-white transition-colors" :aria-label="$t('Close')">
+                                                            <icon class="w-4 h-4" name="close" />
+                                                        </button>
                                                     </div>
                                                 </div>
 
                                                 <!-- Scrollable body: assignees + draw/preview -->
-                                                <div class="flex-1 overflow-y-auto">
+                                                <div class="flex-1 overflow-y-auto px-4 pb-4">
 
                                                     <!-- Assignees (PDF only) -->
                                                     <div v-if="isPdf(viewModal.attachment?.name)" class="pt-3">
@@ -396,7 +400,7 @@
                                                         <img :src="viewModal.attachment?.path" :alt="viewModal.attachment?.name" class="max-h-[65vh] object-contain rounded" />
                                                     </div>
 
-                                                    <div v-if="isPdf(viewModal.attachment?.name)" class="-mx-4 -mb-4 mt-3 rounded-b-lg overflow-hidden bg-gray-900">
+                                                    <div v-if="isPdf(viewModal.attachment?.name)" class="-mx-4 -mb-4 mt-3 rounded-b-2xl overflow-hidden bg-gray-900">
                                                         <!-- Top bar: View toggle + Undo/Redo (left), Save (right) -->
                                                         <div class="flex items-center justify-between px-4 py-2.5 bg-gray-900 border-b border-white/10">
                                                             <div class="flex items-center gap-1.5">
@@ -651,37 +655,48 @@
                                         </form>
                                     </div>
 
-                                    <div class="space-y-4">
-                                        <div v-if="filteredActivities.length === 0" class="text-gray-500 dark:text-gray-400 text-sm">No activities yet.</div>
+                                    <div class="relative">
+                                        <div v-if="filteredActivities.length === 0" class="flex flex-col items-center justify-center py-8 text-center">
+                                            <div class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-2">
+                                                <icon class="w-4 h-4 text-gray-400 dark:text-gray-500" name="comments" />
+                                            </div>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400">{{ $t('No activity yet') }}</p>
+                                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{{ $t('Comments and changes will show up here.') }}</p>
+                                        </div>
 
-                                        <ul v-else class="divide-y divide-gray-200 dark:divide-gray-700">
-                                            <li v-for="activity in filteredActivities" :key="activity.id" class="py-2">
-                                                <div v-if="['comment', 'comment_edit'].includes(activity.field_changed) && activity.comment" class="comment__ group relative flex py-1">
-                                                    <div class="h-6 w-6">
-                                                        <span class="block rounded-full h-6 w-6">
-                                                            <img v-if="activity.user?.photo_path" class="h-full w-full rounded-full" :src="activity.user.photo_path" alt="User Photo">
-                                                            <img v-else class="h-full w-full rounded-full" src="/images/user.svg" alt="Default Avatar">
-                                                        </span>
-                                                    </div>
+                                        <ul v-else class="relative">
+                                            <!-- connecting timeline line -->
+                                            <div class="absolute left-[15px] top-2 bottom-2 w-px bg-gray-200 dark:bg-gray-700"></div>
 
-                                                    <div class="group flex-1 ltr:pl-4 rtl:pr-4 w-full">
-                                                        <div class="flex">
-                                                            <h2 v-if="activity.user" class="flex text-sm font-medium leading-none dark:text-gray-200">
-                                                                {{ activity.user?.first_name + ' ' + activity.user?.last_name }}
-                                                            </h2>
-                                                            <span class="text-xs font-normal text-gray-500 dark:text-gray-400 ltr:ml-3 rtl:mr-3">
-                                                                {{ moment(activity.comment?.created_at).format('MMMM D, YYYY [at] h:mm a') }}
-                                                                <small v-if="moment(activity.comment?.updated_at).isAfter(moment(activity.comment?.created_at))">(edited)</small>
+                                            <li v-for="activity in filteredActivities" :key="activity.id" class="relative pl-10 pb-5 last:pb-0">
+
+                                                <!-- Comment activity -->
+                                                <template v-if="['comment', 'comment_edit'].includes(activity.field_changed) && activity.comment">
+                                                    <span class="absolute left-0 top-0 z-10">
+                                                        <img v-if="activity.user?.photo_path" class="w-8 h-8 rounded-full ring-2 ring-white dark:ring-gray-800" :src="activity.user.photo_path" alt="">
+                                                        <img v-else class="w-8 h-8 rounded-full ring-2 ring-white dark:ring-gray-800" src="/images/user.svg" alt="">
+                                                    </span>
+
+                                                    <div class="group">
+                                                        <div class="flex items-center gap-2">
+                                                            <span v-if="activity.user" class="text-sm font-semibold dark:text-gray-100">
+                                                                {{ activity.user?.first_name }} {{ activity.user?.last_name }}
                                                             </span>
-                                                            <div class="ml-auto">
-                                                                <div class="absolute right-0 hidden pl-4 group-hover:flex" v-if="$page.props.auth.user.id === activity.user?.id">
-                                                                    <icon class="w-3 h-3 mr-3 cursor-pointer" name="edit" @click="activity.comment.modify = true" />
-                                                                    <icon class="w-3 h-3 cursor-pointer" name="trash" @click="deleteComment(activity.comment.id, task.activities, activity.id)" />
-                                                                </div>
+                                                            <span class="text-xs text-gray-400 dark:text-gray-500">
+                                                                {{ moment(activity.comment?.created_at).format('MMM D [at] h:mm a') }}
+                                                                <span v-if="moment(activity.comment?.updated_at).isAfter(moment(activity.comment?.created_at))" class="italic">· {{ $t('edited') }}</span>
+                                                            </span>
+                                                            <div class="ml-auto opacity-0 group-hover:opacity-100 transition-opacity flex gap-0.5" v-if="$page.props.auth.user.id === activity.user?.id">
+                                                                <button type="button" class="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700" @click="activity.comment.modify = true">
+                                                                    <icon class="w-3 h-3 text-gray-400 dark:text-gray-500" name="edit" />
+                                                                </button>
+                                                                <button type="button" class="p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/30" @click="deleteComment(activity.comment.id, task.activities, activity.id)">
+                                                                    <icon class="w-3 h-3 text-gray-400 hover:text-red-500" name="trash" />
+                                                                </button>
                                                             </div>
                                                         </div>
 
-                                                        <div v-if="activity.comment.modify" class="checklist-box2 pt-3 w-full">
+                                                        <div v-if="activity.comment.modify" class="mt-2">
                                                             <CustomEditor
                                                                 :ref="'editComment' + activity.comment.id"
                                                                 v-model="activity.comment.details"
@@ -691,38 +706,39 @@
                                                                 :enable-auto-save="false"
                                                                 @mention="onMention"
                                                             />
-                                                            <div class="flex items-center action__buttons mt-2">
-                                                                <button type="button" class="small save" @click="saveComment(activity.comment.id, activity.comment); activity.comment.modify = false">
+                                                            <div class="flex items-center gap-2 mt-2">
+                                                                <button type="button" class="px-2.5 py-1 text-xs font-medium rounded bg-blue-600 hover:bg-blue-700 text-white" @click="saveComment(activity.comment.id, activity.comment); activity.comment.modify = false">
                                                                     {{ $t('Save') }}
                                                                 </button>
-                                                                <button @click="activity.comment.modify = false" type="button" class="small cancel">
+                                                                <button type="button" class="px-2.5 py-1 text-xs font-medium rounded text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700" @click="activity.comment.modify = false">
                                                                     {{ $t('Cancel') }}
                                                                 </button>
                                                             </div>
                                                         </div>
 
-                                                        <div class="prose text-sm pt-1 t_a_h" v-if="!activity.comment.modify" v-html="activity.comment.details"></div>
+                                                        <div v-else class="mt-1 text-sm bg-gray-50 dark:bg-gray-700/50 rounded-lg px-3 py-2 prose prose-sm dark:prose-invert t_a_h max-w-none" v-html="activity.comment.details"></div>
                                                     </div>
-                                                </div>
+                                                </template>
 
-                                                <div v-if="['title', 'slug', 'list_id', 'order', 'due_date', 'is_done', 'is_archive', 'comment_delete', 'description', 'cover'].includes(activity.field_changed)" class="flex items-center space-x-3">
-                                                    <img v-if="activity.user?.photo_path" :src="activity.user.photo_path" alt="User Avatar" class="w-8 h-8 rounded-full" />
-                                                    <div>
-                                                        <p class="text-sm text-gray-700 dark:text-gray-300">
-                                                            <strong class="pr-1 dark:text-gray-200">{{ activity.user?.first_name }} {{ activity.user?.last_name }}</strong>
-                                                            <span v-if="['title', 'slug', 'list_id', 'order', 'due_date'].includes(activity.field_changed)">
-                                                                {{ activity.old_value }} → {{ activity.new_value }}
-                                                            </span>
-                                                            <span v-if="['is_done', 'is_archive'].includes(activity.field_changed)">
-                                                                {{ activity.old_value }}.
-                                                            </span>
-                                                            <span v-if="activity.field_changed === 'description'"> updated the description.</span>
-                                                            <span v-if="activity.field_changed === 'cover'"> updated the cover image.</span>
-                                                            <span v-if="activity.field_changed === 'comment_delete'"> deleted a comment.</span>
-                                                        </p>
-                                                        <p class="text-xs pt-1 text-gray-500 dark:text-gray-400">{{ moment(activity.created_at).format('MMMM D, YYYY [at] h:mm a') }}</p>
-                                                    </div>
-                                                </div>
+                                                <!-- System / field-change activity -->
+                                                <template v-else-if="['title', 'slug', 'list_id', 'order', 'due_date', 'is_done', 'is_archive', 'comment_delete', 'description', 'cover'].includes(activity.field_changed)">
+                                                    <span class="absolute left-0 top-0.5 w-8 h-8 rounded-full flex items-center justify-center ring-2 ring-white dark:ring-gray-800" :class="activityIconBg(activity.field_changed)">
+                                                        <icon class="w-3.5 h-3.5 text-white" :name="activityIcon(activity.field_changed)" />
+                                                    </span>
+
+                                                    <p class="text-sm text-gray-600 dark:text-gray-300 leading-snug">
+                                                        <strong class="font-semibold text-gray-800 dark:text-gray-100">{{ activity.user?.first_name }} {{ activity.user?.last_name }}</strong>
+                                                        <span v-if="['title', 'slug', 'list_id', 'order', 'due_date'].includes(activity.field_changed)">
+                                                            {{ $t('changed') }} <span class="text-gray-400 line-through">{{ activity.old_value }}</span> → <span class="font-medium">{{ activity.new_value }}</span>
+                                                        </span>
+                                                        <span v-if="activity.field_changed === 'is_done'"> {{ activity.old_value }}</span>
+                                                        <span v-if="activity.field_changed === 'is_archive'"> {{ activity.old_value }}</span>
+                                                        <span v-if="activity.field_changed === 'description'"> {{ $t('updated the description') }}</span>
+                                                        <span v-if="activity.field_changed === 'cover'"> {{ $t('updated the cover image') }}</span>
+                                                        <span v-if="activity.field_changed === 'comment_delete'"> {{ $t('deleted a comment') }}</span>
+                                                    </p>
+                                                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{{ moment(activity.created_at).format('MMM D [at] h:mm a') }}</p>
+                                                </template>
                                             </li>
                                         </ul>
                                     </div>
@@ -876,6 +892,7 @@
                         </div>
 
                         <aside class="divide-y divide-gray-200 dark:divide-gray-700 px-6 py-6">
+
                             <section class="py-3">
                                 <h2 class="px-2 text-sm font-medium dark:text-gray-300">
                                     {{ $t('Move Task') }}
@@ -890,9 +907,11 @@
                                     </div>
                                 </div>
                             </section>
+
                             <section class="py-3">
                                 <WatchButton :watchable-id="task.id" watchable-type="Task" :is-watching="task.is_watched_by_user" />
                             </section>
+
                             <section class="py-3.5">
                                 <div class="flex items-center px-2">
                                     <h2 class="text-sm font-medium dark:text-gray-300">
@@ -927,10 +946,53 @@
                                 </div>
 
                                 <div class="flex flex-wrap gap-1 px-2 mb-1 pt-2">
-                                      <span v-for="assignee in task.assignees" :aria-label="assignee.user.name" data-a="" class="block rounded-full h-8 w-8 border-2 border-white">
-                                          <img v-if="assignee.user.photo_path" class="h-full w-full rounded-full" :src="assignee.user.photo_path" :alt="assignee.user.name">
-                                          <img v-else class="h-full w-full rounded-full" src="/images/user.svg" :alt="assignee.user.name">
-                                      </span>
+                                    <span v-for="assignee in task.assignees" :aria-label="assignee.user.name" data-a="" class="block rounded-full h-8 w-8 border-2 border-white">
+                                        <img v-if="assignee.user.photo_path" class="h-full w-full rounded-full" :src="assignee.user.photo_path" :alt="assignee.user.name">
+                                        <img v-else class="h-full w-full rounded-full" src="/images/user.svg" :alt="assignee.user.name">
+                                    </span>
+                                </div>
+                            </section>
+
+                            <section class="py-3.5">
+                                <h2 class="px-2 text-sm font-medium dark:text-gray-300">
+                                    {{ $t('Assign Group') }}
+                                </h2>
+
+                                <div class="flex items-center gap-2 px-2 mt-2">
+                                    <div class="relative flex-1 min-w-0">
+                                        <select
+                                            v-model="selectedGroupId"
+                                            class="w-full appearance-none text-xs pl-3 pr-8 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+                                        >
+                                            <option :value="null">{{ $t('Select a group...') }}</option>
+                                            <option v-for="group in availableUserGroups" :key="group.id" :value="group.id">{{ group.name }}</option>
+                                        </select>
+                                        <icon class="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 dark:text-gray-500" name="arrow-down" />
+                                    </div>
+                                    <button
+                                        type="button"
+                                        class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-800 text-white shadow-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none flex-shrink-0 transition-colors"
+                                        :disabled="!selectedGroupId || assigningGroup"
+                                        @click="assignGroupToTask(selectedGroupId)"
+                                    >
+                                        <svg v-if="assigningGroup" class="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                                        <icon v-else class="w-3.5 h-3.5" name="add" />
+                                        {{ assigningGroup ? $t('Assigning...') : $t('Assign') }}
+                                    </button>
+                                </div>
+
+                                <div class="flex flex-wrap gap-1.5 px-2 mt-2.5" v-if="task.group_assignees && task.group_assignees.length">
+                                    <span
+                                        v-for="ga in task.group_assignees"
+                                        :key="ga.id"
+                                        class="inline-flex items-center gap-1.5 text-[11px] font-medium pl-1.5 pr-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 ring-1 ring-inset ring-blue-200 dark:ring-blue-800"
+                                        :title="(ga.user_group?.members || []).map(m => m.name).join(', ')"
+                                    >
+                                        <span class="w-4 h-4 rounded-full bg-blue-500 dark:bg-blue-600 flex items-center justify-center flex-shrink-0">
+                                            <icon class="w-2.5 h-2.5 text-white" name="users" />
+                                        </span>
+                                        {{ ga.user_group?.name || (userGroups.find(g => g.id === ga.user_group_id) || {}).name || ga.user_group_id }}
+                                    </span>
                                 </div>
                             </section>
 
@@ -950,6 +1012,7 @@
                                     <button v-else-if="!existing_timer && task_assignees().includes(Number($page.props.auth.user.id))" class="py-2 w-[70px] bg-blue-600 dark:bg-blue-700 hover:bg-blue-800 dark:hover:bg-blue-900 rounded text-[12px] text-white select-none" @click="startTracker()">{{ $t('START') }}</button>
                                 </div>
                             </section>
+
                             <section class="py-3">
                                 <h2 class="px-2 text-sm font-medium dark:text-gray-300">
                                     {{ $t('ថ្ងៃកំណត់យក') }}
@@ -969,11 +1032,6 @@
                                 </div>
                             </section>
 
-                            <!-- ថ្ងៃឯកសារចូល (Document Entry/Received Date): a
-                                 manually-set date, separate from the record's own
-                                 created_at — a document may be logged into the
-                                 system on a different day than it was actually
-                                 received. Same DateTimePicker pattern as Due Date. -->
                             <section class="py-3">
                                 <h2 class="px-2 text-sm font-medium dark:text-gray-300">
                                     {{ $t('ថ្ងៃឯកសារចូល') }}
@@ -993,10 +1051,6 @@
                                 </div>
                             </section>
 
-                            <!-- ថ្ងៃឯកសារចេញ (Document Exit/Sent Date): mirrors ថ្ងៃឯកសារចូល —
-                                the date the document was sent out / dispatched, tracked
-                                separately from when it was received. Same DateTimePicker
-                                pattern as the other date fields. -->
                             <section class="py-3">
                                 <h2 class="px-2 text-sm font-medium dark:text-gray-300">
                                     {{ $t('ថ្ងៃឯកសារចេញ') }}
@@ -1016,10 +1070,6 @@
                                 </div>
                             </section>
 
-                            <!-- ប្រភពឯកសារ (Document Source): pick an office from the
-                                 org-chart tree (department header, offices selectable
-                                 underneath) — same popup/search pattern as the
-                                 Assignee/Label selectors above. -->
                             <section class="py-3">
                                 <h2 class="px-2 text-sm font-medium dark:text-gray-300">
                                     {{ $t('ប្រភពឯកសារ') }}
@@ -1131,9 +1181,7 @@
         </div>
     </div>
 
-    <!-- ============================= -->
     <!-- Toast / Alert Notifications   -->
-    <!-- ============================= -->
     <teleport to="body">
         <div class="toast-stack" aria-live="polite" aria-atomic="true">
             <transition-group name="toast">
@@ -1164,6 +1212,7 @@
             </transition-group>
         </div>
     </teleport>
+
 </template>
 
 <script>
@@ -1248,11 +1297,9 @@
                     {'name': 'blue', 'color': '#579dff'}, {'name': 'sky', 'color': '#60c6d2'}, {'name': 'lime', 'color': '#94c748'}, {'name': 'pink', 'color': '#e774bb'}, {'name': 'black', 'color': '#8590a2'},
                     {'name': 'bold blue', 'color': '#0c66e4'}, {'name': 'bold sky', 'color': '#1d7f8c'}, {'name': 'bold lime', 'color': '#5b7f24'}, {'name': 'bold pink', 'color': '#ae4787'}, {'name': 'bold black', 'color': '#626f86'},
                 ],
-                // Mention popup properties
                 showMentionPopup: false,
                 mentionPopupPosition: { top: 0, left: 0 },
                 clickedMentionUser: null,
-                // Enhanced manual time properties
                 manualTimeError: null,
                 timePresets: [
                     { label: '15 min', hours: 0, minutes: 15 },
@@ -1304,6 +1351,11 @@
                 documentSources: [],
                 showSourceBox: false,
                 source_search: '',
+
+                // Group assignment
+                userGroups: [],
+                selectedGroupId: null,
+                assigningGroup: false,
             }
 
         },
@@ -1404,6 +1456,11 @@
                 return this.$t('Not set');
             },
 
+            availableUserGroups() {
+                const assignedIds = (this.task.group_assignees || []).map(ga => Number(ga.user_group_id));
+                return this.userGroups.filter(g => !assignedIds.includes(Number(g.id)));
+            },
+
             filteredDocumentSourceGroups() {
                 const q = (this.source_search || '').trim().toLowerCase();
                 if (!q) return this.documentSources;
@@ -1498,6 +1555,24 @@
             toastError(message, opts) { return this.showToast(message, 'error', opts); },
             toastWarning(message, opts) { return this.showToast(message, 'warning', opts); },
             toastInfo(message, opts) { return this.showToast(message, 'info', opts); },
+
+            // --- Activity timeline helpers ---
+            activityIcon(field) {
+                const map = {
+                    title: 'edit', slug: 'edit', list_id: 'edit', order: 'edit',
+                    due_date: 'calendar', is_done: 'checklist_box_2', is_archive: 'archive',
+                    description: 'details', cover: 'image', comment_delete: 'trash',
+                };
+                return map[field] || 'edit';
+            },
+            activityIconBg(field) {
+                const map = {
+                    title: 'bg-blue-500', slug: 'bg-blue-500', list_id: 'bg-sky-500', order: 'bg-sky-500',
+                    due_date: 'bg-orange-500', is_done: 'bg-green-500', is_archive: 'bg-amber-500',
+                    description: 'bg-indigo-500', cover: 'bg-purple-500', comment_delete: 'bg-red-500',
+                };
+                return map[field] || 'bg-gray-400';
+            },
 
             // --- Helpers ---
             isImage(filename) {
@@ -2540,6 +2615,51 @@
                     this.toastError(this.$t('Failed to update assignees.'));
                 })
             },
+
+            // --- Group assignment ---
+            assignGroupToTask(groupId){
+                if(!groupId || this.assigningGroup) return;
+                const alreadyAssigned = (this.task.group_assignees || []).some(ga => Number(ga.user_group_id) === Number(groupId));
+                if(alreadyAssigned){
+                    this.selectedGroupId = null;
+                    this.toastWarning(this.$t('This group is already assigned.'), { duration: 2500 });
+                    return;
+                }
+
+                this.assigningGroup = true;
+
+                axios.post(this.route('task.group.assign'), {task_id: this.task.id, user_group_id: groupId}).then((response) => {
+                    if(response.data){
+                        const existingIds = this.task_assignees();
+                        (response.data.assignees || []).forEach((assignee) => {
+                            if(!existingIds.includes(Number(assignee.user_id))){
+                                this.task.assignees.push(assignee);
+                            }
+                        });
+
+                        if(!this.task.group_assignees){
+                            this.task.group_assignees = [];
+                        }
+                        if(response.data.group_assignee){
+                            const idx = this.task.group_assignees.findIndex(ga => Number(ga.user_group_id) === Number(response.data.group_assignee.user_group_id));
+                            if(idx > -1){
+                                this.task.group_assignees.splice(idx, 1, response.data.group_assignee);
+                            }else{
+                                this.task.group_assignees.push(response.data.group_assignee);
+                            }
+                        }
+
+                        this.selectedGroupId = null;
+                        this.toastSuccess(this.$t('Group assigned.'), { duration: 2000 });
+                    }
+                }).catch((error) => {
+                    console.log(error)
+                    this.toastError(this.$t('Failed to assign the group.'));
+                }).finally(() => {
+                    this.assigningGroup = false;
+                });
+            },
+
             task_label_ids(){
                 return this.task.task_labels.map(item => item.label_id);
             },
@@ -2725,6 +2845,7 @@
                 this.move_object.order = this.task.order;
 
                 this.documentSources = res.document_sources || [];
+                this.userGroups = res.user_groups || [];
 
                 this.loadAvailableUsers();
 
@@ -2818,7 +2939,6 @@
 </script>
 
 <style scoped>
-    /* Mention Popup Styles */
     .mention-popup {
         background: white;
         border: 1px solid #e2e8f0;
@@ -2973,7 +3093,6 @@
         }
     }
 
-    /* Mention styles for task description */
     .prose .mention {
         background: #dbeafe;
         color: #1d4ed8;
@@ -3000,7 +3119,6 @@
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
 
-    /* Enhanced Date/Time Picker positioning in modal */
     .custom-date-picker,
     .custom-datetime-picker,
     .custom-time-picker {
@@ -3032,9 +3150,6 @@
         max-width: 360px;
     }
 
-    /* ============================================================ */
-    /* Toast / Alert Notifications                                  */
-    /* ============================================================ */
     .toast-stack {
         position: fixed;
         top: 20px;
@@ -3147,7 +3262,6 @@
         to { transform: scaleX(0); }
     }
 
-    /* Enter / leave transitions for transition-group */
     .toast-enter-active {
         transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
@@ -3199,7 +3313,6 @@
         transform: translateY(10px) scale(0.97);
     }
 
-    /* Simple cross-fade used for the page-render loading spinner. */
     .modal-fade-enter-active,
     .modal-fade-leave-active {
         transition: opacity 0.15s ease;
@@ -3209,7 +3322,6 @@
         opacity: 0;
     }
 
-    /* Wheel/trackpad page-turn transition while drawing on a PDF. */
     .modal-pop__stage {
         transition: opacity 0.18s ease, transform 0.18s ease;
     }
