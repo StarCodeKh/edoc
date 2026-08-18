@@ -44,4 +44,8 @@ class Workspace extends Model
             });
         });
     }
+
+    public function boards() {
+        return $this->hasMany(WorkspaceBoard::class)->orderBy('order');
+    }
 }

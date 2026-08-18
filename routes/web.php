@@ -42,6 +42,10 @@ use App\Http\Controllers\ModernInstallerController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+use App\Http\Controllers\GroupAssignmentController;
+use App\Http\Controllers\WorkspaceBoardController;
+use App\Http\Controllers\WorkflowRoleController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -124,6 +128,17 @@ Route::get('w/{uid}/tasks/my-tasks/table', [WorkSpacesController::class, 'worksp
 Route::get('w/{uid}/tasks/my-tasks', [WorkSpacesController::class, 'workspaceMyTasks'])->name('workspace.view.my-tasks')->middleware('auth');
 Route::get('w/{uid}/tables', [WorkSpacesController::class, 'workspaceTables'])->name('workspace.tables')->middleware('auth');
 Route::delete('workspace/destroy/{id}', [WorkSpacesController::class, 'destroy'])->name('workspace.destroy')->middleware('auth');
+ 
+
+Route::get('/workspace-boards/data', [WorkspaceBoardController::class, 'index'])->name('workspace.board.index');
+Route::post('/workspace/board/create', [WorkspaceBoardController::class, 'storeBoard'])->name('workspace.board.create');
+Route::post('/workspace/board/delete/{id}', [WorkspaceBoardController::class, 'deleteBoard'])->name('workspace.board.delete');
+
+Route::get('/settings/workflow-roles', [WorkflowRoleController::class, 'index'])->name('workflow-roles');
+Route::post('/workflow-roles/create', [WorkflowRoleController::class, 'store'])->name('workflow-roles.create');
+Route::post('/workflow-roles/update/{id}', [WorkflowRoleController::class, 'update'])->name('workflow-roles.update');
+Route::post('/workflow-roles/delete/{id}', [WorkflowRoleController::class, 'destroy'])->name('workflow-roles.delete');
+
 
 Route::delete('project/destroy/{id}', [ProjectsController::class, 'destroy'])->name('project.destroy')->middleware('auth');
 Route::get('projects', [ProjectsController::class, 'index'])->name('projects.index')->middleware('auth');
@@ -167,6 +182,8 @@ Route::post('task/timer/stop', [TimersController::class, 'stopTimer'])->name('ta
 Route::post('task/timer/start', [TimersController::class, 'startTimer'])->name('task.timer.start')->middleware('auth');
 Route::post('task/timer/manual', [TimersController::class, 'manualTime'])->name('task.timer.manual')->middleware('auth');
 Route::get('task/timer/duration/{task_id}', [TimersController::class, 'getDuration'])->name('task.timer.duration')->middleware('auth');
+
+Route::post('/task/group/assign', [GroupAssignmentController::class, 'store'])->name('task.group.assign');
 
 Route::post('checklist/update/{id}', [CheckListsController::class, 'update'])->name('check_list.update')->middleware('auth');
 Route::post('checklist/new', [CheckListsController::class, 'saveNew'])->name('check_list.new')->middleware('auth');
@@ -214,9 +231,7 @@ Route::get('settings/global', [SettingsController::class, 'index'])->name('globa
 Route::post('settings/global', [SettingsController::class, 'update'])->name('global.update')->middleware('auth');
 Route::post('settings/pre_made_list', [SettingsController::class, 'updatePreMadeList'])->name('global.update.pre_made_list')->middleware('auth');
 Route::get('settings/smtp', [SettingsController::class, 'smtp'])->name('settings.smtp')->middleware('auth');
-Route::get('settings/update', [SettingsController::class, 'systemUpdate'])->name('settings.update')->middleware('auth');
 Route::get('settings/pre-made-boards', [SettingsController::class, 'preMadeBoards'])->name('pre-made-boards')->middleware('auth');
-Route::post('settings/update/check', [SettingsController::class, 'systemUpdateCheck'])->name('settings.update.check')->middleware('auth');
 Route::put('settings/smtp/update', [SettingsController::class, 'updateSmtp'])->name('settings.smtp.update')->middleware('auth');
 
 Route::get('dev/setup/clear/{slug}', [SettingsController::class, 'clearCache'])->name('clear.cache');
@@ -240,8 +255,7 @@ Route::post('mail/send/board_update/{id}', [MailController::class, 'board_update
 Route::get('/img/{path}', [ImagesController::class, 'show'])->where('path', '.*')->name('image');
 
 /** Language Selector  */
-Route::get('/language/{language}', [DashboardController::class, 'setLocale'])
-    ->name('language');
+Route::get('/language/{language}', [DashboardController::class, 'setLocale'])->name('language');
 
 /** Newsletter Subscribe */
 Route::post('subscribe/news', [SubscriptionController::class, 'subscribe'])->name('subscribe.news');
@@ -251,16 +265,13 @@ Route::post('subscribe/news', [SubscriptionController::class, 'subscribe'])->nam
 Route::get('/backup/test', [BackupController::class, 'test'])->name('backup.test');
 Route::get('/language/test/{code}', [LanguagesController::class, 'newLanguageManually'])->name('language.test');
 
-Route::get('project/csv/export/{project_id}', [ProjectsController::class, 'csvExport'])->name('project.csv.export')
-    ->middleware('auth');
-Route::get('project/excel/export/{project_id}', [ProjectsController::class, 'excelExport'])->name('project.excel.export')
-    ->middleware('auth');
+Route::get('project/csv/export/{project_id}', [ProjectsController::class, 'csvExport'])->name('project.csv.export')->middleware('auth');
+Route::get('project/excel/export/{project_id}', [ProjectsController::class, 'excelExport'])->name('project.excel.export')->middleware('auth');
 
 Route::get('/admin/import/demo', [DemoController::class, 'import'])->name('import.demo')->middleware('auth');
 
 // IMAP Custom
 Route::get('/cron/queue_work', [CronJobsController::class, 'queueWork'])->name('cron.queue_work');
-
 Route::post('/json/task/search', [TasksController::class, 'jsonTaskSearch'])->name('json.task.search');
 
 // New code for installer
@@ -288,7 +299,6 @@ Route::get('/database/manual/seed/{flag}', [DatabaseController::class, 'manual_s
 
 // Modern Installer Routes
 Route::group(['prefix' => 'install', 'middleware' => ['web', 'install']], function () {
-    // Main installer page
     Route::get('/', function () {
         try {
             return Inertia::render('Installer/Index');
@@ -297,7 +307,6 @@ Route::group(['prefix' => 'install', 'middleware' => ['web', 'install']], functi
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            // Fallback to simple HTML installer
             return view('install');
         }
     })->name('installer.index');
@@ -316,13 +325,9 @@ Route::group(['prefix' => 'update', 'as' => 'LaravelUpdater::', 'middleware' => 
         Route::get('overview', [UpdateController::class, 'overview'])->name('overview');
         Route::get('database', [UpdateController::class, 'database'])->name('database');
     });
-
-    // This needs to be out of the middleware because right after the migration has been
-    // run, the middleware sends a 404.
     Route::get('final', [UpdateController::class, 'finish'])->name('final');
 });
 // New code for installer
-
 
 Route::get('/settings/license', [LicenseController::class, 'showSettings'])->name('license.settings');
 Route::post('/settings/license/deactivate', [LicenseController::class, 'deactivate'])->name('license.deactivate');
@@ -336,14 +341,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/notifications/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
     Route::post('/watch/toggle', [WatcherController::class, 'toggle'])->name('watch.toggle');
 
-    Route::get('/settings/notifications', [NotificationSettingController::class, 'index'])
-        ->name('notification-settings.index');
-
-    // Route 2: Handles the update for a single toggle switch.
-    Route::patch('/settings/notifications/{setting}', [NotificationSettingController::class, 'update'])
-        ->name('notification-settings.update');
+    Route::get('/settings/notifications', [NotificationSettingController::class, 'index'])->name('notification-settings.index');
+    Route::patch('/settings/notifications/{setting}', [NotificationSettingController::class, 'update'])->name('notification-settings.update');
 });
-
 
 Route::get('/settings/license', [LicenseController::class, 'showSettings'])->name('license.settings');
 Route::post('/settings/license/deactivate', [LicenseController::class, 'deactivate'])->name('license.deactivate');

@@ -51,6 +51,9 @@
                         <select-input v-model="project.workspace_id" class="w-full">
                             <option v-for="(workspace, wi) in workspaces" :key="wi" :value="workspace.id">{{ workspace.name }}</option>
                         </select-input>
+                        <p class="text-[11px] text-gray-400 mt-1">
+                            {{ $t('Lists') }}: {{ boardListNamesForSelectedWorkspace.join(', ') }}
+                        </p>
                     </label>
                 </div>
                 <div class="flex">
@@ -109,8 +112,16 @@
                 backgrounds: [],
                 selected_backgrounds: [],
                 showAlert: false,
-                alertMessage: ''
+                alertMessage: '',
+                boardsByWorkspaceId: {},
+                defaultBoardListNames: ['To Do', 'In Progress', 'Done'],
             }
+        },
+        computed: {
+            boardListNamesForSelectedWorkspace() {
+                const names = (this.boardsByWorkspaceId[this.project.workspace_id] || []).map(b => b.name);
+                return names.length ? names : this.defaultBoardListNames;
+            },
         },
         methods: {
             async getData(){
@@ -120,6 +131,17 @@
                 this.backgrounds = backgroundResp.data;
                 this.project.color = this.backgrounds[0]
                 this.selected_backgrounds = this.backgrounds.slice(0, 9)
+
+                try {
+                    const boardsResp = await axios.get(this.route('workspace.board.index'));
+                    console.log('[debug] CreateProject workspace.board.index response:', boardsResp.data);
+                    (boardsResp.data.workspaces || []).forEach(ws => {
+                        this.boardsByWorkspaceId[ws.id] = ws.boards || [];
+                    });
+                } catch (error) {
+                    console.error('[debug] CreateProject workspace.board.index FAILED:', error?.response?.status, error?.response?.data || error.message);
+                }
+
                 this.loading = false;
                 if(this.$page.props.workspace || this.$page.props.project){
                     this.project.workspace_id = this.$page.props.workspace ? this.$page.props.workspace.id : this.$page.props.project? this.$page.props.project.workspace_id : '';
@@ -143,6 +165,8 @@
                 const project = { ...this.project }
                 project.background_id = project.color.id;
                 delete project.color;
+                project.board_list_names = this.boardListNamesForSelectedWorkspace;
+
                 axios.post(this.route('json.project.create'), project).then((response) => {
                     if(response.data){
                         window.location = this.route('projects.view.board', response.data.slug || response.data.id);

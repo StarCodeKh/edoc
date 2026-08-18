@@ -117,6 +117,13 @@
                     'category': 'content'
                 },
                 {
+                    'name': 'Workflow Roles',
+                    'route': 'workflow-roles',
+                    'url': 'settings/workflow-roles',
+                    'icon': 'checklist',
+                    'category': 'workflow'
+                },
+                {
                     'name': 'Workspace Types',
                     'route': 'workspace_types.index',
                     'url': 'settings/workspace_types',
@@ -179,6 +186,7 @@
                     'settings': 'bg-indigo-100 text-indigo-600',
                     'users': 'bg-blue-100 text-blue-600',
                     'table': 'bg-green-100 text-green-600',
+                    'checklist': 'bg-teal-100 text-teal-600',
                     'building': 'bg-purple-100 text-purple-600',
                     'shield': 'bg-red-100 text-red-600',
                     'globe': 'bg-cyan-100 text-cyan-600',
@@ -195,6 +203,7 @@
                     'Global': 'System-wide configuration',
                     'Manage Users': 'User accounts and permissions',
                     'Pre-made Boards': 'Template board configurations',
+                    'Workflow Roles': 'Document workflow steps and roles',
                     'Workspace Types': 'Organization structure settings',
                     'User Roles': 'Permission and access control',
                     'Languages': 'Multi-language support',

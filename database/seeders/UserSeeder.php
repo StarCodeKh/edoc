@@ -38,11 +38,11 @@ class UserSeeder extends Seeder
             ['email' => 'admin@system.com'],
             [
                 'role_id'           => 1,
-                'locale'            => 'en',
+                'locale'            => 'kh',
                 'address'           => 'Phnom Penh, Cambodia',
                 'first_name'        => 'Admin',
                 'last_name'         => 'System',
-                'title'             => 'ក្រុមការងារ IT (Super Admin)',
+                'title'             => 'ក្រុមការងារ IT',
                 'email_verified_at' => null,
                 'password'          => Hash::make('Password@123'),
                 'created_at'        => Carbon::now(),

@@ -36,6 +36,9 @@ class DatabaseSeeder extends Seeder
             WorkspaceTypeSeeder::class,
             NotificationSettingSeeder::class,
             DocumentSourceSeeder::class,
+            WorkspacesInsertSeeder::class,
+            EdocWorkflowRoleSeeder::class,
+            UserGroupSeeder::class,
         ]);
     }
 }

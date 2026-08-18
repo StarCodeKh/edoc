@@ -29,7 +29,9 @@ use Inertia\Inertia;
 use Maatwebsite\Excel\Excel;
 
 class ProjectsController extends Controller {
-    public function index(){
+
+    public function index()
+    {
         return Inertia::render('Projects/Index', [
             'title' => 'Projects',
         ]);
@@ -89,18 +91,28 @@ class ProjectsController extends Controller {
     public function jsonCreate(Request $request){
         $requests = $request->all();
         $requests['user_id'] = auth()->id();
+        $boardListNames = $requests['board_list_names'] ?? null;
+        unset($requests['board_list_names']);
 
         $project = Project::create($requests);
 
-        $enable_list = Setting::where('slug', 'enable_pre_made_board')->first();
-        if(!empty($enable_list) && $enable_list->value){
-            $board_list = Setting::where('slug', 'pre_made_board_list')->first();
-            if(!empty($board_list)){
-                $list_items = is_string($board_list->value) ? json_decode($board_list->value, true) : $board_list->value;
-                $io = 0;
-                foreach ($list_items as $item){
-                    BoardList::create(['user_id' => $requests['user_id'], 'order' => $io, 'project_id' => $project->id, 'title' => $item]);
-                    $io += 1;
+        $io = 0;
+
+        if (!empty($boardListNames) && is_array($boardListNames)) {
+            foreach ($boardListNames as $item) {
+                BoardList::create(['user_id' => $requests['user_id'], 'order' => $io, 'project_id' => $project->id, 'title' => $item]);
+                $io += 1;
+            }
+        } else {
+            $enable_list = Setting::where('slug', 'enable_pre_made_board')->first();
+            if(!empty($enable_list) && $enable_list->value){
+                $board_list = Setting::where('slug', 'pre_made_board_list')->first();
+                if(!empty($board_list)){
+                    $list_items = is_string($board_list->value) ? json_decode($board_list->value, true) : $board_list->value;
+                    foreach ($list_items as $item){
+                        BoardList::create(['user_id' => $requests['user_id'], 'order' => $io, 'project_id' => $project->id, 'title' => $item]);
+                        $io += 1;
+                    }
                 }
             }
         }
