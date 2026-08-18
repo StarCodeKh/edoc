@@ -49,87 +49,87 @@
 </template>
 
 <script>
-import Icon from '@/Shared/Icon.vue'
-import { Link } from '@inertiajs/vue3'
+    import Icon from '@/Shared/Icon.vue'
+    import { Link } from '@inertiajs/vue3'
 
-export default {
-    name: 'workspace-view-menu',
-    props: {
-        workspace: Object,
-        filters: { required: false },
-        view: {
-            required: false
+    export default {
+        name: 'workspace-view-menu',
+        props: {
+            workspace: Object,
+            filters: { required: false },
+            view: {
+                required: false
+            }
+        },
+        components: { Icon, Link },
+        data() {
+            return {
+                icons: ['board', 'calendar', 'timeline', 'table'],
+                options: [
+                    {name: 'Board', slug: 'board'},
+                    {name: 'List', slug: 'table'},
+                    {name: 'Calendar', slug: 'calendar'},
+                    {name: 'Timeline', slug: 'timeline'},
+                ],
+                showMenu: false,
+                dropdownPosition: { top: '0px', right: '0px' },
+            }
+        },
+        computed: {
+            dropdownStyle() {
+                return this.dropdownPosition;
+            },
+        },
+        watch: {
+            showMenu(newVal) {
+                if (newVal) {
+                    this.$nextTick(() => {
+                        this.updateDropdownPosition();
+                    });
+                }
+            },
+        },
+        methods: {
+            clearFilter(e){
+                e.preventDefault();
+                e.stopPropagation()
+                this.$emit('fClear', true);
+            },
+            findFilters(){
+                const filters = Object.keys(this.filters || {});
+                return filters.some(r=> ['due', 'label', 'user', 'project'].includes(r))
+            },
+            exportTasks(){
+                this.showMenu = false;
+                // Emit event for parent to handle export
+                this.$emit('exportTasks');
+            },
+            showArchivedTasks(){
+                this.showMenu = false;
+                this.$emit('showArchived', 'tasks');
+            },
+            showArchivedBoards(){
+                this.showMenu = false;
+                this.$emit('showArchived', 'boards');
+            },
+            toggleMenu(){
+                this.showMenu = !this.showMenu;
+                if (this.showMenu) {
+                    this.$nextTick(() => {
+                        this.updateDropdownPosition();
+                    });
+                }
+            },
+            updateDropdownPosition(){
+                if (this.$refs.menuContainer) {
+                    const rect = this.$refs.menuContainer.getBoundingClientRect();
+                    this.dropdownPosition = {
+                        top: `${rect.bottom + 8}px`,
+                        right: `${window.innerWidth - rect.right}px`,
+                    };
+                }
+            },
         }
-    },
-    components: { Icon, Link },
-    data() {
-        return {
-            icons: ['board', 'calendar', 'timeline', 'table'],
-            options: [
-                {name: 'Board', slug: 'board'},
-                {name: 'Calendar', slug: 'calendar'},
-                {name: 'Timeline', slug: 'timeline'},
-                {name: 'List', slug: 'table'},
-            ],
-            showMenu: false,
-            dropdownPosition: { top: '0px', right: '0px' },
-        }
-    },
-    computed: {
-        dropdownStyle() {
-            return this.dropdownPosition;
-        },
-    },
-    watch: {
-        showMenu(newVal) {
-            if (newVal) {
-                this.$nextTick(() => {
-                    this.updateDropdownPosition();
-                });
-            }
-        },
-    },
-    methods: {
-        clearFilter(e){
-            e.preventDefault();
-            e.stopPropagation()
-            this.$emit('fClear', true);
-        },
-        findFilters(){
-            const filters = Object.keys(this.filters || {});
-            return filters.some(r=> ['due', 'label', 'user', 'project'].includes(r))
-        },
-        exportTasks(){
-            this.showMenu = false;
-            // Emit event for parent to handle export
-            this.$emit('exportTasks');
-        },
-        showArchivedTasks(){
-            this.showMenu = false;
-            this.$emit('showArchived', 'tasks');
-        },
-        showArchivedBoards(){
-            this.showMenu = false;
-            this.$emit('showArchived', 'boards');
-        },
-        toggleMenu(){
-            this.showMenu = !this.showMenu;
-            if (this.showMenu) {
-                this.$nextTick(() => {
-                    this.updateDropdownPosition();
-                });
-            }
-        },
-        updateDropdownPosition(){
-            if (this.$refs.menuContainer) {
-                const rect = this.$refs.menuContainer.getBoundingClientRect();
-                this.dropdownPosition = {
-                    top: `${rect.bottom + 8}px`,
-                    right: `${window.innerWidth - rect.right}px`,
-                };
-            }
-        },
     }
-}
 </script>
 
