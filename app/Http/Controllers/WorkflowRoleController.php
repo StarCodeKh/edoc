@@ -23,30 +23,23 @@ class WorkflowRoleController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'workflow_type' => 'required|string|in:' . implode(',', self::WORKFLOW_TYPES),
+        $validated = $request->validate([
+            'workflow_type' => 'required|string|max:64|regex:/^[a-z0-9_]+$/',
             'list_title' => 'required|string|max:255',
-            'responsible_role' => 'required|string|max:50',
+            'responsible_role' => 'nullable|string|max:100',
             'sla_hours' => 'nullable|integer|min:0',
             'requires_signature' => 'boolean',
             'is_terminal' => 'boolean',
         ]);
 
-        $order = (int) EdocWorkflowRole::where('workflow_type', $request->input('workflow_type'))->max('order') + 1;
+        $maxOrder = EdocWorkflowRole::where('workflow_type', $validated['workflow_type'])->max('order');
+        $validated['order'] = ($maxOrder ?? -1) + 1;
 
-        $role = EdocWorkflowRole::create([
-            'workflow_type' => $request->input('workflow_type'),
-            'list_title' => $request->input('list_title'),
-            'order' => $order,
-            'responsible_role' => $request->input('responsible_role'),
-            'sla_hours' => $request->input('sla_hours'),
-            'requires_signature' => (bool) $request->input('requires_signature', false),
-            'is_terminal' => (bool) $request->input('is_terminal', false),
-        ]);
+        $role = EdocWorkflowRole::create($validated);
 
         return response()->json($role);
     }
-
+    
     public function update(Request $request, $id)
     {
         $role = EdocWorkflowRole::findOrFail($id);

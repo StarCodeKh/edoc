@@ -2,14 +2,78 @@
     <div class="sec-cont">
         <Head :title="$t(title)" />
 
+        <!-- Add a new workflow type -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden mr-2 mb-5">
+            <div class="px-8 py-6 flex items-start gap-4">
+                <span class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300">
+                    <Icon name="plus" class="w-5 h-5" />
+                </span>
+                <div class="flex-1 min-w-0">
+                    <div class="font-bold text-gray-900 dark:text-gray-100">{{ $t('Add a new workflow') }}</div>
+                    <p class="pt-1 text-sm text-gray-500 dark:text-gray-400 mb-3">{{ $t("Not just external ministry, casino operator or internal CGMC — add any workflow you need.") }}</p>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <input
+                            v-model="newWorkflowForm.type"
+                            @input="newWorkflowForm.type = slugify(newWorkflowForm.type)"
+                            type="text"
+                            @keyup.enter="addWorkflowType"
+                            class="w-52 bg-gray-50 dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            :placeholder="$t('key, e.g. partner_review')"
+                        >
+                        <input
+                            v-model="newWorkflowForm.label"
+                            type="text"
+                            @keyup.enter="addWorkflowType"
+                            class="flex-1 min-w-[180px] bg-gray-50 dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            :placeholder="$t('Display name, e.g. Partner Review')"
+                        >
+                        <button
+                            type="button"
+                            :disabled="!canAddWorkflowType"
+                            @click="addWorkflowType"
+                            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 transition-colors"
+                        >
+                            <Icon name="plus" class="w-3.5 h-3.5" />
+                            {{ $t('Add workflow') }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Workflow tabs — horizontally scrollable so any number of workflows fit -->
+        <div v-if="allWorkflowTypes.length" class="flex flex-nowrap gap-2 mb-5 overflow-x-auto scroll-smooth snap-x snap-mandatory no-scrollbar -mx-1 px-1">
+            <button
+                v-for="type in allWorkflowTypes"
+                :key="'tab_' + type"
+                type="button"
+                @click="selectedWorkflowType = type"
+                class="workflow-tab shrink-0 snap-start whitespace-nowrap flex items-center gap-2 pl-2 pr-4 py-1.5 rounded-full border font-semibold shadow-sm hover:shadow-md transition-all duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0"
+                :class="{ 'workflow-tab--active': selectedWorkflowType === type }"
+                :style="workflowTabStyle(type)"
+            >
+                <span class="workflow-avatar" :style="{ backgroundColor: workflowMeta(type).color }">
+                    <Icon v-if="workflowMeta(type).icon" :name="workflowMeta(type).icon" class="w-3.5 h-3.5" />
+                    <span v-else>{{ initials(workflowMeta(type).label) }}</span>
+                </span>
+                <span class="text-sm">{{ workflowMeta(type).label }}</span>
+                <span
+                    class="inline-flex items-center justify-center min-w-[20px] h-[20px] px-1.5 rounded-full text-[11px] font-bold bg-white/85"
+                    :style="{ color: workflowMeta(type).color }"
+                >{{ groupedRoles[type].length }}</span>
+            </button>
+        </div>
+
         <div
-            v-for="type in workflow_types"
+            v-for="type in allWorkflowTypes"
+            v-show="selectedWorkflowType === type"
             :key="type"
             class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden mr-2 mb-5"
         >
             <div class="px-8 py-6 flex items-start gap-4 border-b border-gray-100 dark:border-gray-700">
-                <span class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-xl" :class="workflowMeta(type).badgeClass">
-                    <Icon :name="workflowMeta(type).icon" class="w-5 h-5" />
+                <span class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-xl text-white font-bold shadow-sm" :style="{ backgroundColor: workflowMeta(type).color }">
+                    <Icon v-if="workflowMeta(type).icon" :name="workflowMeta(type).icon" class="w-5 h-5" />
+                    <span v-else>{{ initials(workflowMeta(type).label) }}</span>
                 </span>
                 <div class="flex-1 min-w-0">
                     <div class="font-bold text-gray-900 dark:text-gray-100">{{ workflowMeta(type).label }}</div>
@@ -18,6 +82,15 @@
                 <span class="text-xs font-medium text-gray-400 dark:text-gray-500 flex-shrink-0 mt-1">
                     {{ groupedRoles[type].length }} {{ groupedRoles[type].length === 1 ? $t('step') : $t('steps') }}
                 </span>
+                <button
+                    v-if="canRemoveWorkflowType(type)"
+                    type="button"
+                    @click="removeWorkflowType(type)"
+                    class="inline-flex items-center justify-center w-7 h-7 rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 flex-shrink-0 transition-colors"
+                    :title="$t('Remove this empty workflow')"
+                >
+                    <Icon name="trash" class="w-3.5 h-3.5" />
+                </button>
             </div>
 
             <div class="divide-y divide-gray-100 dark:divide-gray-700">
@@ -164,22 +237,70 @@
             workflow_types: { type: Array, default: () => ['external_ministry', 'casino_operator', 'internal_cgmc'] },
         },
         data() {
+            const builtInLabels = {
+                external_ministry: 'External Ministry',
+                casino_operator: 'Casino Operator',
+                internal_cgmc: 'Internal CGMC',
+            };
+            const builtInIcons = {
+                external_ministry: 'send',
+                casino_operator: 'briefcase',
+                internal_cgmc: 'building',
+            };
+            const colorPalette = ['#3b82f6', '#8b5cf6', '#6366f1', '#10b981', '#f59e0b', '#ec4899', '#06b6d4', '#ef4444'];
+
+            let savedLabels = {};
+            try {
+                savedLabels = JSON.parse(localStorage.getItem('edoc-workflow-type-labels') || '{}') || {};
+            } catch (e) {
+                savedLabels = {};
+            }
+
+            const roles = (this.roles || []).map(r => ({ ...r, saving: false }));
+            const discoveredFromRoles = [...new Set(roles.map(r => r.workflow_type).filter(Boolean))];
+            const startingTypes = [...new Set([...(this.workflow_types || []), ...discoveredFromRoles])];
+
             const newRoleForms = {};
-            this.workflow_types.forEach(type => {
+            startingTypes.forEach(type => {
                 newRoleForms[type] = { list_title: '', responsible_role: '', sla_hours: null, requires_signature: false, is_terminal: false };
             });
 
             return {
-                localRoles: (this.roles || []).map(r => ({ ...r, saving: false })),
+                localRoles: roles,
                 newRoleForms,
+                dynamicWorkflowTypes: [],
+                typeLabels: { ...builtInLabels, ...savedLabels },
+                builtInIcons,
+                colorPalette,
+                selectedWorkflowType: startingTypes[0] || null,
+                newWorkflowForm: { type: '', label: '' },
                 toasts: [],
                 toastIdCounter: 0,
             }
         },
+        watch: {
+            allWorkflowTypes(newTypes) {
+                if (!newTypes.length) {
+                    this.selectedWorkflowType = null;
+                } else if (!this.selectedWorkflowType || !newTypes.includes(this.selectedWorkflowType)) {
+                    this.selectedWorkflowType = newTypes[0];
+                }
+            },
+        },
         computed: {
+            allWorkflowTypes() {
+                const fromProp = this.workflow_types || [];
+                const fromRoles = this.localRoles.map(r => r.workflow_type).filter(Boolean);
+                const combined = [...fromProp, ...fromRoles, ...this.dynamicWorkflowTypes];
+                return [...new Set(combined)];
+            },
+            canAddWorkflowType() {
+                const type = (this.newWorkflowForm.type || '').trim();
+                return !!type && !this.allWorkflowTypes.includes(type);
+            },
             groupedRoles() {
                 const groups = {};
-                this.workflow_types.forEach(type => { groups[type] = []; });
+                this.allWorkflowTypes.forEach(type => { groups[type] = []; });
                 this.localRoles.forEach(role => {
                     if (!groups[role.workflow_type]) groups[role.workflow_type] = [];
                     groups[role.workflow_type].push(role);
@@ -191,13 +312,105 @@
             },
         },
         methods: {
+            slugify(value) {
+                return (value || '')
+                    .toLowerCase()
+                    .trim()
+                    .replace(/[^a-z0-9_]+/g, '_')
+                    .replace(/^_+|_+$/g, '');
+            },
+            titleCase(type) {
+                return (type || '')
+                    .split('_')
+                    .filter(Boolean)
+                    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+                    .join(' ');
+            },
+            persistTypeLabels() {
+                try {
+                    localStorage.setItem('edoc-workflow-type-labels', JSON.stringify(this.typeLabels));
+                } catch (e) {
+                    // ignore storage failures (private browsing, quota, etc.)
+                }
+            },
+            initials(label) {
+                return (label || '')
+                    .split(' ')
+                    .filter(Boolean)
+                    .slice(0, 2)
+                    .map(w => w.charAt(0).toUpperCase())
+                    .join('') || '?';
+            },
+            hashType(type) {
+                let hash = 0;
+                for (let i = 0; i < type.length; i++) {
+                    hash = (hash << 5) - hash + type.charCodeAt(i);
+                    hash |= 0;
+                }
+                return hash;
+            },
             workflowMeta(type) {
-                const meta = {
-                    external_ministry: { label: this.$t('External Ministry'), icon: 'send', badgeClass: 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' },
-                    casino_operator: { label: this.$t('Casino Operator'), icon: 'briefcase', badgeClass: 'bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400' },
-                    internal_cgmc: { label: this.$t('Internal CGMC'), icon: 'building', badgeClass: 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' },
+                const label = this.typeLabels[type] || this.titleCase(type) || type;
+                const idx = this.allWorkflowTypes.indexOf(type);
+                const color = this.colorPalette[(idx > -1 ? idx : Math.abs(this.hashType(type))) % this.colorPalette.length];
+                return { label, icon: this.builtInIcons[type] || null, color };
+            },
+            hexToRgba(hex, alpha) {
+                const clean = (hex || '').replace('#', '');
+                const full = clean.length === 3 ? clean.split('').map(c => c + c).join('') : clean;
+                const num = parseInt(full, 16) || 0;
+                const r = (num >> 16) & 255;
+                const g = (num >> 8) & 255;
+                const b = num & 255;
+                return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+            },
+            workflowTabStyle(type) {
+                const color = this.workflowMeta(type).color;
+                const isActive = this.selectedWorkflowType === type;
+                if (isActive) {
+                    return {
+                        backgroundColor: color,
+                        borderColor: color,
+                        color: '#ffffff',
+                        boxShadow: `0 4px 14px -4px ${this.hexToRgba(color, 0.55)}`,
+                    };
+                }
+                return {
+                    backgroundColor: this.hexToRgba(color, 0.1),
+                    borderColor: this.hexToRgba(color, 0.25),
+                    color: color,
+                    boxShadow: 'none',
                 };
-                return meta[type] || { label: type, icon: 'checklist', badgeClass: 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' };
+            },
+
+            addWorkflowType() {
+                const type = this.slugify(this.newWorkflowForm.type);
+                const label = (this.newWorkflowForm.label || '').trim();
+                if (!type) return;
+                if (this.allWorkflowTypes.includes(type)) {
+                    this.showToast(this.$t('That workflow already exists.'), 'error');
+                    return;
+                }
+                this.dynamicWorkflowTypes.push(type);
+                this.typeLabels[type] = label || this.titleCase(type);
+                this.persistTypeLabels();
+                if (!this.newRoleForms[type]) {
+                    this.newRoleForms[type] = { list_title: '', responsible_role: '', sla_hours: null, requires_signature: false, is_terminal: false };
+                }
+                this.newWorkflowForm = { type: '', label: '' };
+                this.selectedWorkflowType = type;
+                this.showToast(this.$t('Workflow added — add its first step below.'));
+            },
+
+            canRemoveWorkflowType(type) {
+                return this.dynamicWorkflowTypes.includes(type) && (this.groupedRoles[type] || []).length === 0;
+            },
+            removeWorkflowType(type) {
+                const idx = this.dynamicWorkflowTypes.indexOf(type);
+                if (idx > -1) this.dynamicWorkflowTypes.splice(idx, 1);
+                delete this.newRoleForms[type];
+                delete this.typeLabels[type];
+                this.persistTypeLabels();
             },
 
             showToast(message, type = 'success') {
@@ -267,6 +480,34 @@
 </script>
 
 <style scoped>
+    .workflow-tab {
+        background: rgba(100, 116, 139, 0.08);
+        border-width: 1px;
+    }
+    .workflow-tab--active {
+        box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.6) inset;
+    }
+    .workflow-avatar {
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 22px;
+        height: 22px;
+        border-radius: 9999px;
+        color: #ffffff;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+    }
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
     .toast-stack {
         position: fixed;
         top: 20px;
