@@ -21,6 +21,7 @@ class NotificationSetting extends Model
         'email_is_active',
         'can_be_slacked',
         'slack_is_active',
+        'telegram_is_active',
     ];
 
     protected $casts = [
@@ -29,5 +30,7 @@ class NotificationSetting extends Model
         'email_is_active' => 'boolean',
         'can_be_slacked' => 'boolean',
         'slack_is_active' => 'boolean',
+        'telegram_is_active' => 'boolean',
+        'can_be_telegrammed' => 'boolean',
     ];
 }

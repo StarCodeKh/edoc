@@ -41,19 +41,27 @@ class EdocWorkflowRoleSeeder extends Seeder
         ],
     ];
 
+    private const WORKSPACE_ID_BY_TYPE = [
+        'external_ministry' => 1,
+        'casino_operator' => 3,
+        'internal_cgmc' => 2,
+    ];
+
     public function run(): void
     {
         $roleTables = array_values(array_filter(
-            ['edoc_workflow_columns', 'edoc_workflow_roles'],
+            ['edoc_workflow_roles'],
             fn ($table) => Schema::hasTable($table)
         ));
 
         if (empty($roleTables)) {
-            $this->command->error("Neither 'edoc_workflow_columns' nor 'edoc_workflow_roles' exists yet — run the migration first.");
+            $this->command->error("Neither 'edoc_workflow_roles' exists yet — run the migration first.");
             return;
         }
 
         foreach (self::DEFINITIONS as $workflowType => $columns) {
+            $workspaceId = self::WORKSPACE_ID_BY_TYPE[$workflowType] ?? null;
+
             foreach ($columns as $index => $col) {
                 $order = $index + 1;
 
@@ -63,6 +71,7 @@ class EdocWorkflowRoleSeeder extends Seeder
                             ['workflow_type' => $workflowType, 'order' => $order],
                             [
                                 'list_title' => $col['title'],
+                                'workspace_id' => $workspaceId,
                                 'responsible_role' => $col['role'],
                                 'sla_hours' => $col['sla_hours'],
                                 'requires_signature' => $col['requires_signature'],
@@ -77,7 +86,7 @@ class EdocWorkflowRoleSeeder extends Seeder
                     }
                 }
 
-                $this->command->line("[{$workflowType}] Column {$order}: {$col['title']} (role={$col['role']}, sla=" . ($col['sla_hours'] ?? 'n/a') . 'h)');
+                $this->command->line("[{$workflowType}] Column {$order}: {$col['title']} (role={$col['role']}, workspace_id={$workspaceId}, sla=" . ($col['sla_hours'] ?? 'n/a') . 'h)');
             }
         }
 

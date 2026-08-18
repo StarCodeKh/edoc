@@ -51,9 +51,6 @@
                         <select-input v-model="project.workspace_id" class="w-full">
                             <option v-for="(workspace, wi) in workspaces" :key="wi" :value="workspace.id">{{ workspace.name }}</option>
                         </select-input>
-                        <p class="text-[11px] text-gray-400 mt-1">
-                            {{ $t('Lists') }}: {{ boardListNamesForSelectedWorkspace.join(', ') }}
-                        </p>
                     </label>
                 </div>
                 <div class="flex">
@@ -117,12 +114,6 @@
                 defaultBoardListNames: ['To Do', 'In Progress', 'Done'],
             }
         },
-        computed: {
-            boardListNamesForSelectedWorkspace() {
-                const names = (this.boardsByWorkspaceId[this.project.workspace_id] || []).map(b => b.name);
-                return names.length ? names : this.defaultBoardListNames;
-            },
-        },
         methods: {
             async getData(){
                 const workspaceResp = await axios.get(this.route('json.workspaces.all'));
@@ -165,8 +156,7 @@
                 const project = { ...this.project }
                 project.background_id = project.color.id;
                 delete project.color;
-                project.board_list_names = this.boardListNamesForSelectedWorkspace;
-
+        
                 axios.post(this.route('json.project.create'), project).then((response) => {
                     if(response.data){
                         window.location = this.route('projects.view.board', response.data.slug || response.data.id);

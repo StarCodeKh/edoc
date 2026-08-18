@@ -31,7 +31,7 @@
                 </span>
                 <div class="flex-1 min-w-0">
                     <div class="font-bold text-gray-900 dark:text-gray-100">{{ $t('Workspace') }}</div>
-                    <p class="pt-1 text-sm text-gray-500 dark:text-gray-400">{{ $t('Select a workspace to manage its boards below.') }}</p>
+                    <p class="pt-1 text-sm text-gray-500 dark:text-gray-400">{{ $t('Select a workspace to see its board names below.') }}</p>
                 </div>
             </div>
 
@@ -89,26 +89,16 @@
                         </span>
                     </div>
 
-                    <div class="flex gap-2 max-w-md">
-                        <input
-                            type="text"
-                            v-model="new_board"
-                            @keyup.enter="addBoard()"
-                            class="flex-1 min-w-0 bg-gray-50 dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
-                            placeholder="e.g. To Do"
-                        >
-                        <button
-                            type="button"
-                            :disabled="!new_board.trim()"
-                            @click="addBoard()"
-                            class="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 text-white shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 transition-colors"
-                        >
-                            <Icon name="plus" class="w-4 h-4" />
-                            {{ $t('Add new') }}
-                        </button>
-                    </div>
+                    <!-- Read-only: these are the list_title values of every
+                         workflow step tied to this workspace in
+                         edoc_workflow_roles. Add/rename/remove them from
+                         the Workflow Roles page — that's the single
+                         source of truth now, this is just a live view of it. -->
+                    <p class="text-xs text-gray-400 dark:text-gray-500 mb-3">
+                        {{ $t('Pulled from this workspace\'s workflow steps. Add or rename steps on the Workflow Roles page.') }}
+                    </p>
 
-                    <div class="flex flex-wrap gap-2 mt-4">
+                    <div class="flex flex-wrap gap-2">
                         <span
                             v-for="board in currentWorkspaceBoards"
                             :key="board.id"
@@ -118,18 +108,10 @@
                                 <Icon name="checklist" class="w-2.5 h-2.5 text-white" />
                             </span>
                             {{ board.name }}
-                            <button
-                                @click="removeBoard(board)"
-                                type="button"
-                                class="inline-flex items-center justify-center w-3.5 h-3.5 ms-0.5 rounded-full text-blue-400 hover:bg-blue-200 hover:text-blue-900 dark:hover:bg-blue-800 dark:hover:text-blue-300"
-                                :aria-label="$t('Remove')"
-                            >
-                                <Icon name="close" class="w-2 h-2" />
-                            </button>
                         </span>
                         <div v-if="!currentWorkspaceBoards.length" class="flex items-center gap-2 text-sm text-gray-400 dark:text-gray-500 py-2">
                             <Icon name="checklist" class="w-4 h-4 opacity-50" />
-                            {{ $t('No boards yet — add one above.') }}
+                            {{ $t('No workflow steps assigned to this workspace yet.') }}
                         </div>
                     </div>
                 </div>
@@ -192,7 +174,6 @@
             workspaceList: [],
             loadingWorkspaces: true,
             selectedWorkspaceId: null,
-            new_board: '',
 
             toasts: [],
             toastIdCounter: 0,
@@ -244,59 +225,23 @@
                 console.log(error);
             }
 
+            // Board names now come from edoc_workflow_roles.list_title,
+            // grouped by workspace_id — not the old WorkspaceBoard table.
             let boardsByWorkspaceId = {};
             try {
-                const boardsRes = await axios.get(this.route('workspace.board.index'));
-                console.log('[debug] workspace.board.index response:', boardsRes.data);
+                const boardsRes = await axios.get(this.route('workflow-roles.board-lists'));
                 (boardsRes.data.workspaces || []).forEach(ws => {
                     boardsByWorkspaceId[ws.id] = ws.boards || [];
                 });
             } catch (error) {
-                console.error('[debug] workspace.board.index FAILED:', error?.response?.status, error?.response?.data || error.message);
+                console.error('[debug] workflow-roles.board-lists FAILED:', error?.response?.status, error?.response?.data || error.message);
             }
-
-            console.log('[debug] workspacesData from json.workspaces.all:', workspacesData);
-            console.log('[debug] boardsByWorkspaceId map:', boardsByWorkspaceId);
 
             this.workspaceList = workspacesData.map(ws => ({
                 ...ws,
                 boards: boardsByWorkspaceId[ws.id] || [],
             }));
             this.loadingWorkspaces = false;
-        },
-
-        addBoard() {
-            const name = (this.new_board || '').trim();
-            if (!name || !this.selectedWorkspaceId) return;
-
-            axios.post(this.route('workspace.board.create'), { workspace_id: this.selectedWorkspaceId, name }).then((response) => {
-                if (response.data) {
-                    const ws = this.workspaceList.find(w => w.id === this.selectedWorkspaceId);
-                    if (ws) {
-                        if (!ws.boards) ws.boards = [];
-                        ws.boards.push(response.data);
-                    }
-                    this.new_board = '';
-                    this.showToast(this.$t('Board added.'));
-                }
-            }).catch((error) => {
-                console.log(error);
-                this.showToast(this.$t('Failed to add the board.'), 'error');
-            });
-        },
-
-        removeBoard(board) {
-            axios.post(this.route('workspace.board.delete', board.id)).then(() => {
-                const ws = this.workspaceList.find(w => w.id === this.selectedWorkspaceId);
-                if (ws) {
-                    const idx = (ws.boards || []).findIndex(b => b.id === board.id);
-                    if (idx > -1) ws.boards.splice(idx, 1);
-                }
-                this.showToast(this.$t('Board removed.'));
-            }).catch((error) => {
-                console.log(error);
-                this.showToast(this.$t('Failed to remove the board.'), 'error');
-            });
         },
     },
     }

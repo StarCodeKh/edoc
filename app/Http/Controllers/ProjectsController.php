@@ -7,6 +7,7 @@ use App\Models\Assignee;
 use App\Models\Attachment;
 use App\Models\Background;
 use App\Models\BoardList;
+use App\Models\EdocWorkflowRole;
 use App\Models\CheckList;
 use App\Models\Comment;
 use App\Models\Label;
@@ -88,38 +89,30 @@ class ProjectsController extends Controller {
         return response()->json($background);
     }
 
-    public function jsonCreate(Request $request){
+    public function jsonCreate(Request $request)
+    {
         $requests = $request->all();
         $requests['user_id'] = auth()->id();
-        $boardListNames = $requests['board_list_names'] ?? null;
         unset($requests['board_list_names']);
 
         $project = Project::create($requests);
 
         $io = 0;
 
-        if (!empty($boardListNames) && is_array($boardListNames)) {
-            foreach ($boardListNames as $item) {
+        if (!empty($project->workspace_id)) {
+            $workflowRoleTitles = EdocWorkflowRole::where('workspace_id', $project->workspace_id)
+                ->orderBy('order')
+                ->pluck('list_title');
+
+            foreach ($workflowRoleTitles as $item) {
                 BoardList::create(['user_id' => $requests['user_id'], 'order' => $io, 'project_id' => $project->id, 'title' => $item]);
                 $io += 1;
-            }
-        } else {
-            $enable_list = Setting::where('slug', 'enable_pre_made_board')->first();
-            if(!empty($enable_list) && $enable_list->value){
-                $board_list = Setting::where('slug', 'pre_made_board_list')->first();
-                if(!empty($board_list)){
-                    $list_items = is_string($board_list->value) ? json_decode($board_list->value, true) : $board_list->value;
-                    foreach ($list_items as $item){
-                        BoardList::create(['user_id' => $requests['user_id'], 'order' => $io, 'project_id' => $project->id, 'title' => $item]);
-                        $io += 1;
-                    }
-                }
             }
         }
 
         $slug = $this->clean($project->title);
         $existingItem = Project::where('slug', $slug)->first();
-        if(!empty($existingItem)){
+        if (!empty($existingItem)) {
             $slug = $slug . '-' . $project->id;
         }
         $project->slug = $slug;
@@ -128,14 +121,16 @@ class ProjectsController extends Controller {
         return response()->json($project);
     }
 
-    public function jsonMembers($project_id){
+    public function jsonMembers($project_id)
+    {
         $assignees = Assignee::whereHas('task', function ($q) use ($project_id) {
             $q->where('project_id', $project_id);
         })->where('user_id', '!=', auth()->id())->groupBy('user_id')->with('user:id,first_name,last_name,photo_path')->get();
         return response()->json($assignees);
     }
 
-    public function jsonFilterData($project_id){
+    public function jsonFilterData($project_id)
+    {
         $assignees = Assignee::whereHas('task', function ($q) use ($project_id) {
             $q->where('project_id', $project_id);
         })->where('user_id', '!=', auth()->id())->groupBy('user_id')->with('user:id,first_name,last_name,photo_path')->get();
@@ -143,17 +138,20 @@ class ProjectsController extends Controller {
         return response()->json(['assignees' => $assignees, 'labels' => $labels]);
     }
 
-    public function all(){
+    public function all()
+    {
         $projects = Project::get();
         return response()->json($projects);
     }
 
-    public function jsonAll($workspace_id){
+    public function jsonAll($workspace_id)
+    {
         $projects = Project::where('workspace_id', $workspace_id)->with('background')->with('star')->get();
         return response()->json($projects);
     }
 
-    public function jsonRecent(){
+    public function jsonRecent()
+    {
         $user_id = auth()->id();
         $workspaceIds = Workspace::where('user_id', $user_id)->orWhereHas('member')->pluck('id');
         $projects = RecentProject::where('user_id', $user_id)->with('project')->has('project.workspace')->whereHas('project', function ($q) use ($workspaceIds) {
@@ -172,7 +170,8 @@ class ProjectsController extends Controller {
         return response()->json($projects);
     }
 
-    public function jsonStar(){
+    public function jsonStar()
+    {
         $user_id = auth()->id();
         $workspaceIds = Workspace::where('user_id', $user_id)->orWhereHas('member')->pluck('id');
         $projects = StarredProject::where('user_id', $user_id)->with('project')->has('project.workspace')->whereHas('project', function ($q) use ($workspaceIds) {

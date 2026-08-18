@@ -21,6 +21,23 @@ class WorkflowRoleController extends Controller
         ]);
     }
 
+    public function listTitlesByWorkspace()
+    {
+        $roles = EdocWorkflowRole::whereNotNull('workspace_id')
+            ->orderBy('workspace_id')
+            ->orderBy('order')
+            ->get(['id', 'workspace_id', 'list_title']);
+ 
+        $workspaces = $roles->groupBy('workspace_id')->map(function ($items, $workspaceId) {
+            return [
+                'id' => (int) $workspaceId,
+                'boards' => $items->map(fn ($r) => ['id' => $r->id, 'name' => $r->list_title])->values(),
+            ];
+        })->values();
+ 
+        return response()->json(['workspaces' => $workspaces]);
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([

@@ -43,7 +43,6 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 use App\Http\Controllers\GroupAssignmentController;
-use App\Http\Controllers\WorkspaceBoardController;
 use App\Http\Controllers\WorkflowRoleController;
 
 /*
@@ -128,12 +127,9 @@ Route::get('w/{uid}/tasks/my-tasks/table', [WorkSpacesController::class, 'worksp
 Route::get('w/{uid}/tasks/my-tasks', [WorkSpacesController::class, 'workspaceMyTasks'])->name('workspace.view.my-tasks')->middleware('auth');
 Route::get('w/{uid}/tables', [WorkSpacesController::class, 'workspaceTables'])->name('workspace.tables')->middleware('auth');
 Route::delete('workspace/destroy/{id}', [WorkSpacesController::class, 'destroy'])->name('workspace.destroy')->middleware('auth');
- 
+    
 
-Route::get('/workspace-boards/data', [WorkspaceBoardController::class, 'index'])->name('workspace.board.index');
-Route::post('/workspace/board/create', [WorkspaceBoardController::class, 'storeBoard'])->name('workspace.board.create');
-Route::post('/workspace/board/delete/{id}', [WorkspaceBoardController::class, 'deleteBoard'])->name('workspace.board.delete');
-
+Route::get('/json/workflow-roles/board-lists', [WorkflowRoleController::class, 'listTitlesByWorkspace'])->name('workflow-roles.board-lists');
 Route::get('/settings/workflow-roles', [WorkflowRoleController::class, 'index'])->name('workflow-roles');
 Route::post('/workflow-roles/create', [WorkflowRoleController::class, 'store'])->name('workflow-roles.create');
 Route::post('/workflow-roles/update/{id}', [WorkflowRoleController::class, 'update'])->name('workflow-roles.update');

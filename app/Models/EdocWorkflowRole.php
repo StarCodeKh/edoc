@@ -10,7 +10,7 @@ class EdocWorkflowRole extends Model
 
     protected $fillable = [
         'workflow_type',
-        'board_list_id',
+        'workspace_id',
         'list_title',
         'order',
         'responsible_role',

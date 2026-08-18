@@ -36,6 +36,7 @@ class NotificationSettingController extends Controller
             'is_active' => 'sometimes|boolean',
             'email_is_active' => 'sometimes|boolean',
             'slack_is_active' => 'sometimes|boolean',
+            'telegram_is_active' => 'sometimes|boolean',
         ]);
 
         // This validation check is still important for the email toggles.

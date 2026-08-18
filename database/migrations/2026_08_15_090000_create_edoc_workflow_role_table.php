@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('edoc_workflow_roles', function (Blueprint $table) {
             $table->id();
             $table->string('workflow_type', 50)->index();
-            $table->unsignedBigInteger('board_list_id')->nullable()->index();
+            $table->unsignedBigInteger('workspace_id')->nullable()->index();
             $table->string('list_title');
             $table->unsignedSmallInteger('order')->default(0);
             $table->string('responsible_role', 100)->nullable();
