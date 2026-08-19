@@ -1,5 +1,5 @@
 <template>
-    <Head v-if="!loading" :title="$t(task.title + ' | ' + task.project.title)" />
+    <Head v-if="!loading && !fetchFailed" :title="$t(task.title + ' | ' + task.project.title)" />
     <div class="task__details">
         <div class="wrapper" id="modal">
             <div role="alert" class="container">
@@ -16,6 +16,14 @@
                         <div class="__f"><div><div class="i__1" /><div class="i__2" /></div></div>
                         <span class="sr-only">Loading...</span>
                     </div>
+                </div>
+                <div v-else-if="fetchFailed" class="content w-full flex flex-col items-center justify-center py-24 text-center">
+                    <icon class="w-10 h-10 text-gray-300 dark:text-gray-600 mb-3" name="details" />
+                    <p class="text-sm font-medium text-gray-600 dark:text-gray-300">{{ $t('This task could not be loaded.') }}</p>
+                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-1 max-w-xs">{{ $t('It may have been deleted, or merged into another task.') }}</p>
+                    <button type="button" class="mt-5 inline-flex items-center rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-gray-200 px-3 py-1.5 text-xs font-medium hover:bg-gray-50 dark:hover:bg-gray-600" @click="closeOnError()">
+                        {{ $t('Close') }}
+                    </button>
                 </div>
                 <div v-else class="content w-full">
                     <div v-if="task.cover" ref="t__cover" class="t__cover" :style="{backgroundImage: 'url('+task.cover.path+')'}"></div>
@@ -766,8 +774,9 @@
                                     </div>
                                 </div>
 
-                                 <!-- Content -->
-                                 <div class="p-6 space-y-6 relative overflow-visible">
+                                <!-- Content -->
+
+                                <div class="p-6 space-y-6 relative overflow-visible">
                                     <!-- Memo Field -->
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -1262,6 +1271,7 @@
                 user_search: '',
                 showEditLabelBox: false,
                 loading: true,
+                fetchFailed: false,
                 newCheckList: false,
                 labels: null,
                 existing_timer: null,
@@ -1357,8 +1367,7 @@
                 selectedGroupId: null,
                 assigningGroup: false,
             }
-
-        },
+         },
         components: {
             Icon, Loader, Link, DatePicker, DateTimePicker, CustomEditor, Head, WatchButton
         },
@@ -2793,7 +2802,15 @@
                     console.log(error);
                 })
             },
+            closeOnError() {
+                if (this.isPopup) {
+                    this.$emit('closeModal', true);
+                } else if (window.history.length > 1) {
+                    window.history.back();
+                }
+            },
             async getTask(id){
+                this.fetchFailed = false;
                 try {
                     const taskResponse = await axios.get(this.route('json.task.get', id));
 
@@ -2807,11 +2824,13 @@
 
                         await this.getOtherData();
                     } else {
+                        this.fetchFailed = true;
                         this.toastError(this.$t('Something went wrong loading this task.'));
                     }
                 } catch (error) {
                     console.error('Error fetching task:', error);
-                    this.toastError(this.$t('Failed to fetch task data.'));
+                    this.fetchFailed = true;
+                    this.toastError(this.$t('This task could not be found.'));
                 } finally {
                     this.loading = false;
                 }
@@ -2855,9 +2874,9 @@
                     }
                 })
 
-            },
+             },
 
-            selectDocumentSource(id){
+             selectDocumentSource(id){
                 this.task.document_source_id = id;
                 this.showSourceBox = false;
                 this.source_search = '';

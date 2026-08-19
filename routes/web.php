@@ -103,6 +103,11 @@ Route::post('json/project/create', [ProjectsController::class, 'jsonCreate'])->n
 Route::get('json/project/members/{project_id}', [ProjectsController::class, 'jsonMembers'])->name('json.project.members')->middleware('auth');
 Route::get('json/project/filter/data/{project_id}', [ProjectsController::class, 'jsonFilterData'])->name('json.project.filter.data')->middleware('auth');
 
+
+Route::post('/json/task/merge', [TasksController::class, 'merge'])->name('task.merge');
+Route::post('/json/task/unmerge', [TasksController::class, 'unmerge'])->name('task.unmerge');
+Route::get('/json/task/{id}/activities', [TasksController::class, 'activities'])->name('task.activities');
+
 Route::get('json/menu_data/tasks/{project_id}', [TasksController::class, 'jsonArchiveTasks'])->name('json.menu_data.tasks')->middleware('auth');
 Route::get('json/menu_data/boards/{project_id}', [ListsController::class, 'jsonArchiveBoardLists'])->name('json.menu_data.boards')->middleware('auth');
 Route::get('json/menu_data/workspaces', [WorkSpacesController::class, 'jsonMineAll'])->name('json.menu_data.workspaces')->middleware('auth');

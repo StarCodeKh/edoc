@@ -10,11 +10,13 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Picqer\Barcode\BarcodeGeneratorSVG;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Task extends Model
 {
     use HasFactory;
     use Watchable;
+    use SoftDeletes;
 
     protected $casts = [
         'is_done'       => 'boolean',
@@ -25,6 +27,7 @@ class Task extends Model
         'user_id'       => 'integer',
         'project_id'    => 'integer',
         'due_date'      => 'datetime',
+        'merged_history' => 'array',
     ];
 
     private function generateTaskCode()

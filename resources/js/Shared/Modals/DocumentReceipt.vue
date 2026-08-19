@@ -53,6 +53,17 @@
                         <h3 class="font-moul text-base sm:text-xl text-emerald-600 tracking-wider mt-2">
                             លិខិតបញ្ជាក់ឯកសារ
                         </h3>
+
+                        <!-- Merge-code badge — only shows once this task has absorbed
+                             other tasks (see task.merge / task.merged_history). -->
+                        <div v-if="latestMergeCode" class="mt-3 flex justify-center">
+                            <span class="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-3 py-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+                                </svg>
+                                {{ latestMergeCode }}
+                            </span>
+                        </div>
                     </div>
 
                     <div class="flex flex-col sm:flex-row gap-6 sm:gap-10">
@@ -61,6 +72,10 @@
                             <div class="flex flex-col sm:flex-row sm:items-baseline">
                                 <span class="font-semibold sm:min-w-[150px] text-gray-900">លេខឯកសារ៖</span>
                                 <span class="font-bold text-emerald-700 mt-0.5 sm:mt-0 tracking-wide">{{ getTaskCode }}</span>
+                            </div>
+                            <div v-if="latestMergeCode" class="flex flex-col sm:flex-row sm:items-baseline">
+                                <span class="font-semibold sm:min-w-[150px] text-gray-900">កូដបញ្ចូលរួម៖</span>
+                                <span class="font-bold text-emerald-700 mt-0.5 sm:mt-0 tracking-wide">{{ latestMergeCode }}</span>
                             </div>
                             <div class="flex flex-col sm:flex-row sm:items-baseline">
                                 <span class="font-semibold sm:min-w-[150px] text-gray-900">កម្មវត្ថុ៖</span>
@@ -109,6 +124,35 @@
                                 <p class="text-[12px] sm:text-[12px] text-gray-600 mt-1 font-medium text-center leading-snug max-w-[140px] sm:max-w-none mx-auto">
                                     {{ getTaskCode }}
                                 </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Merged-from history — only shows once this task has absorbed
+                         other merged tasks (see task.merged_history from task.merge).
+                         Lists each one, one by one, with its own tracking code. -->
+                    <div v-if="mergedHistory.length" class="mt-6 pt-5 border-t border-gray-100 print-avoid-break">
+                        <div class="flex items-center justify-between mb-3">
+                            <p class="font-semibold">បញ្ចូលពីឯកសារផ្សេងទៀត ៖</p>
+                            <span class="text-[10px] font-bold uppercase tracking-wide text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-full px-2 py-0.5">
+                                ត្រូវបានបញ្ចូលរួម
+                            </span>
+                        </div>
+                        <div class="space-y-2">
+                            <div
+                                v-for="(m, i) in mergedHistory"
+                                :key="m.id"
+                                class="flex items-center gap-3 rounded-lg border border-emerald-100 bg-emerald-50/60 px-3 py-2"
+                            >
+                                <span class="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-600/10 text-emerald-700 text-[11px] font-bold flex items-center justify-center">{{ i + 1 }}</span>
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-sm sm:text-base text-gray-800 truncate">{{ m.title }}</p>
+                                    <p class="text-[11px] text-gray-500 mt-0.5">
+                                        <span v-if="m.merged_at">{{ formatDate(m.merged_at) }}</span>
+                                        <span v-if="m.merge_code"> · {{ m.merge_code }}</span>
+                                    </p>
+                                </div>
+                                <span class="flex-shrink-0 text-xs sm:text-sm font-semibold text-emerald-700 tracking-wide">{{ m.code }}</span>
                             </div>
                         </div>
                     </div>
@@ -327,6 +371,24 @@
                     hash = (hash * 31 + label.charCodeAt(i)) >>> 0;
                 }
                 return palette[hash % palette.length];
+            },
+
+            // One-by-one list of tasks that were merged into this one
+            // (set server-side in task.merge — see merge_history_backend.md).
+            // Each entry already carries its own tracking code, so nothing
+            // needs to be recomputed here.
+            mergedHistory() {
+                return Array.isArray(this.task?.merged_history) ? this.task.merged_history : [];
+            },
+
+            // The merge code of the most recent merge event into this task
+            // (e.g. "MRG-2026-0023-01"). Shown as a badge near the top and
+            // as its own row next to លេខឯកសារ, so it always reflects
+            // whatever this task's real merge history is — not hardcoded.
+            latestMergeCode() {
+                if (!this.mergedHistory.length) return null;
+                const last = this.mergedHistory[this.mergedHistory.length - 1];
+                return (last && last.merge_code) || null;
             }
         },
         mounted() {

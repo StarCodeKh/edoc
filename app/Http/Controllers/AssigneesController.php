@@ -29,8 +29,15 @@ class AssigneesController extends Controller
         }
 
         $user = User::find($validated['user_id']);
-        $task = Task::find($validated['task_id']);
+        $task = Task::withTrashed()->find($validated['task_id']);
         $assigner = auth()->user();
+
+        if (!$user || !$task) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User or task not found.',
+            ], 404);
+        }
 
         event(new UserAssignedToTask($user, $task, $assigner));
 

@@ -16,6 +16,7 @@ use App\Models\TaskLabel;
 use App\Models\TeamMember;
 use App\Models\Timer;
 use App\Models\UserGroup;
+use App\Models\Activity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -24,6 +25,107 @@ use Mavinoo\Batch\Batch;
 
 class TasksController extends Controller
 {
+    public function merge(Request $request)
+    {
+        $validated = $request->validate([
+            'target_id' => 'required|integer|exists:tasks,id',
+            'source_ids' => 'required|array|min:1',
+            'source_ids.*' => 'integer|exists:tasks,id|different:target_id',
+        ]);
+
+        $target = Task::findOrFail($validated['target_id']);
+        $sourceIds = array_unique($validated['source_ids']);
+
+        DB::transaction(function () use ($target, $sourceIds) {
+            Comment::whereIn('task_id', $sourceIds)->update(['task_id' => $target->id]);
+            Attachment::whereIn('task_id', $sourceIds)->update(['task_id' => $target->id]);
+            Checklist::whereIn('task_id', $sourceIds)->update(['task_id' => $target->id]);
+            $existingLabelIds = $target->taskLabels()->pluck('label_id')->all();
+            TaskLabel::whereIn('task_id', $sourceIds)
+                ->whereNotIn('label_id', $existingLabelIds)
+                ->update(['task_id' => $target->id]);
+            TaskLabel::whereIn('task_id', $sourceIds)->delete();
+
+            $history = collect($target->merged_history ?? []);
+            $eventNumber = $history->pluck('merge_code')->filter()->unique()->count() + 1;
+            $mergeCode = 'MRG-' . now()->format('Y') . '-' . str_pad($target->id, 4, '0', STR_PAD_LEFT) . '-' . str_pad($eventNumber, 2, '0', STR_PAD_LEFT);
+
+            $sourceTasks = Task::whereIn('id', $sourceIds)->get(['id', 'title', 'task_code', 'slug']);
+            foreach ($sourceTasks as $src) {
+                $history->push([
+                    'id' => $src->id,
+                    'title' => $src->title,
+                    'code' => $src->task_code ?: ('CGMC-' . str_pad($src->id, 9, '0', STR_PAD_LEFT)),
+                    'slug' => $src->slug,
+                    'merge_code' => $mergeCode,
+                    'merged_at' => now()->toDateTimeString(),
+                ]);
+            }
+            $target->merged_history = $history->values()->all();
+            $target->saveQuietly();
+            Task::whereIn('id', $sourceIds)->delete();
+        });
+
+        $target->load(['taskLabels.label', 'assignees', 'list', 'cover'])
+            ->loadCount(['comments', 'attachments', 'checklists', 'checklistDone']);
+
+        return response()->json($target);
+    }
+
+    public function unmerge(Request $request)
+    {
+        $validated = $request->validate([
+            'target_id' => 'required|integer|exists:tasks,id',
+            'history_id' => 'required',
+        ]);
+
+        $target = Task::findOrFail($validated['target_id']);
+        $history = collect($target->merged_history ?? []);
+        $entry = $history->first(fn ($h) => (string) $h['id'] === (string) $validated['history_id']);
+
+        if (!$entry) {
+            return response()->json(['message' => 'That item is not in this task\'s merge history.'], 404);
+        }
+
+        $restored = null;
+
+        DB::transaction(function () use ($target, $history, $entry, &$restored) {
+            $restored = Task::withTrashed()->find($entry['id']);
+
+            if ($restored) {
+                $restored->restore();
+            } else {
+                $restored = Task::create([
+                    'title' => $entry['title'],
+                    'task_code' => $entry['code'] ?? null,
+                    'project_id' => $target->project_id,
+                    'list_id' => $target->list_id,
+                    'user_id' => auth()->id(),
+                    'order' => 0,
+                ]);
+            }
+
+            $remaining = $history->reject(fn ($h) => (string) $h['id'] === (string) $entry['id'])->values();
+            $target->merged_history = $remaining->all();
+            $target->saveQuietly();
+        });
+
+        return response()->json([
+            'target' => $target->fresh(),
+            'restored' => $restored,
+        ]);
+    }
+
+    public function activities($id)
+    {
+        $rows = Activity::where('task_id', $id)
+            ->with('user:id,name')
+            ->orderByDesc('created_at')
+            ->get(['id', 'user_id', 'task_id', 'field_changed', 'old_value', 'new_value', 'created_at']);
+
+        return response()->json($rows);
+    }
+
     public function updateTaskOrder(Request $request)
     {
         $requestData = $request->all();
@@ -137,7 +239,8 @@ class TasksController extends Controller
 
     public function getJsonTask($taskUid)
     {
-        $task = Task::when(is_numeric($taskUid), function ($query) use ($taskUid) {
+        $task = Task::withTrashed()
+            ->when(is_numeric($taskUid), function ($query) use ($taskUid) {
                 $query->where('id', $taskUid);
             }, function ($query) use ($taskUid) {
                 $query->where('slug', $taskUid);
@@ -159,11 +262,14 @@ class TasksController extends Controller
             ->withCount('checklistDone')
             ->first();
 
-        if(!empty($task)){
-            $task->is_demo = (int)config('app.demo');
+        if (empty($task)) {
+            abort(404, 'Task not found.');
         }
+
+        $task->is_demo = (int) config('app.demo');
         $task->load('watchers');
         $task->is_watched_by_user = $task->watchers->contains(auth()->user());
+
         return response()->json($task);
     }
 
