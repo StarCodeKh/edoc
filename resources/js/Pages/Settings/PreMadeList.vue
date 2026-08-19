@@ -109,10 +109,46 @@
                             </span>
                             {{ board.name }}
                         </span>
-                        <div v-if="!currentWorkspaceBoards.length" class="flex items-center gap-2 text-sm text-gray-400 dark:text-gray-500 py-2">
-                            <Icon name="checklist" class="w-4 h-4 opacity-50" />
-                            {{ $t('No workflow steps assigned to this workspace yet.') }}
+                    </div>
+
+                    <div v-if="!currentWorkspaceBoards.length" class="flex items-center gap-2 text-sm text-gray-400 dark:text-gray-500 py-1 mb-1">
+                        <Icon name="checklist" class="w-4 h-4 opacity-50" />
+                        {{ $t('No workflow steps assigned to this workspace yet.') }}
+                    </div>
+
+                    <!-- Assign a workflow if none is linked yet, or change
+                         which workflow is linked if one already is. -->
+                    <div class="flex flex-col gap-3" :class="currentWorkspaceBoards.length ? 'mt-4 pt-4 border-t border-gray-100 dark:border-gray-700' : ''">
+                        <p v-if="currentWorkspaceBoards.length" class="text-xs text-gray-400 dark:text-gray-500">
+                            {{ $t('Switch this workspace to a different workflow — its current steps will be unlinked (not deleted) once you change.') }}
+                        </p>
+                        <div class="flex flex-wrap items-center gap-2 max-w-md">
+                            <select
+                                v-model="workflowTypeToAssign"
+                                :disabled="loadingWorkflowTypes || !availableWorkflowTypes.length"
+                                class="flex-1 min-w-[180px] bg-gray-50 dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            >
+                                <option :value="null">{{ $t('Select a workflow...') }}</option>
+                                <option v-for="wt in availableWorkflowTypes" :key="wt.workflow_type" :value="wt.workflow_type">
+                                    {{ workflowTypeLabel(wt.workflow_type) }} ({{ wt.steps }} {{ wt.steps === 1 ? $t('step') : $t('steps') }})
+                                </option>
+                            </select>
+                            <button
+                                type="button"
+                                :disabled="!workflowTypeToAssign || workflowTypeToAssign === currentWorkspaceWorkflowType || assigningWorkflow"
+                                @click="assignWorkflow()"
+                                class="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 text-white shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 transition-colors"
+                            >
+                                <Icon name="tick_check" class="w-4 h-4" />
+                                {{ assigningWorkflow ? $t('Saving...') : (currentWorkspaceBoards.length ? $t('Change') : $t('Assign')) }}
+                            </button>
                         </div>
+                        <p v-if="!loadingWorkflowTypes && !workflowTypes.length" class="text-xs text-gray-400 dark:text-gray-500">
+                            {{ $t('No workflows exist yet — create one on the Workflow Roles page first.') }}
+                        </p>
+                        <p v-else-if="!loadingWorkflowTypes && !availableWorkflowTypes.length" class="text-xs text-gray-400 dark:text-gray-500">
+                            {{ $t('No unassigned workflows available — every workflow is already linked to a workspace.') }}
+                        </p>
                     </div>
                 </div>
             </transition>
@@ -175,6 +211,11 @@
             loadingWorkspaces: true,
             selectedWorkspaceId: null,
 
+            workflowTypes: [],
+            loadingWorkflowTypes: true,
+            workflowTypeToAssign: null,
+            assigningWorkflow: false,
+
             toasts: [],
             toastIdCounter: 0,
         }
@@ -186,13 +227,25 @@
         currentWorkspaceBoards() {
             return this.selectedWorkspace ? (this.selectedWorkspace.boards || []) : [];
         },
+        currentWorkspaceWorkflowType() {
+            return this.selectedWorkspace ? (this.selectedWorkspace.workflow_type || null) : null;
+        },
         selectedWorkspaceName() {
             const ws = this.selectedWorkspace;
             return ws ? (ws.name || ws.title || ('Workspace #' + ws.id)) : '';
         },
+        availableWorkflowTypes() {
+            return this.workflowTypes.filter(wt => wt.linked_workspace_id === null || wt.linked_workspace_id === this.selectedWorkspaceId);
+        },
+    },
+    watch: {
+        selectedWorkspaceId() {
+            this.workflowTypeToAssign = this.currentWorkspaceWorkflowType;
+        },
     },
     created() {
         this.fetchWorkspaces();
+        this.fetchWorkflowTypes();
     },
     methods: {
         showToast(message, type = 'success') {
@@ -212,6 +265,26 @@
             });
         },
 
+        workflowTypeLabel(type) {
+            return (type || '')
+                .split('_')
+                .filter(Boolean)
+                .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+                .join(' ');
+        },
+        workspaceNameById(id) {
+            const ws = this.workspaceList.find(w => w.id === id);
+            return ws ? (ws.name || ws.title || ('Workspace #' + ws.id)) : ('Workspace #' + id);
+        },
+        linkedWorkspaceIdFor(type) {
+            const wt = this.workflowTypes.find(w => w.workflow_type === type);
+            return wt ? wt.linked_workspace_id : null;
+        },
+        isLinkedElsewhere(type) {
+            const linkedId = this.linkedWorkspaceIdFor(type);
+            return !!linkedId && linkedId !== this.selectedWorkspaceId;
+        },
+
         async fetchWorkspaces() {
             this.loadingWorkspaces = true;
 
@@ -225,13 +298,13 @@
                 console.log(error);
             }
 
-            // Board names now come from edoc_workflow_roles.list_title,
-            // grouped by workspace_id — not the old WorkspaceBoard table.
             let boardsByWorkspaceId = {};
+            let workflowTypeByWorkspaceId = {};
             try {
                 const boardsRes = await axios.get(this.route('workflow-roles.board-lists'));
                 (boardsRes.data.workspaces || []).forEach(ws => {
                     boardsByWorkspaceId[ws.id] = ws.boards || [];
+                    workflowTypeByWorkspaceId[ws.id] = ws.workflow_type || null;
                 });
             } catch (error) {
                 console.error('[debug] workflow-roles.board-lists FAILED:', error?.response?.status, error?.response?.data || error.message);
@@ -240,8 +313,42 @@
             this.workspaceList = workspacesData.map(ws => ({
                 ...ws,
                 boards: boardsByWorkspaceId[ws.id] || [],
+                workflow_type: workflowTypeByWorkspaceId[ws.id] || null,
             }));
             this.loadingWorkspaces = false;
+
+            if (this.selectedWorkspaceId) {
+                this.workflowTypeToAssign = this.currentWorkspaceWorkflowType;
+            }
+        },
+
+        async fetchWorkflowTypes() {
+            this.loadingWorkflowTypes = true;
+            try {
+                const res = await axios.get(this.route('workflow-roles.types'));
+                this.workflowTypes = res.data.workflow_types || [];
+            } catch (error) {
+                console.error('[debug] workflow-roles.types FAILED:', error?.response?.status, error?.response?.data || error.message);
+            }
+            this.loadingWorkflowTypes = false;
+        },
+
+        assignWorkflow() {
+            if (!this.workflowTypeToAssign || !this.selectedWorkspaceId) return;
+
+            this.assigningWorkflow = true;
+            axios.post(this.route('workflow-roles.assign-workspace'), {
+                workflow_type: this.workflowTypeToAssign,
+                workspace_id: this.selectedWorkspaceId,
+            }).then(async () => {
+                this.showToast(this.$t('Workflow assigned to this workspace.'));
+                await Promise.all([this.fetchWorkspaces(), this.fetchWorkflowTypes()]);
+            }).catch((error) => {
+                console.log(error);
+                this.showToast(this.$t('Failed to assign the workflow.'), 'error');
+            }).finally(() => {
+                this.assigningWorkflow = false;
+            });
         },
     },
     }

@@ -76,7 +76,19 @@
                     <span v-else>{{ initials(workflowMeta(type).label) }}</span>
                 </span>
                 <div class="flex-1 min-w-0">
-                    <div class="font-bold text-gray-900 dark:text-gray-100">{{ workflowMeta(type).label }}</div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <div class="font-bold text-gray-900 dark:text-gray-100">{{ workflowMeta(type).label }}</div>
+                        <!-- Shows which workspace this workflow is currently
+                             linked to, if all its steps agree on one — same
+                             workspace_id every step in this group shares. -->
+                        <span v-if="groupWorkspaceId(type)" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300">
+                            <Icon name="briefcase" class="w-3 h-3" />
+                            {{ workspaceLabel(groupWorkspaceId(type)) }}
+                        </span>
+                        <span v-else-if="groupHasMixedWorkspaces(type)" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-300">
+                            {{ $t('Mixed workspaces') }}
+                        </span>
+                    </div>
                     <p class="pt-1 text-sm text-gray-500 dark:text-gray-400">{{ $t('Steps, responsible role, SLA and signature requirements for this workflow.') }}</p>
                 </div>
                 <span class="text-xs font-medium text-gray-400 dark:text-gray-500 flex-shrink-0 mt-1">
@@ -107,6 +119,15 @@
                         class="flex-1 min-w-[180px] bg-gray-50 dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         :placeholder="$t('Step name')"
                     >
+
+                    <select
+                        v-model="role.workspace_id"
+                        class="w-40 bg-gray-50 dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        :title="$t('Workspace this step belongs to')"
+                    >
+                        <option :value="null">{{ $t('No workspace') }}</option>
+                        <option v-for="ws in workspaces" :key="ws.id" :value="ws.id">{{ ws.name }}</option>
+                    </select>
 
                     <input
                         v-model="role.responsible_role"
@@ -167,6 +188,14 @@
                     class="flex-1 min-w-[180px] bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     :placeholder="$t('e.g. Verify draft')"
                 >
+                <select
+                    v-model="newRoleForms[type].workspace_id"
+                    class="w-40 bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    :title="$t('Workspace this step belongs to')"
+                >
+                    <option :value="null">{{ $t('No workspace') }}</option>
+                    <option v-for="ws in workspaces" :key="ws.id" :value="ws.id">{{ ws.name }}</option>
+                </select>
                 <input
                     v-model="newRoleForms[type].responsible_role"
                     type="text"
@@ -235,6 +264,7 @@
             title: String,
             roles: { type: Array, default: () => [] },
             workflow_types: { type: Array, default: () => ['external_ministry', 'casino_operator', 'internal_cgmc'] },
+            workspaces: { type: Array, default: () => [] },
         },
         data() {
             const builtInLabels = {
@@ -262,7 +292,7 @@
 
             const newRoleForms = {};
             startingTypes.forEach(type => {
-                newRoleForms[type] = { list_title: '', responsible_role: '', sla_hours: null, requires_signature: false, is_terminal: false };
+                newRoleForms[type] = { list_title: '', responsible_role: '', sla_hours: null, requires_signature: false, is_terminal: false, workspace_id: null };
             });
 
             return {
@@ -383,6 +413,19 @@
                 };
             },
 
+            workspaceLabel(id) {
+                const ws = this.workspaces.find(w => w.id === id);
+                return ws ? ws.name : ('Workspace #' + id);
+            },
+            groupWorkspaceId(type) {
+                const ids = [...new Set((this.groupedRoles[type] || []).map(r => r.workspace_id).filter(Boolean))];
+                return ids.length === 1 ? ids[0] : null;
+            },
+            groupHasMixedWorkspaces(type) {
+                const ids = [...new Set((this.groupedRoles[type] || []).map(r => r.workspace_id).filter(Boolean))];
+                return ids.length > 1;
+            },
+
             addWorkflowType() {
                 const type = this.slugify(this.newWorkflowForm.type);
                 const label = (this.newWorkflowForm.label || '').trim();
@@ -395,7 +438,7 @@
                 this.typeLabels[type] = label || this.titleCase(type);
                 this.persistTypeLabels();
                 if (!this.newRoleForms[type]) {
-                    this.newRoleForms[type] = { list_title: '', responsible_role: '', sla_hours: null, requires_signature: false, is_terminal: false };
+                    this.newRoleForms[type] = { list_title: '', responsible_role: '', sla_hours: null, requires_signature: false, is_terminal: false, workspace_id: null };
                 }
                 this.newWorkflowForm = { type: '', label: '' };
                 this.selectedWorkflowType = type;
@@ -427,6 +470,7 @@
                 role.saving = true;
                 axios.post(this.route('workflow-roles.update', role.id), {
                     list_title: role.list_title,
+                    workspace_id: role.workspace_id || null,
                     responsible_role: role.responsible_role,
                     sla_hours: role.sla_hours,
                     requires_signature: !!role.requires_signature,
@@ -460,6 +504,7 @@
                 axios.post(this.route('workflow-roles.create'), {
                     workflow_type: type,
                     list_title: title,
+                    workspace_id: form.workspace_id || null,
                     responsible_role: form.responsible_role || '',
                     sla_hours: form.sla_hours,
                     requires_signature: !!form.requires_signature,
@@ -467,7 +512,7 @@
                 }).then((response) => {
                     if (response.data) {
                         this.localRoles.push({ ...response.data, saving: false });
-                        this.newRoleForms[type] = { list_title: '', responsible_role: '', sla_hours: null, requires_signature: false, is_terminal: false };
+                        this.newRoleForms[type] = { list_title: '', responsible_role: '', sla_hours: null, requires_signature: false, is_terminal: false, workspace_id: null };
                         this.showToast(this.$t('Step added.'));
                     }
                 }).catch((error) => {

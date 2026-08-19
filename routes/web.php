@@ -134,6 +134,8 @@ Route::get('/settings/workflow-roles', [WorkflowRoleController::class, 'index'])
 Route::post('/workflow-roles/create', [WorkflowRoleController::class, 'store'])->name('workflow-roles.create');
 Route::post('/workflow-roles/update/{id}', [WorkflowRoleController::class, 'update'])->name('workflow-roles.update');
 Route::post('/workflow-roles/delete/{id}', [WorkflowRoleController::class, 'destroy'])->name('workflow-roles.delete');
+Route::get('/json/workflow-roles/types', [WorkflowRoleController::class, 'workflowTypesSummary'])->name('workflow-roles.types');
+Route::post('/json/workflow-roles/assign-workspace', [WorkflowRoleController::class, 'assignWorkspace'])->name('workflow-roles.assign-workspace');
 
 
 Route::delete('project/destroy/{id}', [ProjectsController::class, 'destroy'])->name('project.destroy')->middleware('auth');

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\EdocWorkflowRole;
+use App\Models\Workspace;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -14,10 +15,18 @@ class WorkflowRoleController extends Controller
     {
         $roles = EdocWorkflowRole::orderBy('workflow_type')->orderBy('order')->get();
 
+        $workflowTypes = collect(self::WORKFLOW_TYPES)
+            ->merge($roles->pluck('workflow_type')->filter()->unique())
+            ->unique()
+            ->values();
+
+        $workspaces = Workspace::orderBy('name')->get(['id', 'name']);
+
         return Inertia::render('Settings/WorkflowRoles', [
             'title' => 'Workflow Roles',
             'roles' => $roles,
-            'workflow_types' => self::WORKFLOW_TYPES,
+            'workflow_types' => $workflowTypes,
+            'workspaces' => $workspaces,
         ]);
     }
 
@@ -26,16 +35,51 @@ class WorkflowRoleController extends Controller
         $roles = EdocWorkflowRole::whereNotNull('workspace_id')
             ->orderBy('workspace_id')
             ->orderBy('order')
-            ->get(['id', 'workspace_id', 'list_title']);
- 
+            ->get(['id', 'workspace_id', 'workflow_type', 'list_title']);
+
         $workspaces = $roles->groupBy('workspace_id')->map(function ($items, $workspaceId) {
             return [
                 'id' => (int) $workspaceId,
+                'workflow_type' => $items->first()->workflow_type,
                 'boards' => $items->map(fn ($r) => ['id' => $r->id, 'name' => $r->list_title])->values(),
             ];
         })->values();
- 
+
         return response()->json(['workspaces' => $workspaces]);
+    }
+
+    public function assignWorkspace(Request $request)
+    {
+        $validated = $request->validate([
+            'workflow_type' => 'required|string|max:64',
+            'workspace_id' => 'required|integer|exists:workspaces,id',
+        ]);
+
+        EdocWorkflowRole::where('workspace_id', $validated['workspace_id'])
+            ->where('workflow_type', '!=', $validated['workflow_type'])
+            ->update(['workspace_id' => null]);
+
+        $updated = EdocWorkflowRole::where('workflow_type', $validated['workflow_type'])
+            ->update(['workspace_id' => $validated['workspace_id']]);
+
+        return response()->json(['success' => true, 'updated' => $updated]);
+    }
+
+    public function workflowTypesSummary()
+    {
+        $rows = EdocWorkflowRole::select('workflow_type', 'workspace_id')->get();
+
+        $summary = $rows->groupBy('workflow_type')->map(function ($items, $type) {
+            $workspaceIds = $items->pluck('workspace_id')->filter()->unique()->values();
+
+            return [
+                'workflow_type' => $type,
+                'steps' => $items->count(),
+                'linked_workspace_id' => $workspaceIds->count() === 1 ? $workspaceIds->first() : null,
+            ];
+        })->values();
+
+        return response()->json(['workflow_types' => $summary]);
     }
 
     public function store(Request $request)
@@ -43,6 +87,7 @@ class WorkflowRoleController extends Controller
         $validated = $request->validate([
             'workflow_type' => 'required|string|max:64|regex:/^[a-z0-9_]+$/',
             'list_title' => 'required|string|max:255',
+            'workspace_id' => 'nullable|integer|exists:workspaces,id',
             'responsible_role' => 'nullable|string|max:100',
             'sla_hours' => 'nullable|integer|min:0',
             'requires_signature' => 'boolean',
@@ -63,6 +108,7 @@ class WorkflowRoleController extends Controller
 
         $request->validate([
             'list_title' => 'required|string|max:255',
+            'workspace_id' => 'nullable|integer|exists:workspaces,id',
             'responsible_role' => 'required|string|max:50',
             'sla_hours' => 'nullable|integer|min:0',
             'requires_signature' => 'boolean',
@@ -71,6 +117,7 @@ class WorkflowRoleController extends Controller
 
         $role->update([
             'list_title' => $request->input('list_title'),
+            'workspace_id' => $request->input('workspace_id'),
             'responsible_role' => $request->input('responsible_role'),
             'sla_hours' => $request->input('sla_hours'),
             'requires_signature' => (bool) $request->input('requires_signature', false),
