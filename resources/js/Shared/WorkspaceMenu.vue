@@ -23,7 +23,12 @@
             <li v-if="workspace.member.role === 'admin'">
                 <Link :href="route('workspace.view.board', workspace.slug || workspace.id)" class="flex items-center px-3 py-2 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 group" :class="{'active' : isWorkspaceTasksActive()}">
                     <icon class="w-4 h-4" name="table" />
-                    <span class="ml-3">{{ $t('Workspace Tasks') }}</span>
+                    <span class="flex-1 ml-3">
+                        {{ $t('Workspace Tasks') }}
+                    </span>
+                    <span class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 mr-1 rounded-full bg-indigo-600 text-white text-[10px] font-semibold">
+                        {{ my_tasks_count }}
+                    </span>
                 </Link>
             </li>
             <li>
@@ -31,9 +36,6 @@
                     <icon class="w-4 h-4" name="list" />
                     <span class="flex-1 ml-3">
                         {{ $t('My Tasks') }}
-                    </span>
-                    <span class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 mr-1 rounded-full bg-indigo-600 text-white text-[10px] font-semibold">
-                        {{ my_tasks_count }}
                     </span>
                 </Link>
             </li>
