@@ -918,7 +918,82 @@
                             </section>
 
                             <section class="py-3">
-                                <WatchButton :watchable-id="task.id" watchable-type="Task" :is-watching="task.is_watched_by_user" />
+                                <h2 class="px-2 text-sm font-medium dark:text-gray-300">
+                                    {{ $t('ប្រភពឯកសារ') }}
+                                </h2>
+                                <div class="relative">
+                                    <div class="group mt-2 flex cursor-pointer items-center td__btn rounded-md px-2 py-1.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600" @click="showSourceBox = true">
+                                        <span class="block text-xs leading-tight dark:text-gray-200">{{ selectedDocumentSourceName }}</span>
+                                        <icon class="w-3.5 h-3.5 ml-auto cursor-pointer dark:text-gray-300 flex-shrink-0" name="arrow-down" />
+                                    </div>
+
+                                    <div class="absolute right-0 left-0 flex w-full z-10 text-sm flex-col bg-white dark:bg-gray-800 px-4 py-4 rounded shadow dark:border dark:border-gray-700" v-if="showSourceBox">
+                                        <h4 class="text-center mb-3 font-bold dark:text-white">{{ $t('ជ្រើសរើសប្រភពឯកសារ') }}</h4>
+                                        <div class="absolute cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 top-3 right-3 p-1.5 rounded" @click="showSourceBox = false">
+                                            <icon class="w-4 h-4 dark:text-gray-300" name="close" />
+                                        </div>
+                                        <input v-model="source_search" class="border-[2px] px-2 py-1 border-gray-400 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-[3px] dark:placeholder-gray-400" :placeholder="$t('ស្វែងរក')" />
+                                        <ul class="flex flex-col mt-3 gap-0.5 h-56 max-h-56 overflow-y-auto">
+                                            <li v-if="task.document_source_id">
+                                                <label class="flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 rounded">
+                                                    <input type="radio" name="document_source" class="w-4 h-4 flex-shrink-0" :checked="false" @change="selectDocumentSource(null)">
+                                                    <span class="italic text-gray-500 dark:text-gray-400">{{ $t('Not set') }}</span>
+                                                </label>
+                                            </li>
+                                            <template v-for="dept in filteredDocumentSourceGroups" :key="'dept_'+dept.id">
+                                                <li class="px-2 pt-2 pb-1 text-[11px] font-bold uppercase tracking-wide text-gray-400 dark:text-gray-500">
+                                                    {{ dept.name }}
+                                                </li>
+                                                <li v-for="office in dept.children" :key="'office_'+office.id">
+                                                    <label class="flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 rounded">
+                                                        <input type="radio" name="document_source" class="w-4 h-4 flex-shrink-0" :checked="task.document_source_id === office.id" @change="selectDocumentSource(office.id)">
+                                                        <span class="dark:text-gray-200">{{ office.name }}</span>
+                                                    </label>
+                                                </li>
+                                            </template>
+                                            <li v-if="!filteredDocumentSourceGroups.length" class="px-2 py-4 text-center text-xs text-gray-400 dark:text-gray-500">
+                                                {{ $t('No item found!') }}
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section class="py-3">
+                                <h2 class="px-2 text-sm font-medium dark:text-gray-300">
+                                    {{ $t('ប្រភេទឯកសារ') }}
+                                </h2>
+                                <div class="relative">
+                                    <div class="group mt-2 flex cursor-pointer items-center td__btn rounded-md px-2 py-1.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600" @click="showTypeBox = true">
+                                        <span class="block text-xs leading-tight dark:text-gray-200">{{ selectedDocumentTypeName }}</span>
+                                        <icon class="w-3.5 h-3.5 ml-auto cursor-pointer dark:text-gray-300 flex-shrink-0" name="arrow-down" />
+                                    </div>
+
+                                    <div class="absolute right-0 left-0 flex w-full z-10 text-sm flex-col bg-white dark:bg-gray-800 px-4 py-4 rounded shadow dark:border dark:border-gray-700" v-if="showTypeBox">
+                                        <h4 class="text-center mb-3 font-bold dark:text-white">{{ $t('ជ្រើសរើសប្រភេទឯកសារ') }}</h4>
+                                        <div class="absolute cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 top-3 right-3 p-1.5 rounded" @click="showTypeBox = false">
+                                            <icon class="w-4 h-4 dark:text-gray-300" name="close" />
+                                        </div>
+                                        <input v-model="type_search" class="border-[2px] px-2 py-1 border-gray-400 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-[3px] dark:placeholder-gray-400" :placeholder="$t('ស្វែងរក')" />
+                                        <ul class="flex flex-col mt-3 gap-0.5 h-56 max-h-56 overflow-y-auto">
+                                            <li v-if="task.type_id">
+                                                <label class="flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 rounded">
+                                                    <input type="radio" name="document_type" class="w-4 h-4 flex-shrink-0" :checked="false" @change="selectDocumentType(null)">
+                                                    <span class="italic text-gray-500 dark:text-gray-400">{{ $t('Not set') }}</span>
+                                                </label>
+                                            </li>
+                                            <li v-for="type in filteredDocumentTypes" :key="'type_'+type.id">
+                                                <label class="flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 rounded">
+                                                    <input type="radio" name="document_type" class="w-4 h-4 flex-shrink-0" :checked="task.type_id === type.id" @change="selectDocumentType(type.id)">
+                                                    <span class="dark:text-gray-200">{{ type.name }}</span>
+                                                </label>
+                                            </li>
+                                            <li v-if="!filteredDocumentTypes.length" class="px-2 py-4 text-center text-xs text-gray-400 dark:text-gray-500">
+                                                {{ $t('No item found!') }}
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
                             </section>
 
                             <section class="py-3.5">
@@ -1024,25 +1099,6 @@
 
                             <section class="py-3">
                                 <h2 class="px-2 text-sm font-medium dark:text-gray-300">
-                                    {{ $t('ថ្ងៃកំណត់យក') }}
-                                </h2>
-                                <div class="relative" modal="true">
-                                    <div>
-                                        <div class="group mt-2 flex cursor-pointer items-center rounded-md py-1.5">
-                                            <DateTimePicker
-                                                v-model="task.due_date"
-                                                @change="saveTask({due_date: moment(task.due_date).format('YYYY-MM-DD HH:mm')})"
-                                                @update:is24Hour="is24HourFormat = $event"
-                                                placeholder="Select Date & Time"
-                                                :is24Hour="is24HourFormat"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            </section>
-
-                            <section class="py-3">
-                                <h2 class="px-2 text-sm font-medium dark:text-gray-300">
                                     {{ $t('ថ្ងៃឯកសារចូល') }}
                                 </h2>
                                 <div class="relative" modal="true">
@@ -1081,42 +1137,19 @@
 
                             <section class="py-3">
                                 <h2 class="px-2 text-sm font-medium dark:text-gray-300">
-                                    {{ $t('ប្រភពឯកសារ') }}
+                                    {{ $t('ថ្ងៃកំណត់យក') }}
                                 </h2>
-                                <div class="relative">
-                                    <div class="group mt-2 flex cursor-pointer items-center td__btn rounded-md px-2 py-1.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600" @click="showSourceBox = true">
-                                        <span class="block text-xs leading-tight dark:text-gray-200">{{ selectedDocumentSourceName }}</span>
-                                        <icon class="w-3.5 h-3.5 ml-auto cursor-pointer dark:text-gray-300 flex-shrink-0" name="arrow-down" />
-                                    </div>
-
-                                    <div class="absolute right-0 left-0 flex w-full z-10 text-sm flex-col bg-white dark:bg-gray-800 px-4 py-4 rounded shadow dark:border dark:border-gray-700" v-if="showSourceBox">
-                                        <h4 class="text-center mb-3 font-bold dark:text-white">{{ $t('ជ្រើសរើសប្រភពឯកសារ') }}</h4>
-                                        <div class="absolute cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 top-3 right-3 p-1.5 rounded" @click="showSourceBox = false">
-                                            <icon class="w-4 h-4 dark:text-gray-300" name="close" />
+                                <div class="relative" modal="true">
+                                    <div>
+                                        <div class="group mt-2 flex cursor-pointer items-center rounded-md py-1.5">
+                                            <DateTimePicker
+                                                v-model="task.due_date"
+                                                @change="saveTask({due_date: moment(task.due_date).format('YYYY-MM-DD HH:mm')})"
+                                                @update:is24Hour="is24HourFormat = $event"
+                                                placeholder="Select Date & Time"
+                                                :is24Hour="is24HourFormat"
+                                            />
                                         </div>
-                                        <input v-model="source_search" class="border-[2px] px-2 py-1 border-gray-400 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-[3px] dark:placeholder-gray-400" :placeholder="$t('ស្វែងរក')" />
-                                        <ul class="flex flex-col mt-3 gap-0.5 h-56 max-h-56 overflow-y-auto">
-                                            <li v-if="task.document_source_id">
-                                                <label class="flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 rounded">
-                                                    <input type="radio" name="document_source" class="w-4 h-4 flex-shrink-0" :checked="false" @change="selectDocumentSource(null)">
-                                                    <span class="italic text-gray-500 dark:text-gray-400">{{ $t('Not set') }}</span>
-                                                </label>
-                                            </li>
-                                            <template v-for="dept in filteredDocumentSourceGroups" :key="'dept_'+dept.id">
-                                                <li class="px-2 pt-2 pb-1 text-[11px] font-bold uppercase tracking-wide text-gray-400 dark:text-gray-500">
-                                                    {{ dept.name }}
-                                                </li>
-                                                <li v-for="office in dept.children" :key="'office_'+office.id">
-                                                    <label class="flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 rounded">
-                                                        <input type="radio" name="document_source" class="w-4 h-4 flex-shrink-0" :checked="task.document_source_id === office.id" @change="selectDocumentSource(office.id)">
-                                                        <span class="dark:text-gray-200">{{ office.name }}</span>
-                                                    </label>
-                                                </li>
-                                            </template>
-                                            <li v-if="!filteredDocumentSourceGroups.length" class="px-2 py-4 text-center text-xs text-gray-400 dark:text-gray-500">
-                                                {{ $t('No item found!') }}
-                                            </li>
-                                        </ul>
                                     </div>
                                 </div>
                             </section>
@@ -1141,6 +1174,10 @@
                                         {{ $t('Delete') }}
                                     </button>
                                 </div>
+                            </section>
+
+                            <section class="py-3">
+                                <WatchButton :watchable-id="task.id" watchable-type="Task" :is-watching="task.is_watched_by_user" />
                             </section>
 
                         </aside>
@@ -1359,8 +1396,11 @@
                 newDocumentNote: '',
                 savingDocumentNote: false,
                 documentSources: [],
+                documentTypes: [],
                 showSourceBox: false,
                 source_search: '',
+                showTypeBox: false,
+                type_search: '',
 
                 // Group assignment
                 userGroups: [],
@@ -1463,6 +1503,18 @@
                     if (office) return office.name;
                 }
                 return this.$t('Not set');
+            },
+
+            selectedDocumentTypeName() {
+                if (!this.task.type_id) return this.$t('Not set');
+                const found = this.documentTypes.find(t => t.id === this.task.type_id);
+                return found ? found.name : this.$t('Not set');
+            },
+
+            filteredDocumentTypes() {
+                const q = (this.type_search || '').trim().toLowerCase();
+                if (!q) return this.documentTypes;
+                return this.documentTypes.filter(t => t.name.toLowerCase().includes(q));
             },
 
             availableUserGroups() {
@@ -2864,6 +2916,7 @@
                 this.move_object.order = this.task.order;
 
                 this.documentSources = res.document_sources || [];
+                this.documentTypes = res.document_types || [];
                 this.userGroups = res.user_groups || [];
 
                 this.loadAvailableUsers();
@@ -2882,6 +2935,15 @@
                 this.source_search = '';
                 this.saveTask({ document_source_id: id }).then(() => {
                     this.toastSuccess(this.$t('Document source updated.'), { duration: 2000 });
+                });
+            },
+
+            selectDocumentType(id){
+                this.task.type_id = id;
+                this.showTypeBox = false;
+                this.type_search = '';
+                this.saveTask({ type_id: id }).then(() => {
+                    this.toastSuccess(this.$t('Document type updated.'), { duration: 2000 });
                 });
             },
 

@@ -91,6 +91,10 @@
                                 <span class="flex-1 mt-0.5 sm:mt-0">{{ documentSourceLabel }}</span>
                             </div>
                             <div class="flex flex-col sm:flex-row sm:items-baseline">
+                                <span class="font-semibold sm:min-w-[150px] text-gray-900">ប្រភេទឯកសារ៖</span>
+                                <span class="flex-1 mt-0.5 sm:mt-0">{{ documentTypeLabel }}</span>
+                            </div>
+                            <div class="flex flex-col sm:flex-row sm:items-baseline">
                                 <span class="font-semibold sm:min-w-[150px] text-gray-900">កាលបរិច្ឆេទឯកសារចូល៖</span>
                                 <span class="flex-1 mt-0.5 sm:mt-0">{{ formatDate(task?.entry_date || task?.created_at) }}</span>
                             </div>
@@ -341,6 +345,10 @@
                 if (!source) return 'N/A';
                 const department = source.parent?.name;
                 return department ? `${department} — ${source.name}` : source.name;
+            },
+
+            documentTypeLabel() {
+                return this.task?.type?.name || 'N/A';
             },
 
             matchedList() {

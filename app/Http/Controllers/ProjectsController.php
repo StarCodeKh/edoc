@@ -38,7 +38,8 @@ class ProjectsController extends Controller {
         ]);
     }
 
-    public function test(){
+    public function test()
+    {
         return Inertia::render('Projects/Test', [
             'title' => 'Projects',
         ]);
@@ -215,7 +216,9 @@ class ProjectsController extends Controller {
         ]);
     }
 
-    public function view($uid, Request $request){
+    // DocumentReceipt.vue
+    public function view($uid, Request $request)
+    {
         $auth_id = auth()->id();
         $workspaceIds = Workspace::where('user_id', $auth_id)->orWhereHas('member')->pluck('id');
         $requests = $request->all();
@@ -245,6 +248,7 @@ class ProjectsController extends Controller {
             ->whereHas('list')
             ->with('cover')
             ->with('documentSource.parent')
+            ->with('type')
             ->withCount('checklistDone')
             ->withCount('comments')
             ->withCount('checklists')
@@ -315,7 +319,8 @@ class ProjectsController extends Controller {
         ]);
     }
 
-    public function viewWithTask($projectUid, $taskUid, Request $request){
+    public function viewWithTask($projectUid, $taskUid, Request $request)
+    {
         $requests = $request->all();
         $auth_id = auth()->id();
         $workspaceIds = Workspace::where('user_id', $auth_id)->orWhereHas('member')->pluck('id');
@@ -358,7 +363,8 @@ class ProjectsController extends Controller {
         ]);
     }
 
-    public function viewTable($uid, Request $request){
+    public function viewTable($uid, Request $request)
+    {
         $requests = $request->all();
         $auth_id = auth()->id();
         $workspaceIds = Workspace::where('user_id', $auth_id)->orWhereHas('member')->pluck('id');
@@ -402,7 +408,8 @@ class ProjectsController extends Controller {
         ]);
     }
 
-    public function viewTableWithTask($uid, $taskUid, Request $request){
+    public function viewTableWithTask($uid, $taskUid, Request $request)
+    {
         $requests = $request->all();
         $auth_id = auth()->id();
         $workspaceIds = Workspace::where('user_id', $auth_id)->orWhereHas('member')->pluck('id');
@@ -443,7 +450,8 @@ class ProjectsController extends Controller {
         ]);
     }
 
-    public function viewDashboard($uid){
+    public function viewDashboard($uid)
+    {
         $auth_id = auth()->id();
         $workspaceIds = Workspace::where('user_id', $auth_id)->orWhereHas('member')->pluck('id');
         $project = Project::bySlugOrId($uid)->whereIn('workspace_id', $workspaceIds)->with('workspace.member')->with('star')->with('background')->first();
@@ -556,7 +564,8 @@ class ProjectsController extends Controller {
         ]);
     }
 
-    public function viewTimeLogs($projectUid, Request $request){
+    public function viewTimeLogs($projectUid, Request $request)
+    {
         $requests = $request->all();
         $auth_id = auth()->id();
         $workspaceIds = Workspace::where('user_id', $auth_id)->orWhereHas('member')->pluck('id');
@@ -590,7 +599,8 @@ class ProjectsController extends Controller {
         ]);
     }
 
-    public function projectOtherData($project_id){
+    public function projectOtherData($project_id)
+    {
         $project = Project::where('id', $project_id)->first();
         $labels = Label::where('project_id', $project_id)->get();
         $lists = BoardList::withCount('tasks')->get();
@@ -647,6 +657,4 @@ class ProjectsController extends Controller {
     {
         return (new TasksExport)->forProject($project_id)->download('tasks.csv', Excel::CSV);
     }
-
-
 }

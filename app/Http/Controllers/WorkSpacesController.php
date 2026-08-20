@@ -282,7 +282,8 @@ class WorkSpacesController extends Controller
         ]);
     }
 
-    public function workspaceTables($uid, Request $request){
+    public function workspaceTables($uid, Request $request)
+    {
         $user = auth()->user()->load('role');
         $requests = $request->all();
         if(!empty($user->role)){

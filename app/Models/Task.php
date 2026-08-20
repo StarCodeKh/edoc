@@ -379,6 +379,11 @@ class Task extends Model
 
     public function groupAssignees()
     {
-        return $this->hasMany(\App\Models\GroupAssignee::class, 'task_id');
+        return $this->hasMany(GroupAssignee::class, 'task_id');
+    }
+
+    public function type()
+    {
+        return $this->belongsTo(WorkspaceType::class, 'type_id');
     }
 }

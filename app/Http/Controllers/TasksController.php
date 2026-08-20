@@ -8,6 +8,7 @@ use App\Models\BoardList;
 use App\Models\CheckList;
 use App\Models\Comment;
 use App\Models\DocumentSource;
+use App\Models\WorkspaceType;
 use App\Models\Label;
 use App\Models\Project;
 use App\Models\Setting;
@@ -296,6 +297,8 @@ class TasksController extends Controller
             }])
             ->get();
 
+        $documentTypes = WorkspaceType::select('id', 'name', 'code')->orderBy('name')->get();
+
         $userGroups = UserGroup::select('id', 'name', 'edoc_role')->orderBy('name')->get();
 
         return response()->json([
@@ -306,6 +309,7 @@ class TasksController extends Controller
             'projects' => $projects,
             'team_members' => $teamMembers,
             'document_sources' => $documentSources,
+            'document_types' => $documentTypes,
             'user_groups' => $userGroups,
         ]);
     }
