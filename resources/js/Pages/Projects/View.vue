@@ -1041,6 +1041,9 @@
                 axios.post(this.route('task.new'), taskObject).then((response) => {
                     if(response && response.data){
                         tasks.push(response.data)
+                        // Auto pop up the task details modal right after creation,
+                        // so the tracking code / ID is immediately visible.
+                        this.taskDetailsPopup(response.data.slug || response.data.id)
                     }
                 }).catch((error) => {
                     console.log(error)

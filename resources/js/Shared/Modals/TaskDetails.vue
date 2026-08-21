@@ -1118,14 +1118,14 @@
 
                             <section class="py-3">
                                 <h2 class="px-2 text-sm font-medium dark:text-gray-300">
-                                    {{ $t('ថ្ងៃឯកសារចេញ') }}
+                                    {{ $t('ថ្ងៃកំណត់យក') }}
                                 </h2>
                                 <div class="relative" modal="true">
                                     <div>
                                         <div class="group mt-2 flex cursor-pointer items-center rounded-md py-1.5">
                                             <DateTimePicker
-                                                v-model="task.exit_date"
-                                                @change="saveTask({exit_date: moment(task.exit_date).format('YYYY-MM-DD HH:mm')})"
+                                                v-model="task.due_date"
+                                                @change="saveTask({due_date: moment(task.due_date).format('YYYY-MM-DD HH:mm')})"
                                                 @update:is24Hour="is24HourFormat = $event"
                                                 placeholder="Select Date & Time"
                                                 :is24Hour="is24HourFormat"
@@ -1137,14 +1137,14 @@
 
                             <section class="py-3">
                                 <h2 class="px-2 text-sm font-medium dark:text-gray-300">
-                                    {{ $t('ថ្ងៃកំណត់យក') }}
+                                    {{ $t('ថ្ងៃឯកសារចេញ') }}
                                 </h2>
                                 <div class="relative" modal="true">
                                     <div>
                                         <div class="group mt-2 flex cursor-pointer items-center rounded-md py-1.5">
                                             <DateTimePicker
-                                                v-model="task.due_date"
-                                                @change="saveTask({due_date: moment(task.due_date).format('YYYY-MM-DD HH:mm')})"
+                                                v-model="task.exit_date"
+                                                @change="saveTask({exit_date: moment(task.exit_date).format('YYYY-MM-DD HH:mm')})"
                                                 @update:is24Hour="is24HourFormat = $event"
                                                 placeholder="Select Date & Time"
                                                 :is24Hour="is24HourFormat"
