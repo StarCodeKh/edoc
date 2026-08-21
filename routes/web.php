@@ -132,7 +132,9 @@ Route::get('w/{uid}/tasks/my-tasks/table', [WorkSpacesController::class, 'worksp
 Route::get('w/{uid}/tasks/my-tasks', [WorkSpacesController::class, 'workspaceMyTasks'])->name('workspace.view.my-tasks')->middleware('auth');
 Route::get('w/{uid}/tables', [WorkSpacesController::class, 'workspaceTables'])->name('workspace.tables')->middleware('auth');
 Route::delete('workspace/destroy/{id}', [WorkSpacesController::class, 'destroy'])->name('workspace.destroy')->middleware('auth');
-    
+Route::get('json/workspace/{id}/assigned-count', [WorkSpacesController::class, 'jsonAssignedTasksCount'])->name('json.workspace.assigned-count')->middleware('auth');
+Route::get('json/workspace/{id}/projects-count', [WorkSpacesController::class, 'jsonProjectsTaskCounts'])->name('json.workspace.projects.count')->middleware('auth');
+
 
 Route::get('/json/workflow-roles/board-lists', [WorkflowRoleController::class, 'listTitlesByWorkspace'])->name('workflow-roles.board-lists');
 Route::get('/settings/workflow-roles', [WorkflowRoleController::class, 'index'])->name('workflow-roles');

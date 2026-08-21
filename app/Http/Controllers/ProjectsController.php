@@ -216,13 +216,21 @@ class ProjectsController extends Controller {
         ]);
     }
 
-    // DocumentReceipt.vue
+    // DocumentReceipt.vue / WorkspaceMenu.vue
     public function view($uid, Request $request)
     {
         $auth_id = auth()->id();
         $workspaceIds = Workspace::where('user_id', $auth_id)->orWhereHas('member')->pluck('id');
         $requests = $request->all();
-        $project = Project::bySlugOrId($uid)->whereIn('workspace_id', $workspaceIds)->with('workspace.member')->with('star')->with('background')->first();
+        $project = Project::bySlugOrId($uid)
+            ->whereIn('workspace_id', $workspaceIds)
+            ->with('workspace.member')
+            ->with('star')
+            ->with('background')
+            ->withCount(['tasks' => function ($query) {
+                $query->where('is_done', 0);
+            }])
+            ->first();
         if(empty($project)){
             return abort(404);
         }

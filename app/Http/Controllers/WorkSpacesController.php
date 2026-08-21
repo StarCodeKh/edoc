@@ -72,6 +72,53 @@ class WorkSpacesController extends Controller
         return response()->json($workSpaces);
     }
 
+    // WorkspaceMenu.vue (count assigned task count)
+    public function jsonAssignedTasksCount($uid)
+    {
+        $user = auth()->user();
+        $workspace = Workspace::where('id', $uid)->orWhere('slug', $uid)
+            ->whereHas('member')
+            ->first();
+
+        if (empty($workspace)) {
+            return response()->json(['count' => 0]);
+        }
+
+        $count = Task::whereHas('assignees', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            })
+            ->whereHas('project', function ($q) use ($workspace) {
+                $q->where('workspace_id', $workspace->id);
+            })
+            ->where('is_done', 0)
+            ->isOpen()
+            ->whereHas('list')
+            ->count();
+
+        return response()->json(['count' => $count]);
+    }
+
+    // WorkspaceMenu.vue (count taks in project)
+    public function jsonProjectsTaskCounts($uid)
+    {
+        $auth_id = auth()->id();
+        $workspace = Workspace::where('id', $uid)->orWhere('slug', $uid)
+            ->whereHas('member')
+            ->first();
+
+        if (empty($workspace)) {
+            return response()->json([]);
+        }
+
+        $projects = Project::where('workspace_id', $workspace->id)
+            ->withCount(['tasks' => function ($query) {
+                $query->where('is_done', 0);
+            }])
+            ->get(['id', 'tasks_count']);
+
+        return response()->json($projects);
+    }
+
     public function viewMainDashboard($uid, Request $request){
         $requests = $request->all();
         $workspace = Workspace::where('id', $uid)->orWhere('slug', $uid)->whereHas('member')->with('member')->first();

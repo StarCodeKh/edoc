@@ -40,7 +40,7 @@
                         {{ $t('My Tasks') }}
                     </span>
                     <span class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 mr-1 rounded-full bg-indigo-600 text-white text-[10px] font-semibold">
-                        {{ $page.props.assigned_tasks_count ?? 0 }}
+                        {{ assigned_tasks_count }}
                     </span>
                 </Link>
             </li>
@@ -60,6 +60,7 @@
             <icon v-if="hide_starred" name="arrow-right" class="w-4 h-4" />
             <div class="flex uppercase font-semibold">{{ $t('Favorites') }}</div>
         </div>
+
         <ul class="pt-1 text-sm side_p_list font-medium border-gray-200 dark:border-gray-700 max-h-[calc(100%-350px)] overflow-y-auto" v-show="!hide_starred && favorites.length">
             <li v-for="(project, p_index) in favorites" class="flex group">
                 <Link :href="route('projects.view.board', project.slug || project.id)" class="p-2 relative block w-full item" :class="{'active':project.id === ($page.props.project?$page.props.project.id:'')}">
@@ -78,6 +79,7 @@
                 </Link>
             </li>
         </ul>
+
         <div class="flex text-[13px] text items-center justify-between mt-4 font-bold px-2 pt-2 border-t border-[#ffffff29]">
             <div class="flex justify-start select-none gap-3" @click="hide_projects=!hide_projects">
                 <icon v-if="!hide_projects" name="arrow-down" class="w-4 h-4" />
@@ -97,19 +99,23 @@
         </div>
         <create-project v-if="visible.project_create" @create-project="visible.project_create = false" top="30%" left="240px" />
         <invite-workspace-member :workspace="workspace" v-if="invite_workspace" @invite-member="closeInviteMember()" top="100px" left="90px" />
+        
         <ul class="pt-1 text-sm side_p_list font-medium border-gray-200 dark:border-gray-700 max-h-[calc(100%-350px)] overflow-y-auto" v-if="!hide_projects && !loading && projects.length">
             <li v-for="(project, p_index) in projects" class="flex group">
                 <Link :href="route('projects.view.board', project.slug || project.id)" class="p-2 relative block w-full item" :class="{'active':project.id === ($page.props.project?$page.props.project.id:'')}">
-                    <div class="flex h-5 relative">
+                    <div class="flex h-5 relative items-center">
                         <div v-if="project.background"
                             :style="[project.background && project.background.image ?{backgroundImage: 'url('+project.background.image+')', backgroundSize: 'cover'}:{}]"
-                            class="flex bg-cover rounded-full w-5 h-5 border"></div>
+                            class="flex bg-cover rounded-full w-5 h-5 border flex-shrink-0"></div>
                         <div class="flex w-full flex-1 justify-center flex-col pl-2 overflow-hidden text-ellipsis whitespace-nowrap">
                             <div class="font-medium text-[13px] leading-[18px]">
                                 {{ project.title }}
                             </div>
                         </div>
-                        <button class="flex w-7 items-center justify-center" @click="saveProject($event, project)">
+                        <span class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 mr-1 rounded-full bg-indigo-600 text-white text-[10px] font-semibold flex-shrink-0">
+                            {{ project.tasks_count ?? 0 }}
+                        </span>
+                        <button class="flex w-7 items-center justify-center flex-shrink-0" @click="saveProject($event, project)">
                             <icon v-if="!!project.star" name="star" class="w-4 h-4 fill-yellow-500 text-yellow-500 hover:fill-none hover:scale-125" />
                             <icon v-else name="star" class="w-4 h-4 opacity-0 group-hover:opacity-100 hover:text-yellow-500 hover:scale-125" />
                         </button>
@@ -117,6 +123,7 @@
                 </Link>
             </li>
         </ul>
+
         <div class="p-3 font-light text-center text-sm" v-if="!loading && !projects.length">{{ 'No project!' }}</div>
     </div>
 </template>
@@ -152,6 +159,7 @@
             visible: {project_create: false},
             user: null,
             my_tasks_count: 0,
+            assigned_tasks_count: 0,
             menu_items: [
                 {'name': 'Dashboard', 'route': 'dashboard', 'url': 'dashboard', 'icon': 'dashboard'},
                 {'name': 'Projects', 'route': 'projects.index', 'url': 'projects', 'icon': 'project'},
@@ -169,6 +177,8 @@
                         this.projects = []
                         this.getProjects()
                         this.getMyTasksCount()
+                        this.getProjectTaskCounts()
+                        this.getAssignedTasksCount()
                     }else{
                         const projectIndex = this.projects.findIndex(p=>p.id === this.$page.props.project.id)
                         this.projects[projectIndex] = this.$page.props.project;
@@ -186,6 +196,8 @@
                     this.projects = []
                     this.getProjects()
                     this.getMyTasksCount()
+                    this.getProjectTaskCounts()
+                    this.getAssignedTasksCount()
                 }
             },
             deep: true,
@@ -273,12 +285,35 @@
                 }
             });
         },
+
+        getAssignedTasksCount(){
+            axios.get(this.route('json.workspace.assigned-count', this.workspace.id)).then((response) => {
+                if(response.data){
+                    this.assigned_tasks_count = response.data.count;
+                }
+            });
+        },
+
+        getProjectTaskCounts(){
+            axios.get(this.route('json.workspace.projects.count', this.workspace.id)).then((response) => {
+                if(response.data){
+                    response.data.forEach(item => {
+                        const project = this.projects.find(p => Number(p.id) === Number(item.id));
+                        if(project){
+                            project.tasks_count = item.tasks_count;
+                        }
+                    });
+                }
+            });
+        },
     },
         created() {
             this.workspace = this.$page.props.project ? this.$page.props.project.workspace : this.$page.props.workspace
             this.getProjects()
             this.getStarredProjects()
             this.getMyTasksCount()
+            this.getAssignedTasksCount();
+            this.getProjectTaskCounts()
         },
         mounted() {
             window.addEventListener('workspace-task-counts-changed', this.getProjects);
