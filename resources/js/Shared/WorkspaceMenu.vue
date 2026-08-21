@@ -20,6 +20,7 @@
                     <span class="ml-3">{{ $t('Dashboard') }}</span>
                 </Link>
             </li>
+
             <li v-if="workspace.member.role === 'admin'">
                 <Link :href="route('workspace.view.board', workspace.slug || workspace.id)" class="flex items-center px-3 py-2 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 group" :class="{'active' : isWorkspaceTasksActive()}">
                     <icon class="w-4 h-4" name="table" />
@@ -31,14 +32,19 @@
                     </span>
                 </Link>
             </li>
+
             <li>
                 <Link :href="route('workspace.view.my-tasks.board', workspace.slug || workspace.id)" class="flex items-center px-3 py-2 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 group" :class="{'active' : isMyTasksActive()}">
                     <icon class="w-4 h-4" name="list" />
                     <span class="flex-1 ml-3">
                         {{ $t('My Tasks') }}
                     </span>
+                    <span class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 mr-1 rounded-full bg-indigo-600 text-white text-[10px] font-semibold">
+                        {{ $page.props.assigned_tasks_count ?? 0 }}
+                    </span>
                 </Link>
             </li>
+        
             <li class="relative" v-if="workspace.member.role === 'admin'">
                 <Link class="flex items-center px-3 p-2 group workspace_members" :href="route('workspace.members', workspace.id)" :class="{'active' : checkActiveClass('component', 'Workspaces_Members')}">
                     <icon class="w-4 h-4" name="user" />

@@ -379,6 +379,7 @@ class WorkSpacesController extends Controller
         ]);
     }
 
+    // WorkspaceMenu.vue
     public function workspaceMyTasksBoard($uid, Request $request)
     {
         $user = auth()->user();
@@ -391,7 +392,6 @@ class WorkSpacesController extends Controller
         }
 
         $list_index = [];
-        // Get all board lists from all projects in workspace
         $projectIds = Project::where('workspace_id', $workspace->id)->pluck('id');
         $board_lists = BoardList::whereIn('project_id', $projectIds)->isOpen()->orderByOrder()->get()->toArray();
         $loopIndex = 0;
@@ -401,7 +401,6 @@ class WorkSpacesController extends Controller
             $loopIndex+= 1;
         }
 
-        // Get all tasks from all projects in workspace, filtered by current user
         $tasks = Task::filter($requests)
             ->whereHas('project', function ($q) use ($workspace) {
                 $q->where('workspace_id', $workspace->id);
@@ -422,12 +421,20 @@ class WorkSpacesController extends Controller
             ->get()
             ->toArray();
 
-        // Group tasks by list title (combining lists with same name across projects)
+        $assignedTasksCount = Task::whereHas('assignees', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            })
+            ->whereHas('project', function ($q) use ($workspace) {
+                $q->where('workspace_id', $workspace->id);
+            })
+            ->isOpen()
+            ->whereHas('list')
+            ->count();
+
         $listsByTitle = [];
         $orderCounter = 0;
 
         foreach ($tasks as $task) {
-            // Skip tasks without a list relationship loaded
             if (!isset($task['list']) || empty($task['list'])) {
                 continue;
             }
@@ -468,6 +475,7 @@ class WorkSpacesController extends Controller
             'filters' => $requests,
             'workspace' => $workspace,
             'tasks' => $tasks,
+            'assigned_tasks_count' => $assignedTasksCount,
         ]);
     }
 

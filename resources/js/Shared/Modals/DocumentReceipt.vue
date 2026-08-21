@@ -53,9 +53,6 @@
                         <h3 class="font-moul text-base sm:text-xl text-emerald-600 tracking-wider mt-2">
                             លិខិតបញ្ជាក់ឯកសារ
                         </h3>
-
-                        <!-- Merge-code badge — only shows once this task has absorbed
-                             other tasks (see task.merge / task.merged_history). -->
                         <div v-if="latestMergeCode" class="mt-3 flex justify-center">
                             <span class="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-3 py-1">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -132,9 +129,6 @@
                         </div>
                     </div>
 
-                    <!-- Merged-from history — only shows once this task has absorbed
-                         other merged tasks (see task.merged_history from task.merge).
-                         Lists each one, one by one, with its own tracking code. -->
                     <div v-if="mergedHistory.length" class="mt-6 pt-5 border-t border-gray-100 print-avoid-break">
                         <div class="flex items-center justify-between mb-3">
                             <p class="font-semibold">បញ្ចូលពីឯកសារផ្សេងទៀត ៖</p>
@@ -298,11 +292,20 @@
                         </div>
                     </div>
 
-                    <!-- Footer / Thank you -->
+                    <!-- Footer -->
                     <div class="flex justify-end pt-4 mt-6 border-t border-gray-100">
-                        <span class="font-moul text-sm sm:text-lg text-gray-800 tracking-wider">សូមអរគុណ</span>
+                        <div class="inline-flex flex-col items-center text-center">
+                            <span class="text-xs sm:text-sm text-gray-800 mb-[25px]">
+                                រាជធានីភ្នំពេញ ថ្ងៃទី........ ខែ........ ឆ្នាំ ២០...
+                            </span>
+                            <span class="font-moul text-sm sm:text-lg text-gray-800 tracking-wider">
+                                អគ្គលេខាធិការ គ.ល.ក
+                            </span>
+                            <div class="h-28 my-2"></div>
+                            <span class="font-moul text-sm sm:text-base text-gray-800">
+                            </span>
+                        </div>
                     </div>
-
                 </div>
             </div>
         </div>
