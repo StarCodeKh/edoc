@@ -8,6 +8,7 @@ use App\Http\Requests\Auth\LoginRequest;
 use App\Models\Role;
 use App\Models\Setting;
 use App\Models\User;
+use App\Models\Workspace;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -26,7 +27,8 @@ class AuthenticatedSessionController extends Controller
      *
      * @return \Inertia\Response
      */
-    public function create() {
+    public function create()
+    {
         $is_demo = (int)config('app.demo');
         $env = DotenvEditor::load();
         $siteKey = $env->keyExists('RE_CAPTCHA_KEY')?$env->getValue('RE_CAPTCHA_KEY'):'';
@@ -35,7 +37,8 @@ class AuthenticatedSessionController extends Controller
         return Inertia::render('Auth/Login', ['is_demo' => $is_demo, 'enable_registration' => $enable_registration, 'site_key' => $siteKey]);
     }
 
-    public function register() {
+    public function register()
+    {
         $enable_registration = Setting::where('slug', 'enable_registration')->first();
         $enable_registration = $enable_registration->value ?? 0;
 
@@ -49,12 +52,14 @@ class AuthenticatedSessionController extends Controller
         return Inertia::render('Auth/Register', ['is_demo' => $is_demo, 'site_key' => $siteKey]);
     }
 
-    public function forgotPassword() {
+    public function forgotPassword()
+    {
         $is_demo = (int)config('app.demo');
         return Inertia::render('Auth/ForgotPassword', ['is_demo' => $is_demo]);
     }
 
-    public function forgotPasswordMail(Request $request) {
+    public function forgotPasswordMail(Request $request)
+    {
         $requestData = $request->validate(['email' => 'required|email|exists:users']);
 
         $token = Str::random(64);
@@ -69,11 +74,13 @@ class AuthenticatedSessionController extends Controller
         return back()->with('success', 'We have e-mailed your password reset link!');
     }
 
-    public function forgotPasswordToken($token){
+    public function forgotPasswordToken($token)
+    {
         return Inertia::render('Auth/ForgotPasswordInput', ['token' => $token]);
     }
 
-    public function forgotPasswordStore(Request $request){
+    public function forgotPasswordStore(Request $request)
+    {
         $requestData = $request->validate([
             'email' => 'required|email|exists:users',
             'password' => 'required|string|min:6|confirmed',
@@ -93,14 +100,10 @@ class AuthenticatedSessionController extends Controller
         }
 
         User::where('email', $requestData['email'])->update(['password' => Hash::make($requestData['password'])]);
-
         DB::table('password_resets')->where(['email'=> $requestData['email']])->delete();
 
         return Redirect::route('login')->with('success', 'Your password has been changed!');
-
     }
-
-
 
     /**
      * Handle an incoming authentication request.
@@ -110,10 +113,22 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request)
     {
         $credentials = $request->only('email', 'password');
-        $remember = $request->has('remember'); // Check if "Remember Me" is checked
+        $remember = $request->has('remember');
 
         if (Auth::attempt($credentials, $remember)) {
             $request->session()->regenerate();
+
+            $user = Auth::user();
+            $workspace = Workspace::where('user_id', $user->id)
+                ->orWhereHas('member', function ($q) use ($user) {
+                    $q->where('user_id', $user->id);
+                })
+                ->first();
+
+            if ($workspace) {
+                return redirect()->route('workspace.view.maindashboard', $workspace->slug ?? $workspace->id);
+            }
+
             return redirect()->intended(RouteServiceProvider::DASHBOARD);
         }
 
@@ -121,7 +136,6 @@ class AuthenticatedSessionController extends Controller
             'email' => 'Invalid credentials.',
         ]);
     }
-
 
     public function registerStore(Request $request) {
 
