@@ -78,6 +78,7 @@ Route::delete('logout', [AuthenticatedSessionController::class, 'destroy'])->nam
 Route::get('/', [WorkSpacesController::class, 'index'])->name('dashboard')->middleware('auth');
 Route::get('/home', function() { return redirect()->route('dashboard'); })->name('home')->middleware('auth');
 
+// Main Dashboard
 Route::get('/workspace/{uid}/main-dashboard', [WorkspacesController::class, 'viewMainDashboard'])->name('workspace.view.maindashboard');
 
 Route::get('json/workspaces/mine', [WorkSpacesController::class, 'jsonMineAll'])->name('json.workspaces.mine')->middleware('auth');
