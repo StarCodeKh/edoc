@@ -64,7 +64,7 @@ class GroupAssignmentController extends Controller
                     'user_id' => $assignee->user_id,
                     'user' => [
                         'id' => $assignee->user->id,
-                        'name' => $assignee->user->name,
+                        'name' => trim($assignee->user->first_name.' '.$assignee->user->last_name),
                         'photo_path' => $assignee->user->photo_path,
                     ],
                 ];

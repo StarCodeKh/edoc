@@ -327,7 +327,6 @@
                                 <button type="button" class="doc-drawer__docrow-main" @click="openDocDetail(i)">
                                     <span class="doc-drawer__app-index">{{ i + 1 }}</span>
                                     <span class="doc-drawer__docrow-title">{{ doc.title }}</span>
-                                    <span v-if="doc.kept" class="doc-drawer__docrow-tag">{{ $t('Kept') }}</span>
                                     <svg viewBox="0 0 24 24" fill="none" class="doc-drawer__docrow-chevron doc-drawer__docrow-chevron--arrow"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                                 </button>
                                 <button

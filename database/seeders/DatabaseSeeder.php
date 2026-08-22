@@ -39,6 +39,7 @@ class DatabaseSeeder extends Seeder
             WorkspacesInsertSeeder::class,
             EdocWorkflowRoleSeeder::class,
             UserGroupSeeder::class,
+            PrioritySeeder::class,
         ]);
     }
 }
