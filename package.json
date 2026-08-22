@@ -80,5 +80,12 @@
         "vuedraggable": "^4.1.0",
         "vuex": "^4.1.0",
         "yarn": "^1.22.19"
+    },
+    "allowScripts": {
+        "core-js@3.37.0": true,
+        "esbuild@0.25.12": true,
+        "fsevents@2.3.3": true,
+        "vue-demi@0.13.11": true,
+        "yarn@1.22.22": true
     }
 }
