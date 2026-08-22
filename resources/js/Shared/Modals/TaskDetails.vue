@@ -996,6 +996,46 @@
                                 </div>
                             </section>
 
+                            <section class="py-3">
+                                <h2 class="px-2 text-sm font-medium dark:text-gray-300">
+                                    {{ $t('អាទិភាព') }}
+                                </h2>
+                                <div class="relative">
+                                    <div class="group mt-2 flex cursor-pointer items-center td__btn rounded-md px-2 py-1.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600" @click="showPriorityBox = true">
+                                        <span v-if="selectedPriorityColor" class="w-2.5 h-2.5 mr-1.5 rounded-full flex-shrink-0" :style="{ backgroundColor: selectedPriorityColor }"></span>
+                                        <span class="block text-xs leading-tight dark:text-gray-200">{{ selectedPriorityName }}</span>
+                                        <icon class="w-3.5 h-3.5 ml-auto cursor-pointer dark:text-gray-300 flex-shrink-0" name="arrow-down" />
+                                    </div>
+
+                                    <div class="absolute right-0 left-0 flex w-full z-10 text-sm flex-col bg-white dark:bg-gray-800 px-4 py-4 rounded shadow dark:border dark:border-gray-700" v-if="showPriorityBox">
+                                        <h4 class="text-center mb-3 font-bold dark:text-white">{{ $t('ជ្រើសរើសអាទិភាព') }}</h4>
+                                        <div class="absolute cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 top-3 right-3 p-1.5 rounded" @click="showPriorityBox = false">
+                                            <icon class="w-4 h-4 dark:text-gray-300" name="close" />
+                                        </div>
+                                        <input v-model="priority_search" class="border-[2px] px-2 py-1 border-gray-400 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-[3px] dark:placeholder-gray-400" :placeholder="$t('ស្វែងរក')" />
+                                        <ul class="flex flex-col mt-3 gap-0.5 h-56 max-h-56 overflow-y-auto">
+                                            <li v-if="task.priority_id">
+                                                <label class="flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 rounded">
+                                                    <input type="radio" name="task_priority" class="w-4 h-4 flex-shrink-0" :checked="false" @change="selectPriority(null)">
+                                                    <span class="italic text-gray-500 dark:text-gray-400">{{ $t('Not set') }}</span>
+                                                </label>
+                                            </li>
+                                            <li v-for="priority in filteredPriorities" :key="'priority_'+priority.id">
+                                                <label class="flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 rounded">
+                                                    <input type="radio" name="task_priority" class="w-4 h-4 flex-shrink-0" :checked="task.priority_id === priority.id" @change="selectPriority(priority.id)">
+                                                    <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" :style="{ backgroundColor: priority.color }"></span>
+                                                    <span class="dark:text-gray-200">{{ priority.name }}</span>
+                                                </label>
+                                            </li>
+                                            <li v-if="!filteredPriorities.length" class="px-2 py-4 text-center text-xs text-gray-400 dark:text-gray-500">
+                                                {{ $t('No item found!') }}
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </section>
+
+
                             <section class="py-3.5">
                                 <div class="flex items-center px-2">
                                     <h2 class="text-sm font-medium dark:text-gray-300">
@@ -1401,6 +1441,9 @@
                 source_search: '',
                 showTypeBox: false,
                 type_search: '',
+                priorities: [],
+                showPriorityBox: false,
+                priority_search: '',
 
                 // Group assignment
                 userGroups: [],
@@ -1516,6 +1559,25 @@
                 if (!q) return this.documentTypes;
                 return this.documentTypes.filter(t => t.name.toLowerCase().includes(q));
             },
+
+            selectedPriorityName() {
+                if (!this.task.priority_id) return this.$t('Not set');
+                const found = this.priorities.find(p => p.id === this.task.priority_id);
+                return found ? found.name : this.$t('Not set');
+            },
+
+            selectedPriorityColor() {
+                if (!this.task.priority_id) return null;
+                const found = this.priorities.find(p => p.id === this.task.priority_id);
+                return found ? found.color : null;
+            },
+
+            filteredPriorities() {
+                const q = (this.priority_search || '').trim().toLowerCase();
+                if (!q) return this.priorities;
+                return this.priorities.filter(p => p.name.toLowerCase().includes(q));
+            },
+
 
             availableUserGroups() {
                 const assignedIds = (this.task.group_assignees || []).map(ga => Number(ga.user_group_id));
@@ -2917,6 +2979,7 @@
 
                 this.documentSources = res.document_sources || [];
                 this.documentTypes = res.document_types || [];
+                this.priorities = res.priorities || [];
                 this.userGroups = res.user_groups || [];
 
                 this.loadAvailableUsers();
@@ -2946,6 +3009,16 @@
                     this.toastSuccess(this.$t('Document type updated.'), { duration: 2000 });
                 });
             },
+
+            selectPriority(id){
+                this.task.priority_id = id;
+                this.showPriorityBox = false;
+                this.priority_search = '';
+                this.saveTask({ priority_id: id }).then(() => {
+                    this.toastSuccess(this.$t('Priority updated.'), { duration: 2000 });
+                });
+            },
+
 
             // Custom Editor Methods
             loadAvailableUsers() {

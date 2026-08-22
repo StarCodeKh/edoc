@@ -257,6 +257,7 @@ class ProjectsController extends Controller {
             ->with('cover')
             ->with('documentSource.parent')
             ->with('type')
+            ->with('priority')
             ->withCount('checklistDone')
             ->withCount('comments')
             ->withCount('checklists')
@@ -544,6 +545,7 @@ class ProjectsController extends Controller {
             ->whereHas('list')
             ->with('assignees')
             ->with('list')
+            ->with('priority')
             ->orderBy('created_at', 'DESC')
             ->get()
             ->map(function ($task) {

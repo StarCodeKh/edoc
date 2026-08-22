@@ -307,7 +307,7 @@
                             </div>
                             <div class="doc-drawer__field">
                                 <span class="doc-drawer__field-label">{{ $t('Priority') }}</span>
-                                <span class="doc-drawer__field-value">{{ (drawerTask && drawerTask.priority) || $t('Normal') }}</span>
+                                <span class="doc-drawer__field-value">{{ (drawerTask && drawerTask.priority && drawerTask.priority.name) || $t('Normal') }}</span>
                             </div>
                             <div class="doc-drawer__field">
                                 <span class="doc-drawer__field-label">{{ $t('Assigned') }}</span>

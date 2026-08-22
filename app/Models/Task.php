@@ -386,4 +386,9 @@ class Task extends Model
     {
         return $this->belongsTo(WorkspaceType::class, 'type_id');
     }
+
+    public function priority()
+    {
+        return $this->belongsTo(Priority::class, 'priority_id');
+    }
 }

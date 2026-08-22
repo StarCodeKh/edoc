@@ -10,6 +10,7 @@ use App\Models\Comment;
 use App\Models\DocumentSource;
 use App\Models\WorkspaceType;
 use App\Models\Label;
+use App\Models\Priority;
 use App\Models\Project;
 use App\Models\Setting;
 use App\Models\Task;
@@ -156,7 +157,7 @@ class TasksController extends Controller
             $task->{$itemKey} = $itemValue;
         }
         $task->save();
-        $task->load('list')->load('taskLabels.label')->load('project.background')->load('assignees')->load('timer')->load('documentSource.parent');
+        $task->load('list')->load('taskLabels.label')->load('project.background')->load('assignees')->load('timer')->load('documentSource.parent')->load('priority');
         return response()->json($task);
     }
 
@@ -299,6 +300,8 @@ class TasksController extends Controller
 
         $documentTypes = WorkspaceType::select('id', 'name', 'code')->orderBy('name')->get();
 
+        $priorities = Priority::orderBy('order')->get(['id', 'name', 'color']);
+
         $userGroups = UserGroup::select('id', 'name', 'edoc_role')->orderBy('name')->get();
 
         return response()->json([
@@ -310,6 +313,7 @@ class TasksController extends Controller
             'team_members' => $teamMembers,
             'document_sources' => $documentSources,
             'document_types' => $documentTypes,
+             'priorities' => $priorities,
             'user_groups' => $userGroups,
         ]);
     }
