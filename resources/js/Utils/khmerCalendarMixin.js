@@ -31,9 +31,9 @@ export default {
         khIsKhmerLocale() {
             return this.khLocale === 'kh'
         },
-        /** MyTasksCalendar names its view state `calendarView`; the rest use `currentView`. */
+        /** Pages disagree on the name: currentView, calendarView or timelineView. */
         khActiveView() {
-            return this.currentView || this.calendarView || 'month'
+            return this.currentView || this.calendarView || this.timelineView || 'month'
         },
         /** Lunar month(s) spanned by whatever period is on screen. */
         khPeriodLabel() {

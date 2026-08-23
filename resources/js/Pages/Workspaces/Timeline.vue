@@ -23,6 +23,7 @@
                                                 {{ currentPeriodTitle }}
                                             </h2>
                                             <p class="text-sm text-gray-500 mt-0.5 font-medium">{{ currentPeriodSubtitle }}</p>
+                                            <p v-if="khPeriodLabel" class="text-xs text-indigo-600 mt-1 font-semibold khmer-lunar-text leading-snug">{{ khPeriodLabel }}</p>
                                         </div>
                                         <button @click="navigatePeriod(1)" class="p-3 hover:bg-gray-50 rounded-xl transition-all duration-200 group">
                                             <icon name="arrow-right" class="w-5 h-5 text-gray-600 group-hover:text-indigo-600 transition-colors" />
@@ -44,17 +45,32 @@
                                                     ? 'bg-white text-indigo-600 shadow-md shadow-indigo-100/50 ring-1 ring-indigo-100'
                                                     : 'text-gray-600 hover:text-gray-900 hover:bg-white/60'
                                             ]"
-                                            :title="view.description"
+                                            :title="$t(view.description)"
                                         >
                                             <icon :name="view.icon" class="w-4 h-4 mr-2" />
-                                            {{ view.label }}
+                                            {{ $t(view.label) }}
                                         </button>
                                     </div>
+
+                                    <!-- Khmer lunar toggle -->
+                                    <button
+                                        @click="toggleKhmerCalendar"
+                                        :class="[
+                                            'flex items-center px-3 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 border',
+                                            khmerCalendarOn
+                                                ? 'text-amber-700 bg-amber-50 border-amber-200/80 hover:bg-amber-100 shadow-sm'
+                                                : 'text-gray-500 bg-white border-gray-200/60 hover:bg-gray-50'
+                                        ]"
+                                        :title="$t('Show the Khmer lunar calendar')"
+                                    >
+                                        <icon name="moon" class="w-4 h-4 mr-2" />
+                                        {{ $t('Khmer') }}
+                                    </button>
 
                                     <!-- Today Button -->
                                     <button @click="goToToday" class="flex items-center px-4 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 bg-white hover:bg-gray-50 rounded-xl border border-gray-200/60 transition-all duration-200">
                                         <icon name="calendar-today" class="w-4 h-4 mr-2" />
-                                        Today
+                                        {{ $t('Today') }}
                                     </button>
                                 </div>
                             </div>
@@ -69,7 +85,7 @@
                                 <div class="timeline-container">
                                     <div v-for="month in monthsInView" :key="month.month + '-' + month.year" class="mb-8">
                                         <div class="month-header mb-6">
-                                            <h3 class="text-xl font-bold text-gray-900">{{ month.name }} {{ month.year }}</h3>
+                                            <h3 class="text-xl font-bold text-gray-900">{{ month.name }} {{ khNum(month.year) }}</h3>
                                             <div class="w-full h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent mt-2"></div>
                                         </div>
 
@@ -104,7 +120,7 @@
                                                             </span>
                                                             <span v-if="task.assignees && task.assignees.length" class="flex items-center">
                                                                 <icon name="user" class="w-3 h-3 mr-1" />
-                                                                {{ task.assignees.length }} assignee(s)
+                                                                {{ $t(':count assignee(s)', { count: khNum(task.assignees.length) }) }}
                                                             </span>
                                                         </div>
                                                     </div>
@@ -194,6 +210,7 @@
                                 <div class="timeline-container">
                                     <div class="day-header mb-6">
                                         <h3 class="text-xl font-bold text-gray-900">{{ formatFullDate(selectedDate) }}</h3>
+                                        <khmer-date-card v-if="khmerCalendarOn" :date="selectedDate" :locale="khLocale" class="mt-3" />
                                         <div class="w-full h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent mt-2"></div>
                                     </div>
 
@@ -222,7 +239,7 @@
                                                         </span>
                                                         <span v-if="task.assignees && task.assignees.length" class="flex items-center">
                                                             <icon name="user" class="w-3 h-3 mr-1" />
-                                                            {{ task.assignees.length }} assignee(s)
+                                                            {{ $t(':count assignee(s)', { count: khNum(task.assignees.length) }) }}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -254,7 +271,7 @@
                 <div v-else class="flex-1 flex items-center justify-center">
                     <div class="text-center">
                         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-                        <p class="text-gray-600">Loading timeline...</p>
+                        <p class="text-gray-600">{{ $t('Loading timeline...') }}</p>
                     </div>
                 </div>
             </div>
@@ -270,17 +287,21 @@ import Layout from '@/Shared/Layout.vue'
 import { Head, Link } from '@inertiajs/vue3'
 import WorkspaceViewMenu from '@/Shared/WorkspaceViewMenu.vue'
 import Icon from '@/Shared/Icon.vue'
+import KhmerDateCard from '@/Shared/KhmerDateCard.vue'
+import khmerCalendarMixin from '@/Utils/khmerCalendarMixin'
 import TaskDetails from '@/Shared/Modals/TaskDetails.vue'
 import moment_timezone from 'moment-timezone'
 
 export default {
     metaInfo: { title: 'Timeline' },
     layout: Layout,
+    mixins: [khmerCalendarMixin],
     components: {
         Head,
         Link,
         WorkspaceViewMenu,
         Icon,
+        KhmerDateCard,
         TaskDetails,
     },
     props: {
@@ -318,31 +339,31 @@ export default {
         currentPeriodTitle() {
             switch (this.currentView) {
                 case 'year':
-                    return this.moment(this.currentDate).format('YYYY')
+                    return this.khNum(this.moment(this.currentDate).year())
                 case 'month':
-                    return this.moment(this.currentDate).format('MMMM YYYY')
+                    return this.khMonthYear(this.currentDate)
                 case 'week':
                     const weekStart = this.moment(this.selectedDate).startOf('week')
                     const weekEnd = this.moment(this.selectedDate).endOf('week')
-                    return `${weekStart.format('MMM D')} - ${weekEnd.format('MMM D, YYYY')}`
+                    return `${this.khShortDate(weekStart.toDate())} - ${this.khShortDate(weekEnd.toDate(), true)}`
                 case 'day':
-                    return this.moment(this.selectedDate).format('dddd, MMMM Do, YYYY')
+                    return this.khFullDate(this.selectedDate)
                 default:
-                    return this.moment(this.currentDate).format('MMMM YYYY')
+                    return this.khMonthYear(this.currentDate)
             }
         },
         currentPeriodSubtitle() {
             switch (this.currentView) {
                 case 'year':
-                    return 'Yearly timeline view'
+                    return this.$t('Yearly timeline view')
                 case 'month':
-                    return 'Monthly timeline view'
+                    return this.$t('Monthly timeline view')
                 case 'week':
-                    return 'Weekly timeline view'
+                    return this.$t('Weekly timeline view')
                 case 'day':
-                    return 'Daily timeline view'
+                    return this.$t('Daily timeline view')
                 default:
-                    return 'Timeline view'
+                    return this.$t('Timeline view')
             }
         },
         monthsInView() {
@@ -355,7 +376,7 @@ export default {
                 months.push({
                     month: current.month(),
                     year: current.year(),
-                    name: current.format('MMMM')
+                    name: this.khSolarMonth(current.month())
                 })
                 current.add(1, 'month')
             }
@@ -487,15 +508,13 @@ export default {
             return this.moment(date).isSame(this.moment(), 'day')
         },
         formatFullDate(date) {
-            return this.moment(date).format('dddd, MMMM Do, YYYY')
+            return this.khFullDate(date)
         },
         formatDate(date) {
-            return this.moment(date).format('MMM D, YYYY')
+            return this.khShortDate(date, true)
         },
         formatWeekRange(start, end) {
-            const startFormatted = this.moment(start).format('MMM D')
-            const endFormatted = this.moment(end).format('MMM D, YYYY')
-            return `${startFormatted} - ${endFormatted}`
+            return `${this.khShortDate(start)} - ${this.khShortDate(end, true)}`
         },
         openTask(task) {
             this.taskDetailsPopup(task.id)
