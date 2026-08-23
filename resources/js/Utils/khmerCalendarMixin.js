@@ -16,7 +16,10 @@ import {
     KHMER_WEEKDAYS_SHORT,
 } from '@/Utils/khmerCalendar'
 
-const STORAGE_KEY = 'calendar.khmer_lunar'
+// Bumped from 'calendar.khmer_lunar': that key had an off value stored in
+// browsers from before the layer defaulted on for Khmer users, which kept
+// hiding it. Changing the key resets everyone once, then choices stick.
+const STORAGE_KEY = 'calendar.khmer_lunar.v2'
 
 export default {
     data() {
@@ -146,6 +149,8 @@ export default {
         let stored = null
         try {
             stored = localStorage.getItem(STORAGE_KEY)
+            // Drop the pre-v2 preference so it cannot resurface.
+            localStorage.removeItem('calendar.khmer_lunar')
         } catch (e) {
             stored = null
         }

@@ -58,10 +58,11 @@
                                         :class="[
                                             'flex items-center px-3 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 border',
                                             khmerCalendarOn
-                                                ? 'text-amber-700 bg-amber-50 border-amber-200/80 hover:bg-amber-100 shadow-sm'
-                                                : 'text-gray-500 bg-white border-gray-200/60 hover:bg-gray-50'
+                                                ? 'text-white bg-amber-500 border-amber-500 hover:bg-amber-600 shadow-md shadow-amber-200'
+                                                : 'text-gray-400 bg-white border-dashed border-gray-300 hover:text-gray-600 hover:border-gray-400'
                                         ]"
-                                        :title="$t('Show the Khmer lunar calendar')"
+                                        :aria-pressed="khmerCalendarOn ? 'true' : 'false'"
+                                        :title="khmerCalendarOn ? $t('Hide the Khmer lunar calendar') : $t('Show the Khmer lunar calendar')"
                                     >
                                         <icon name="moon" class="w-4 h-4 mr-2" />
                                         {{ $t('Lunar') }}

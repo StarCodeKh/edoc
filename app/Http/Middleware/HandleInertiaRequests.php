@@ -164,7 +164,18 @@ class HandleInertiaRequests extends Middleware
             }
 
             return cache()->rememberForever('available_languages', function () {
-                return Language::orderBy('name')->get(['code', 'name'])->toArray();
+                // Khmer first, then English, then everything else by name.
+                $preferred = ['kh', 'en'];
+
+                return Language::orderBy('name')
+                    ->get(['code', 'name'])
+                    ->sortBy(function ($language) use ($preferred) {
+                        $rank = array_search($language->code, $preferred, true);
+
+                        return [$rank === false ? count($preferred) : $rank, $language->name];
+                    })
+                    ->values()
+                    ->toArray();
             });
         } catch (\Exception $e) {
             return [];
