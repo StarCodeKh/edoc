@@ -1,6 +1,6 @@
 <template>
     <div ref="root" class="filter-select" :class="{ 'is-open': open }">
-        <button type="button" class="filter-select__trigger" :aria-expanded="open" @click="toggle">
+        <button type="button" class="filter-select__trigger" :aria-expanded="open" :disabled="disabled" @click="toggle">
             <icon v-if="icon" :name="icon" class="filter-select__icon" />
             <span class="filter-select__value" :class="{ 'is-placeholder': !selectedValues.length }">
                 {{ triggerLabel }}
@@ -23,7 +23,7 @@
                 </div>
 
                 <ul class="filter-select__list">
-                    <li>
+                    <li v-if="showAll">
                         <button type="button" class="filter-select__option" :class="{ 'is-active': !selectedValues.length }" @click="pick(null)">
                             <span v-if="multiple" class="filter-select__box" :class="{ 'is-checked': !selectedValues.length }">
                                 <icon v-if="!selectedValues.length" name="check" class="h-2.5 w-2.5" />
@@ -77,6 +77,9 @@ export default {
         icon: { type: String, default: '' },
         /** Allow several options at once. modelValue becomes a comma-joined string. */
         multiple: { type: Boolean, default: false },
+        /** Filter bars want an "All" row; form selects supply their own blank option. */
+        showAll: { type: Boolean, default: true },
+        disabled: { type: Boolean, default: false },
         countLabel: { type: String, default: '' },
         clearLabel: { type: String, default: 'Clear' },
         /** Show the search box automatically once the list gets long. */
@@ -98,7 +101,8 @@ export default {
         triggerLabel() {
             if (!this.selectedValues.length) return this.placeholder || this.allLabel
             const first = this.options.find((o) => String(o.value) === this.selectedValues[0])
-            return first ? first.label : this.placeholder || this.allLabel
+            // A blank <option> carries no label; fall back rather than showing nothing.
+            return first && first.label ? first.label : this.placeholder || this.allLabel
         },
         filtered() {
             const q = this.query.trim().toLowerCase()
@@ -108,6 +112,7 @@ export default {
     },
     methods: {
         toggle() {
+            if (this.disabled) return
             this.open = !this.open
             if (this.open && this.searchable) {
                 this.$nextTick(() => this.$refs.search && this.$refs.search.focus())
@@ -128,7 +133,8 @@ export default {
             }
 
             if (!this.multiple) {
-                this.$emit('update:modelValue', String(value))
+                const option = this.options.find((o) => String(o.value) === String(value))
+                this.$emit('update:modelValue', option ? option.value : value)
                 this.close()
                 return
             }
@@ -182,6 +188,11 @@ export default {
 
 .filter-select__trigger:hover {
     border-color: #c7d2fe;
+}
+
+.filter-select__trigger:disabled {
+    opacity: .6;
+    cursor: not-allowed;
 }
 
 .is-open .filter-select__trigger {
