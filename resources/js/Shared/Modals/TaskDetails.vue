@@ -553,22 +553,29 @@
                                                             </div>
                                                         </div>
 
-                                                        <div class="flex items-center justify-center px-4 py-6" @wheel="handleDrawWheel">
-                                                            <div ref="drawStage" class="modal-pop__stage relative bg-white rounded shadow-2xl overflow-hidden mx-auto w-full" :class="{ 'stage-transitioning': pageTransitioning }" style="max-width: 880px;">
+                                                        <div class="px-2 sm:px-4 py-3 sm:py-6" @wheel="handleDrawWheel">
+                                                          <div ref="drawScroll" class="pdf-stage-scroll mx-auto w-full" style="max-width: 880px;">
+                                                            <div ref="drawStage" class="modal-pop__stage relative bg-white rounded shadow-2xl overflow-hidden mx-auto w-full" :class="{ 'stage-transitioning': pageTransitioning }">
                                                                 <iframe v-if="drawTool === 'view'" :key="'view-' + currentDrawPage" :src="pdfIframeSrc" class="absolute inset-0 w-full h-full border-0"></iframe>
                                                                 <canvas v-show="drawTool !== 'view'" ref="pdfRenderCanvas" class="absolute inset-0 w-full h-full"></canvas>
+                                                                <!-- Live stroke layer: the in-progress stroke lands here at full
+                                                                     opacity and is composited onto drawCanvas once, on release.
+                                                                     Keeps the highlighter from darkening where it overlaps itself. -->
+                                                                <canvas
+                                                                    v-show="drawTool !== 'view'"
+                                                                    ref="strokeCanvas"
+                                                                    class="absolute inset-0 w-full h-full pointer-events-none"
+                                                                    :style="{ opacity: strokeLayerOpacity }"
+                                                                ></canvas>
                                                                 <canvas
                                                                     v-show="drawTool !== 'view'"
                                                                     ref="drawCanvas"
                                                                     class="absolute inset-0 w-full h-full touch-none"
                                                                     :class="drawTool === 'text' ? 'cursor-text pointer-events-auto' : 'cursor-crosshair pointer-events-auto'"
-                                                                    @mousedown="startDrawing"
-                                                                    @mousemove="draw"
-                                                                    @mouseup="stopDrawing"
-                                                                    @mouseleave="stopDrawing"
-                                                                    @touchstart="startDrawing"
-                                                                    @touchmove="draw"
-                                                                    @touchend="stopDrawing"
+                                                                    @pointerdown="onDrawPointerDown"
+                                                                    @pointermove="onDrawPointerMove"
+                                                                    @pointerup="onDrawPointerUp"
+                                                                    @pointercancel="onDrawPointerCancel"
                                                                 ></canvas>
 
                                                                 <transition name="modal-fade">
@@ -603,20 +610,20 @@
                                                                         :key="'tn_' + note.id"
                                                                         class="absolute z-10 group select-none"
                                                                         :style="{ left: note.x + 'px', top: note.y + 'px', color: note.color, fontSize: note.fontSize + 'px', cursor: draggingNote && draggingNote.id === note.id ? 'grabbing' : 'grab', lineHeight: 1.2 }"
-                                                                        @mousedown.stop.prevent="startNoteDrag(note, $event)"
-                                                                        @touchstart.stop.prevent="startNoteDrag(note, $event)"
+                                                                        @pointerdown.stop.prevent="startNoteDrag(note, $event)"
                                                                     >
                                                                         <span class="whitespace-pre" style="font-family: sans-serif;">{{ note.text }}</span>
                                                                         <button
                                                                             type="button"
                                                                             class="absolute -top-2.5 -right-2.5 hidden group-hover:flex items-center justify-center w-4 h-4 rounded-full bg-red-600 text-white text-[10px] leading-none"
-                                                                            @mousedown.stop
+                                                                            @pointerdown.stop
                                                                             @click.stop="removeTextNote(note.id)"
                                                                             :title="$t('Remove note')"
                                                                         >×</button>
                                                                     </div>
                                                                 </template>
                                                             </div>
+                                                          </div>
                                                         </div>
                                                     </div>
 
@@ -1443,6 +1450,17 @@
                 currentDrawPage: 1,
                 totalPdfPages: 1,
                 wheelCooldown: false,
+                overscrollAmount: 0,
+
+                // Stroke engine state (kept raw - it is touched on every pointer move).
+                activePointers: markRaw(new Map()),
+                pendingPoints: [],
+                strokeRaf: null,
+                strokeCtx: null,
+                strokeMode: null,
+                lastPoint: null,
+                lastMid: null,
+                touchScroll: null,
                 pageTransitioning: false,
                 pageAnnotations: {},
                 dirtyPages: {},
@@ -1452,6 +1470,7 @@
                 autoSaving: false,
                 isRenderingPage: false,
                 canvasPixelRatio: 1,
+                renderedPage: null,
 
                 toasts: [],
                 toastIdCounter: 0,
@@ -1481,6 +1500,12 @@
             Icon, Loader, Link, DatePicker, DateTimePicker, CustomEditor, Head, WatchButton
         },
         computed: {
+            // Live highlighter strokes are previewed translucent, then baked in at
+            // the same alpha when the stroke ends.
+            strokeLayerOpacity() {
+                return this.drawTool === 'highlighter' ? 0.35 : 1;
+            },
+
             // Real ceiling PHP will accept (upload_max_filesize / post_max_size), capped at 50MB.
             maxUploadSize() {
                 return this.$page.props.max_upload_size || 50 * 1024 * 1024;
@@ -1645,12 +1670,20 @@
                     this.$nextTick(() => this.initViewFrame());
                     return;
                 }
+
+                // Swapping pen -> highlighter -> eraser -> text must not re-render
+                // the page; only a different page or a return from view mode does.
+                if (newTool !== 'view' && oldTool !== 'view' && this.renderedPage === this.currentDrawPage) {
+                    return;
+                }
+
                 await this.ensurePdfDocProxy();
                 await this.renderDrawPage(this.currentDrawPage);
                 const saved = this.pageAnnotations[this.currentDrawPage];
                 if (saved?.canvasImage) {
                     await this.restoreFromDataUrl(saved.canvasImage);
                 }
+                if (this.$refs.drawScroll) this.$refs.drawScroll.scrollTop = 0;
             },
         },
         methods: {
@@ -1759,6 +1792,7 @@
                 this.pageAnnotations = {};
                 this.dirtyPages = {};
                 this.pdfDocProxy = null;
+                this.renderedPage = null;
 
                 this.$nextTick(async () => {
                     if (this.isPdf(attachment.name)) {
@@ -1773,6 +1807,13 @@
                 this.viewModal.open = false;
                 this.viewModal.attachment = null;
                 this.isDrawing = false;
+                this.activePointers.clear();
+                this.touchScroll = null;
+                this.pendingPoints = [];
+                if (this.strokeRaf) {
+                    cancelAnimationFrame(this.strokeRaf);
+                    this.strokeRaf = null;
+                }
                 this.pdfDocProxy = null;
                 window.removeEventListener('resize', this.handleResize);
             },
@@ -1812,6 +1853,7 @@
                 const stage = this.$refs.drawStage;
                 const renderCanvas = this.$refs.pdfRenderCanvas;
                 const drawCanvas = this.$refs.drawCanvas;
+                const strokeCanvas = this.$refs.strokeCanvas;
                 if (!stage || !renderCanvas || !drawCanvas) return;
 
                 this.isRenderingPage = true;
@@ -1844,9 +1886,17 @@
                     drawCanvas.style.width = '100%';
                     drawCanvas.style.height = displayHeight + 'px';
 
+                    if (strokeCanvas) {
+                        strokeCanvas.width = drawCanvas.width;
+                        strokeCanvas.height = drawCanvas.height;
+                        strokeCanvas.style.width = '100%';
+                        strokeCanvas.style.height = displayHeight + 'px';
+                    }
+
                     const renderTask = page.render({ canvasContext: renderCanvas.getContext('2d'), viewport: bgViewport });
                     await renderTask.promise;
                     this.canvasCtx = drawCanvas.getContext('2d');
+                    this.renderedPage = pageNumber;
                 } catch (err) {
                     console.error('Failed to render PDF page', pageNumber, ':', err);
                     this.toastError(this.$t('Failed to render the page for drawing.'));
@@ -1858,8 +1908,10 @@
             initViewFrame() {
                 const stage = this.$refs.drawStage;
                 if (!stage) return;
+                // In view mode the iframe fills the stage and scrolls itself.
                 stage.style.height = Math.round(window.innerHeight * 0.78) + 'px';
-                stage.style.overflow = 'auto';
+                stage.style.overflow = 'hidden';
+                if (this.$refs.drawScroll) this.$refs.drawScroll.scrollTop = 0;
             },
 
             handleResize() {
@@ -1872,18 +1924,35 @@
 
             handleDrawWheel(e) {
                 if (this.drawTool === 'view') return;
+
+                const container = this.$refs.drawScroll;
+                if (!container) return;
+
+                const down = e.deltaY > 0;
+                const atTop = container.scrollTop <= 0;
+                const atBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 1;
+
+                // Normal scrolling inside the page: never hijack it.
+                if ((down && !atBottom) || (!down && !atTop)) {
+                    this.overscrollAmount = 0;
+                    return;
+                }
+
                 if (this.isDrawing || this.textInput.visible || this.draggingNote) return;
 
-                const threshold = 12;
-                if (Math.abs(e.deltaY) < threshold) return;
+                const direction = down ? 1 : -1;
+                const next = this.currentDrawPage + direction;
+                if (next < 1 || next > this.totalPdfPages) return;
 
                 e.preventDefault();
                 if (this.wheelCooldown) return;
 
-                const direction = e.deltaY > 0 ? 1 : -1;
-                const next = this.currentDrawPage + direction;
-                if (next < 1 || next > this.totalPdfPages) return;
+                // Require a deliberate extra push past the edge before flipping,
+                // so momentum scrolling doesn't skip pages on its own.
+                this.overscrollAmount += Math.abs(e.deltaY);
+                if (this.overscrollAmount < 120) return;
 
+                this.overscrollAmount = 0;
                 this.wheelCooldown = true;
                 this.goToDrawPage(direction);
                 setTimeout(() => { this.wheelCooldown = false; }, 450);
@@ -1912,6 +1981,11 @@
                 }
 
                 this.$nextTick(() => {
+                    const container = this.$refs.drawScroll;
+                    if (container) {
+                        // Arriving from below? start at the bottom, like a real reader.
+                        container.scrollTop = delta < 0 ? container.scrollHeight : 0;
+                    }
                     this.pageTransitioning = false;
                 });
             },
@@ -1940,57 +2014,223 @@
                 };
             },
 
-            startDrawing(e) {
-                if (!this.canvasCtx || this.drawTool === 'view') return;
+            // --- Pointer input: one code path for mouse, finger and stylus ------
+            onDrawPointerDown(e) {
+                if (this.drawTool === 'view') return;
+                if (e.pointerType === 'mouse' && e.button !== 0) return;
+
+                this.activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+                // A second finger means "scroll", not "draw" - drop the stroke
+                // that just started and pan the page instead.
+                if (this.activePointers.size > 1) {
+                    this.cancelStroke();
+                    this.beginTouchScroll();
+                    return;
+                }
 
                 if (this.drawTool === 'text') {
                     this.placeTextAt(e);
                     return;
                 }
 
-                this.pushHistory();
-                this.isDrawing = true;
-                const pos = this.getCanvasCoordinates(e);
-                this.canvasCtx.beginPath();
-                this.canvasCtx.moveTo(pos.x, pos.y);
+                if (e.cancelable) e.preventDefault();
+                try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) { /* not supported */ }
+                this.startStroke(e);
             },
 
-            draw(e) {
+            onDrawPointerMove(e) {
+                if (this.activePointers.has(e.pointerId)) {
+                    this.activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+                }
+
+                if (this.touchScroll) {
+                    if (e.cancelable) e.preventDefault();
+                    this.updateTouchScroll();
+                    return;
+                }
+
                 if (!this.isDrawing) return;
                 if (e.cancelable) e.preventDefault();
-                const pos = this.getCanvasCoordinates(e);
-                const ctx = this.canvasCtx;
-                ctx.lineCap = 'round';
-                ctx.lineJoin = 'round';
 
+                // Stylus and high-rate mice report several positions per frame;
+                // getCoalescedEvents gives us all of them so fast strokes keep
+                // their shape instead of turning into long straight segments.
+                const batch = typeof e.getCoalescedEvents === 'function' ? e.getCoalescedEvents() : null;
+                const moves = batch && batch.length ? batch : [e];
+                for (const move of moves) {
+                    this.pendingPoints.push(this.getCanvasCoordinates(move));
+                }
+                this.scheduleStrokeFlush();
+            },
+
+            onDrawPointerUp(e) {
+                this.activePointers.delete(e.pointerId);
+                if (this.touchScroll && this.activePointers.size < 2) this.touchScroll = null;
+                try { e.currentTarget.releasePointerCapture(e.pointerId); } catch (err) { /* noop */ }
+                this.commitStroke();
+            },
+
+            onDrawPointerCancel(e) {
+                this.activePointers.delete(e.pointerId);
+                this.touchScroll = null;
+                this.cancelStroke();
+            },
+
+            startStroke(e) {
+                if (!this.canvasCtx) return;
+
+                this.pushHistory();
+                this.isDrawing = true;
+                this.strokeMode = this.drawTool;
+                this.pendingPoints = [];
+
+                const pos = this.getCanvasCoordinates(e);
+                this.lastPoint = pos;
+                this.lastMid = pos;
+                this.strokeCtx = markRaw(this.configureStrokeContext());
+
+                // A tap with no movement should still leave a dot.
+                this.strokeCtx.beginPath();
+                this.strokeCtx.moveTo(pos.x, pos.y);
+                this.strokeCtx.lineTo(pos.x + 0.01, pos.y);
+                this.strokeCtx.stroke();
+            },
+
+            configureStrokeContext() {
                 const pr = this.canvasPixelRatio || 1;
-                if (this.drawTool === 'eraser') {
+
+                // The eraser has to bite into the real canvas; pen and highlighter
+                // draw on the scratch layer first.
+                if (this.strokeMode === 'eraser') {
+                    const ctx = this.canvasCtx;
                     ctx.globalCompositeOperation = 'destination-out';
                     ctx.globalAlpha = 1;
                     ctx.lineWidth = this.drawSettings.size * 5 * pr;
-                } else if (this.drawTool === 'highlighter') {
-                    ctx.globalCompositeOperation = 'source-over';
-                    ctx.globalAlpha = 0.35;
-                    ctx.strokeStyle = this.drawSettings.color;
-                    ctx.lineWidth = this.drawSettings.size * 4 * pr;
-                } else {
-                    ctx.globalCompositeOperation = 'source-over';
-                    ctx.globalAlpha = 1;
-                    ctx.strokeStyle = this.drawSettings.color;
-                    ctx.lineWidth = this.drawSettings.size * pr;
+                    ctx.lineCap = 'round';
+                    ctx.lineJoin = 'round';
+                    return ctx;
                 }
 
-                ctx.lineTo(pos.x, pos.y);
-                ctx.stroke();
+                const layer = this.$refs.strokeCanvas;
+                const ctx = layer.getContext('2d');
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.globalAlpha = 1;
+                ctx.strokeStyle = this.drawSettings.color;
+                ctx.lineWidth = this.drawSettings.size * (this.strokeMode === 'highlighter' ? 4 : 1) * pr;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                return ctx;
             },
 
-            stopDrawing() {
-                if (this.isDrawing) {
-                    this.canvasCtx.closePath();
+            scheduleStrokeFlush() {
+                if (this.strokeRaf) return;
+                this.strokeRaf = requestAnimationFrame(() => {
+                    this.strokeRaf = null;
+                    this.flushStroke();
+                });
+            },
+
+            // Draw the queued points as a quadratic curve through their midpoints -
+            // that is what turns a jagged list of samples into a smooth line.
+            flushStroke() {
+                if (!this.strokeCtx || !this.pendingPoints.length) return;
+
+                const ctx = this.strokeCtx;
+                ctx.beginPath();
+                ctx.moveTo(this.lastMid.x, this.lastMid.y);
+
+                for (const point of this.pendingPoints) {
+                    const mid = {
+                        x: (this.lastPoint.x + point.x) / 2,
+                        y: (this.lastPoint.y + point.y) / 2,
+                    };
+                    ctx.quadraticCurveTo(this.lastPoint.x, this.lastPoint.y, mid.x, mid.y);
+                    this.lastPoint = point;
+                    this.lastMid = mid;
+                }
+
+                ctx.stroke();
+                this.pendingPoints = [];
+            },
+
+            commitStroke() {
+                if (!this.isDrawing) return;
+
+                if (this.strokeRaf) {
+                    cancelAnimationFrame(this.strokeRaf);
+                    this.strokeRaf = null;
+                }
+                this.flushStroke();
+                this.isDrawing = false;
+
+                const layer = this.$refs.strokeCanvas;
+                if (this.strokeMode !== 'eraser' && layer && this.canvasCtx) {
+                    const ctx = this.canvasCtx;
+                    ctx.save();
+                    ctx.globalCompositeOperation = 'source-over';
+                    ctx.globalAlpha = this.strokeMode === 'highlighter' ? 0.35 : 1;
+                    ctx.drawImage(layer, 0, 0);
+                    ctx.restore();
+                    layer.getContext('2d').clearRect(0, 0, layer.width, layer.height);
+                }
+
+                this.canvasCtx.globalCompositeOperation = 'source-over';
+                this.canvasCtx.globalAlpha = 1;
+                this.strokeCtx = null;
+                this.strokeMode = null;
+            },
+
+            async cancelStroke() {
+                if (!this.isDrawing) return;
+
+                if (this.strokeRaf) {
+                    cancelAnimationFrame(this.strokeRaf);
+                    this.strokeRaf = null;
+                }
+                this.pendingPoints = [];
+                this.isDrawing = false;
+
+                const layer = this.$refs.strokeCanvas;
+                if (this.strokeMode !== 'eraser' && layer) {
+                    layer.getContext('2d').clearRect(0, 0, layer.width, layer.height);
+                }
+
+                // Undo the snapshot startStroke pushed. The eraser already bit into
+                // the canvas, so put that snapshot back before dropping it.
+                const snapshot = this.historyStack.pop();
+                if (this.strokeMode === 'eraser' && snapshot) {
                     this.canvasCtx.globalCompositeOperation = 'source-over';
                     this.canvasCtx.globalAlpha = 1;
-                    this.isDrawing = false;
+                    await this.restoreFromDataUrl(snapshot);
                 }
+
+                this.strokeCtx = null;
+                this.strokeMode = null;
+            },
+
+            // --- Two-finger panning (the canvas swallows native touch scrolling) ---
+            pointerCentroid() {
+                let x = 0, y = 0;
+                this.activePointers.forEach(p => { x += p.x; y += p.y; });
+                const count = this.activePointers.size || 1;
+                return { x: x / count, y: y / count };
+            },
+
+            beginTouchScroll() {
+                if (!this.$refs.drawScroll) return;
+                const centroid = this.pointerCentroid();
+                this.touchScroll = { lastX: centroid.x, lastY: centroid.y };
+            },
+
+            updateTouchScroll() {
+                const container = this.$refs.drawScroll;
+                if (!container || !this.touchScroll) return;
+
+                const centroid = this.pointerCentroid();
+                container.scrollTop -= centroid.y - this.touchScroll.lastY;
+                container.scrollLeft -= centroid.x - this.touchScroll.lastX;
+                this.touchScroll = { lastX: centroid.x, lastY: centroid.y };
             },
 
             clearCanvas() {
@@ -1998,6 +2238,8 @@
                 this.pushHistory();
                 const canvas = this.$refs.drawCanvas;
                 this.canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+                const layer = this.$refs.strokeCanvas;
+                if (layer) layer.getContext('2d').clearRect(0, 0, layer.width, layer.height);
             },
 
             placeTextAt(e) {
@@ -2042,27 +2284,24 @@
 
             // --- Dragging placed text notes ---
             startNoteDrag(note, e) {
-                if (e.type === 'mousedown' && e.button !== 0) return;
-                const point = e.touches ? e.touches[0] : e;
+                if (e.pointerType === 'mouse' && e.button !== 0) return;
                 this.draggingNote = {
                     id: note.id,
-                    startClientX: point.clientX,
-                    startClientY: point.clientY,
+                    startClientX: e.clientX,
+                    startClientY: e.clientY,
                     origX: note.x,
                     origY: note.y,
                 };
-                window.addEventListener('mousemove', this.onNoteDrag);
-                window.addEventListener('mouseup', this.endNoteDrag);
-                window.addEventListener('touchmove', this.onNoteDrag, { passive: false });
-                window.addEventListener('touchend', this.endNoteDrag);
+                window.addEventListener('pointermove', this.onNoteDrag, { passive: false });
+                window.addEventListener('pointerup', this.endNoteDrag);
+                window.addEventListener('pointercancel', this.endNoteDrag);
             },
 
             onNoteDrag(e) {
                 if (!this.draggingNote) return;
                 if (e.cancelable) e.preventDefault();
-                const point = e.touches ? e.touches[0] : e;
-                const dx = point.clientX - this.draggingNote.startClientX;
-                const dy = point.clientY - this.draggingNote.startClientY;
+                const dx = e.clientX - this.draggingNote.startClientX;
+                const dy = e.clientY - this.draggingNote.startClientY;
                 const note = this.textNotes.find(n => n.id === this.draggingNote.id);
                 if (note) {
                     note.x = this.draggingNote.origX + dx;
@@ -2072,10 +2311,9 @@
 
             endNoteDrag() {
                 this.draggingNote = null;
-                window.removeEventListener('mousemove', this.onNoteDrag);
-                window.removeEventListener('mouseup', this.endNoteDrag);
-                window.removeEventListener('touchmove', this.onNoteDrag);
-                window.removeEventListener('touchend', this.endNoteDrag);
+                window.removeEventListener('pointermove', this.onNoteDrag);
+                window.removeEventListener('pointerup', this.endNoteDrag);
+                window.removeEventListener('pointercancel', this.endNoteDrag);
             },
 
             removeTextNote(id) {
@@ -3550,5 +3788,44 @@
     .stage-transitioning {
         opacity: 0.35;
         transform: scale(0.985);
+    }
+
+    /* Scroll container for the annotated page. The canvas eats native touch
+       scrolling (touch-action: none) so one finger can draw; two fingers are
+       panned by hand in updateTouchScroll(). */
+    .pdf-stage-scroll {
+        max-height: 78vh;
+        overflow: auto;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+    }
+    .pdf-stage-scroll::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+    .pdf-stage-scroll::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.22);
+        border-radius: 999px;
+    }
+    .pdf-stage-scroll::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.35);
+    }
+    .pdf-stage-scroll::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    /* Phones: give the page more of the screen and keep the canvas crisp. */
+    @media (max-width: 640px) {
+        .pdf-stage-scroll {
+            max-height: 68vh;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .modal-pop__stage {
+            transition: none;
+        }
     }
 </style>
