@@ -142,8 +142,33 @@ class HandleInertiaRequests extends Middleware
                     ];
                 }
             },
+            'languages' => fn () => $this->availableLanguages(),
             'max_upload_size' => fn () => $this->maxUploadSize(),
         ]);
+    }
+
+    /**
+     * Languages the top-bar switcher offers. Kept behind the same install and
+     * connection guards as the other shared props so a half-installed app
+     * still renders.
+     */
+    protected function availableLanguages(): array
+    {
+        if (!config('app.installed')) {
+            return [];
+        }
+
+        try {
+            if (!DB::connection()->getPdo() || !Schema::hasTable('languages')) {
+                return [];
+            }
+
+            return cache()->rememberForever('available_languages', function () {
+                return Language::orderBy('name')->get(['code', 'name'])->toArray();
+            });
+        } catch (\Exception $e) {
+            return [];
+        }
     }
 
     /**

@@ -117,6 +117,30 @@
                                     </g>
                                 </svg>
                             </button>
+                            <!-- Language switcher -->
+                            <dropdown v-if="availableLanguages.length > 1" class="select_language" class-name="lang-dropdown" placement="bottom-end" :dim="false" :offset="8">
+                                <template #default>
+                                    <div class="flex items-center cursor-pointer group" :title="$t('Language')">
+                                        <icon :name="activeLanguage.code" class="lang-flag lang-flag--lg" />
+                                        <icon class="w-5 h-5 drop-down-caret-icon fill-white" name="cheveron-down" />
+                                    </div>
+                                </template>
+                                <template #dropdown>
+                                    <div class="lang-menu">
+                                        <Link
+                                            v-for="language in availableLanguages"
+                                            :key="language.code"
+                                            class="lang-menu__item"
+                                            :class="{ 'is-active': language.code === locale }"
+                                            :href="route('language', language.code)"
+                                        >
+                                            <icon :name="language.code" class="lang-flag" />
+                                            <span class="lang-menu__name">{{ $t(language.name) }}</span>
+                                            <icon v-if="language.code === locale" name="check" class="lang-menu__check" />
+                                        </Link>
+                                    </div>
+                                </template>
+                            </dropdown>
                             <dropdown class="select_user" placement="bottom-end">
                                 <template #default>
                                     <div class="flex items-center cursor-pointer group">
@@ -231,10 +255,27 @@ export default {
         }
     },
     computed: {
-
+        /** Languages offered by the switcher, shared from the backend. */
+        availableLanguages() {
+            return this.$page.props.languages || []
+        },
+        activeLanguage() {
+            return this.availableLanguages.find(l => l.code === this.locale)
+                || { code: 'en', name: 'English' }
+        },
     },
     // $page.props.counter
     watch: {
+        '$page.props.auth.user.locale': {
+            handler(locale) {
+                if (!locale || locale === this.locale) return
+                this.locale = locale
+                this.dir = ['sa', 'he', 'ur'].includes(locale) ? 'rtl' : 'ltr'
+                if (getActiveLanguage() !== locale) {
+                    loadLanguageAsync(locale)
+                }
+            },
+        },
         '$page.props.tracker': {
             handler() {
                 if(this.$page.props.tracker){

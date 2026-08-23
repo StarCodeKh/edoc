@@ -158,17 +158,29 @@ export function getKhmerDate(date) {
     let result = null
     try {
         const kh = momentkh.fromDate(d).khmer
-        // រោច runs to 14 in a 29-day month and to 15 in a 30-day one.
-        const daysInWaning = kh.monthIndex % 2 === 0 ? 14 : 15
-        const isLastWaning = kh.moonPhase === 1 && kh.day >= daysInWaning
+        // រោច runs to 14 in a 29-day month and to 15 in a 30-day one, and the
+        // exceptions (បឋមាសាឍ, ទុតិយាសាឍ, and ជេស្ឋ in a leap-day year) do not
+        // follow the odd/even rule. Rather than restate that table, ask the
+        // engine what tomorrow is: if the month rolls over, today was its last
+        // day — which is the new moon.
+        const tomorrow = momentkh.fromDate(new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1)).khmer
+        const isLastWaning = kh.moonPhase === 1 && tomorrow.moonPhase === 0
+        const daysInWaning = isLastWaning ? kh.day : (kh.monthIndex % 2 === 0 ? 14 : 15)
         const isFullMoon = kh.moonPhase === 0 && kh.day === 15
 
         result = {
             ...kh,
             dayKh: toKhmerNumeral(kh.day),
-            // ១០កើត
-            dayLabel: `${toKhmerNumeral(kh.day)}${kh.moonPhaseName}`,
+            // Printed Khmer calendars space the numeral off the phase: '១០ កើត'.
+            dayLabel: `${toKhmerNumeral(kh.day)} ${kh.moonPhaseName}`,
             dayLabelLatin: `${kh.day} ${kh.moonPhase === 0 ? 'Waxing' : 'Waning'}`,
+            // …and print the month's name in place of '១ កើត' on its first day.
+            cellLabel: kh.moonPhase === 0 && kh.day === 1
+                ? kh.monthName
+                : `${toKhmerNumeral(kh.day)} ${kh.moonPhaseName}`,
+            cellLabelLatin: kh.moonPhase === 0 && kh.day === 1
+                ? (LATIN_LUNAR_MONTHS[kh.monthIndex] || kh.monthName)
+                : `${kh.day} ${kh.moonPhase === 0 ? 'kaet' : 'roch'}`,
             monthLabel: `ខែ${kh.monthName}`,
             monthLabelLatin: LATIN_LUNAR_MONTHS[kh.monthIndex] || kh.monthName,
             yearLabel: `ឆ្នាំ${kh.animalYearName} ${kh.sakName}`,
@@ -183,7 +195,10 @@ export function getKhmerDate(date) {
             // ថ្ងៃសីល — the four Buddhist precept days of each lunar month.
             isSilaDay: isFullMoon || isLastWaning || kh.day === 8,
             moonEmoji: moonEmoji(kh.day, kh.moonPhase, daysInWaning),
-            full: `ថ្ងៃ${kh.dayOfWeekName} ${toKhmerNumeral(kh.day)}${kh.moonPhaseName} ខែ${kh.monthName} ឆ្នាំ${kh.animalYearName} ${kh.sakName} ព.ស. ${toKhmerNumeral(kh.beYear)}`,
+            // Marks printed under the date on a Khmer calendar.
+            noteLabel: isFullMoon ? 'ពេញបូណ៌មី' : (isLastWaning ? 'ដាច់ខែ' : ''),
+            noteLabelLatin: isFullMoon ? 'Full moon' : (isLastWaning ? 'New moon' : ''),
+            full: `ថ្ងៃ${kh.dayOfWeekName} ${toKhmerNumeral(kh.day)} ${kh.moonPhaseName} ខែ${kh.monthName} ឆ្នាំ${kh.animalYearName} ${kh.sakName} ព.ស. ${toKhmerNumeral(kh.beYear)}`,
         }
     } catch (e) {
         result = null

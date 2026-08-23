@@ -64,7 +64,7 @@
                                         :title="$t('Show the Khmer lunar calendar')"
                                     >
                                         <icon name="moon" class="w-4 h-4 mr-2" />
-                                        {{ $t('Khmer') }}
+                                        {{ $t('Lunar') }}
                                     </button>
 
                                     <!-- Today Button -->

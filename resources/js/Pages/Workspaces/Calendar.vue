@@ -65,7 +65,7 @@
                                             :title="$t('Show the Khmer lunar calendar')"
                                         >
                                             <icon name="moon" class="w-4 h-4 mr-2" />
-                                            {{ $t('Khmer') }}
+                                            {{ $t('Lunar') }}
                                         </button>
                                         <button @click="goToToday" class="flex items-center px-4 py-2.5 text-sm font-semibold text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 bg-indigo-50/50 rounded-xl transition-all duration-200 border border-indigo-200/60">
                                             <icon name="calendar" class="w-4 h-4 mr-2" />
@@ -114,11 +114,16 @@
                                             ]">
                                                 {{ khNum(day.date.getDate()) }}
                                             </div>
-                                            <div v-if="khmerCalendarOn" :class="[
-                                                'text-[11px] font-semibold leading-tight truncate khmer-lunar-text',
-                                                khIsSilaDay(day.date) ? 'text-amber-600' : (day.isCurrentMonth ? 'text-indigo-500' : 'text-gray-400')
-                                            ]">
-                                                {{ khDayLabel(day.date) }}
+                                            <div v-if="khmerCalendarOn" class="min-w-0 leading-tight">
+                                                <div :class="[
+                                                    'text-[11px] font-semibold truncate khmer-lunar-text',
+                                                    khIsSilaDay(day.date) ? 'text-amber-600' : (day.isCurrentMonth ? 'text-indigo-500' : 'text-gray-400')
+                                                ]">
+                                                    <span v-if="khIsSilaDay(day.date)" class="mr-0.5" :title="$t('Precept Day')">🧘</span>{{ khDayLabel(day.date) }}
+                                                </div>
+                                                <div v-if="khNote(day.date)" class="text-[10px] font-medium text-gray-400 truncate khmer-lunar-text">
+                                                    {{ khNote(day.date) }}
+                                                </div>
                                             </div>
                                         </div>
                                         <div v-if="getTasksForDay(day.date).length > 0" class="flex items-center">

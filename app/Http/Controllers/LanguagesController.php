@@ -42,6 +42,7 @@ class LanguagesController extends Controller {
         ]);
         File::put(lang_path($data['code'].'.json'), \json_encode([]));
         Language::create($data);
+        cache()->forget('available_languages');
 
         return Redirect::route('languages')->with('success', 'Language created.');
     }
@@ -56,6 +57,7 @@ class LanguagesController extends Controller {
                 File::delete(lang_path($language->code.'.json'));
             }
             $language->delete();
+            cache()->forget('available_languages');
             return Redirect::back()->with('success', 'Language deleted!');
         }else{
             return Redirect::back()->with('error', 'Can not delete the language!');

@@ -91,11 +91,20 @@ export default {
         khWeekdayName(date) {
             return this.khIsKhmerLocale ? KHMER_WEEKDAYS[new Date(date).getDay()] : this.moment(date).format('ddd')
         },
-        /** Compact cell label, e.g. '១០កើត'. */
+        /**
+         * Cell label as a printed Khmer calendar writes it: '១០ កើត', or the
+         * lunar month's name on its first day instead of '១ កើត'.
+         */
         khDayLabel(date) {
             const kh = getKhmerDate(date)
             if (!kh) return ''
-            return this.khIsKhmerLocale ? kh.dayLabel : `${kh.day} ${kh.moonPhase === 0 ? 'kaet' : 'roch'}`
+            return this.khIsKhmerLocale ? kh.cellLabel : kh.cellLabelLatin
+        },
+        /** 'ពេញបូណ៌មី' / 'ដាច់ខែ' — printed under the date on full and new moons. */
+        khNote(date) {
+            const kh = getKhmerDate(date)
+            if (!kh) return ''
+            return this.khIsKhmerLocale ? kh.noteLabel : kh.noteLabelLatin
         },
         khShortWeekday(index) {
             return KHMER_WEEKDAYS_SHORT[index] || ''
