@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Notifications\Concerns\SendsTelegramNotification;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
@@ -17,6 +18,7 @@ use Illuminate\Support\HtmlString;
 class UserAssignedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
+    use SendsTelegramNotification;
 
     public function __construct(
         public Task $task,
@@ -128,5 +130,20 @@ class UserAssignedNotification extends Notification implements ShouldQueue
         $message .= "_ProTask • " . now()->format('M d, Y g:i A') . "_";
 
         SlackAlert::message($message);
+    }
+
+    public function sendTelegramNotification(): void
+    {
+        $url = route('projects.board.with.task', [$this->task->project_id, $this->task->id]);
+
+        $this->dispatchTelegram('user_assigned', [
+            '{assignee_name}' => $this->telegramSafe(trim(($this->assignedUser?->first_name ?? '').' '.($this->assignedUser?->last_name ?? ''))),
+            '{assigner_name}' => $this->telegramSafe($this->assignerUser->first_name.' '.$this->assignerUser->last_name),
+            '{task_name}' => $this->telegramSafe($this->task->title),
+            '{project_name}' => $this->telegramSafe($this->task->project->title),
+            '{workspace_name}' => $this->telegramSafe($this->task->project->workspace->name),
+            '{due_date}' => $this->task->due_date ? $this->task->due_date->format('M d, Y') : '—',
+            '{task_url}' => $url,
+        ], "\xF0\x9F\x93\x8C <b>Task Assigned</b>\n<a href=\"{task_url}\">{task_name}</a> → {assignee_name}");
     }
 }

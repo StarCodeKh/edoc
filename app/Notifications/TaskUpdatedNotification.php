@@ -1,6 +1,7 @@
 <?php
 namespace App\Notifications;
 
+use App\Notifications\Concerns\SendsTelegramNotification;
 use App\Models\BoardList;
 use App\Models\Task;
 use App\Models\User;
@@ -16,6 +17,7 @@ use App\Models\NotificationSetting;
 class TaskUpdatedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
+    use SendsTelegramNotification;
 
     public function __construct(
         public Task $task,
@@ -160,5 +162,19 @@ class TaskUpdatedNotification extends Notification implements ShouldQueue
         $message .= "_ProTask • " . now()->format('M d, Y g:i A') . "_";
 
         SlackAlert::message($message);
+    }
+
+    public function sendTelegramNotification(): void
+    {
+        $url = route('projects.board.with.task', [$this->task->project_id, $this->task->id]);
+
+        $this->dispatchTelegram('task_updated', [
+            '{actor_name}' => $this->telegramSafe($this->updatingUser->first_name.' '.$this->updatingUser->last_name),
+            '{task_name}' => $this->telegramSafe($this->task->title),
+            '{project_name}' => $this->telegramSafe($this->task->project->title),
+            '{workspace_name}' => $this->telegramSafe($this->task->project->workspace->name),
+            '{change_message}' => $this->telegramSafe($this->generateMessage(), 500),
+            '{task_url}' => $url,
+        ], "\xE2\x9C\x8F\xEF\xB8\x8F <b>Task Updated</b>\n<a href=\"{task_url}\">{task_name}</a>\n\n{change_message}");
     }
 }

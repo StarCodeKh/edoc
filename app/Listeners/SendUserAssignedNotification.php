@@ -33,6 +33,7 @@ class SendUserAssignedNotification implements ShouldQueue
 
             // Send Slack notification
             $notification->sendSlackNotification();
+            $notification->sendTelegramNotification();
         }
 
         // --- Notification for Watchers ---

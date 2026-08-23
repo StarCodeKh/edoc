@@ -1,6 +1,7 @@
 <?php
 namespace App\Notifications;
 
+use App\Notifications\Concerns\SendsTelegramNotification;
 use App\Models\Comment;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -15,6 +16,7 @@ use Illuminate\Support\Facades\Log;
 class NewCommentNotification extends Notification implements ShouldQueue
 {
     use Queueable;
+    use SendsTelegramNotification;
 
     public function __construct(public Comment $comment, public bool $emailIsActive)
     {
@@ -118,5 +120,19 @@ class NewCommentNotification extends Notification implements ShouldQueue
         $message .= "_ProTask • " . now()->format('M d, Y g:i A') . "_";
 
         SlackAlert::message($message);
+    }
+
+    public function sendTelegramNotification(): void
+    {
+        $url = route('projects.board.with.task', [$this->comment->task->project_id, $this->comment->task_id]);
+
+        $this->dispatchTelegram('new_comment', [
+            '{actor_name}' => $this->telegramSafe($this->comment->user->first_name.' '.$this->comment->user->last_name),
+            '{task_name}' => $this->telegramSafe($this->comment->task->title),
+            '{project_name}' => $this->telegramSafe($this->comment->task->project->title),
+            '{workspace_name}' => $this->telegramSafe($this->comment->task->project->workspace->name),
+            '{comment}' => $this->telegramSafe($this->comment->details, 500),
+            '{task_url}' => $url,
+        ], "\xF0\x9F\x92\xAC <b>New Comment</b>\n<a href=\"{task_url}\">{task_name}</a> — {actor_name}\n\n{comment}");
     }
 }

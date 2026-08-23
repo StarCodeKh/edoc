@@ -52,6 +52,7 @@ class SendTaskUpdatedNotification implements ShouldQueue
             
             // Send ONE Slack notification for the task update (not per user)
             $notification->sendSlackNotification();
+            $notification->sendTelegramNotification();
         }
     }
 }

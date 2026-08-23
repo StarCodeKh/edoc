@@ -9,6 +9,8 @@ use App\Models\EmailTemplate;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Mail;
+use App\Models\NotificationSetting;
+use App\Services\TelegramService;
 use Spatie\SlackAlerts\Facades\SlackAlert;
 
 class BoardUpdateNotification
@@ -39,6 +41,8 @@ class BoardUpdateNotification
                 SlackAlert::message($message);
             }
 
+            $this->sendTelegramNotification($board, $variables);
+
         }
     }
 
@@ -53,6 +57,30 @@ class BoardUpdateNotification
             Mail::to($variables['email'])->queue(new SendMailFromHtml($messageData));
         }else{
             Mail::to($variables['email'])->send(new SendMailFromHtml($messageData));
+        }
+    }
+
+    /**
+     * Push the board change to Telegram using the 'project_update' template.
+     */
+    private function sendTelegramNotification($board, array $variables): void
+    {
+        $setting = NotificationSetting::where('type', 'project_update')->first();
+
+        if (!$setting || !$setting->telegram_is_active || !$setting->can_be_telegrammed) {
+            return;
+        }
+
+        $safe = fn ($value) => htmlspecialchars(trim(strip_tags((string) $value)), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+
+        $message = EmailTemplate::render('project_update', EmailTemplate::CHANNEL_TELEGRAM, [
+            '{board_name}' => $safe($variables['board_name']),
+            '{project_name}' => $safe(optional($board->project)->title),
+            '{link}' => $variables['link'],
+        ], "\xF0\x9F\x93\x8B <b>Project Updated</b>\n<a href=\"{link}\">{board_name}</a>");
+
+        if ($message !== '') {
+            app(TelegramService::class)->send($message);
         }
     }
 }

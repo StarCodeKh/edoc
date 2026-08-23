@@ -32,5 +32,6 @@ class SendNewMemberNotification implements ShouldQueue
         
         // Send Slack notification
         $notification->sendSlackNotification();
+        $notification->sendTelegramNotification();
     }
 }

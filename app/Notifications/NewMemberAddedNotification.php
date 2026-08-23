@@ -1,6 +1,7 @@
 <?php
 namespace App\Notifications;
 
+use App\Notifications\Concerns\SendsTelegramNotification;
 use App\Models\TeamMember;
 use App\Models\EmailTemplate;
 use App\Models\NotificationSetting;
@@ -14,6 +15,7 @@ use Spatie\SlackAlerts\Facades\SlackAlert;
 class NewMemberAddedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
+    use SendsTelegramNotification;
 
     public function __construct(
         public TeamMember $teamMember,
@@ -108,5 +110,17 @@ class NewMemberAddedNotification extends Notification implements ShouldQueue
             .'<p>You have been added to the <strong>'.e($r['{workspace_name}']).'</strong> workspace.</p>'
             .'<p><a href="'.e($r['{action_url}']).'" target="_blank">Open Workspace</a></p>'
             .'</body></html>';
+    }
+
+    public function sendTelegramNotification(): void
+    {
+        $url = route('workspace.view', $this->teamMember->workspace->slug);
+
+        $this->dispatchTelegram('new_workspace_member', [
+            '{member_name}' => $this->telegramSafe(trim($this->teamMember->user->first_name.' '.($this->teamMember->user->last_name ?? ''))),
+            '{adder_name}' => $this->telegramSafe($this->teamMember->adder->first_name.' '.$this->teamMember->adder->last_name),
+            '{workspace_name}' => $this->telegramSafe($this->teamMember->workspace->name),
+            '{workspace_link}' => $url,
+        ], "\xF0\x9F\x91\xA5 <b>New Workspace Member</b>\n{member_name} joined <a href=\"{workspace_link}\">{workspace_name}</a>");
     }
 }

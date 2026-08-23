@@ -56,5 +56,6 @@ class SendNewCommentNotification implements ShouldQueue
         
         // Send ONE Slack notification for the comment (not per user)
         $notification->sendSlackNotification();
+        $notification->sendTelegramNotification();
     }
 }
