@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             BackgroundSeeder::class,
             EmailTemplateSeeder::class,
+            TelegramTemplateSeeder::class,
             LanguageSeeder::class,
             RoleSeeder::class,
             UserSeeder::class,

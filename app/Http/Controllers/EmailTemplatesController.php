@@ -80,6 +80,6 @@ class EmailTemplatesController extends Controller {
             ])
         );
 
-        return Redirect::back()->with('success', 'Email template updated.');
+        return Redirect::back()->with('success', 'Template updated.');
     }
 }
