@@ -85,42 +85,41 @@
 </template>
 
 <script>
-import Logo from '@/Shared/Logo.vue'
-import TextInput from '@/Shared/TextInput.vue'
-import LoadingButton from '@/Shared/LoadingButton.vue'
-import { Head, Link } from '@inertiajs/vue3'
-import FlashMessages from '@/Shared/FlashMessages.vue'
+    import Logo from '@/Shared/Logo.vue'
+    import TextInput from '@/Shared/TextInput.vue'
+    import LoadingButton from '@/Shared/LoadingButton.vue'
+    import { Head, Link } from '@inertiajs/vue3'
+    import FlashMessages from '@/Shared/FlashMessages.vue'
 
-export default {
-  metaInfo: { title: 'កំណត់លេខសម្ងាត់ឡើងវិញ - E-Document System' },
-  components: {
-    LoadingButton,
-    Logo,
-    TextInput,
-      Head,
-      Link,
-      FlashMessages,
-  },
-    props: {
-        is_demo: Number
+    export default {
+    metaInfo: { title: 'កំណត់លេខសម្ងាត់ឡើងវិញ - E-Document System' },
+    components: {
+        LoadingButton,
+        Logo,
+        TextInput,
+        Head,
+        Link,
+        FlashMessages,
     },
-  data() {
-    return {
-      form: this.$inertia.form({
-        email: '',
-      }),
+        props: {
+            is_demo: Number
+        },
+    data() {
+        return {
+        form: this.$inertia.form({
+            email: '',
+        }),
+        }
+    },
+    methods: {
+        sendLink() {
+            this.form.post(this.route('password.reset.email'))
+        },
     }
-  },
-  methods: {
-      sendLink() {
-          this.form.post(this.route('password.reset.email'))
-      },
-  }
-}
+    }
 </script>
 
 <style scoped>
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Khmer:wght@400;500;600;700&display=swap');
 
     * {
         font-family: 'Noto Sans Khmer', 'Kantumruy Pro', ui-sans-serif, sans-serif;

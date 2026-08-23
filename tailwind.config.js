@@ -1,7 +1,3 @@
-
-
-
-
 const colors = require('tailwindcss/colors')
 const defaultTheme = require('tailwindcss/defaultTheme')
 
@@ -87,6 +83,11 @@ module.exports = {
       }),
       fontFamily: {
         sans: ['Cerebri Sans', ...defaultTheme.fontFamily.sans],
+        // Resolve through the CSS variables defined in resources/css/font.scss,
+        // so `font-khmer` etc. follow whatever those variables are set to.
+        khmer: ['var(--font-khmer-body)'],
+        'khmer-serif': ['var(--font-khmer-serif)'],
+        'khmer-display': ['var(--font-khmer-display)'],
       },
       boxShadow: theme => ({
         outline: '0 0 0 2px ' + theme('colors.indigo.500'),

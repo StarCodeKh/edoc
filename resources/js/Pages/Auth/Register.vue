@@ -152,75 +152,74 @@
 </template>
 
 <script>
-import Logo from '@/Shared/Logo.vue'
-import TextInput from '@/Shared/TextInput.vue'
-import LoadingButton from '@/Shared/LoadingButton.vue'
-import FlashMessages from '@/Shared/FlashMessages.vue'
-import { Head, Link } from '@inertiajs/vue3'
-import vueRecaptcha from "vue3-recaptcha2";
+    import Logo from '@/Shared/Logo.vue'
+    import TextInput from '@/Shared/TextInput.vue'
+    import LoadingButton from '@/Shared/LoadingButton.vue'
+    import FlashMessages from '@/Shared/FlashMessages.vue'
+    import { Head, Link } from '@inertiajs/vue3'
+    import vueRecaptcha from "vue3-recaptcha2";
 
-export default {
-  metaInfo: { title: 'ចុះឈ្មោះ - E-Document System' },
-  components: {
-    LoadingButton,
-    Logo,
-    TextInput,
-      Head,
-      Link,
-      FlashMessages,
-      vueRecaptcha,
-  },
-    props: {
-        is_demo: Number,
-        site_key: String,
+    export default {
+    metaInfo: { title: 'ចុះឈ្មោះ - E-Document System' },
+    components: {
+        LoadingButton,
+        Logo,
+        TextInput,
+        Head,
+        Link,
+        FlashMessages,
+        vueRecaptcha,
     },
-  data() {
-    return {
-        disable_button: true,
-      form: this.$inertia.form({
-        first_name: '',
-        last_name: '',
-          email: '',
-          phone: '',
-        address: '',
-        password: '',
-        confirm_password: '',
-      }),
+        props: {
+            is_demo: Number,
+            site_key: String,
+        },
+    data() {
+        return {
+            disable_button: true,
+        form: this.$inertia.form({
+            first_name: '',
+            last_name: '',
+            email: '',
+            phone: '',
+            address: '',
+            password: '',
+            confirm_password: '',
+        }),
+        }
+    },
+    methods: {
+        recaptchaVerified(response) {
+            this.disable_button = false
+            console.log(response)
+        },
+        recaptchaExpired() {
+            this.$refs.vueRecaptcha.reset();
+        },
+        recaptchaFailed() {
+        },
+        recaptchaError(reason) {
+            console.log(reason)
+        },
+        login() {
+            if(this.form.password !== this.form.confirm_password){
+                alert('Your password is not matched correctly.')
+                return
+            }
+            this.form.post(this.route('register.store'))
+        },
+        autofillLogin(e, role){
+            e.preventDefault()
+            const roleEmails = { 'admin': 'john.due.helo@mail.com', 'manager': 'robert.slaughter@mail.com', 'customer' : 'mmarks@example.com'}
+            this.form.email = roleEmails[role]
+            this.form.password = 'secret'
+            this.login();
+        }
     }
-  },
-  methods: {
-      recaptchaVerified(response) {
-          this.disable_button = false
-          console.log(response)
-      },
-      recaptchaExpired() {
-          this.$refs.vueRecaptcha.reset();
-      },
-      recaptchaFailed() {
-      },
-      recaptchaError(reason) {
-          console.log(reason)
-      },
-      login() {
-          if(this.form.password !== this.form.confirm_password){
-              alert('Your password is not matched correctly.')
-              return
-          }
-          this.form.post(this.route('register.store'))
-      },
-      autofillLogin(e, role){
-          e.preventDefault()
-          const roleEmails = { 'admin': 'john.due.helo@mail.com', 'manager': 'robert.slaughter@mail.com', 'customer' : 'mmarks@example.com'}
-          this.form.email = roleEmails[role]
-          this.form.password = 'secret'
-          this.login();
-      }
-  }
-}
+    }
 </script>
 
 <style scoped>
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Khmer:wght@400;500;600;700&display=swap');
 
     * {
         font-family: 'Noto Sans Khmer', 'Kantumruy Pro', ui-sans-serif, sans-serif;
