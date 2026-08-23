@@ -121,7 +121,7 @@ class TasksController extends Controller
     public function activities($id)
     {
         $rows = Activity::where('task_id', $id)
-            ->with('user:id,name')
+            ->with('user:id,first_name,last_name')
             ->orderByDesc('created_at')
             ->get(['id', 'user_id', 'task_id', 'field_changed', 'old_value', 'new_value', 'created_at']);
 

@@ -76,6 +76,12 @@
                                         <h4 class="t__title">{{ element.title }}</h4>
                                     </div>
 
+                                    <div v-if="element.priority" class="t__priority" :style="{ '--p-color': element.priority.color || '#9ca3af' }">
+                                        <span class="t__priority__dot"></span>
+                                        <span>{{ element.priority.name }}</span>
+                                    </div>
+
+
                                     <div class="doc-track-row">
                                         <div
                                             @click.stop="openReceiptModal(element, $event)"
@@ -309,9 +315,55 @@
                                 <span class="doc-drawer__field-label">{{ $t('Priority') }}</span>
                                 <span class="doc-drawer__field-value">{{ (drawerTask && drawerTask.priority && drawerTask.priority.name) || $t('Normal') }}</span>
                             </div>
-                            <div class="doc-drawer__field">
-                                <span class="doc-drawer__field-label">{{ $t('Assigned') }}</span>
-                                <span class="doc-drawer__field-value">{{ drawerAssigneeNames || '— ' + $t('not yet assigned') + ' —' }}</span>
+                            <div class="doc-drawer__field doc-assign">
+                                <span class="doc-drawer__field-label">
+                                    {{ $t('Assigned') }}
+                                    <button type="button" class="doc-assign__add" :title="$t('Assignee')" @click.stop="toggleAssignPicker">
+                                        <icon name="add" class="w-3 h-3" />
+                                    </button>
+                                </span>
+
+                                <div v-if="drawerAssignees.length" class="doc-assign__list">
+                                    <span v-for="a in drawerAssignees" :key="'da_' + a.user_id" class="doc-assign__chip">
+                                        <img class="doc-assign__avatar" :src="(a.user && a.user.photo_path) || '/images/user.svg'" :alt="a.user && a.user.name" />
+                                        <span class="doc-assign__meta">
+                                            <span class="doc-assign__name">{{ a.user && a.user.name }}</span>
+                                            <span v-if="a.user && a.user.title" class="doc-assign__title">{{ a.user.title }}</span>
+                                        </span>
+                                    </span>
+                                </div>
+                                <span v-else class="doc-drawer__field-value">{{ '— ' + $t('not yet assigned') + ' —' }}</span>
+
+                                <div v-if="assignPickerOpen" class="doc-assign__picker" @click.stop>
+                                    <div class="doc-assign__head">
+                                        <span class="doc-assign__head-icon"><icon class="h-4 w-4" name="users" /></span>
+                                        <div class="doc-assign__head-text">
+                                            <div class="doc-assign__head-row">
+                                                <h4 class="doc-assign__head-title">{{ $t('Assignee') }}</h4>
+                                                <span v-if="drawerAssignees.length" class="doc-assign__head-count">{{ drawerAssignees.length }}</span>
+                                            </div>
+                                            <p class="doc-assign__head-sub">{{ $t('Select who is responsible') }}</p>
+                                        </div>
+                                        <span class="doc-assign__close" @click.stop="assignPickerOpen = false">
+                                            <icon class="w-4 h-4" name="close" />
+                                        </span>
+                                    </div>
+                                    <input v-model="assignSearch" class="doc-assign__search" :placeholder="$t('Search User')" />
+                                    <ul class="doc-assign__options">
+                                        <li v-if="assignLoading" class="doc-assign__empty">{{ $t('Loading...') }}</li>
+                                        <li v-for="(m, mi) in filteredAssignMembers" :key="'am_' + m.user_id">
+                                            <label class="doc-assign__option" :for="'dw_u_' + mi">
+                                                <input :id="'dw_u_' + mi" type="checkbox" class="doc-assign__cb" :checked="drawerAssigneeIds.includes(Number(m.user_id))" @change="toggleAssignee($event.target.checked, m.user_id)">
+                                                <img class="doc-assign__avatar" :src="(m.user && m.user.photo_path) || '/images/user.svg'" :alt="m.user && m.user.name" />
+                                                <span class="doc-assign__meta">
+                                                    <span class="doc-assign__name">{{ m.user && m.user.name }}</span>
+                                                    <span v-if="m.user && m.user.title" class="doc-assign__title">{{ m.user.title }}</span>
+                                                </span>
+                                            </label>
+                                        </li>
+                                        <li v-if="!assignLoading && !filteredAssignMembers.length" class="doc-assign__empty">{{ $t('No item found!') }}</li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
 
@@ -533,6 +585,10 @@
                 lastResponse: [],
                 new_task: {},
                 new_list: {},
+                assignPickerOpen: false,
+                assignSearch: '',
+                assignLoading: false,
+                drawerTeamMembers: [],
                 taskDetailsOpen: false,
                 activeTimerString: '',
                 months: [],
@@ -563,9 +619,21 @@
                     .map(id => this.findTaskById(id))
                     .filter(Boolean);
             },
-            drawerAssigneeNames() {
-                if (!this.drawerTask || !Array.isArray(this.drawerTask.assignees) || !this.drawerTask.assignees.length) return '';
-                return this.drawerTask.assignees.map(a => a.user && a.user.name).filter(Boolean).join(', ');
+            drawerAssignees() {
+                if (!this.drawerTask || !Array.isArray(this.drawerTask.assignees)) return [];
+                return this.drawerTask.assignees.filter(a => a && a.user);
+            },
+            drawerAssigneeIds() {
+                return this.drawerAssignees.map(a => Number(a.user_id));
+            },
+            filteredAssignMembers() {
+                const q = (this.assignSearch || '').trim().toLowerCase();
+                if (!q) return this.drawerTeamMembers;
+                return this.drawerTeamMembers.filter(m => {
+                    const name = (m.user && m.user.name) || '';
+                    const title = (m.user && m.user.title) || '';
+                    return name.toLowerCase().includes(q) || title.toLowerCase().includes(q);
+                });
             },
             drawerDocuments() {
                 if (!this.drawerTask) return [];
@@ -629,7 +697,7 @@
         // task's own detail page (TaskDetails.vue) already uses.
         auditIcon(field) {
             const map = {
-                title: 'edit', slug: 'edit', list_id: 'edit', order: 'edit',
+                title: 'edit', slug: 'edit', list_id: 'edit', order: 'edit', priority_id: 'priorities',
                 due_date: 'time', is_done: 'checklist_box', is_archive: 'archive',
                 description: 'details', cover: 'pulse_image',
                 comment: 'comment', comment_edit: 'comment', comment_delete: 'comment',
@@ -640,6 +708,7 @@
             const map = {
                 title: 'doc-drawer__timeline-icon--blue', slug: 'doc-drawer__timeline-icon--blue',
                 list_id: 'doc-drawer__timeline-icon--sky', order: 'doc-drawer__timeline-icon--sky',
+                priority_id: 'doc-drawer__timeline-icon--red',
                 due_date: 'doc-drawer__timeline-icon--orange', is_done: 'doc-drawer__timeline-icon--green',
                 is_archive: 'doc-drawer__timeline-icon--amber', description: 'doc-drawer__timeline-icon--indigo',
                 cover: 'doc-drawer__timeline-icon--purple',
@@ -656,6 +725,7 @@
                 case 'list_id':
                 case 'order':
                 case 'due_date':
+                case 'priority_id':
                     return (a.old_value || '—') + ' → ' + (a.new_value || '—');
                 case 'is_done':
                     return a.old_value || this.$t('Marked done / undone');
@@ -766,6 +836,9 @@
             this.drawerTask = task;
             this.drawerOpen = true;
             this.drawerExpandedIndex = 0;
+            this.assignPickerOpen = false;
+            this.assignSearch = '';
+            this.drawerTeamMembers = [];
             this.fetchDrawerActivities(task.id);
         },
         closeDrawer() {
@@ -774,6 +847,7 @@
             this.drawerActivities = [];
             this.drawerExpandedIndex = 0;
             this.docDetailOpen = false;
+            this.assignPickerOpen = false;
         },
         openDocDetail(index) {
             this.drawerExpandedIndex = index;
@@ -832,6 +906,47 @@
             }).finally(() => {
                 this.unmerging = false;
             });
+        },
+        toggleAssignPicker() {
+            this.assignPickerOpen = !this.assignPickerOpen;
+            if (this.assignPickerOpen && !this.drawerTeamMembers.length) {
+                this.fetchDrawerTeamMembers();
+            }
+        },
+        fetchDrawerTeamMembers() {
+            if (!this.drawerTask) return;
+            this.assignLoading = true;
+            axios.get(this.route('task.other.data', { task_id: this.drawerTask.id, project_id: this.drawerTask.project_id }))
+                .then((response) => {
+                    this.drawerTeamMembers = (response.data && response.data.team_members) || [];
+                })
+                .catch((error) => {
+                    console.log(error);
+                })
+                .finally(() => {
+                    this.assignLoading = false;
+                });
+        },
+        toggleAssignee(checked, userId) {
+            if (!this.drawerTask) return;
+            axios.post(this.route('task.assignees.add'), { task_id: this.drawerTask.id, user_id: userId })
+                .then((response) => {
+                    if (!Array.isArray(this.drawerTask.assignees)) this.drawerTask.assignees = [];
+                    // the endpoint is a server-side toggle: trust its `action`
+                    // over the checkbox state, which can drift on rapid clicks.
+                    const added = response.data && response.data.action
+                        ? response.data.action === 'assigned'
+                        : checked;
+                    if (added && response.data && response.data.assignee) {
+                        this.drawerTask.assignees.push(response.data.assignee);
+                    } else {
+                        const i = this.drawerTask.assignees.findIndex(a => Number(a.user_id) === Number(userId));
+                        if (i > -1) this.drawerTask.assignees.splice(i, 1);
+                    }
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
         },
         fetchDrawerActivities(taskId) {
             this.drawerLoadingActivities = true;
@@ -1192,6 +1307,249 @@
         color: #e6b95c;
         border-color: rgba(184, 134, 11, 0.3);
     }
+
+    /* Assigned field — avatar + name + job title from users.title */
+    .doc-assign {
+        position: static;
+    }
+    .doc-assign__add {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 16px;
+        height: 16px;
+        margin-left: 6px;
+        border-radius: 4px;
+        color: #6b7280;
+        vertical-align: middle;
+    }
+    .doc-assign__add:hover {
+        background: rgba(99, 102, 241, 0.12);
+        color: #4f46e5;
+    }
+    .doc-assign__list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-top: 4px;
+    }
+    .doc-assign__chip,
+    .doc-assign__option {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+    }
+    .doc-assign__avatar {
+        width: 24px;
+        height: 24px;
+        border-radius: 999px;
+        object-fit: cover;
+        flex-shrink: 0;
+    }
+    .doc-assign__meta {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        line-height: 1.25;
+    }
+    .doc-assign__name {
+        font-size: 12px;
+        font-weight: 700;
+        color: #111827;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .doc-assign__title {
+        font-size: 10px;
+        font-weight: 600;
+        color: #6b7280;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .dark .doc-assign__name { color: #f3f4f6; }
+    .dark .doc-assign__title { color: #9ca3af; }
+
+    .doc-assign__picker {
+        position: absolute;
+        z-index: 30;
+        top: calc(100% + 8px);
+        left: 0;
+        right: 0;
+        width: auto;
+        padding: 14px;
+        border-radius: 12px;
+        background: #fff;
+        box-shadow: 0 16px 40px -8px rgba(15, 23, 42, 0.28);
+        border: 1px solid #e5e7eb;
+        animation: doc-assign-pop 0.16s ease-out;
+    }
+    @keyframes doc-assign-pop {
+        from { opacity: 0; transform: translateY(-4px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    .dark .doc-assign__picker {
+        background: #1f2937;
+        border-color: #374151;
+    }
+    .doc-assign__head {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+    .doc-assign__head-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: #eef2ff;
+        color: #4f46e5;
+        flex-shrink: 0;
+    }
+    .dark .doc-assign__head-icon {
+        background: rgba(99, 102, 241, 0.16);
+        color: #a5b4fc;
+    }
+    .doc-assign__head-text { min-width: 0; flex: 1; }
+    .doc-assign__head-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .doc-assign__head-title {
+        font-size: 13px;
+        font-weight: 800;
+        color: #111827;
+    }
+    .dark .doc-assign__head-title { color: #fff; }
+    .doc-assign__head-count {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 18px;
+        height: 18px;
+        padding: 0 6px;
+        border-radius: 999px;
+        background: #4f46e5;
+        color: #fff;
+        font-size: 10px;
+        font-weight: 700;
+    }
+    .doc-assign__head-sub {
+        margin-top: 2px;
+        font-size: 11px;
+        color: #6b7280;
+    }
+    .dark .doc-assign__head-sub { color: #9ca3af; }
+    .doc-assign__close {
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 6px;
+        color: #6b7280;
+        flex-shrink: 0;
+    }
+    .doc-assign__close:hover { background: #f3f4f6; }
+    .dark .doc-assign__close:hover { background: #374151; }
+    .doc-assign__search {
+        width: 100%;
+        padding: 6px 8px;
+        border: 2px solid #d1d5db;
+        border-radius: 4px;
+        font-size: 12px;
+    }
+    .dark .doc-assign__search {
+        background: #374151;
+        border-color: #4b5563;
+        color: #f3f4f6;
+    }
+    .doc-assign__options {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        margin-top: 10px;
+        max-height: 232px;
+        overflow-y: auto;
+        scroll-behavior: smooth;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        scrollbar-color: #cbd5e1 transparent;
+        padding-right: 2px;
+    }
+    .doc-assign__options::-webkit-scrollbar {
+        width: 6px;
+    }
+    .doc-assign__options::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .doc-assign__options::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 999px;
+    }
+    .doc-assign__options::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+    .dark .doc-assign__options {
+        scrollbar-color: #4b5563 transparent;
+    }
+    .dark .doc-assign__options::-webkit-scrollbar-thumb {
+        background: #4b5563;
+    }
+    .doc-assign__option {
+        transition: background 0.12s ease;
+    }
+    .doc-assign__option {
+        padding: 6px;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+    .doc-assign__option:hover { background: #f3f4f6; }
+    .dark .doc-assign__option:hover { background: #374151; }
+    .doc-assign__cb {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+    }
+    .doc-assign__empty {
+        padding: 14px 6px;
+        text-align: center;
+        font-size: 11px;
+        color: #9ca3af;
+    }
+
+    /* Priority pill on the card, tinted with the priority's own colour */
+    .t__priority {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        margin: 0 0 6px;
+        padding: 3px 8px;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--p-color) 14%, transparent);
+        border: 1px solid color-mix(in srgb, var(--p-color) 35%, transparent);
+        color: var(--p-color);
+        font-size: 10px;
+        font-weight: 700;
+        line-height: 1.4;
+        width: fit-content;
+    }
+    .t__priority__dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 999px;
+        background: var(--p-color);
+        flex-shrink: 0;
+    }
+    .dark .t__priority {
+        background: color-mix(in srgb, var(--p-color) 24%, transparent);
+        border-color: color-mix(in srgb, var(--p-color) 45%, transparent);
+    }
+
 
     /* Multi-select checkbox on each card */
     .t__box {
@@ -1632,6 +1990,7 @@
         margin-top: 0;
     }
     .doc-drawer__grid {
+        position: relative;
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 8px;

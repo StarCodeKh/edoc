@@ -373,19 +373,32 @@
                                                                 </div>
 
                                                                 <div class="absolute right-1 flex w-[300px] z-10 text-sm flex-col bg-white dark:bg-gray-800 px-4 py-4 rounded shadow dark:border dark:border-gray-700" v-if="showAssigneeBoxPreview">
-                                                                    <h4 class="text-center mb-3 font-bold dark:text-white">{{ $t('Assignee') }}</h4>
+                                                                    <div class="flex items-start gap-2.5 pr-7 mb-2.5">
+                                                                        <span class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-300">
+                                                                            <icon class="h-4 w-4" name="users" />
+                                                                        </span>
+                                                                        <div class="min-w-0 flex-1">
+                                                                            <div class="flex items-center gap-1.5">
+                                                                                <h4 class="truncate font-bold leading-tight dark:text-white">{{ $t('Assignee') }}</h4>
+                                                                                <span v-if="task_assignees().length" class="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-indigo-600 px-1.5 text-[10px] font-bold leading-none text-white">{{ task_assignees().length }}</span>
+                                                                            </div>
+                                                                            <p class="mt-0.5 text-[11px] leading-snug text-gray-500 dark:text-gray-400">{{ $t('Select who is responsible') }}</p>
+                                                                        </div>
+                                                                    </div>
                                                                     <div class="absolute cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 top-3 right-3 p-1.5 rounded" @click="showAssigneeBoxPreview = false">
                                                                         <icon class="w-4 h-4 dark:text-gray-300" name="close" />
                                                                     </div>
+                                                                    <div class="-mx-4 mb-3 border-t border-gray-200 dark:border-gray-700"></div>
                                                                     <input id="t_d_s_u_preview" v-model="user_search" class="border-[2px] px-2 py-1 border-gray-400 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-[3px] dark:placeholder-gray-400" :placeholder="$t('Search User')" />
-                                                                    <ul class="flex flex-col mt-3 gap-1 h-48 max-h-48 overflow-y-auto">
+                                                                    <ul class="flex flex-col mt-3 gap-1 h-56 max-h-56 overflow-y-auto scroll-smooth overscroll-contain">
                                                                         <li v-for="(userObject, user_index) in searchUser(user_search)" :key="'preview_'+user_index">
-                                                                            <label :for="'td_u_id_preview_'+user_index" class="flex p-2 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 rounded">
-                                                                                <input :id="'td_u_id_preview_'+user_index" class="w-5 ml-1 mr-2" type="checkbox" :checked="task_assignees().includes(userObject.user_id)" @change="assignUserToTask($event.target.checked, userObject.user_id)">
-                                                                                <img v-if="userObject.user.photo_path" :aria-label="userObject.user.name" :alt="userObject.user.name" class="w-6 h-6 rounded-full" :src="userObject.user.photo_path" />
-                                                                                <img v-else :aria-label="userObject.user.name" :alt="userObject.user.name" class="w-6 h-6 rounded-full" src="/images/user.svg" />
-                                                                                <span data-a="" class="p-1 dark:text-gray-200" type="button" :tabindex="user_index">
-                                                                                    {{ userObject.user.name }}
+                                                                            <label :for="'td_u_id_preview_'+user_index" class="flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 rounded">
+                                                                                <input :id="'td_u_id_preview_'+user_index" class="w-5 flex-shrink-0" type="checkbox" :checked="task_assignees().includes(userObject.user_id)" @change="assignUserToTask($event.target.checked, userObject.user_id)">
+                                                                                <img v-if="userObject.user.photo_path" :aria-label="userObject.user.name" :alt="userObject.user.name" class="w-6 h-6 rounded-full flex-shrink-0" :src="userObject.user.photo_path" />
+                                                                                <img v-else :aria-label="userObject.user.name" :alt="userObject.user.name" class="w-6 h-6 rounded-full flex-shrink-0" src="/images/user.svg" />
+                                                                                <span class="flex min-w-0 flex-col leading-tight" :tabindex="user_index">
+                                                                                    <span class="truncate text-xs font-bold dark:text-gray-200">{{ userObject.user.name }}</span>
+                                                                                    <span v-if="userObject.user.title" class="truncate text-[10px] font-semibold text-gray-500 dark:text-gray-400">{{ userObject.user.title }}</span>
                                                                                 </span>
                                                                             </label>
                                                                         </li>
@@ -729,14 +742,14 @@
                                                 </template>
 
                                                 <!-- System / field-change activity -->
-                                                <template v-else-if="['title', 'slug', 'list_id', 'order', 'due_date', 'is_done', 'is_archive', 'comment_delete', 'description', 'cover'].includes(activity.field_changed)">
+                                                <template v-else-if="['title', 'slug', 'list_id', 'order', 'due_date', 'priority_id', 'is_done', 'is_archive', 'comment_delete', 'description', 'cover'].includes(activity.field_changed)">
                                                     <span class="absolute left-0 top-0.5 w-8 h-8 rounded-full flex items-center justify-center ring-2 ring-white dark:ring-gray-800" :class="activityIconBg(activity.field_changed)">
                                                         <icon class="w-3.5 h-3.5 text-white" :name="activityIcon(activity.field_changed)" />
                                                     </span>
 
                                                     <p class="text-sm text-gray-600 dark:text-gray-300 leading-snug">
                                                         <strong class="font-semibold text-gray-800 dark:text-gray-100">{{ activity.user?.first_name }} {{ activity.user?.last_name }}</strong>
-                                                        <span v-if="['title', 'slug', 'list_id', 'order', 'due_date'].includes(activity.field_changed)">
+                                                        <span v-if="['title', 'slug', 'list_id', 'order', 'due_date', 'priority_id'].includes(activity.field_changed)">
                                                             {{ $t('changed') }} <span class="text-gray-400 line-through">{{ activity.old_value }}</span> → <span class="font-medium">{{ activity.new_value }}</span>
                                                         </span>
                                                         <span v-if="activity.field_changed === 'is_done'"> {{ activity.old_value }}</span>
@@ -1048,20 +1061,33 @@
                                         </div>
 
                                         <div class="absolute right-1 flex w-[300px] z-10 text-sm flex-col bg-white dark:bg-gray-800 px-4 py-4 rounded shadow dark:border dark:border-gray-700" v-if="showAssigneeBox">
-                                            <h4 class="text-center mb-3 font-bold dark:text-white">{{ $t('Assignee') }}</h4>
+                                            <div class="flex items-start gap-2.5 pr-7 mb-2.5">
+                                                <span class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-300">
+                                                    <icon class="h-4 w-4" name="users" />
+                                                </span>
+                                                <div class="min-w-0 flex-1">
+                                                    <div class="flex items-center gap-1.5">
+                                                        <h4 class="truncate font-bold leading-tight dark:text-white">{{ $t('Assignee') }}</h4>
+                                                        <span v-if="task_assignees().length" class="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-indigo-600 px-1.5 text-[10px] font-bold leading-none text-white">{{ task_assignees().length }}</span>
+                                                    </div>
+                                                    <p class="mt-0.5 text-[11px] leading-snug text-gray-500 dark:text-gray-400">{{ $t('Select who is responsible') }}</p>
+                                                </div>
+                                            </div>
                                             <div class="absolute cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 top-3 right-3 p-1.5 rounded" @click="showAssigneeBox = false" >
                                                 <icon class=" w-4 h-4 dark:text-gray-300" name="close" />
                                             </div>
+                                            <div class="-mx-4 mb-3 border-t border-gray-200 dark:border-gray-700"></div>
                                             <input id="t_d_s_u" v-model="user_search" class="border-[2px] px-2 py-1 border-gray-400 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-[3px] dark:placeholder-gray-400" :placeholder="$t('Search User')" />
-                                            <ul class="flex flex-col mt-3 gap-1 h-48 max-h-48 overflow-y-auto">
+                                            <ul class="flex flex-col mt-3 gap-1 h-56 max-h-56 overflow-y-auto scroll-smooth overscroll-contain">
                                                 <li v-for="(userObject, user_index) in searchUser(user_search)">
-                                                    <label :for="'td_u_id_'+user_index" class="flex p-2 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 rounded">
-                                                        <input :id="'td_u_id_'+user_index" class="w-5 ml-1 mr-2" type="checkbox" :checked="task_assignees().includes(userObject.user_id)" @change="assignUserToTask($event.target.checked, userObject.user_id)">
-                                                        <img v-if="userObject.user.photo_path" :aria-label="userObject.user.name" :alt="userObject.user.name" class="w-6 h-6 rounded-full" :src="userObject.user.photo_path" />
-                                                        <img v-else :aria-label="userObject.user.name" :alt="userObject.user.name" class="w-6 h-6 rounded-full" src="/images/user.svg" />
-                                                        <span data-a="" class="p-1 dark:text-gray-200" type="button" :tabindex="user_index">
-                                                                {{ userObject.user.name }}
-                                                            </span>
+                                                    <label :for="'td_u_id_'+user_index" class="flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 rounded">
+                                                        <input :id="'td_u_id_'+user_index" class="w-5 flex-shrink-0" type="checkbox" :checked="task_assignees().includes(userObject.user_id)" @change="assignUserToTask($event.target.checked, userObject.user_id)">
+                                                        <img v-if="userObject.user.photo_path" :aria-label="userObject.user.name" :alt="userObject.user.name" class="w-6 h-6 rounded-full flex-shrink-0" :src="userObject.user.photo_path" />
+                                                        <img v-else :aria-label="userObject.user.name" :alt="userObject.user.name" class="w-6 h-6 rounded-full flex-shrink-0" src="/images/user.svg" />
+                                                        <span class="flex min-w-0 flex-col leading-tight" :tabindex="user_index">
+                                                            <span class="truncate text-xs font-bold dark:text-gray-200">{{ userObject.user.name }}</span>
+                                                            <span v-if="userObject.user.title" class="truncate text-[10px] font-semibold text-gray-500 dark:text-gray-400">{{ userObject.user.title }}</span>
+                                                        </span>
                                                     </label>
                                                 </li>
                                             </ul>
@@ -1682,7 +1708,7 @@
             // --- Activity timeline helpers ---
             activityIcon(field) {
                 const map = {
-                    title: 'edit', slug: 'edit', list_id: 'edit', order: 'edit',
+                    title: 'edit', slug: 'edit', list_id: 'edit', order: 'edit', priority_id: 'priorities',
                     due_date: 'calendar', is_done: 'checklist_box_2', is_archive: 'archive',
                     description: 'details', cover: 'image', comment_delete: 'trash',
                 };
@@ -1690,7 +1716,7 @@
             },
             activityIconBg(field) {
                 const map = {
-                    title: 'bg-blue-500', slug: 'bg-blue-500', list_id: 'bg-sky-500', order: 'bg-sky-500',
+                    title: 'bg-blue-500', slug: 'bg-blue-500', list_id: 'bg-sky-500', order: 'bg-sky-500', priority_id: 'bg-rose-500',
                     due_date: 'bg-orange-500', is_done: 'bg-green-500', is_archive: 'bg-amber-500',
                     description: 'bg-indigo-500', cover: 'bg-purple-500', comment_delete: 'bg-red-500',
                 };
@@ -2665,7 +2691,13 @@
                 return this.labels.filter(lab => lab.name.toLowerCase().indexOf(input) > -1);
             },
             searchUser(input){
-                return this.team_members.filter(tm => tm.user.name.toLowerCase().indexOf(input) > -1);
+                const q = (input || '').trim().toLowerCase();
+                if (!q) return this.team_members;
+                return this.team_members.filter(tm => {
+                    const name = (tm.user && tm.user.name) || '';
+                    const title = (tm.user && tm.user.title) || '';
+                    return name.toLowerCase().includes(q) || title.toLowerCase().includes(q);
+                });
             },
             deleteLabel(id){
                 axios.post(this.route('labels.delete', id)).then(() => {

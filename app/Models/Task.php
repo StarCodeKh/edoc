@@ -167,6 +167,12 @@ class Task extends Model
                         $activityData['old_value'] = "moved the Board from `{$oldList}`";
                         $activityData['new_value'] = "to `{$newList}`";
                         break;
+                    case 'priority_id':
+                        $oldPriority = $originalValue ? (Priority::find($originalValue)->name ?? 'Unknown Priority') : 'none';
+                        $newPriority = $newValue ? (Priority::find($newValue)->name ?? 'Unknown Priority') : 'none';
+                        $activityData['old_value'] = "changed the priority from `{$oldPriority}`";
+                        $activityData['new_value'] = "to `{$newPriority}`";
+                        break;
                     case 'is_done':
                         $activityData['old_value'] = ($originalValue ? 'marked as done' : 'marked as not done');
                         $activityData['new_value'] = ($newValue ? 'marked as done' : 'marked as not done');
