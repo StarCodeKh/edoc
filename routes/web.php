@@ -124,6 +124,7 @@ Route::get('w/{uid}/tasks/board', [WorkSpacesController::class, 'workspaceBoard'
 Route::get('w/{uid}/tasks/calendar', [WorkSpacesController::class, 'workspaceCalendar'])->name('workspace.view.calendar')->middleware('auth');
 Route::get('w/{uid}/tasks/timeline', [WorkSpacesController::class, 'workspaceTimeline'])->name('workspace.view.timeline')->middleware('auth');
 Route::get('w/{uid}/tasks/table', [WorkSpacesController::class, 'workspaceTables'])->name('workspace.view.table')->middleware('auth');
+Route::get('w/{uid}/documents', [WorkSpacesController::class, 'workspaceDocuments'])->name('workspace.view.documents')->middleware('auth');
 
 Route::get('w/{uid}/my-tasks/count', [WorkSpacesController::class, 'jsonMyTasksCount'])->name('json.workspace.my-tasks.count')->middleware('auth');
 Route::get('w/{uid}/tasks/my-tasks/board', [WorkSpacesController::class, 'workspaceMyTasksBoard'])->name('workspace.view.my-tasks.board')->middleware('auth');

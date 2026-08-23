@@ -45,6 +45,15 @@
                 </Link>
             </li>
         
+            <li>
+                <Link :href="route('workspace.view.documents', workspace.slug || workspace.id)" class="flex items-center px-3 py-2 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 group" :class="{'active' : isDocumentsActive()}">
+                    <icon class="w-4 h-4" name="book" />
+                    <span class="flex-1 ml-3">
+                        {{ $t('All Documents') }}
+                    </span>
+                </Link>
+            </li>
+
             <li class="relative" v-if="workspace.member.role === 'admin'">
                 <Link class="flex items-center px-3 p-2 group workspace_members" :href="route('workspace.members', workspace.id)" :class="{'active' : checkActiveClass('component', 'Workspaces_Members')}">
                     <icon class="w-4 h-4" name="user" />
@@ -244,6 +253,9 @@
             const url = this.$page.url || '';
 
             return component === 'Workspaces/MyTasks' || url.includes('/tasks/my-tasks');
+        },
+        isDocumentsActive(){
+            return this.$page.component === 'Workspaces/Documents'
         },
         isDashboardActive(){
             const component = this.$page.component;

@@ -18,6 +18,8 @@ use App\Models\TeamMember;
 use App\Models\Timer;
 use App\Models\User;
 use App\Models\Workspace;
+use App\Models\WorkspaceType;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Redirect;
@@ -389,6 +391,116 @@ class WorkSpacesController extends Controller
             'workspace' => $workspace,
             'tasks' => $tasks,
         ]);
+    }
+
+    /**
+     * Flat listing of every document record in the workspace, filterable by
+     * who created it and when.
+     */
+    public function workspaceDocuments($uid, Request $request)
+    {
+        $workspace = Workspace::where('id', $uid)->orWhere('slug', $uid)->whereHas('member')->with('member')->first();
+        if (empty($workspace)) {
+            return abort(404);
+        }
+
+        $filters = $request->only('uploader', 'type', 'period', 'from', 'to');
+        $projectIds = Project::where('workspace_id', $workspace->id)->pluck('id');
+        [$from, $to] = $this->documentDateRange($filters);
+
+        $base = Task::whereIn('project_id', $projectIds)->isOpen();
+
+        $documents = (clone $base)
+            ->when($filters['uploader'] ?? null, fn ($q, $uploader) => $q->whereIn('user_id', array_filter(explode(',', (string) $uploader))))
+            ->when($filters['type'] ?? null, fn ($q, $type) => $q->whereIn('type_id', array_filter(explode(',', (string) $type))))
+            ->when($from, fn ($q) => $q->where('created_at', '>=', $from))
+            ->when($to, fn ($q) => $q->where('created_at', '<=', $to))
+            ->with([
+                'user:id,first_name,last_name,photo_path',
+                'project:id,title,slug',
+                'documentSource:id,name',
+                'list:id,title',
+                'type:id,name',
+                'attachments:id,task_id,name,path,size',
+            ])
+            ->withCount('attachments')
+            ->latest('created_at')
+            ->paginate(20)
+            ->withQueryString()
+            ->through(fn (Task $task) => [
+                'id' => $task->id,
+                'code' => $task->task_code,
+                'title' => $task->title,
+                'slug' => $task->slug,
+                'is_done' => (bool) $task->is_done,
+                'created_at' => optional($task->created_at)->toIso8601String(),
+                'entry_date' => optional($task->entry_date)->toIso8601String(),
+                'due_date' => optional($task->due_date)->toIso8601String(),
+                'attachments_count' => $task->attachments_count,
+                'files' => $task->attachments->map(fn ($file) => [
+                    'id' => $file->id,
+                    'name' => $file->name,
+                    'path' => $file->path,
+                    'size' => (int) $file->size,
+                    'ext' => strtolower(pathinfo($file->name, PATHINFO_EXTENSION)),
+                ])->values(),
+                'project' => $task->project ? ['id' => $task->project->id, 'title' => $task->project->title, 'slug' => $task->project->slug] : null,
+                'source' => optional($task->documentSource)->name,
+                'type' => optional($task->type)->name,
+                'status' => optional($task->list)->title,
+                'user' => $task->user ? [
+                    'id' => $task->user->id,
+                    'name' => trim($task->user->first_name.' '.$task->user->last_name),
+                    'photo' => $task->user->photo_path,
+                ] : null,
+            ]);
+
+        $uploaderIds = (clone $base)->distinct()->pluck('user_id')->filter()->values();
+
+        return Inertia::render('Workspaces/Documents', [
+            'title' => 'Documents | '.$workspace->name,
+            'workspace' => $workspace,
+            'documents' => $documents,
+            'filters' => $filters,
+            'total' => (clone $base)->count(),
+            'uploaders' => User::whereIn('id', $uploaderIds)
+                ->orderBy('first_name')
+                ->get(['id', 'first_name', 'last_name', 'photo_path'])
+                ->map(fn (User $user) => [
+                    'id' => $user->id,
+                    'name' => trim($user->first_name.' '.$user->last_name),
+                    'photo' => $user->photo_path,
+                ]),
+            // The full taxonomy, in its official order — unlike uploaders these are
+            // a fixed list, and most documents have no type set yet.
+            'types' => WorkspaceType::orderBy('id')->get(['id', 'name']),
+        ]);
+    }
+
+    /**
+     * Turn the period filter into a concrete [from, to] pair. 'custom' uses the
+     * supplied dates; anything unrecognised means no date restriction.
+     */
+    private function documentDateRange(array $filters): array
+    {
+        $period = $filters['period'] ?? null;
+
+        switch ($period) {
+            case 'today':
+                return [now()->startOfDay(), now()->endOfDay()];
+            case 'week':
+                return [now()->startOfWeek(), now()->endOfWeek()];
+            case 'month':
+                return [now()->startOfMonth(), now()->endOfMonth()];
+            case 'year':
+                return [now()->startOfYear(), now()->endOfYear()];
+            case 'custom':
+                $from = !empty($filters['from']) ? Carbon::parse($filters['from'])->startOfDay() : null;
+                $to = !empty($filters['to']) ? Carbon::parse($filters['to'])->endOfDay() : null;
+                return [$from, $to];
+            default:
+                return [null, null];
+        }
     }
 
     public function workspaceMyTasks($uid, Request $request)
