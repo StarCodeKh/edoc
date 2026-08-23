@@ -31,3 +31,10 @@
 .font-moul {
     font-family: var(--font-khmer-display);
 }
+
+// Khmer lunar (ចន្ទគតិ) labels inside the calendar grid. Khmer script needs a
+// touch more leading than the Latin numerals it sits beside.
+.khmer-lunar-text {
+    font-family: var(--font-khmer-body);
+    line-height: 1.65;
+}

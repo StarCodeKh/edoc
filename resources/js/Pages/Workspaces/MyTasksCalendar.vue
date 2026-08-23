@@ -33,6 +33,7 @@
                                                 {{ currentPeriodTitle }}
                                             </h2>
                                             <p class="text-sm text-gray-500 mt-0.5 font-medium">{{ currentPeriodSubtitle }}</p>
+                                            <p v-if="khPeriodLabel" class="text-xs text-indigo-600 mt-1 font-semibold khmer-lunar-text leading-snug">{{ khPeriodLabel }}</p>
                                         </div>
                                         <button @click="navigatePeriod(1)" class="p-3 hover:bg-gray-50 rounded-xl transition-all duration-200 group">
                                             <icon name="arrow-right" class="w-5 h-5 text-gray-600 group-hover:text-indigo-600 transition-colors" />
@@ -54,20 +55,33 @@
                                                     ? 'bg-white text-indigo-600 shadow-md shadow-indigo-100/50 ring-1 ring-indigo-100'
                                                     : 'text-gray-600 hover:text-gray-900 hover:bg-white/60'
                                             ]"
-                                            :title="view.description"
+                                            :title="$t(view.description)"
                                         >
                                             <icon :name="view.icon" class="w-4 h-4 mr-2" />
-                                            {{ view.label }}
+                                            {{ $t(view.label) }}
                                         </button>
                                     </div>
 
                                     <!-- Quick Actions -->
                                     <div class="flex items-center gap-2">
+                                        <button
+                                            @click="toggleKhmerCalendar"
+                                            :class="[
+                                                'flex items-center px-3 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 border',
+                                                khmerCalendarOn
+                                                    ? 'text-amber-700 bg-amber-50 border-amber-200/80 hover:bg-amber-100 shadow-sm'
+                                                    : 'text-gray-500 bg-white border-gray-200/60 hover:bg-gray-50'
+                                            ]"
+                                            :title="$t('Show the Khmer lunar calendar')"
+                                        >
+                                            <icon name="moon" class="w-4 h-4 mr-2" />
+                                            {{ $t('Khmer') }}
+                                        </button>
                                         <button @click="goToToday" class="flex items-center px-4 py-2.5 text-sm font-semibold text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 bg-indigo-50/50 rounded-xl transition-all duration-200 border border-indigo-200/60">
                                             <icon name="calendar" class="w-4 h-4 mr-2" />
                                             {{ $t('Today') }}
                                         </button>
-                                        <button @click="refreshCalendar" class="p-2.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 bg-white rounded-xl transition-all duration-200 shadow-sm border border-gray-200/60" title="Refresh">
+                                        <button @click="refreshCalendar" class="p-2.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 bg-white rounded-xl transition-all duration-200 shadow-sm border border-gray-200/60" :title="$t('Refresh')">
                                             <icon name="refresh" class="w-4 h-4" />
                                         </button>
                                     </div>
@@ -82,7 +96,7 @@
                         <div v-if="calendarView === 'month'" class="month-view h-full flex flex-col">
                             <!-- Days of Week Header -->
                             <div class="grid grid-cols-7 bg-gradient-to-r from-gray-50 via-indigo-50/30 to-gray-50 border-b border-gray-200/60">
-                                <div v-for="day in daysOfWeek" :key="day" class="px-4 py-4 text-center text-sm font-bold text-gray-700 border-r border-gray-200/40 last:border-r-0 bg-white/60">
+                                <div v-for="(day, dayIndex) in calendarWeekdays" :key="dayIndex" class="px-4 py-4 text-center text-sm font-bold text-gray-700 border-r border-gray-200/40 last:border-r-0 bg-white/60">
                                     {{ day }}
                                 </div>
                             </div>
@@ -101,19 +115,40 @@
                                     @click="selectDate(day.date)"
                                 >
                                     <!-- Day Header -->
-                                    <div class="flex items-center justify-between mb-3">
-                                        <div :class="[
-                                            'text-sm font-bold flex items-center justify-center w-8 h-8 rounded-full transition-all duration-200',
-                                            day.isCurrentMonth ? 'text-gray-900' : 'text-gray-400',
-                                            day.isToday ? 'bg-indigo-600 text-white shadow-lg ring-2 ring-indigo-200' : 'group-hover:bg-indigo-100 group-hover:text-indigo-600'
-                                        ]">
-                                            {{ day.date.getDate() }}
+                                    <div class="flex items-center justify-between mb-3" :title="khmerCalendarOn ? khTooltip(day.date) : ''">
+                                        <div class="flex items-center gap-2 min-w-0">
+                                            <div :class="[
+                                                'text-sm font-bold flex items-center justify-center w-8 h-8 rounded-full transition-all duration-200 flex-shrink-0',
+                                                day.isCurrentMonth ? 'text-gray-900' : 'text-gray-400',
+                                                day.isToday ? 'bg-indigo-600 text-white shadow-lg ring-2 ring-indigo-200' : 'group-hover:bg-indigo-100 group-hover:text-indigo-600'
+                                            ]">
+                                                {{ khNum(day.date.getDate()) }}
+                                            </div>
+                                            <div v-if="khmerCalendarOn" :class="[
+                                                'text-[11px] font-semibold leading-tight truncate khmer-lunar-text',
+                                                khIsSilaDay(day.date) ? 'text-amber-600' : (day.isCurrentMonth ? 'text-indigo-500' : 'text-gray-400')
+                                            ]">
+                                                {{ khDayLabel(day.date) }}
+                                            </div>
                                         </div>
                                         <div v-if="getTasksForDay(day.date).length > 0" class="flex items-center">
                                             <div class="text-xs font-semibold text-indigo-600 bg-indigo-100 px-2.5 py-1 rounded-full shadow-sm">
-                                                {{ getTasksForDay(day.date).length }}
+                                                {{ khNum(getTasksForDay(day.date).length) }}
                                             </div>
                                         </div>
+                                    </div>
+
+                                    <!-- Khmer notable day -->
+                                    <div
+                                        v-for="(event, eventIndex) in khEvents(day.date).slice(0, 1)"
+                                        :key="`${event.key}-${eventIndex}`"
+                                        :class="[
+                                            'mb-2 truncate rounded-lg px-2 py-1 text-[11px] font-semibold khmer-lunar-text',
+                                            event.type === 'national' ? 'bg-rose-100/80 text-rose-700' : 'bg-emerald-100/80 text-emerald-700'
+                                        ]"
+                                        :title="event.title"
+                                    >
+                                        {{ event.title }}
                                     </div>
 
                                     <!-- Tasks for this day -->
@@ -143,7 +178,7 @@
 
                                             <div class="flex items-center justify-between mt-2">
                                                 <span v-if="task.due_date" class="text-xs font-medium text-gray-600 bg-gray-100 px-2 py-1 rounded-lg">
-                                                    {{ moment(task.due_date).format('HH:mm') }}
+                                                    {{ khNum(moment(task.due_date).format('HH:mm')) }}
                                                 </span>
                                                 <div class="flex items-center space-x-1.5">
                                                     <div v-if="task.assignees && task.assignees.length > 0" class="flex -space-x-1">
@@ -165,7 +200,7 @@
                                              class="text-xs font-semibold text-indigo-600 text-center py-2 px-3 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl hover:from-indigo-100 hover:to-blue-100 transition-all duration-200 cursor-pointer border border-indigo-200/60 shadow-sm"
                                              @click.stop="selectDate(day.date)">
                                             <icon name="plus" class="w-3 h-3 inline mr-1" />
-                                            {{ getTasksForDay(day.date).length - 3 }} {{ $t('more') }}
+                                            {{ khNum(getTasksForDay(day.date).length - 3) }} {{ $t('more') }}
                                         </div>
                                     </div>
                                 </div>
@@ -177,7 +212,7 @@
                             <!-- Week Header -->
                             <div class="grid grid-cols-8 border-b bg-gradient-to-r from-gray-50 via-indigo-50/30 to-gray-50 sticky top-0 z-10">
                                 <div class="p-4 border-r border-gray-200/40 bg-white/60">
-                                    <span class="text-sm font-bold text-gray-700">Time</span>
+                                    <span class="text-sm font-bold text-gray-700">{{ $t('Time') }}</span>
                                 </div>
                                 <div v-for="day in weekDays" :key="day.toISOString()" class="p-4 text-center border-r border-gray-200/40 last:border-r-0 bg-white/60">
                                     <div class="text-sm font-bold text-gray-700">{{ formatWeekDay(day) }}</div>
@@ -185,10 +220,13 @@
                                         'text-xl font-bold mt-2 w-8 h-8 rounded-full flex items-center justify-center mx-auto transition-all duration-200',
                                         isToday(day) ? 'bg-indigo-600 text-white shadow-lg ring-2 ring-indigo-200' : 'text-gray-900 hover:bg-indigo-100'
                                     ]">
-                                        {{ day.getDate() }}
+                                        {{ khNum(day.getDate()) }}
+                                    </div>
+                                    <div v-if="khmerCalendarOn" class="text-[11px] font-semibold text-indigo-500 mt-1 khmer-lunar-text" :title="khTooltip(day)">
+                                        {{ khDayLabel(day) }}
                                     </div>
                                     <div class="text-xs text-indigo-600 mt-2 font-semibold bg-indigo-100 px-2 py-1 rounded-full">
-                                        {{ getTasksForDay(day).length }} tasks
+                                        {{ $t(':count tasks', { count: khNum(getTasksForDay(day).length) }) }}
                                     </div>
                                 </div>
                             </div>
@@ -236,11 +274,12 @@
                                 <!-- Day Header -->
                                 <div class="sticky top-0 bg-gradient-to-r from-indigo-50 to-blue-50/60 p-6 border-b border-gray-200/60 z-10 shadow-sm">
                                     <h3 class="text-2xl font-bold text-gray-900">{{ formatFullDate(selectedDate) }}</h3>
+                                    <khmer-date-card v-if="khmerCalendarOn" :date="selectedDate" :locale="khLocale" class="mt-3" />
                                     <div class="flex items-center justify-between mt-2">
-                                        <p class="text-sm text-gray-600">{{ getTasksForDay(selectedDate).length }} tasks scheduled</p>
+                                        <p class="text-sm text-gray-600">{{ $t(':count tasks scheduled', { count: khNum(getTasksForDay(selectedDate).length) }) }}</p>
                                         <div class="flex items-center space-x-4 text-sm">
-                                            <span class="text-emerald-600 font-semibold">{{ getCompletedTasksForDay(selectedDate) }} completed</span>
-                                            <span class="text-red-600 font-semibold">{{ getOverdueTasksForDay(selectedDate) }} overdue</span>
+                                            <span class="text-emerald-600 font-semibold">{{ $t(':count completed', { count: khNum(getCompletedTasksForDay(selectedDate)) }) }}</span>
+                                            <span class="text-red-600 font-semibold">{{ $t(':count overdue', { count: khNum(getOverdueTasksForDay(selectedDate)) }) }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -267,7 +306,7 @@
                                                         <h5 class="font-bold text-gray-900 mb-1">{{ task.title }}</h5>
                                                         <p v-if="task.description" class="text-sm text-gray-600 mb-2 line-clamp-2">{{ task.description }}</p>
                                                         <div class="flex items-center space-x-4 text-xs">
-                                                            <span v-if="task.due_date" class="text-gray-600 bg-gray-100 px-2 py-1 rounded-lg font-medium">{{ moment(task.due_date).format('HH:mm') }}</span>
+                                                            <span v-if="task.due_date" class="text-gray-600 bg-gray-100 px-2 py-1 rounded-lg font-medium">{{ khNum(moment(task.due_date).format('HH:mm')) }}</span>
                                                             <span v-if="task.project" class="bg-gray-100 text-gray-700 px-2 py-1 rounded-lg font-medium">{{ task.project.title }}</span>
                                                             <span v-if="task.list" class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded-lg font-medium">{{ task.list.title }}</span>
                                                         </div>
@@ -285,9 +324,9 @@
                                                             />
                                                         </div>
                                                         <!-- Status Badge -->
-                                                        <span v-if="task.is_done" class="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs rounded-full font-semibold">Done</span>
-                                                        <span v-else-if="isOverdue(task)" class="px-3 py-1 bg-red-100 text-red-800 text-xs rounded-full animate-pulse font-semibold">Overdue</span>
-                                                        <span v-else class="px-3 py-1 bg-blue-100 text-blue-800 text-xs rounded-full font-semibold">Active</span>
+                                                        <span v-if="task.is_done" class="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs rounded-full font-semibold">{{ $t('Done') }}</span>
+                                                        <span v-else-if="isOverdue(task)" class="px-3 py-1 bg-red-100 text-red-800 text-xs rounded-full animate-pulse font-semibold">{{ $t('Overdue') }}</span>
+                                                        <span v-else class="px-3 py-1 bg-blue-100 text-blue-800 text-xs rounded-full font-semibold">{{ $t('Active') }}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -298,7 +337,7 @@
                                     <div v-if="getAllDayTasks(selectedDate).length > 0" class="bg-gradient-to-r from-yellow-50 to-amber-50 border-t-2 border-yellow-200 p-6 mt-4">
                                         <h4 class="font-bold text-gray-900 mb-4 flex items-center">
                                             <icon name="calendar" class="w-5 h-5 mr-2 text-amber-600" />
-                                            All Day Tasks
+                                            {{ $t('All Day Tasks') }}
                                         </h4>
                                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                                             <div
@@ -327,20 +366,20 @@
                             <!-- Year Overview Stats -->
                             <div class="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
                                 <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200/60">
-                                    <div class="text-2xl font-bold text-blue-700">{{ getYearTaskCount() }}</div>
-                                    <div class="text-sm text-blue-600 font-medium">Total Tasks</div>
+                                    <div class="text-2xl font-bold text-blue-700">{{ khNum(getYearTaskCount()) }}</div>
+                                    <div class="text-sm text-blue-600 font-medium">{{ $t('Total Tasks') }}</div>
                                 </div>
                                 <div class="bg-gradient-to-r from-emerald-50 to-green-50 p-4 rounded-xl border border-emerald-200/60">
-                                    <div class="text-2xl font-bold text-emerald-700">{{ getYearCompletedTaskCount() }}</div>
-                                    <div class="text-sm text-emerald-600 font-medium">Completed</div>
+                                    <div class="text-2xl font-bold text-emerald-700">{{ khNum(getYearCompletedTaskCount()) }}</div>
+                                    <div class="text-sm text-emerald-600 font-medium">{{ $t('Completed') }}</div>
                                 </div>
                                 <div class="bg-gradient-to-r from-amber-50 to-orange-50 p-4 rounded-xl border border-amber-200/60">
-                                    <div class="text-2xl font-bold text-amber-700">{{ getYearPendingTaskCount() }}</div>
-                                    <div class="text-sm text-amber-600 font-medium">Pending</div>
+                                    <div class="text-2xl font-bold text-amber-700">{{ khNum(getYearPendingTaskCount()) }}</div>
+                                    <div class="text-sm text-amber-600 font-medium">{{ $t('Pending') }}</div>
                                 </div>
                                 <div class="bg-gradient-to-r from-red-50 to-rose-50 p-4 rounded-xl border border-red-200/60">
-                                    <div class="text-2xl font-bold text-red-700">{{ getYearOverdueTaskCount() }}</div>
-                                    <div class="text-sm text-red-600 font-medium">Overdue</div>
+                                    <div class="text-2xl font-bold text-red-700">{{ khNum(getYearOverdueTaskCount()) }}</div>
+                                    <div class="text-sm text-red-600 font-medium">{{ $t('Overdue') }}</div>
                                 </div>
                             </div>
 
@@ -356,10 +395,10 @@
                                     <div class="p-5 border-b border-gray-200/60 bg-gradient-to-r from-gray-50 to-indigo-50/30">
                                         <h4 class="font-bold text-gray-900 text-lg">{{ month.name }}</h4>
                                         <div class="flex items-center justify-between mt-2">
-                                            <p class="text-sm text-gray-600 font-medium">{{ month.taskCount }} tasks</p>
+                                            <p class="text-sm text-gray-600 font-medium">{{ $t(':count tasks', { count: khNum(month.taskCount) }) }}</p>
                                             <div class="flex items-center space-x-2">
-                                                <span class="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full font-semibold">{{ month.completedTasks }}</span>
-                                                <span class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full font-semibold">{{ month.overdueTasks }}</span>
+                                                <span class="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full font-semibold">{{ khNum(month.completedTasks) }}</span>
+                                                <span class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full font-semibold">{{ khNum(month.overdueTasks) }}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -368,7 +407,7 @@
                                     <div class="p-4">
                                         <!-- Days of Week -->
                                         <div class="grid grid-cols-7 gap-1 mb-2">
-                                            <div v-for="day in ['S', 'M', 'T', 'W', 'T', 'F', 'S']" :key="day" class="text-xs text-gray-500 text-center font-bold">
+                                            <div v-for="(day, miniIndex) in miniCalendarWeekdays" :key="miniIndex" class="text-xs text-gray-500 text-center font-bold">
                                                 {{ day }}
                                             </div>
                                         </div>
@@ -384,9 +423,9 @@
                                                     day.taskCount > 0 && !day.isToday ? 'bg-blue-100 hover:bg-blue-200 text-blue-800 font-semibold' : 'hover:bg-gray-100',
                                                     day.hasOverdue ? 'ring-2 ring-red-300' : ''
                                                 ]"
-                                                :title="`${day.taskCount} tasks${day.hasOverdue ? ', has overdue' : ''}`"
+                                                :title="miniDayTooltip(day)"
                                             >
-                                                {{ day.date.getDate() }}
+                                                {{ khNum(day.date.getDate()) }}
                                                 <div v-if="day.taskCount > 0" class="flex justify-center mt-0.5">
                                                     <div :class="[
                                                         'w-1.5 h-1.5 rounded-full',
@@ -401,16 +440,16 @@
                                     <div class="p-4 border-t border-gray-200/60 bg-gray-50/60">
                                         <div class="grid grid-cols-3 gap-2 text-xs">
                                             <div class="text-center">
-                                                <div class="font-bold text-emerald-600">{{ month.completedTasks }}</div>
-                                                <div class="text-gray-500">Done</div>
+                                                <div class="font-bold text-emerald-600">{{ khNum(month.completedTasks) }}</div>
+                                                <div class="text-gray-500">{{ $t('Done') }}</div>
                                             </div>
                                             <div class="text-center">
-                                                <div class="font-bold text-blue-600">{{ month.taskCount - month.completedTasks - month.overdueTasks }}</div>
-                                                <div class="text-gray-500">Active</div>
+                                                <div class="font-bold text-blue-600">{{ khNum(month.taskCount - month.completedTasks - month.overdueTasks) }}</div>
+                                                <div class="text-gray-500">{{ $t('Active') }}</div>
                                             </div>
                                             <div class="text-center">
-                                                <div class="font-bold text-red-600">{{ month.overdueTasks }}</div>
-                                                <div class="text-gray-500">Overdue</div>
+                                                <div class="font-bold text-red-600">{{ khNum(month.overdueTasks) }}</div>
+                                                <div class="text-gray-500">{{ $t('Overdue') }}</div>
                                             </div>
                                         </div>
                                     </div>
@@ -433,15 +472,19 @@ import { Head, Link } from '@inertiajs/vue3'
 import moment_timezone from 'moment-timezone'
 import { ref } from 'vue'
 import Icon from '@/Shared/Icon.vue'
+import KhmerDateCard from '@/Shared/KhmerDateCard.vue'
+import khmerCalendarMixin from '@/Utils/khmerCalendarMixin'
 import TaskDetails from '@/Shared/Modals/TaskDetails.vue'
 
 export default {
     metaInfo: { title: 'Calendar' },
     layout: Layout,
+    mixins: [khmerCalendarMixin],
     components: {
         Head,
         Link,
         Icon,
+        KhmerDateCard,
         TaskDetails,
     },
     props: {
@@ -496,23 +539,26 @@ export default {
         currentPeriodTitle() {
             switch (this.calendarView) {
                 case 'year':
-                    return this.currentDate.getFullYear().toString()
+                    return this.khNum(this.currentDate.getFullYear())
                 case 'month':
-                    return this.moment(this.currentDate).format('MMMM YYYY')
+                    return this.khMonthYear(this.currentDate)
                 case 'week':
                     const weekStart = this.moment(this.selectedDate).startOf('week')
                     const weekEnd = this.moment(this.selectedDate).endOf('week')
-                    return `${weekStart.format('MMM D')} - ${weekEnd.format('MMM D, YYYY')}`
+                    return `${this.khShortDate(weekStart.toDate())} - ${this.khShortDate(weekEnd.toDate(), true)}`
                 case 'day':
-                    return this.moment(this.selectedDate).format('dddd, MMMM D, YYYY')
+                    return this.khFullDate(this.selectedDate)
                 default:
-                    return this.moment(this.currentDate).format('MMMM YYYY')
+                    return this.khMonthYear(this.currentDate)
             }
         },
         currentPeriodSubtitle() {
             const totalTasks = this.tasks?.length || 0
             const completedTasks = (this.tasks || []).filter(task => task.is_done).length
-            return `${totalTasks} tasks, ${completedTasks} completed`
+            return this.$t(':count tasks, :done completed', {
+                count: this.khNum(totalTasks),
+                done: this.khNum(completedTasks),
+            })
         },
         calendarDays() {
             const start = this.moment(this.currentDate).startOf('month').startOf('week')
@@ -569,7 +615,7 @@ export default {
                 const monthTasks = this.getTasksForMonth(monthStart.toDate())
                 months.push({
                     month: i,
-                    name: monthStart.format('MMMM'),
+                    name: this.khSolarMonth(i),
                     days: days,
                     taskCount: monthTasks.length,
                     completedTasks: monthTasks.filter(t => t.is_done).length,
@@ -725,10 +771,10 @@ export default {
                 tooltip += `\nProject: ${task.project.title}`
             }
             if (task.due_date) {
-                tooltip += `\nDue: ${this.moment(task.due_date).format('MMM D, YYYY HH:mm')}`
+                tooltip += `\n${this.$t('Due')}: ${this.khShortDate(task.due_date, true)} ${this.khNum(this.moment(task.due_date).format('HH:mm'))}`
             }
             if (task.assignees && task.assignees.length > 0) {
-                tooltip += `\nAssigned to: ${task.assignees.map(a => a.user.name).join(', ')}`
+                tooltip += `\n${this.$t('Assigned to')}: ${task.assignees.map(a => a.user.name).join(', ')}`
             }
             return tooltip
         },
@@ -742,13 +788,17 @@ export default {
             return this.moment(date).isSame(this.moment(), 'day')
         },
         formatFullDate(date) {
-            return this.moment(date).format('dddd, MMMM Do, YYYY')
+            return this.khFullDate(date)
         },
         formatWeekDay(date) {
-            return this.moment(date).format('ddd')
+            return this.khWeekdayName(date)
         },
         formatHour(hour) {
-            return this.moment().hour(hour).minute(0).format('HH:mm')
+            return this.khNum(this.moment().hour(hour).minute(0).format('HH:mm'))
+        },
+        miniDayTooltip(day) {
+            const label = this.$t(':count tasks', { count: this.khNum(day.taskCount) })
+            return day.hasOverdue ? `${label} — ${this.$t('Overdue')}` : label
         },
         selectMonth(month) {
             this.currentDate = this.moment().year(this.moment(this.currentDate).year()).month(month.month).toDate()
