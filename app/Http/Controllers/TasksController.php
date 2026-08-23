@@ -321,6 +321,16 @@ class TasksController extends Controller
     public function addAttachment($id, Request $request)
     {
         $attachment = [];
+
+        // An empty request usually means PHP dropped the body because it went over
+        // post_max_size - the request never reaches validation with a file attached.
+        if(! $request->hasFile('file')){
+            return response()->json([
+                'error' => true,
+                'message' => 'The file was not received. It is likely larger than the server allows (upload_max_filesize: '.ini_get('upload_max_filesize').', post_max_size: '.ini_get('post_max_size').').'
+            ], 422);
+        }
+
         if($request->file('file')){
             $file = $request->file('file');
 
@@ -333,6 +343,10 @@ class TasksController extends Controller
             // Request validation rule example
             $request->validate([
                 'file' => 'required|file|mimes:pdf|max:51200',
+            ], [
+                'file.uploaded' => 'The file is larger than the server allows (max '.ini_get('upload_max_filesize').'). Raise upload_max_filesize / post_max_size in php.ini.',
+                'file.max' => 'The file may not be larger than 50MB.',
+                'file.mimes' => 'Only PDF files are allowed.',
             ]);
 
             if(! in_array($file->extension(), $allowed_file_types) ){
@@ -342,7 +356,10 @@ class TasksController extends Controller
                     'message' => "The uploaded file type is not allowed. Supported formats: {$supportedExtensions}."
                 ]);
             }
-            list($width, $height) = getimagesize($file);
+            // PDFs have no image dimensions - getimagesize() returns false for them.
+            $dimensions = @getimagesize($file->getRealPath());
+            $width = $dimensions[0] ?? null;
+            $height = $dimensions[1] ?? null;
             $file_name_origin = $file->getClientOriginalName();
             $file_name = uniqid().'-'.$this->clean(pathinfo($file_name_origin, PATHINFO_FILENAME)).'.'.$file->getClientOriginalExtension();
             $size = $file->getSize();

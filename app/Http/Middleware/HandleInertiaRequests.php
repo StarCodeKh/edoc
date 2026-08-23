@@ -142,6 +142,43 @@ class HandleInertiaRequests extends Middleware
                     ];
                 }
             },
+            'max_upload_size' => fn () => $this->maxUploadSize(),
         ]);
+    }
+
+    /**
+     * The largest upload the server will actually accept, in bytes.
+     * PHP rejects anything above upload_max_filesize / post_max_size before
+     * Laravel validation ever runs, so the UI has to know the real ceiling.
+     */
+    protected function maxUploadSize(): int
+    {
+        $limits = array_filter([
+            $this->iniSizeInBytes(ini_get('upload_max_filesize')),
+            $this->iniSizeInBytes(ini_get('post_max_size')),
+            50 * 1024 * 1024,
+        ]);
+
+        return (int) min($limits);
+    }
+
+    /**
+     * Convert a php.ini shorthand size ("2M", "8M", "1G") into bytes.
+     */
+    protected function iniSizeInBytes($value): int
+    {
+        $value = trim((string) $value);
+        if ($value === '') {
+            return 0;
+        }
+
+        $number = (float) $value;
+        switch (strtolower(substr($value, -1))) {
+            case 'g': $number *= 1024;
+            case 'm': $number *= 1024;
+            case 'k': $number *= 1024;
+        }
+
+        return (int) $number;
     }
 }

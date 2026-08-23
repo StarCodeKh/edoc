@@ -1481,6 +1481,11 @@
             Icon, Loader, Link, DatePicker, DateTimePicker, CustomEditor, Head, WatchButton
         },
         computed: {
+            // Real ceiling PHP will accept (upload_max_filesize / post_max_size), capped at 50MB.
+            maxUploadSize() {
+                return this.$page.props.max_upload_size || 50 * 1024 * 1024;
+            },
+
             sortedAttachments() {
                 if (!this.task?.attachments) return [];
                 return [...this.task.attachments].sort(
@@ -2509,7 +2514,7 @@
                     return;
                 }
 
-                const maxSizeBytes = 50 * 1024 * 1024; // 50MB in bytes
+                const maxSizeBytes = this.maxUploadSize;
                 let uploadedCount = 0;
                 let failedCount = 0;
 
@@ -2524,9 +2529,13 @@
                         continue;
                     }
 
-                    // 2. Validate File Size (Max 50MB)
+                    // 2. Validate File Size (server limit, see max_upload_size prop)
                     if (file.size > maxSizeBytes) {
-                        this.toastWarning(this.$t('{name}: exceeds the 50MB limit.').replace('{name}', file.name));
+                        this.toastWarning(
+                            this.$t('{name}: exceeds the {limit} limit.')
+                                .replace('{name}', file.name)
+                                .replace('{limit}', this.formatBytes(maxSizeBytes))
+                        );
                         failedCount++;
                         continue;
                     }
@@ -2557,6 +2566,33 @@
                 }
                 e.target.value = '';
             },
+            formatBytes(bytes){
+                if (!bytes) return '0 MB';
+                if (bytes >= 1024 * 1024) return `${Math.round(bytes / (1024 * 1024))}MB`;
+                return `${Math.round(bytes / 1024)}KB`;
+            },
+            uploadErrorMessage(error, file){
+                const status = error?.response?.status;
+                const data = error?.response?.data;
+
+                // 413 (or a dropped connection) means PHP/the web server refused the
+                // body before Laravel saw it - almost always upload_max_filesize.
+                if (status === 413 || !status) {
+                    return this.$t('{name}: too large for the server (max {limit}).')
+                        .replace('{name}', file.name)
+                        .replace('{limit}', this.formatBytes(this.maxUploadSize));
+                }
+
+                if (status === 422) {
+                    const fileErrors = data?.errors?.file;
+                    if (fileErrors && fileErrors.length) return fileErrors[0];
+                    if (data?.message) return data.message;
+                }
+
+                if (data?.message) return data.message;
+
+                return this.$t('Failed to upload the file.');
+            },
             async uploadFile(file){
                 try {
                     let formData = new FormData();
@@ -2569,7 +2605,7 @@
                     return resp.data;
                 } catch (error) {
                     console.error('Error uploading file:', error);
-                    return { error: true, message: this.$t('Failed to upload the file.') };
+                    return { error: true, message: this.uploadErrorMessage(error, file) };
                 }
             },
             goToLink(link){ window.location.href = link; },
