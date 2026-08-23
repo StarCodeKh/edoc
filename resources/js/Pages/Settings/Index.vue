@@ -1,250 +1,216 @@
 <template>
-    <div class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+    <div class="settings-page">
         <Head :title="title" />
-        
-        <!-- Enhanced Header -->
-        <div class="bg-white border-b border-gray-200/60 shadow-sm">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="py-8">
-                    <div class="flex items-center space-x-4">
-                        <div class="p-3 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl">
-                            <icon name="settings" class="w-8 h-8 text-white" />
-                        </div>
-                        <div>
-                            <h1 class="text-3xl font-bold text-gray-900">{{ $t('Global Settings') }}</h1>
-                            <p class="text-gray-600 mt-1">Configure your application settings and preferences</p>
-                        </div>
+
+        <!-- Page header -->
+        <header class="settings-header">
+            <div class="settings-container">
+                <div class="flex items-center gap-3 sm:gap-4 py-5 sm:py-6">
+                    <span class="settings-header__icon">
+                        <icon name="settings" class="w-5 h-5 sm:w-6 sm:h-6" />
+                    </span>
+                    <div class="min-w-0">
+                        <h1 class="settings-header__title">{{ $t('Global Settings') }}</h1>
+                        <p class="settings-header__subtitle">{{ $t('Configure your application settings and preferences') }}</p>
                     </div>
                 </div>
             </div>
-        </div>
+        </header>
 
         <!-- Main Content -->
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <form @submit.prevent="update" class="space-y-8">
+        <div class="settings-container py-8">
+            <form @submit.prevent="update" class="space-y-5 sm:space-y-6">
+
                 <!-- Basic Application Settings -->
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-200/60 overflow-hidden">
-                <div class="px-6 py-4 bg-gradient-to-r from-gray-50/80 to-gray-100/80 border-b border-gray-200/60">
-                    <div class="flex items-center space-x-3">
-                    <div class="p-2 bg-indigo-100 rounded-lg">
-                        <icon name="app" class="w-5 h-5 text-indigo-600" />
+                <section class="settings-card">
+                    <div class="settings-card__header">
+                        <span class="settings-card__icon settings-card__icon--primary">
+                            <icon name="app" class="w-4 h-4" />
+                        </span>
+                        <h2 class="settings-card__title">{{ $t('Basic Application Settings') }}</h2>
                     </div>
-                    <h2 class="text-xl font-semibold text-gray-900">{{ $t('Basic Application Settings') }}</h2>
+                    <div class="settings-card__body">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+                            <text-input v-model="form.app_name" :error="form.errors.app_name" :label="$t('App Name')" />
+                            <text-input v-model="form.site_key" :error="form.errors.site_key" :label="$t('Google ReCaptcha Site Key')" />
+                            <select-input v-model="form.default_language" :error="form.errors.default_language" :label="$t('Default Language')">
+                                <option v-for="l in languages" :key="l.id" :value="l.code">{{ l.name }}</option>
+                            </select-input>
+                        </div>
+                        <div class="mt-5">
+                            <text-input v-model="form.webhook_url" :error="form.errors.webhook_url" :label="$t('Slack webhook URL')" />
+                        </div>
                     </div>
-                </div>
-                <div class="p-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <text-input v-model="form.app_name" :error="form.errors.app_name" :label="$t('App Name')" />
-                    <text-input v-model="form.site_key" :error="form.errors.site_key" :label="$t('Google ReCaptcha Site Key')" />
-                    <select-input v-model="form.default_language" :error="form.errors.default_language" :label="$t('Default Language')">
-                        <option v-for="l in languages" :key="l.id" :value="l.code">{{ l.name }}</option>
-                    </select-input>
-                    </div>
-                    <div class="mt-6">
-                    <text-input v-model="form.webhook_url" :error="form.errors.webhook_url" :label="$t('Slack webhook URL')" />
-                    </div>
-                </div>
-                </div>
+                </section>
+
                 <!-- Branding & Assets -->
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-200/60 overflow-hidden">
-                <div class="px-6 py-4 bg-gradient-to-r from-gray-50/80 to-gray-100/80 border-b border-gray-200/60">
-                    <div class="flex items-center space-x-3">
-                    <div class="p-2 bg-purple-100 rounded-lg">
-                        <icon name="image" class="w-5 h-5 text-purple-600" />
+                <section class="settings-card">
+                    <div class="settings-card__header">
+                        <span class="settings-card__icon settings-card__icon--violet">
+                            <icon name="image" class="w-4 h-4" />
+                        </span>
+                        <h2 class="settings-card__title">{{ $t('Branding & Assets') }}</h2>
                     </div>
-                    <h2 class="text-xl font-semibold text-gray-900">{{ $t('Branding & Assets') }}</h2>
-                    </div>
-                </div>
-                <div class="p-6">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <!-- Favicon Upload -->
-                    <div class="space-y-3">
-                        <label class="block text-sm font-medium text-gray-700">{{ $t('Favicon') }}</label>
-                        <div class="flex items-center space-x-4">
-                        <div class="flex-1">
-                            <file-input v-model="form.favicon" :error="form.errors.favicon" type="file" accept="image/png" />
-                        </div>
-                        <div class="flex-shrink-0">
-                            <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
-                            <img v-if="form.main_favicon" class="w-8 h-8 object-contain" :src="form.main_favicon" />
-                            <icon v-else name="image" class="w-6 h-6 text-gray-400" />
+                    <div class="settings-card__body">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+                            <!-- Favicon -->
+                            <div class="space-y-2">
+                                <label class="settings-label">{{ $t('Favicon') }}</label>
+                                <div class="flex items-center gap-3">
+                                    <div class="flex-1 min-w-0">
+                                        <file-input v-model="form.favicon" :error="form.errors.favicon" type="file" accept="image/png" />
+                                    </div>
+                                    <div class="settings-preview">
+                                        <img v-if="form.main_favicon" class="w-8 h-8 object-contain" :src="form.main_favicon" alt="" />
+                                        <icon v-else name="image" class="w-5 h-5 settings-preview__placeholder" />
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        </div>
-                    </div>
 
-                    <!-- Logo Upload -->
-                    <div class="space-y-3">
-                        <label class="block text-sm font-medium text-gray-700">{{ $t('Logo') }}</label>
-                        <div class="flex items-center space-x-4">
-                        <div class="flex-1">
-                            <file-input v-model="form.logo" :error="form.errors.logo" type="file" accept="image/png" />
-                        </div>
-                        <div class="flex-shrink-0">
-                            <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
-                            <img v-if="form.main_logo" class="w-8 h-8 object-contain" :src="form.main_logo" />
-                            <icon v-else name="image" class="w-6 h-6 text-gray-400" />
+                            <!-- Logo -->
+                            <div class="space-y-2">
+                                <label class="settings-label">{{ $t('Logo') }}</label>
+                                <div class="flex items-center gap-3">
+                                    <div class="flex-1 min-w-0">
+                                        <file-input v-model="form.logo" :error="form.errors.logo" type="file" accept="image/png" />
+                                    </div>
+                                    <div class="settings-preview">
+                                        <img v-if="form.main_logo" class="w-8 h-8 object-contain" :src="form.main_logo" alt="" />
+                                        <icon v-else name="image" class="w-5 h-5 settings-preview__placeholder" />
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        </div>
-                    </div>
 
-                    <!-- White Logo Upload -->
-                    <div class="space-y-3">
-                        <label class="block text-sm font-medium text-gray-700">{{ $t('White Logo') }}</label>
-                        <div class="flex items-center space-x-4">
-                        <div class="flex-1">
-                            <file-input v-model="form.logo_white" :error="form.errors.logo_white" type="file" accept="image/png" />
-                        </div>
-                        <div class="flex-shrink-0">
-                            <div class="w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center overflow-hidden">
-                            <img v-if="form.main_logo_white" class="w-8 h-8 object-contain" :src="form.main_logo_white" />
-                            <icon v-else name="image" class="w-6 h-6 text-gray-400" />
+                            <!-- White Logo -->
+                            <div class="space-y-2">
+                                <label class="settings-label">{{ $t('White Logo') }}</label>
+                                <div class="flex items-center gap-3">
+                                    <div class="flex-1 min-w-0">
+                                        <file-input v-model="form.logo_white" :error="form.errors.logo_white" type="file" accept="image/png" />
+                                    </div>
+                                    <div class="settings-preview settings-preview--dark">
+                                        <img v-if="form.main_logo_white" class="w-8 h-8 object-contain" :src="form.main_logo_white" alt="" />
+                                        <icon v-else name="image" class="w-5 h-5 settings-preview__placeholder" />
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        </div>
                     </div>
+                </section>
+
+                <!-- User Registration -->
+                <section class="settings-card">
+                    <div class="settings-card__header">
+                        <span class="settings-card__icon settings-card__icon--green">
+                            <icon name="user-plus" class="w-4 h-4" />
+                        </span>
+                        <h2 class="settings-card__title">{{ $t('User Registration') }}</h2>
                     </div>
-                </div>
-                </div>
-                <!-- User Registration Settings -->
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-200/60 overflow-hidden">
-                <div class="px-6 py-4 bg-gradient-to-r from-gray-50/80 to-gray-100/80 border-b border-gray-200/60">
-                    <div class="flex items-center space-x-3">
-                    <div class="p-2 bg-green-100 rounded-lg">
-                        <icon name="user-plus" class="w-5 h-5 text-green-600" />
-                    </div>
-                    <h2 class="text-xl font-semibold text-gray-900">{{ $t('User Registration') }}</h2>
-                    </div>
-                </div>
-                <div class="p-6">
-                    <div class="flex items-center space-x-3">
-                    <div class="flex items-center h-5">
-                        <input id="enableRegistration" 
-                            type="checkbox" 
-                            v-model="form.enable_registration" 
-                            class="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 focus:ring-2">
-                    </div>
-                    <div class="flex-1">
-                        <label for="enableRegistration" class="text-sm font-medium text-gray-900">
-                        {{ $t('Enable Registration') }}
+                    <div class="settings-card__body">
+                        <label for="enableRegistration" class="settings-toggle-row">
+                            <input id="enableRegistration"
+                                   type="checkbox"
+                                   v-model="form.enable_registration"
+                                   class="settings-checkbox" />
+                            <span class="min-w-0">
+                                <span class="settings-toggle-row__label">{{ $t('Enable Registration') }}</span>
+                                <span class="settings-hint">{{ $t('Show Registration link on the login page') }}</span>
+                            </span>
                         </label>
-                        <p class="text-xs text-gray-500 mt-1">{{ $t('Show Registration link on the login page') }}</p>
                     </div>
-                    </div>
-                </div>
-                </div>
+                </section>
 
                 <!-- File Upload Settings -->
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-200/60 overflow-hidden">
-                <div class="px-6 py-4 bg-gradient-to-r from-gray-50/80 to-gray-100/80 border-b border-gray-200/60">
-                    <div class="flex items-center space-x-3">
-                    <div class="p-2 bg-blue-100 rounded-lg">
-                        <icon name="attachment" class="w-5 h-5 text-blue-600" />
-                    </div>
-                    <h2 class="text-xl font-semibold text-gray-900">{{ $t('File Upload Settings') }}</h2>
-                    </div>
-                </div>
-                <div class="p-6">
-                    <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-3">{{ $t('Allowed File Types') }}</label>
-                        <div class="flex flex-wrap gap-2 mb-4">
-                        <span v-for="(file_type, ft_key) in form.allowed_file_types" :key="ft_key" 
-                                class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-600">
-                            {{ file_type }}
-                            <button type="button" 
-                                    @click="removeFileType(ft_key)" 
-                                    class="inline-flex items-center p-0.5 ml-2 text-white hover:bg-white/20 rounded-full transition-colors" 
-                                    aria-label="Remove">
-                            <icon name="close" class="w-3 h-3" />
-                            </button>
+                <section class="settings-card">
+                    <div class="settings-card__header">
+                        <span class="settings-card__icon settings-card__icon--sky">
+                            <icon name="attachment" class="w-4 h-4" />
                         </span>
-                        </div>
-                        <div class="relative">
-                        <input v-model="newFileType" 
-                                @keydown.enter.prevent="addFileType" 
-                                @keydown="checkDelimiter"
-                                class="w-full text-sm border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" 
-                                type="text" 
-                                :placeholder="$t('Type file extensions and press enter or comma to add')" />
-                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                            <icon name="plus" class="w-4 h-4 text-gray-400" />
-                        </div>
-                        </div>
-                        <div v-if="form.errors.allowed_file_types" class="text-red-500 text-xs mt-2">{{ form.errors.allowed_file_types }}</div>
+                        <h2 class="settings-card__title">{{ $t('File Upload Settings') }}</h2>
                     </div>
+                    <div class="settings-card__body">
+                        <label class="settings-label">{{ $t('Allowed File Types') }}</label>
+
+                        <div v-if="form.allowed_file_types && form.allowed_file_types.length" class="flex flex-wrap gap-2 mt-3">
+                            <span v-for="(file_type, ft_key) in form.allowed_file_types" :key="ft_key" class="settings-chip">
+                                {{ file_type }}
+                                <button type="button" class="settings-chip__remove" @click="removeFileType(ft_key)" :aria-label="$t('Remove')">
+                                    <icon name="close" class="w-3 h-3" />
+                                </button>
+                            </span>
+                        </div>
+
+                        <div class="relative mt-3">
+                            <input v-model="newFileType"
+                                   @keydown.enter.prevent="addFileType"
+                                   @keydown="checkDelimiter"
+                                   class="settings-input pr-10"
+                                   type="text"
+                                   :placeholder="$t('Type file extensions and press enter or comma to add')" />
+                            <span class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <icon name="plus" class="w-4 h-4 settings-input__adornment" />
+                            </span>
+                        </div>
+                        <p v-if="form.errors.allowed_file_types" class="settings-error">{{ form.errors.allowed_file_types }}</p>
                     </div>
-                </div>
-                </div>
+                </section>
 
                 <!-- Cron Job Instructions -->
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-200/60 overflow-hidden">
-                <div class="px-6 py-4 bg-gradient-to-r from-gray-50/80 to-gray-100/80 border-b border-gray-200/60">
-                    <div class="flex items-center space-x-3">
-                    <div class="p-2 bg-yellow-100 rounded-lg">
-                        <icon name="clock" class="w-5 h-5 text-yellow-600" />
+                <section class="settings-card">
+                    <div class="settings-card__header">
+                        <span class="settings-card__icon settings-card__icon--amber">
+                            <icon name="clock" class="w-4 h-4" />
+                        </span>
+                        <h2 class="settings-card__title">{{ $t('Cron Job Instructions') }}</h2>
                     </div>
-                    <h2 class="text-xl font-semibold text-gray-900">{{ $t('Cron Job Instructions') }}</h2>
-                    </div>
-                </div>
-                <div class="p-6">
-                    <div class="space-y-6">
-                    <div class="p-4 bg-blue-50 rounded-xl border border-blue-200">
-                        <h3 class="text-sm font-semibold text-blue-900 mb-2">{{ $t('Email Queue Setup') }}</h3>
-                        <p class="text-sm text-blue-800 mb-4">
-                        {{ $t('To send emails without delays, set up a cron job. First, enable the queue by adding') }} 
-                        <code class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-mono">QUEUE_ENABLE=true</code> 
-                        {{ $t('to your .env file.') }}
-                        </p>
-                        <div class="space-y-3">
-                        <div>
-                            <label class="block text-xs font-medium text-blue-700 mb-1">{{ $t('Standard Server Cron Job') }}</label>
-                            <div class="bg-gray-900 text-green-400 p-3 rounded-lg font-mono text-sm overflow-x-auto">
-                            <code>*/3 * * * * /usr/bin/php artisan queue:work --queue=high,default --stop-when-empty</code>
+                    <div class="settings-card__body">
+                        <div class="settings-note">
+                            <h3 class="settings-note__title">{{ $t('Email Queue Setup') }}</h3>
+                            <p class="settings-note__text">
+                                {{ $t('To send emails without delays, set up a cron job. First, enable the queue by adding') }}
+                                <code class="settings-inline-code">QUEUE_ENABLE=true</code>
+                                {{ $t('to your .env file.') }}
+                            </p>
+                        </div>
+
+                        <div class="mt-5 space-y-4">
+                            <div>
+                                <label class="settings-label">{{ $t('Standard Server Cron Job') }}</label>
+                                <pre class="settings-code"><code>*/3 * * * * /usr/bin/php artisan queue:work --queue=high,default --stop-when-empty</code></pre>
+                                <p class="settings-hint">{{ $t('Runs every 3 minutes to process email queue') }}</p>
                             </div>
-                            <p class="text-xs text-blue-600 mt-1">{{ $t('Runs every 3 minutes to process email queue') }}</p>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-blue-700 mb-1">{{ $t('Shared Hosting (cPanel) Cron Job') }}</label>
-                            <div class="bg-gray-900 text-green-400 p-3 rounded-lg font-mono text-sm overflow-x-auto">
-                            <code>*/3 * * * * wget -q -O - https://website.com/cron/queue_work >/dev/null 2>&1</code>
+                            <div>
+                                <label class="settings-label">{{ $t('Shared Hosting (cPanel) Cron Job') }}</label>
+                                <pre class="settings-code"><code>*/3 * * * * wget -q -O - https://website.com/cron/queue_work >/dev/null 2>&1</code></pre>
+                                <p class="settings-hint">{{ $t('Alternative method for shared hosting providers') }}</p>
                             </div>
-                            <p class="text-xs text-blue-600 mt-1">{{ $t('Alternative method for shared hosting providers') }}</p>
-                        </div>
                         </div>
                     </div>
-                    </div>
-                </div>
-                </div>
+                </section>
 
                 <!-- Custom CSS -->
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-200/60 overflow-hidden">
-                <div class="px-6 py-4 bg-gradient-to-r from-gray-50/80 to-gray-100/80 border-b border-gray-200/60">
-                    <div class="flex items-center space-x-3">
-                    <div class="p-2 bg-pink-100 rounded-lg">
-                        <icon name="code" class="w-5 h-5 text-pink-600" />
+                <section class="settings-card">
+                    <div class="settings-card__header">
+                        <span class="settings-card__icon settings-card__icon--rose">
+                            <icon name="code" class="w-4 h-4" />
+                        </span>
+                        <h2 class="settings-card__title">{{ $t('Custom CSS') }}</h2>
                     </div>
-                    <h2 class="text-xl font-semibold text-gray-900">{{ $t('Custom CSS') }}</h2>
+                    <div class="settings-card__body">
+                        <textarea-input v-model="form.custom_css"
+                                        :error="form.errors.custom_css"
+                                        :rows="15"
+                                        placeholder="/* Add your custom CSS here */"
+                                        :label="$t('Custom CSS Code')" />
                     </div>
-                </div>
-                <div class="p-6">
-                    <textarea-input v-model="form.custom_css" 
-                                :error="form.errors.custom_css" 
-                                :rows="15" 
-                                placeholder="/* Add your custom CSS here */"
-                                :label="$t('Custom CSS Code')" />
-                </div>
-                </div>
+                </section>
 
-                <!-- Save Button -->
-                <div class="flex justify-end">
-                <loading-button :loading="form.processing" 
-                                class="px-8 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105" 
-                                type="submit">
-                    <icon name="save" class="w-5 h-5 mr-2" />
-                    {{ $t('Save Settings') }}
-                </loading-button>
+                <!-- Save -->
+                <div class="settings-actions">
+                    <loading-button :loading="form.processing" class="settings-save" type="submit">
+                        <icon name="save" class="w-4 h-4 mr-2" />
+                        {{ $t('Save Settings') }}
+                    </loading-button>
                 </div>
             </form>
         </div>
@@ -348,214 +314,255 @@
     },
     }
 </script>
-
 <style scoped>
-    /* Enhanced Global Settings Styling */
+    /* One neutral ramp (slate) + one accent (primary blue), for both themes.
+       Written as scoped classes rather than bg-white/text-gray-* utilities so the
+       global `.dark .bg-white` override in dark_screen.scss cannot flatten the
+       page into dark-text-on-dark-card. */
 
-    /* Custom scrollbar for the page */
-    ::-webkit-scrollbar {
-        width: 8px;
+    .settings-page {
+        @apply min-h-screen bg-slate-50;
+    }
+    .settings-container {
+        @apply max-w-7xl mx-auto px-3 sm:px-6 lg:px-8;
     }
 
-    ::-webkit-scrollbar-track {
-        background: #f1f5f9;
-        border-radius: 4px;
+    /* Header */
+    .settings-header {
+        @apply bg-white border-b border-slate-200;
+    }
+    .settings-header__icon {
+        @apply flex items-center justify-center w-11 h-11 rounded-xl bg-primary-600 text-white flex-shrink-0;
+    }
+    .settings-header__title {
+        @apply text-xl sm:text-2xl font-semibold text-slate-900 leading-tight;
+    }
+    .settings-header__subtitle {
+        @apply text-xs sm:text-sm text-slate-500 mt-0.5;
     }
 
-    ::-webkit-scrollbar-thumb {
-        background: #cbd5e1;
-        border-radius: 4px;
+    /* Cards */
+    .settings-card {
+        @apply bg-white rounded-xl border border-slate-200 overflow-hidden;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    }
+    .settings-card__header {
+        @apply flex items-center gap-3 px-4 sm:px-5 py-3 sm:py-3.5 border-b border-slate-200 bg-slate-50;
+    }
+    .settings-card__icon {
+        @apply flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0;
+    }
+    .settings-card__icon--primary  { @apply bg-primary-50 text-primary-600; }
+    .settings-card__icon--violet  { @apply bg-violet-50 text-violet-600; }
+    .settings-card__icon--green { @apply bg-green-50 text-green-600; }
+    .settings-card__icon--sky     { @apply bg-sky-50 text-sky-600; }
+    .settings-card__icon--amber   { @apply bg-amber-50 text-amber-600; }
+    .settings-card__icon--rose    { @apply bg-rose-50 text-rose-600; }
+    .settings-card__title {
+        @apply text-sm sm:text-base font-semibold text-slate-900 min-w-0 truncate;
+    }
+    .settings-card__body {
+        @apply p-4 sm:p-5;
     }
 
-    ::-webkit-scrollbar-thumb:hover {
-        background: #94a3b8;
+    /* Text */
+    .settings-label {
+        @apply block text-sm font-medium text-slate-700;
+    }
+    .settings-hint {
+        @apply block text-xs text-slate-500 mt-1.5;
+    }
+    .settings-error {
+        @apply text-xs text-red-600 mt-2;
     }
 
-    /* Enhanced form input styling */
-    input[type="text"], 
-    input[type="email"], 
-    input[type="password"], 
-    select, 
-    textarea {
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Inputs owned by this page */
+    .settings-input {
+        @apply w-full text-sm rounded-lg border border-slate-300 bg-white text-slate-900 px-3 py-2.5;
+        @apply focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20;
+    }
+    .settings-input::placeholder {
+        @apply text-slate-400;
+    }
+    .settings-input__adornment {
+        @apply text-slate-400;
     }
 
-    input[type="text"]:focus, 
-    input[type="email"]:focus, 
-    input[type="password"]:focus, 
-    select:focus, 
-    textarea:focus {
-        transform: translateY(-1px);
-        box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.1);
+    /* Logo previews */
+    .settings-preview {
+        @apply flex items-center justify-center w-12 h-12 rounded-lg border border-slate-200 bg-slate-50 overflow-hidden flex-shrink-0;
+    }
+    .settings-preview--dark {
+        @apply bg-slate-800 border-slate-700;
+    }
+    .settings-preview__placeholder {
+        @apply text-slate-400;
     }
 
-    /* Enhanced checkbox styling */
-    input[type="checkbox"] {
-        accent-color: #6366f1;
-        transition: all 0.2s ease;
+    /* Registration toggle */
+    .settings-toggle-row {
+        @apply flex items-start gap-3 cursor-pointer;
+    }
+    .settings-toggle-row__label {
+        @apply block text-sm font-medium text-slate-900;
+    }
+    .settings-checkbox {
+        @apply w-4 h-4 mt-0.5 rounded border-slate-300 text-primary-600 flex-shrink-0;
+        @apply focus:ring-2 focus:ring-primary-500/40;
     }
 
-    input[type="checkbox"]:checked {
-        transform: scale(1.1);
+    /* File-type chips */
+    .settings-chip {
+        @apply inline-flex items-center gap-1 pl-3 pr-1.5 py-1 rounded-full text-xs font-medium;
+        @apply bg-primary-50 text-primary-700 border border-primary-100;
+    }
+    .settings-chip__remove {
+        @apply inline-flex items-center justify-center w-4 h-4 rounded-full text-primary-500;
+        @apply hover:bg-primary-200 hover:text-primary-800 transition-colors;
     }
 
-    /* File input styling */
-    input[type="file"]::-webkit-file-upload-button {
-        background: linear-gradient(to right, #6366f1, #8b5cf6);
-        color: white;
-        border: none;
-        padding: 8px 16px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 12px;
-        font-weight: 500;
-        transition: all 0.2s ease;
+    /* Cron note + code blocks */
+    .settings-note {
+        @apply rounded-lg border border-primary-100 bg-primary-50 px-4 py-3;
+    }
+    .settings-note__title {
+        @apply text-sm font-semibold text-primary-900;
+    }
+    .settings-note__text {
+        @apply text-sm text-primary-800 mt-1 leading-relaxed;
+    }
+    .settings-inline-code {
+        @apply px-1.5 py-0.5 rounded bg-primary-100 text-primary-900 text-xs;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+    }
+    .settings-code {
+        @apply mt-2 rounded-lg bg-slate-900 text-slate-100 px-3 sm:px-4 py-3 text-xs overflow-x-auto;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+        -webkit-overflow-scrolling: touch;
+    }
+    .settings-code code {
+        @apply text-green-300 whitespace-pre;
     }
 
-    input[type="file"]::-webkit-file-upload-button:hover {
-        background: linear-gradient(to right, #4f46e5, #7c3aed);
-        transform: translateY(-1px);
+    /* Save */
+    .settings-actions {
+        @apply flex justify-end pt-2 pb-2;
+    }
+    .settings-save {
+        @apply inline-flex items-center justify-center w-full sm:w-auto px-5 rounded-lg bg-primary-600 text-white text-sm font-semibold;
+        @apply hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500/40 transition-colors;
+        min-height: 44px;
     }
 
-    /* Enhanced card hover effects */
-    .bg-white:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    /* ---------------------------------------------------------------- dark */
+    /* Class-based (`.dark`), matching tailwind.config darkMode: ['class'].
+       The old block used @media (prefers-color-scheme: dark), which keyed off
+       the OS instead of the app's own theme toggle. */
+    .dark .settings-page {
+        @apply bg-slate-900;
+    }
+    .dark .settings-header {
+        @apply bg-slate-800 border-slate-700;
+    }
+    .dark .settings-header__title {
+        @apply text-white;
+    }
+    .dark .settings-header__subtitle {
+        @apply text-slate-400;
     }
 
-    /* Gradient text animation */
-    @keyframes gradient-shift {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
+    .dark .settings-card {
+        @apply bg-slate-800 border-slate-700;
+        box-shadow: none;
+    }
+    .dark .settings-card__header {
+        @apply bg-slate-800/60 border-slate-700;
+    }
+    .dark .settings-card__title {
+        @apply text-slate-100;
+    }
+    .dark .settings-card__icon--primary  { @apply bg-primary-500/15 text-primary-300; }
+    .dark .settings-card__icon--violet  { @apply bg-violet-500/15 text-violet-300; }
+    .dark .settings-card__icon--green { @apply bg-green-500/15 text-green-300; }
+    .dark .settings-card__icon--sky     { @apply bg-sky-500/15 text-sky-300; }
+    .dark .settings-card__icon--amber   { @apply bg-amber-500/15 text-amber-300; }
+    .dark .settings-card__icon--rose    { @apply bg-rose-500/15 text-rose-300; }
+
+    .dark .settings-label {
+        @apply text-slate-300;
+    }
+    .dark .settings-hint {
+        @apply text-slate-400;
+    }
+    .dark .settings-error {
+        @apply text-red-400;
     }
 
-    .gradient-text {
-        background: linear-gradient(-45deg, #6366f1, #8b5cf6, #ec4899, #f59e0b);
-        background-size: 400% 400%;
-        animation: gradient-shift 3s ease infinite;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+    .dark .settings-input {
+        @apply bg-slate-900 border-slate-600 text-slate-100;
+    }
+    .dark .settings-input::placeholder {
+        @apply text-slate-500;
+    }
+    .dark .settings-input__adornment,
+    .dark .settings-preview__placeholder {
+        @apply text-slate-500;
     }
 
-    /* Loading state animation */
-    @keyframes pulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.5; }
+    .dark .settings-preview {
+        @apply bg-slate-900 border-slate-700;
+    }
+    .dark .settings-preview--dark {
+        @apply bg-slate-950 border-slate-700;
     }
 
-    .loading {
-        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    .dark .settings-toggle-row__label {
+        @apply text-slate-100;
+    }
+    .dark .settings-checkbox {
+        @apply bg-slate-900 border-slate-600;
     }
 
-    /* Enhanced button hover effects */
-    button:hover {
-        transform: translateY(-1px);
+    .dark .settings-chip {
+        @apply bg-primary-500/15 text-primary-200 border-primary-500/25;
+    }
+    .dark .settings-chip__remove {
+        @apply text-primary-300 hover:bg-primary-500/30 hover:text-white;
     }
 
-    /* Code block styling */
-    code {
-        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-        font-size: 0.875rem;
-        line-height: 1.5;
+    .dark .settings-note {
+        @apply bg-primary-500/10 border-primary-500/25;
+    }
+    .dark .settings-note__title {
+        @apply text-primary-200;
+    }
+    .dark .settings-note__text {
+        @apply text-primary-100/80;
+    }
+    .dark .settings-inline-code {
+        @apply bg-primary-500/20 text-primary-100;
+    }
+    .dark .settings-code {
+        @apply bg-slate-950 border border-slate-700;
     }
 
-    /* File type badge animations */
-    .inline-flex:hover {
-        transform: scale(1.05);
-    }
-
-    /* Notification toggle hover effects */
-    .flex.items-center.space-x-3:hover {
-        background-color: rgba(99, 102, 241, 0.05);
-    }
-
-    /* Enhanced focus states */
-    button:focus, 
-    input:focus, 
-    select:focus, 
-    textarea:focus {
-        outline: none;
-        ring: 2px;
-        ring-color: rgb(99 102 241);
-        ring-opacity: 0.5;
-    }
-
-    /* Mobile responsiveness */
-    @media (max-width: 768px) {
-        .grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-3 {
-            grid-template-columns: 1fr;
+    /* Touch screens: give the small controls a 24px+ hit area. */
+    @media (pointer: coarse) {
+        .settings-chip {
+            @apply py-1.5;
         }
-        
-        .max-w-7xl {
-            padding-left: 1rem;
-            padding-right: 1rem;
+        .settings-chip__remove {
+            @apply w-5 h-5;
+        }
+        .settings-checkbox {
+            @apply w-5 h-5;
         }
     }
 
-    /* Dark mode support */
-    @media (prefers-color-scheme: dark) {
-        .bg-white {
-            background-color: rgba(17, 24, 39, 0.95);
-            border-color: rgba(55, 65, 81, 0.6);
+    @media (prefers-reduced-motion: reduce) {
+        .settings-save,
+        .settings-chip__remove {
+            transition: none;
         }
-        
-        .text-gray-900 {
-            color: #f9fafb;
-        }
-        
-        .text-gray-600 {
-            color: #d1d5db;
-        }
-    }
-
-    /* Animation for form sections */
-    .bg-white {
-        animation: fadeInUp 0.6s ease-out;
-    }
-
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    /* Staggered animation for cards */
-    .bg-white:nth-child(1) { animation-delay: 0.1s; }
-    .bg-white:nth-child(2) { animation-delay: 0.2s; }
-    .bg-white:nth-child(3) { animation-delay: 0.3s; }
-    .bg-white:nth-child(4) { animation-delay: 0.4s; }
-    .bg-white:nth-child(5) { animation-delay: 0.5s; }
-    .bg-white:nth-child(6) { animation-delay: 0.6s; }
-    .bg-white:nth-child(7) { animation-delay: 0.7s; }
-
-    /* Enhanced shadow effects */
-    .shadow-sm {
-        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    }
-
-    .shadow-lg {
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    }
-
-    .shadow-xl {
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    }
-
-    /* Smooth transitions for all interactive elements */
-    * {
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    /* Enhanced backdrop blur */
-    .backdrop-blur-xl {
-        backdrop-filter: blur(24px);
-        -webkit-backdrop-filter: blur(24px);
     }
 </style>

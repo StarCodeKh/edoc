@@ -688,8 +688,11 @@ body {
         }
     }
 
-    /* Dark mode support */
-    @media (prefers-color-scheme: dark) {
+    /* Dark mode support - keyed to the app's own `.dark` class (see
+       tailwind.config darkMode: ['class']). It used to sit inside
+       @media (prefers-color-scheme: dark), so switching the in-app theme left
+       the sidebar with light-mode text on a dark background: unreadable. */
+    .dark & {
         background-color: #111827;
         border-color: rgba(55, 65, 81, 0.6);
 

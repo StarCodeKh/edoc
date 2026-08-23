@@ -1,70 +1,276 @@
 <template>
-  <div>
-      <div class="flex justify-center w-full flash-message">
-          <!-- Success -->
-          <div
-              v-if="$page.props.flash && $page.props.flash.success && show"
-              class="mt-3 mb-3 inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-white/20 backdrop-blur-xl shadow-[0_15px_35px_-10px_rgba(0,0,0,0.45)] max-w-3xl"
-          >
-              <span class="shrink-0 w-5 h-5 rounded-full bg-[#149954] flex items-center justify-center">
-                  <svg class="w-3 h-3 fill-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><polygon points="0 11 2 9 7 14 18 3 20 5 7 18" /></svg>
-              </span>
-              <div class="text-[15px] font-semibold text-[#149954]">{{ $page.props.flash.success }}</div>
-              <button type="button" class="group shrink-0 text-[#149954]/80 hover:text-[#0E7A42] transition-colors" @click="show = false">
-                  <svg class="w-3.5 h-3.5 fill-current" xmlns="http://www.w3.org/2000/svg" width="235.908" height="235.908" viewBox="278.046 126.846 235.908 235.908"><path d="M506.784 134.017c-9.56-9.56-25.06-9.56-34.62 0L396 210.18l-76.164-76.164c-9.56-9.56-25.06-9.56-34.62 0-9.56 9.56-9.56 25.06 0 34.62L361.38 244.8l-76.164 76.165c-9.56 9.56-9.56 25.06 0 34.62 9.56 9.56 25.06 9.56 34.62 0L396 279.42l76.164 76.165c9.56 9.56 25.06 9.56 34.62 0 9.56-9.56 9.56-25.06 0-34.62L430.62 244.8l76.164-76.163c9.56-9.56 9.56-25.06 0-34.62z" /></svg>
-              </button>
-          </div>
+    <teleport to="body">
+        <div class="alert-stack" aria-live="polite" aria-atomic="true">
+            <transition name="alert">
+                <div v-if="visible" class="alert" :class="'alert--' + kind" role="alert">
+                    <span class="alert__icon">
+                        <svg v-if="kind === 'success'" viewBox="0 0 24 24" fill="none">
+                            <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        <svg v-else viewBox="0 0 24 24" fill="none">
+                            <path d="M12 8v5m0 3.5h.01" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+                            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" />
+                        </svg>
+                    </span>
 
-          <!-- Error -->
-          <div
-              v-if="$page.props.flash && ($page.props.flash.error || Object.keys($page.props.errors).length > 0) && show"
-              class="mb-8 inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-white/20 backdrop-blur-xl shadow-[0_15px_35px_-10px_rgba(0,0,0,0.45)] max-w-3xl"
-              :class="{ 'items-start': Object.keys($page.props.errors).length > 1 }"
-          >
-              <span class="shrink-0 w-5 h-5 rounded-full bg-[#B3261E] flex items-center justify-center" :class="{ 'mt-0.5': Object.keys($page.props.errors).length > 1 }">
-                  <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 8v4m0 4h.01" />
-                  </svg>
-              </span>
+                    <div class="alert__body">
+                        <p v-if="messages.length === 1" class="alert__message">{{ messages[0] }}</p>
+                        <template v-else>
+                            <p class="alert__title">{{ $t('There are {count} form errors.').replace('{count}', messages.length) }}</p>
+                            <ul class="alert__list">
+                                <li v-for="(message, index) in messages" :key="index">{{ message }}</li>
+                            </ul>
+                        </template>
+                    </div>
 
-              <div v-if="$page.props.flash.error" class="text-[15px] font-semibold text-[#B3261E]">{{ $page.props.flash.error }}</div>
-              <div v-else class="text-[15px] font-semibold text-[#B3261E] flex flex-col leading-relaxed">
-                  <span v-if="Object.keys($page.props.errors).length === 1">{{ Object.values($page.props.errors)[0] }}</span>
-                  <template v-else>
-                      <span>There are {{ Object.keys($page.props.errors).length }} form errors.</span>
-                      <span v-for="(error, ei) in $page.props.errors" :key="ei" class="font-normal">* {{ error }}</span>
-                  </template>
-              </div>
+                    <button type="button" class="alert__close" @click="dismiss" :aria-label="$t('Dismiss')">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                    </button>
 
-              <button
-                  type="button"
-                  class="group shrink-0 text-[#B3261E]/80 hover:text-[#8f1e18] transition-colors"
-                  :class="{ 'mt-0.5': Object.keys($page.props.errors).length > 1 }"
-                  @click="show = false"
-              >
-                  <svg class="w-3.5 h-3.5 fill-current" xmlns="http://www.w3.org/2000/svg" width="235.908" height="235.908" viewBox="278.046 126.846 235.908 235.908"><path d="M506.784 134.017c-9.56-9.56-25.06-9.56-34.62 0L396 210.18l-76.164-76.164c-9.56-9.56-25.06-9.56-34.62 0-9.56 9.56-9.56 25.06 0 34.62L361.38 244.8l-76.164 76.165c-9.56 9.56-9.56 25.06 0 34.62 9.56 9.56 25.06 9.56 34.62 0L396 279.42l76.164 76.165c9.56 9.56 25.06 9.56 34.62 0 9.56-9.56 9.56-25.06 0-34.62L430.62 244.8l76.164-76.163c9.56-9.56 9.56-25.06 0-34.62z" /></svg>
-              </button>
-          </div>
-      </div>
-  </div>
+                    <span class="alert__bar" :style="{ animationDuration: duration + 'ms' }"></span>
+                </div>
+            </transition>
+        </div>
+    </teleport>
 </template>
 
 <script>
     export default {
-    data() {
-        return {
-        show: true,
-        }
-    },
-    watch: {
-        '$page.props.flash': {
-        handler() {
-            this.show = true
+        data() {
+            return {
+                show: true,
+                timer: null,
+            }
         },
-        deep: true,
+        computed: {
+            flash() {
+                return this.$page.props.flash || {}
+            },
+            errors() {
+                return this.$page.props.errors || {}
+            },
+            kind() {
+                return this.flash.success && !this.flash.error ? 'success' : 'error'
+            },
+            // Flash message first, then any validation errors handed back by Laravel.
+            messages() {
+                if (this.flash.success && !this.flash.error) return [this.flash.success]
+                if (this.flash.error) return [this.flash.error]
+                return Object.values(this.errors)
+            },
+            visible() {
+                return this.show && this.messages.length > 0
+            },
+            // Give people longer to read a list of validation errors.
+            duration() {
+                return this.kind === 'success' ? 4000 : Math.min(6000 + this.messages.length * 1000, 12000)
+            },
         },
-    },
+        watch: {
+            '$page.props.flash': {
+                handler() {
+                    this.reset()
+                },
+                deep: true,
+            },
+            '$page.props.errors': {
+                handler() {
+                    this.reset()
+                },
+                deep: true,
+            },
+        },
+        methods: {
+            reset() {
+                this.show = true
+                clearTimeout(this.timer)
+                if (this.messages.length) {
+                    this.timer = setTimeout(() => { this.show = false }, this.duration)
+                }
+            },
+            dismiss() {
+                clearTimeout(this.timer)
+                this.show = false
+            },
+        },
         mounted() {
-        }
+            this.reset()
+        },
+        beforeUnmount() {
+            clearTimeout(this.timer)
+        },
     }
 </script>
+
+<style scoped>
+    /* Same visual language as the in-app toasts (see TaskDetails.vue):
+       a light surface, a tinted icon badge, and a countdown bar. */
+    .alert-stack {
+        position: fixed;
+        top: max(16px, env(safe-area-inset-top));
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 100000;
+        width: 420px;
+        max-width: calc(100vw - 24px);
+        pointer-events: none;
+    }
+
+    .alert {
+        position: relative;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 14px 16px;
+        border-radius: 14px;
+        background: #ffffff;
+        border: 1px solid rgba(15, 23, 42, 0.06);
+        box-shadow: 0 12px 32px -8px rgba(15, 23, 42, 0.25), 0 2px 6px rgba(15, 23, 42, 0.06);
+        overflow: hidden;
+        pointer-events: auto;
+    }
+
+    /* Accent hairline down the leading edge. */
+    .alert::before {
+        content: '';
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 4px;
+        background: currentColor;
+    }
+    .alert--success { color: #16a34a; }
+    .alert--error { color: #dc2626; }
+
+    .alert__icon {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+        border-radius: 999px;
+        background: currentColor;
+        color: #ffffff;
+    }
+    .alert--success .alert__icon { background: #16a34a; }
+    .alert--error .alert__icon { background: #dc2626; }
+    .alert__icon svg { width: 15px; height: 15px; }
+
+    .alert__body {
+        flex: 1;
+        min-width: 0;
+        padding-top: 2px;
+    }
+
+    .alert__message,
+    .alert__title {
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1.4;
+        color: #0f172a;
+        word-break: break-word;
+    }
+
+    .alert__list {
+        margin: 6px 0 0;
+        padding-left: 16px;
+        list-style: disc;
+        font-size: 13px;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #475569;
+        max-height: 30vh;
+        overflow-y: auto;
+    }
+
+    .alert__close {
+        flex-shrink: 0;
+        width: 22px;
+        height: 22px;
+        margin-top: 2px;
+        padding: 0;
+        border: 0;
+        border-radius: 6px;
+        background: transparent;
+        color: #94a3b8;
+        cursor: pointer;
+        transition: color 0.15s ease, background 0.15s ease;
+    }
+    .alert__close svg { width: 100%; height: 100%; }
+    .alert__close:hover { color: #0f172a; background: rgba(100, 116, 139, 0.12); }
+
+    .alert__bar {
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        height: 3px;
+        width: 100%;
+        background: currentColor;
+        opacity: 0.3;
+        transform-origin: left;
+        animation-name: alert-countdown;
+        animation-timing-function: linear;
+        animation-fill-mode: forwards;
+    }
+
+    @keyframes alert-countdown {
+        from { transform: scaleX(1); }
+        to { transform: scaleX(0); }
+    }
+
+    /* Dark theme follows the app's `.dark` class, not the OS setting. */
+    :global(.dark) .alert {
+        background: #1e293b;
+        border-color: rgba(148, 163, 184, 0.16);
+        box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.35);
+    }
+    :global(.dark) .alert__message,
+    :global(.dark) .alert__title { color: #f1f5f9; }
+    :global(.dark) .alert__list { color: #cbd5e1; }
+    :global(.dark) .alert__close:hover { color: #e2e8f0; background: rgba(148, 163, 184, 0.16); }
+
+    .alert-enter-active {
+        transition: opacity 0.25s ease, transform 0.3s cubic-bezier(0.34, 1.4, 0.64, 1);
+    }
+    .alert-leave-active {
+        transition: opacity 0.18s ease, transform 0.18s ease-in;
+    }
+    .alert-enter-from,
+    .alert-leave-to {
+        opacity: 0;
+        transform: translateY(-14px) scale(0.97);
+    }
+
+    /* Phones: dock to the bottom, clear of the thumb zone and the notch. */
+    @media (max-width: 640px) {
+        .alert-stack {
+            top: auto;
+            bottom: max(16px, env(safe-area-inset-bottom));
+            width: auto;
+            left: 12px;
+            right: 12px;
+            transform: none;
+            max-width: none;
+        }
+        .alert {
+            padding: 12px 14px;
+            border-radius: 12px;
+        }
+        .alert__message,
+        .alert__title { font-size: 13.5px; }
+        .alert-enter-from,
+        .alert-leave-to {
+            transform: translateY(14px) scale(0.97);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .alert-enter-active,
+        .alert-leave-active { transition: opacity 0.15s ease; }
+        .alert-enter-from,
+        .alert-leave-to { transform: none; }
+        .alert__bar { animation: none; }
+    }
+</style>

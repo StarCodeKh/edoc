@@ -3612,17 +3612,35 @@
 
     .toast-stack {
         position: fixed;
-        top: 20px;
+        top: max(20px, env(safe-area-inset-top));
         left: 50%;
         transform: translateX(-50%);
         z-index: 99999;
         display: flex;
         flex-direction: column;
-        align-items: center;
+        align-items: stretch;
         gap: 10px;
-        width: 360px;
-        max-width: calc(100vw - 32px);
+        width: 380px;
+        max-width: calc(100vw - 24px);
         pointer-events: none;
+    }
+
+    /* Phones: dock to the bottom, full width, clear of the notch and home bar. */
+    @media (max-width: 640px) {
+        .toast-stack {
+            top: auto;
+            bottom: max(16px, env(safe-area-inset-bottom));
+            left: 12px;
+            right: 12px;
+            width: auto;
+            max-width: none;
+            transform: none;
+            flex-direction: column-reverse;
+        }
+        .toast-item {
+            padding: 12px 14px;
+            border-radius: 12px;
+        }
     }
 
     .toast-item {
@@ -3630,37 +3648,53 @@
         display: flex;
         align-items: flex-start;
         gap: 12px;
-        padding: 14px 16px;
-        border-radius: 12px;
+        width: 100%;
+        padding: 13px 15px;
+        border-radius: 14px;
         background: #ffffff;
-        box-shadow: 0 8px 24px -6px rgba(15, 23, 42, 0.18), 0 2px 6px rgba(15, 23, 42, 0.08);
-        border-left: 4px solid #64748b;
+        border: 1px solid rgba(15, 23, 42, 0.06);
+        box-shadow: 0 12px 32px -8px rgba(15, 23, 42, 0.22), 0 2px 6px rgba(15, 23, 42, 0.06);
         overflow: hidden;
         pointer-events: auto;
     }
 
-    :global(.dark) .toast-item {
-        background: #1f2937;
-        box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.3);
+    /* Accent hairline down the leading edge - `currentColor` is set per type
+       below, so the edge, the icon badge and the countdown bar stay in step. */
+    .toast-item::before {
+        content: '';
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 4px;
+        background: currentColor;
     }
 
-    .toast-item--success { border-left-color: #16a34a; }
-    .toast-item--error { border-left-color: #dc2626; }
-    .toast-item--warning { border-left-color: #d97706; }
-    .toast-item--info { border-left-color: #2563eb; }
+    :global(.dark) .toast-item {
+        background: #1e293b;
+        border-color: rgba(148, 163, 184, 0.16);
+        box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.35);
+    }
+
+    .toast-item--success { color: #16a34a; }
+    .toast-item--error { color: #dc2626; }
+    .toast-item--warning { color: #d97706; }
+    .toast-item--info { color: #2563eb; }
 
     .toast-item__icon {
         flex-shrink: 0;
-        width: 22px;
-        height: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+        border-radius: 999px;
+        background: currentColor;
         margin-top: 1px;
     }
-    .toast-item__icon svg { width: 100%; height: 100%; }
-
-    .toast-item--success .toast-item__icon { color: #16a34a; }
-    .toast-item--error .toast-item__icon { color: #dc2626; }
-    .toast-item--warning .toast-item__icon { color: #d97706; }
-    .toast-item--info .toast-item__icon { color: #2563eb; }
+    .toast-item__icon svg {
+        width: 15px;
+        height: 15px;
+        color: #ffffff;
+    }
 
     .toast-item__body {
         flex: 1;
@@ -3741,13 +3775,27 @@
         transition: transform 0.2s ease;
     }
 
-    @media (max-width: 480px) {
-        .toast-stack {
-            top: 12px;
-            left: 12px;
-            right: 12px;
-            width: auto;
+    /* Bottom-docked on phones (see the 640px block above), so the toast should
+       rise from below rather than drop from above. */
+    @media (max-width: 640px) {
+        .toast-enter-from,
+        .toast-leave-to {
+            transform: translateY(16px) scale(0.95);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .toast-enter-active,
+        .toast-leave-active,
+        .toast-move {
+            transition: opacity 0.15s ease;
+        }
+        .toast-enter-from,
+        .toast-leave-to {
             transform: none;
+        }
+        .toast-item__bar {
+            animation: none;
         }
     }
 

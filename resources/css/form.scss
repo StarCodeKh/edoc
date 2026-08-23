@@ -21,6 +21,21 @@
     height: inherit;
 }
 
+/* iOS zooms the page in whenever a focused field is under 16px. Bump the
+   shared controls on small screens so tapping a field doesn't jolt the layout. */
+@media (max-width: 640px) {
+  .form-input,
+  .form-textarea,
+  .form-select {
+    font-size: 16px;
+    height: 2.6rem;
+  }
+
+  .form-textarea {
+    height: inherit;
+  }
+}
+
 .form-select {
   @apply pr-6;
 
@@ -51,6 +66,48 @@
 
 .form-error {
   @apply text-red-700 mt-2 text-sm;
+}
+
+/* Dark theme for the shared form controls. Keyed to the `.dark` class so it
+   follows the in-app theme toggle, and specific enough (two classes) to beat
+   the blanket `body .dark input` rule in dark_screen.scss. */
+.dark {
+  .form-label {
+    color: #cbd5e1;
+  }
+
+  .form-input,
+  .form-textarea,
+  .form-select {
+    background-color: #0f172a;
+    border-color: #475569;
+    color: #e2e8f0;
+
+    &::placeholder {
+      color: #64748b;
+      opacity: 1;
+    }
+
+    &:focus {
+      border-color: #6366f1;
+    }
+  }
+
+  /* The default caret is a dark PNG - invisible on a dark field. */
+  .form-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 8l5 5 5-5'/%3E%3C/svg%3E");
+    background-size: 0.9rem;
+  }
+
+  .form-input.error,
+  .form-textarea.error,
+  .form-select.error {
+    border-color: #ef4444;
+  }
+
+  .form-error {
+    color: #f87171;
+  }
 }
 
 
