@@ -982,6 +982,8 @@
             this.assignPickerOpen = false;
             this.assignSearch = '';
             this.drawerTeamMembers = [];
+            this.signatureError = '';
+            this.signatureOpening = false;
             this.fetchDrawerActivities(task.id);
         },
         closeDrawer() {
@@ -991,6 +993,8 @@
             this.drawerExpandedIndex = 0;
             this.docDetailOpen = false;
             this.assignPickerOpen = false;
+            this.signatureError = '';
+            this.signatureOpening = false;
         },
         openDocDetail(index) {
             this.drawerExpandedIndex = index;
