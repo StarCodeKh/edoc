@@ -458,24 +458,34 @@
 
                                                 <!-- System / field-change activity -->
                                                 <template v-else-if="['title', 'slug', 'list_id', 'order', 'due_date', 'priority_id', 'is_done', 'is_archive', 'comment_delete', 'description', 'cover', 'signature_requested'].includes(activity.field_changed)">
-                                                    <span class="absolute left-0 top-0.5 w-8 h-8 rounded-full flex items-center justify-center ring-2 ring-white dark:ring-gray-800" :class="activityIconBg(activity.field_changed)">
-                                                        <icon class="w-3.5 h-3.5 text-white" :name="activityIcon(activity.field_changed)" />
+                                                    <span class="absolute left-0 top-0.5 w-8 h-8 rounded-full flex items-center justify-center ring-2 ring-white dark:ring-gray-800" :class="activityIconBg(activity)">
+                                                        <icon class="w-3.5 h-3.5 text-white" :name="activityIcon(activity)" />
                                                     </span>
 
                                                     <p class="text-sm text-gray-600 dark:text-gray-300 leading-snug">
-                                                        <strong class="font-semibold text-gray-800 dark:text-gray-100">{{ activity.user?.first_name }} {{ activity.user?.last_name }}</strong>
-                                                        <span v-if="['title', 'slug', 'list_id', 'order', 'due_date', 'priority_id'].includes(activity.field_changed)">
-                                                            {{ $t('changed') }} <span class="text-gray-400 line-through">{{ activity.old_value }}</span> → <span class="font-medium">{{ activity.new_value }}</span>
-                                                        </span>
-                                                        <span v-if="activity.field_changed === 'is_done'"> {{ activity.old_value }}</span>
-                                                        <span v-if="activity.field_changed === 'is_archive'"> {{ activity.old_value }}</span>
-                                                        <span v-if="activity.field_changed === 'description'"> {{ $t('updated the description') }}</span>
-                                                        <span v-if="activity.field_changed === 'cover'"> {{ $t('updated the cover image') }}</span>
-                                                        <span v-if="activity.field_changed === 'comment_delete'"> {{ $t('deleted a comment') }}</span>
-                                                        <span v-if="activity.field_changed === 'signature_requested'">
-                                                            {{ $t('Approve & Sign from Secretariat General') }} ·
-                                                            <span class="text-gray-400 line-through">{{ activity.old_value }}</span> → <span class="font-medium">{{ activity.new_value }}</span>
-                                                        </span>
+                                                        <strong class="font-semibold text-gray-800 dark:text-gray-100 mr-1">{{ activity.user?.first_name }} {{ activity.user?.last_name }}</strong>
+
+                                                        <!-- Task.php already stores these as one sentence split in two
+                                                             ("moved the Board from `A`" + "to `B`"), so they are joined -
+                                                             striking the first half through read as if it were undone. -->
+                                                        <template v-if="['title', 'slug', 'list_id', 'order', 'due_date', 'priority_id'].includes(activity.field_changed)">
+                                                            {{ activity.old_value }} <span class="font-medium text-gray-800 dark:text-gray-100">{{ activity.new_value }}</span>
+                                                        </template>
+
+                                                        <!-- new_value is the state it ended in; old_value is the one it
+                                                             left, so showing old_value said "marked as not done" on the
+                                                             very entry that marked it done. -->
+                                                        <template v-else-if="['is_done', 'is_archive'].includes(activity.field_changed)">
+                                                            {{ activity.new_value }}
+                                                        </template>
+
+                                                        <template v-else-if="activity.field_changed === 'description'">{{ $t('updated the description') }}</template>
+                                                        <template v-else-if="activity.field_changed === 'cover'">{{ $t('updated the cover image') }}</template>
+                                                        <template v-else-if="activity.field_changed === 'comment_delete'">{{ $t('deleted a comment') }}</template>
+                                                        <template v-else-if="activity.field_changed === 'signature_requested'">
+                                                            {{ $t('requested approval & signature from the Secretariat General') }}
+                                                            <span class="font-medium text-gray-800 dark:text-gray-100">{{ activity.old_value }} → {{ activity.new_value }}</span>
+                                                        </template>
                                                     </p>
                                                     <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{{ moment(activity.created_at).format('MMM D [at] h:mm a') }}</p>
                                                 </template>
@@ -1344,19 +1354,37 @@
             toastInfo(message, opts) { return this.showToast(message, 'info', opts); },
 
             // --- Activity timeline helpers ---
-            activityIcon(field) {
+            /** Did this entry end in the "on" state? "marked as done" and "marked
+             *  as not done" are one field but opposite events, so the icon has to
+             *  read the value, not just the field name. */
+            activityTurnedOn(activity) {
+                const value = String(activity.new_value || '');
+                if (activity.field_changed === 'is_done') return !/not done/i.test(value);
+                return !/^\s*unarchived/i.test(value);
+            },
+
+            activityIcon(activity) {
+                const field = activity.field_changed;
+                if (field === 'is_done') return this.activityTurnedOn(activity) ? 'complete' : 'incomplete';
+                if (field === 'is_archive') return this.activityTurnedOn(activity) ? 'archive' : 'undo';
+
                 const map = {
-                    title: 'edit', slug: 'edit', list_id: 'edit', order: 'edit', priority_id: 'priorities',
-                    due_date: 'calendar', is_done: 'checklist_box_2', is_archive: 'archive',
+                    title: 'edit', slug: 'edit', order: 'drag', list_id: 'move_right',
+                    priority_id: 'priorities', due_date: 'calendar',
                     description: 'details', cover: 'image', comment_delete: 'trash',
-                    signature_requested: 'complete',
+                    signature_requested: 'send_plan',
                 };
                 return map[field] || 'edit';
             },
-            activityIconBg(field) {
+
+            activityIconBg(activity) {
+                const field = activity.field_changed;
+                if (field === 'is_done') return this.activityTurnedOn(activity) ? 'bg-green-500' : 'bg-gray-400';
+                if (field === 'is_archive') return this.activityTurnedOn(activity) ? 'bg-amber-500' : 'bg-gray-400';
+
                 const map = {
-                    title: 'bg-blue-500', slug: 'bg-blue-500', list_id: 'bg-sky-500', order: 'bg-sky-500', priority_id: 'bg-rose-500',
-                    due_date: 'bg-orange-500', is_done: 'bg-green-500', is_archive: 'bg-amber-500',
+                    title: 'bg-blue-500', slug: 'bg-blue-500', order: 'bg-sky-500', list_id: 'bg-sky-500',
+                    priority_id: 'bg-rose-500', due_date: 'bg-orange-500',
                     description: 'bg-indigo-500', cover: 'bg-purple-500', comment_delete: 'bg-red-500',
                     signature_requested: 'bg-indigo-600',
                 };

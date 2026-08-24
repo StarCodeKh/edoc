@@ -427,8 +427,8 @@
                                 <span>{{ $t('No activity recorded yet.') }}</span>
                             </div>
                             <div class="doc-drawer__timeline-item" v-for="a in drawerActivities" :key="a.id">
-                                <span class="doc-drawer__timeline-icon" :class="auditIconBg(a.field_changed)">
-                                    <icon :name="auditIcon(a.field_changed)" class="w-3 h-3" />
+                                <span class="doc-drawer__timeline-icon" :class="auditIconBg(a)">
+                                    <icon :name="auditIcon(a)" class="w-3 h-3" />
                                 </span>
                                 <div class="doc-drawer__timeline-card">
                                     <div class="doc-drawer__timeline-top">
@@ -768,23 +768,38 @@
         // --- Audit trail — icon, colored badge, and human-readable text
         // per activity, keyed off the same `field_changed` values the
         // task's own detail page (TaskDetails.vue) already uses.
-        auditIcon(field) {
+        /** "marked as done" and "marked as not done" are one field but opposite
+         *  events, so the icon reads the value, not just the field name. */
+        auditTurnedOn(a) {
+            const value = String((a && a.new_value) || '');
+            if (a && a.field_changed === 'is_done') return !/not done/i.test(value);
+            return !/^\s*unarchived/i.test(value);
+        },
+        auditIcon(a) {
+            const field = a && a.field_changed;
+            if (field === 'is_done') return this.auditTurnedOn(a) ? 'complete' : 'incomplete';
+            if (field === 'is_archive') return this.auditTurnedOn(a) ? 'archive' : 'undo';
+
             const map = {
-                title: 'edit', slug: 'edit', list_id: 'edit', order: 'edit', priority_id: 'priorities',
-                due_date: 'time', is_done: 'checklist_box', is_archive: 'archive',
+                title: 'edit', slug: 'edit', order: 'drag', list_id: 'move_right',
+                priority_id: 'priorities', due_date: 'time',
                 description: 'details', cover: 'pulse_image',
                 comment: 'comment', comment_edit: 'comment', comment_delete: 'comment',
-                signature_requested: 'complete',
+                signature_requested: 'send_plan',
             };
             return map[field] || 'edit';
         },
-        auditIconBg(field) {
+        auditIconBg(a) {
+            const field = a && a.field_changed;
+            if (field === 'is_done') return this.auditTurnedOn(a) ? 'doc-drawer__timeline-icon--green' : 'doc-drawer__timeline-icon--gray';
+            if (field === 'is_archive') return this.auditTurnedOn(a) ? 'doc-drawer__timeline-icon--amber' : 'doc-drawer__timeline-icon--gray';
+
             const map = {
                 title: 'doc-drawer__timeline-icon--blue', slug: 'doc-drawer__timeline-icon--blue',
                 list_id: 'doc-drawer__timeline-icon--sky', order: 'doc-drawer__timeline-icon--sky',
                 priority_id: 'doc-drawer__timeline-icon--red',
-                due_date: 'doc-drawer__timeline-icon--orange', is_done: 'doc-drawer__timeline-icon--green',
-                is_archive: 'doc-drawer__timeline-icon--amber', description: 'doc-drawer__timeline-icon--indigo',
+                due_date: 'doc-drawer__timeline-icon--orange',
+                description: 'doc-drawer__timeline-icon--indigo',
                 cover: 'doc-drawer__timeline-icon--purple',
                 comment: 'doc-drawer__timeline-icon--gold', comment_edit: 'doc-drawer__timeline-icon--gold',
                 comment_delete: 'doc-drawer__timeline-icon--red',
@@ -801,11 +816,14 @@
                 case 'order':
                 case 'due_date':
                 case 'priority_id':
-                    return (a.old_value || '—') + ' → ' + (a.new_value || '—');
+                    // Task.php stores one sentence in two halves ("moved the Board
+                    // from `A`" + "to `B`") - joined, not diffed with an arrow.
+                    return [a.old_value, a.new_value].filter(Boolean).join(' ') || '—';
                 case 'is_done':
-                    return a.old_value || this.$t('Marked done / undone');
+                    // new_value is the state it ended in; old_value is the one it left.
+                    return a.new_value || this.$t('Marked done / undone');
                 case 'is_archive':
-                    return a.old_value || this.$t('Archive status changed');
+                    return a.new_value || this.$t('Archive status changed');
                 case 'description':
                     return this.$t('Updated the description');
                 case 'cover':
@@ -817,7 +835,7 @@
                 case 'comment_delete':
                     return this.$t('Deleted a comment');
                 case 'signature_requested':
-                    return this.$t('Approve & Sign from Secretariat General')
+                    return this.$t('requested approval & signature from the Secretariat General')
                         + ' · ' + (a.old_value || '—') + ' → ' + (a.new_value || '—');
                 default:
                     return field + ' ' + this.$t('updated');
