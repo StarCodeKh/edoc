@@ -8,36 +8,43 @@ use Illuminate\Support\Facades\Schema;
 
 class EdocWorkflowRoleSeeder extends Seeder
 {
+    /**
+     * Mirrors the step list shown on Settings → Workflow Roles.
+     *
+     * 'order' is explicit (not derived from the array index) because the live
+     * boards have gaps where steps were deleted — External Ministry and
+     * Internal CGMC both skip order 2, and the UI prints this value as the
+     * step number.
+     */
     private const DEFINITIONS = [
         'external_ministry' => [
-            ['title' => 'ទទួល Scan/Upload ឯកសារចូល', 'role' => 'admin', 'sla_hours' => 4, 'requires_signature' => false, 'is_terminal' => false],
-            ['title' => 'បង្កើតលេខកូដតាមដាន (Inward ID)', 'role' => 'admin', 'sla_hours' => 2, 'requires_signature' => false, 'is_terminal' => false],
-            ['title' => 'ត្រួតពិនិត្យបឋមដោយ ADSG/ASG', 'role' => 'adsg', 'sla_hours' => 24, 'requires_signature' => false, 'is_terminal' => false],
-            ['title' => 'ចាត់តាំង/សម្រេចដោយ SG', 'role' => 'sg', 'sla_hours' => 24, 'requires_signature' => false, 'is_terminal' => false],
-            ['title' => 'កំពុងអនុវត្តភារកិច្ចដោយ Dpt', 'role' => 'dpt', 'sla_hours' => 72, 'requires_signature' => false, 'is_terminal' => false],
-            ['title' => 'ត្រួតពិនិត្យសេចក្តីព្រាងឆ្លើយតបដោយ SG', 'role' => 'sg', 'sla_hours' => 24, 'requires_signature' => true, 'is_terminal' => false],
-            ['title' => 'ចេញលេខ Outward និងផ្ញើលិខិតឆ្លើយតប', 'role' => 'admin', 'sla_hours' => 4, 'requires_signature' => false, 'is_terminal' => false],
-            ['title' => 'បិទសំណុំរឿង / រក្សាទុកបណ្ណសារ', 'role' => 'admin', 'sla_hours' => null, 'requires_signature' => false, 'is_terminal' => true],
+            ['order' => 1, 'title' => 'ទទួល Scan/Upload ឯកសារចូល (Tracking ID/QR)', 'role' => 'admin', 'sla_hours' => 4, 'requires_signature' => false, 'is_terminal' => false],
+            ['order' => 3, 'title' => 'ត្រួតពិនិត្យបឋមដោយ ADSG/ASG', 'role' => 'adsg', 'sla_hours' => 24, 'requires_signature' => false, 'is_terminal' => false],
+            ['order' => 4, 'title' => 'ចាត់តាំង/សម្រេចដោយ SG', 'role' => 'sg', 'sla_hours' => 24, 'requires_signature' => false, 'is_terminal' => false],
+            ['order' => 5, 'title' => 'កំពុងអនុវត្តភារកិច្ចដោយ Dpt', 'role' => 'dpt', 'sla_hours' => 72, 'requires_signature' => false, 'is_terminal' => false],
+            ['order' => 6, 'title' => 'ត្រួតពិនិត្យលិខិតឆ្លើយតបដោយ SG / អនុម័ត', 'role' => 'sg', 'sla_hours' => 24, 'requires_signature' => true, 'is_terminal' => false],
+            ['order' => 7, 'title' => 'ចេញលេខ Outward និងផ្ញើលិខិតឆ្លើយតប', 'role' => 'admin', 'sla_hours' => 4, 'requires_signature' => false, 'is_terminal' => false],
+            ['order' => 8, 'title' => 'រក្សាទុកបណ្ណសារ', 'role' => 'admin', 'sla_hours' => null, 'requires_signature' => false, 'is_terminal' => true],
         ],
         'casino_operator' => [
-            ['title' => 'ទទួលឯកសារ និងផ្តល់លេខកូដតាមដាន', 'role' => 'admin', 'sla_hours' => 4, 'requires_signature' => false, 'is_terminal' => false],
-            ['title' => 'ត្រួតពិនិត្យ និងកំណត់អាទិភាព/SLA', 'role' => 'asg', 'sla_hours' => 24, 'requires_signature' => false, 'is_terminal' => false],
-            ['title' => 'ចាត់តាំងការងារជូន HD', 'role' => 'sg', 'sla_hours' => 24, 'requires_signature' => false, 'is_terminal' => false],
-            ['title' => 'ត្រួតពិនិត្យ និងព្រាងសេចក្តី', 'role' => 'hd', 'sla_hours' => 48, 'requires_signature' => false, 'is_terminal' => false],
-            ['title' => 'ផ្ទៀងផ្ទាត់សេចក្តីព្រាង', 'role' => 'dsg', 'sla_hours' => 24, 'requires_signature' => false, 'is_terminal' => false],
-            ['title' => 'រង់ចាំការអនុម័ត និងចុះហត្ថលេខា', 'role' => 'sg', 'sla_hours' => 24, 'requires_signature' => true, 'is_terminal' => false],
-            ['title' => 'ចេញលេខផ្លូវការ និងបញ្ជូនទៅ CO', 'role' => 'admin', 'sla_hours' => 4, 'requires_signature' => false, 'is_terminal' => false],
-            ['title' => 'រក្សាទុកបណ្ណសារ / បិទរឿង', 'role' => 'admin', 'sla_hours' => null, 'requires_signature' => false, 'is_terminal' => true],
+            ['order' => 1, 'title' => 'ទទួល Scan/Upload ឯកសារចូល (Tracking ID/QR)', 'role' => 'admin', 'sla_hours' => 4, 'requires_signature' => false, 'is_terminal' => false],
+            ['order' => 2, 'title' => 'ត្រួតពិនិត្យដោយ ASG', 'role' => 'asg', 'sla_hours' => 24, 'requires_signature' => false, 'is_terminal' => false],
+            ['order' => 3, 'title' => 'SG ពិនិត្យ និងចាត់តាំងការងារជូន HD', 'role' => 'sg', 'sla_hours' => 24, 'requires_signature' => false, 'is_terminal' => false],
+            ['order' => 4, 'title' => 'HD ពិនិត្យ និងចេញលេខិតឆ្លើយតប', 'role' => 'hd', 'sla_hours' => 48, 'requires_signature' => false, 'is_terminal' => false],
+            ['order' => 5, 'title' => 'អនុម័ត និងចុះហត្ថលេខាដោយ SG', 'role' => 'dsg', 'sla_hours' => 24, 'requires_signature' => true, 'is_terminal' => false],
+            ['order' => 6, 'title' => 'ចេញលេខផ្លូវការ និងបញ្ជូនទៅ CO', 'role' => 'sg', 'sla_hours' => 24, 'requires_signature' => false, 'is_terminal' => true],
+            ['order' => 7, 'title' => 'រក្សាទុកបណ្ណសារ / បិទរឿង', 'role' => 'admin', 'sla_hours' => 4, 'requires_signature' => false, 'is_terminal' => false],
         ],
         'internal_cgmc' => [
-            ['title' => 'ទទួល e-Form និងឯកសារភ្ជាប់', 'role' => 'admin', 'sla_hours' => 4, 'requires_signature' => false, 'is_terminal' => false],
-            ['title' => 'បង្កើតលេខសម្គាល់ (Tracking ID/QR)', 'role' => 'admin', 'sla_hours' => 2, 'requires_signature' => false, 'is_terminal' => false],
-            ['title' => 'ត្រួតពិនិត្យដោយ ADSG', 'role' => 'adsg', 'sla_hours' => 24, 'requires_signature' => false, 'is_terminal' => false],
-            ['title' => 'រៀបចំ និងត្រួតពិនិត្យដោយ ASG', 'role' => 'asg', 'sla_hours' => 24, 'requires_signature' => false, 'is_terminal' => false],
-            ['title' => 'SG ពិនិត្យ និងសម្រេច', 'role' => 'sg', 'sla_hours' => 24, 'requires_signature' => false, 'is_terminal' => false],
-            ['title' => 'អនុម័ត និងចុះហត្ថលេខាឌីជីថលដោយ SG', 'role' => 'sg', 'sla_hours' => 24, 'requires_signature' => true, 'is_terminal' => false],
-            ['title' => 'ចេញលិខិតផ្លូវការ និងជូនដំណឹង', 'role' => 'admin', 'sla_hours' => 4, 'requires_signature' => false, 'is_terminal' => false],
-            ['title' => 'រក្សាទុក Audit Trail / បណ្ណសារ', 'role' => 'admin', 'sla_hours' => null, 'requires_signature' => false, 'is_terminal' => true],
+            ['order' => 1, 'title' => 'ទទួល Scan/Upload ឯកសារចូល (Tracking ID/QR)', 'role' => 'admin', 'sla_hours' => 4, 'requires_signature' => false, 'is_terminal' => false],
+            ['order' => 3, 'title' => 'ត្រួតពិនិត្យដោយ ADSG & DSG', 'role' => 'adsg', 'sla_hours' => 24, 'requires_signature' => false, 'is_terminal' => false],
+            ['order' => 4, 'title' => 'រៀបចំ និងត្រួតពិនិត្យដោយ ASG', 'role' => 'asg', 'sla_hours' => 24, 'requires_signature' => false, 'is_terminal' => false],
+            ['order' => 5, 'title' => 'SG ពិនិត្យ និងសម្រេច', 'role' => 'sg', 'sla_hours' => 24, 'requires_signature' => true, 'is_terminal' => false],
+            ['order' => 6, 'title' => 'អនុម័ត និងចុះហត្ថលេខាឌីជីថលដោយ SG', 'role' => 'sg', 'sla_hours' => 24, 'requires_signature' => true, 'is_terminal' => false],
+            ['order' => 7, 'title' => 'ចេញលិខិតផ្លូវការ និងជូនដំណឹង', 'role' => 'admin', 'sla_hours' => 4, 'requires_signature' => false, 'is_terminal' => false],
+            ['order' => 8, 'title' => 'រក្សាទុក Audit Trail / បណ្ណសារ', 'role' => 'admin', 'sla_hours' => null, 'requires_signature' => false, 'is_terminal' => true],
+            ['order' => 9, 'title' => 'នាយកដ្ឋានទទួលឯកសារ និងចាប់ផ្តល់អនុវត្ត', 'role' => 'admin', 'sla_hours' => 4, 'requires_signature' => false, 'is_terminal' => false],
+            ['order' => 10, 'title' => 'បញ្ជូនចេញបិទសំណុំរឿង / រក្សាទុកបណ្ណសារ', 'role' => null, 'sla_hours' => null, 'requires_signature' => false, 'is_terminal' => false],
         ],
     ];
 
@@ -61,9 +68,10 @@ class EdocWorkflowRoleSeeder extends Seeder
 
         foreach (self::DEFINITIONS as $workflowType => $columns) {
             $workspaceId = self::WORKSPACE_ID_BY_TYPE[$workflowType] ?? null;
+            $orders = array_column($columns, 'order');
 
-            foreach ($columns as $index => $col) {
-                $order = $index + 1;
+            foreach ($columns as $col) {
+                $order = $col['order'];
 
                 foreach ($roleTables as $roleTable) {
                     try {
@@ -86,7 +94,20 @@ class EdocWorkflowRoleSeeder extends Seeder
                     }
                 }
 
-                $this->command->line("[{$workflowType}] Column {$order}: {$col['title']} (role={$col['role']}, workspace_id={$workspaceId}, sla=" . ($col['sla_hours'] ?? 'n/a') . 'h)');
+                $this->command->line("[{$workflowType}] Step {$order}: {$col['title']} (role=" . ($col['role'] ?? 'n/a') . ", workspace_id={$workspaceId}, sla=" . ($col['sla_hours'] ?? 'n/a') . 'h)');
+            }
+
+            // The definitions above are the source of truth: drop any step this
+            // workflow no longer has, so deleted orders stay deleted on re-seed.
+            foreach ($roleTables as $roleTable) {
+                $removed = DB::table($roleTable)
+                    ->where('workflow_type', $workflowType)
+                    ->whereNotIn('order', $orders)
+                    ->delete();
+
+                if ($removed) {
+                    $this->command->warn("[{$workflowType}] Removed {$removed} stale step(s) from {$roleTable}.");
+                }
             }
         }
 
