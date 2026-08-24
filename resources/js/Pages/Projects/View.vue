@@ -62,9 +62,9 @@
                                     <icon class="w-4 h-4" name="more" />
                                 </button>
                                 <icon v-if="element.timer" name="blink" class="w-2 h-2 absolute top-2 right-2 z-20" />
-                                <div v-if="element.cover" @click="taskDetailsPopup(element.slug || element.id)" class="t__cover" :style="{backgroundImage: 'url('+element.cover.path+')', height: element.cover.width?element.cover.height/(element.cover.width/246)+'px':'auto'}"></div>
+                                <div v-if="element.cover" @click="cardPrimaryClick(element)" class="t__cover" :style="{backgroundImage: 'url('+element.cover.path+')', height: element.cover.width?element.cover.height/(element.cover.width/246)+'px':'auto'}"></div>
 
-                                <div class="t__details" @click="taskDetailsPopup(element.slug || element.id)">
+                                <div class="t__details" @click="cardPrimaryClick(element)">
                                     <div class="task__labels" v-if="element.task_labels.length">
                                         <button @click="visibleLabel($event)" class="color" v-for="(la, l_index) in element.task_labels" :style="{backgroundColor: la.label.color}" :aria-label="la.label.name">{{ la.label.name }}</button>
                                     </div>
@@ -115,7 +115,7 @@
                                         <span>{{ $t('Has been merged') }} · {{ latestMergeCode(element) }}</span>
                                     </div>
 
-                                    <div class="card__footer" @click="taskDetailsPopup(element.slug || element.id)">
+                                    <div class="card__footer" @click="cardPrimaryClick(element)">
                                         <div v-if="element.due_date" aria-label="Due date" class="__item due" :class="getDue(element)">
                                             <icon class="w-4 h-4" name="time" />
                                             <span class="pl-[2px] pr-[4px] leading-none"> {{ moment(element.due_date).format('MMM D') }} </span>
@@ -831,6 +831,30 @@
                 this.merging = false;
             });
         },
+        /**
+         * A merged card stands for several documents at once, and the detail
+         * drawer is the only view that lists what it absorbed - so that is where
+         * clicking it goes. Ordinary cards still open the full task popup.
+         */
+        cardPrimaryClick(element) {
+            if (this.hasBeenMerged(element)) {
+                this.openDrawer(element);
+                return;
+            }
+            this.taskDetailsPopup(element.slug || element.id);
+        },
+
+        openDrawerById(taskId) {
+            const id = Number(taskId);
+            for (const list of this.lists) {
+                const task = (list.tasks || []).find(t => Number(t.id) === id);
+                if (task) {
+                    this.openDrawer(task);
+                    return;
+                }
+            }
+        },
+
         openDrawer(task) {
             if (!task) return;
             this.drawerTask = task;
@@ -1106,7 +1130,13 @@
                 let previous_list = [];
                 if(!!e.pullMode){
                     previous_list = this.newSortedItems(e, 'from');
-                    this.saveTask(e.item.dataset.id, { list_id: e.to.dataset.id })
+                    const movedTaskId = e.item.dataset.id;
+                    // Moving a card to another board is a hand-off, so open the
+                    // detail panel on the task that just landed - and only once
+                    // the update is in, or the audit trail would miss the move.
+                    this.saveTask(movedTaskId, { list_id: e.to.dataset.id }).then((response) => {
+                        if (response) this.openDrawerById(movedTaskId);
+                    })
                 }
                 const list_items = new_list.concat(previous_list);
                 this.saveOrder(list_items)
@@ -1130,10 +1160,12 @@
                 return null
             },
             saveTask(id, taskObject){
-                axios.post(this.route('task.update', id), taskObject).then((response) => {
+                return axios.post(this.route('task.update', id), taskObject).then((response) => {
                     this.updateTaskEntry(id, taskObject)
+                    return response
                 }).catch((error) => {
                     console.log(error)
+                    return null
                 })
             },
             saveOrder(taskObject){
