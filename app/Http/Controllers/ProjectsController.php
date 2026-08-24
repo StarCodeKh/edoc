@@ -228,7 +228,7 @@ class ProjectsController extends Controller {
             ->with('star')
             ->with('background')
             ->withCount(['tasks' => function ($query) {
-                $query->where('is_done', 0);
+                $query->where('is_done', 0)->visibleTo();
             }])
             ->first();
         if(empty($project)){

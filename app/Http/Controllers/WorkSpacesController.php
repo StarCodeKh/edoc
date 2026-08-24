@@ -110,9 +110,13 @@ class WorkSpacesController extends Controller
             return response()->json([]);
         }
 
+        $user = auth()->user();
+
         $projects = Project::where('workspace_id', $workspace->id)
-            ->withCount(['tasks' => function ($query) {
-                $query->where('is_done', 0);
+            // Admins count every document; a Normal User only their own and the
+            // ones assigned to them (see Task::scopeVisibleTo).
+            ->withCount(['tasks' => function ($query) use ($user) {
+                $query->where('is_done', 0)->visibleTo($user);
             }])
             ->get(['id', 'tasks_count']);
 
