@@ -1,5 +1,5 @@
 <template>
-    <Head :title="attachment ? attachment.name : $t('Document')" />
+    <Head :title="attachment ? attachment.name : $t('Attachment')" />
 
     <div class="flex flex-col h-screen bg-gray-100 dark:bg-gray-900">
 

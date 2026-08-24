@@ -299,7 +299,7 @@
                                 រាជធានីភ្នំពេញ ថ្ងៃទី........ ខែ........ ឆ្នាំ ២០...
                             </span>
                             <span class="font-moul text-sm sm:text-lg text-gray-800 tracking-wider">
-                                អគ្គលេខាធិការ គ.ល.ក
+                                អគ្គលេខាធិការ គ.ល.ក.
                             </span>
                             <div class="h-28 my-2"></div>
                             <span class="font-moul text-sm sm:text-base text-gray-800">
