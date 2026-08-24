@@ -154,7 +154,7 @@ class ProjectsController extends Controller {
     public function jsonRecent()
     {
         $user_id = auth()->id();
-        $workspaceIds = Workspace::where('user_id', $user_id)->orWhereHas('member')->pluck('id');
+        $workspaceIds = Workspace::accessibleTo()->pluck('id');
         $projects = RecentProject::where('user_id', $user_id)->with('project')->has('project.workspace')->whereHas('project', function ($q) use ($workspaceIds) {
             $q->whereIn('workspace_id', $workspaceIds);
         })->orderBy('opened', 'desc')->paginate(10)
@@ -174,7 +174,7 @@ class ProjectsController extends Controller {
     public function jsonStar()
     {
         $user_id = auth()->id();
-        $workspaceIds = Workspace::where('user_id', $user_id)->orWhereHas('member')->pluck('id');
+        $workspaceIds = Workspace::accessibleTo()->pluck('id');
         $projects = StarredProject::where('user_id', $user_id)->with('project')->has('project.workspace')->whereHas('project', function ($q) use ($workspaceIds) {
             $q->whereIn('workspace_id', $workspaceIds);
         })->orderBy('updated_at', 'desc')->paginate(100)
@@ -220,7 +220,7 @@ class ProjectsController extends Controller {
     public function view($uid, Request $request)
     {
         $auth_id = auth()->id();
-        $workspaceIds = Workspace::where('user_id', $auth_id)->orWhereHas('member')->pluck('id');
+        $workspaceIds = Workspace::accessibleTo()->pluck('id');
         $requests = $request->all();
         $project = Project::bySlugOrId($uid)
             ->whereIn('workspace_id', $workspaceIds)
@@ -249,6 +249,7 @@ class ProjectsController extends Controller {
             $requests['private_task'] = $auth_id;
         }
         $tasks = Task::filter($requests)
+            ->visibleTo()
             ->isOpen()
             ->byProject($project->id)
             ->with('taskLabels.label')
@@ -332,7 +333,7 @@ class ProjectsController extends Controller {
     {
         $requests = $request->all();
         $auth_id = auth()->id();
-        $workspaceIds = Workspace::where('user_id', $auth_id)->orWhereHas('member')->pluck('id');
+        $workspaceIds = Workspace::accessibleTo()->pluck('id');
         $project = Project::bySlugOrId($projectUid)->whereIn('workspace_id', $workspaceIds)->with('workspace.member')->with('star')->with('background')->first();
         $list_index = [];
         $board_lists = BoardList::where('project_id', $project->id)->isOpen()->orderByOrder()->get()->toArray();
@@ -343,6 +344,7 @@ class ProjectsController extends Controller {
             $loopIndex+= 1;
         }
         $tasks = Task::filter($requests)
+            ->visibleTo()
             ->isOpen()
             ->byProject($project->id)
             ->with('taskLabels.label')
@@ -359,7 +361,7 @@ class ProjectsController extends Controller {
                 $board_lists[$list_index[$task['list_id']]]['tasks'][] = $task;
             }
         }
-        $task = Task::where('id', $taskUid)->orWhere('slug', $taskUid)->first();
+        $task = Task::visibleTo()->where(function ($q) use ($taskUid) { $q->where('id', $taskUid)->orWhere('slug', $taskUid); })->first();
         return Inertia::render('Projects/View', [
             'title' => 'Projects',
             'filters' => $requests,
@@ -376,7 +378,7 @@ class ProjectsController extends Controller {
     {
         $requests = $request->all();
         $auth_id = auth()->id();
-        $workspaceIds = Workspace::where('user_id', $auth_id)->orWhereHas('member')->pluck('id');
+        $workspaceIds = Workspace::accessibleTo()->pluck('id');
         $project = Project::bySlugOrId($uid)->whereIn('workspace_id', $workspaceIds)->with('workspace.member')->with('star')->with('background')->first();
         $list_index = [];
         $board_lists = BoardList::where('project_id', $project->id)->isOpen()->orderByOrder()->get()->toArray();
@@ -387,6 +389,7 @@ class ProjectsController extends Controller {
             $loopIndex+= 1;
         }
         $tasks = Task::filter($requests)
+            ->visibleTo()
             ->isOpen()
             ->byProject($project->id)
             ->with('taskLabels.label')
@@ -421,7 +424,7 @@ class ProjectsController extends Controller {
     {
         $requests = $request->all();
         $auth_id = auth()->id();
-        $workspaceIds = Workspace::where('user_id', $auth_id)->orWhereHas('member')->pluck('id');
+        $workspaceIds = Workspace::accessibleTo()->pluck('id');
         $project = Project::bySlugOrId($uid)->whereIn('workspace_id', $workspaceIds)->with('workspace.member')->with('star')->with('background')->first();
         $list_index = [];
         $board_lists = BoardList::where('project_id', $project->id)->isOpen()->orderByOrder()->get()->toArray();
@@ -432,6 +435,7 @@ class ProjectsController extends Controller {
             $loopIndex+= 1;
         }
         $tasks = Task::filter($requests)
+            ->visibleTo()
             ->isOpen()
             ->byProject($project->id)
             ->with('taskLabels.label')
@@ -445,7 +449,7 @@ class ProjectsController extends Controller {
                 $board_lists[$list_index[$task['list_id']]]['tasks'][] = $task;
             }
         }
-        $task = Task::where('id', $taskUid)->orWhere('slug', $taskUid)->first();
+        $task = Task::visibleTo()->where(function ($q) use ($taskUid) { $q->where('id', $taskUid)->orWhere('slug', $taskUid); })->first();
         return Inertia::render('Projects/Table', [
             'title' => 'Projects',
             'board_lists' => $board_lists,
@@ -462,7 +466,7 @@ class ProjectsController extends Controller {
     public function viewDashboard($uid)
     {
         $auth_id = auth()->id();
-        $workspaceIds = Workspace::where('user_id', $auth_id)->orWhereHas('member')->pluck('id');
+        $workspaceIds = Workspace::accessibleTo()->pluck('id');
         $project = Project::bySlugOrId($uid)->whereIn('workspace_id', $workspaceIds)->with('workspace.member')->with('star')->with('background')->first();
         $taskIds = Task::where('project_id', $project->id)->pluck('id')->toArray();
         $per_list = Task::select('list_id', DB::raw('count(*) as total'))->where('project_id', $project->id)->groupBy('list_id')->whereHas('list')->with('list')->get()->toArray();
@@ -493,7 +497,7 @@ class ProjectsController extends Controller {
     {
         $requests = $request->all();
         $auth_id = auth()->id();
-        $workspaceIds = Workspace::where('user_id', $auth_id)->orWhereHas('member')->pluck('id');
+        $workspaceIds = Workspace::accessibleTo()->pluck('id');
         $project = Project::bySlugOrId($uid)->whereIn('workspace_id', $workspaceIds)->with('workspace.member')->with('star')->with('background')->first();
         $list_index = [];
         $board_lists = BoardList::where('project_id', $project->id)->isOpen()->orderByOrder()->get()->toArray();
@@ -504,6 +508,7 @@ class ProjectsController extends Controller {
             $loopIndex+= 1;
         }
         $tasks = Task::filter($requests)
+            ->visibleTo()
             ->isOpen()
             ->byProject($project->id)
             ->with('taskLabels.label')
@@ -533,11 +538,12 @@ class ProjectsController extends Controller {
     {
         $requests = $request->all();
         $auth_id = auth()->id();
-        $workspaceIds = Workspace::where('user_id', $auth_id)->orWhereHas('member')->pluck('id');
+        $workspaceIds = Workspace::accessibleTo()->pluck('id');
         $project = Project::bySlugOrId($uid)->whereIn('workspace_id', $workspaceIds)->with('workspace.member')->with('star')->with('background')->first();
         
         // Get tasks with their relationships for timeline view
         $tasks = Task::filter($requests)
+            ->visibleTo()
             ->isOpen()
             ->byProject($project->id)
             ->with('taskLabels.label')
@@ -578,7 +584,7 @@ class ProjectsController extends Controller {
     {
         $requests = $request->all();
         $auth_id = auth()->id();
-        $workspaceIds = Workspace::where('user_id', $auth_id)->orWhereHas('member')->pluck('id');
+        $workspaceIds = Workspace::accessibleTo()->pluck('id');
         $project = Project::bySlugOrId($projectUid)->whereIn('workspace_id', $workspaceIds)->with('workspace.member')->with('star')->with('background')->first();
         $timerQuery = Timer::whereHas('task', function ($q) use ($project) {
             $q->where('project_id', $project->id);

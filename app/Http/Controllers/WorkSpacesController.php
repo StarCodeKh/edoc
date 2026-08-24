@@ -30,7 +30,7 @@ class WorkSpacesController extends Controller
     public function index()
     {
         $user_id = auth()->id();
-        $workspaceIds = Workspace::where('user_id', $user_id)->orWhereHas('member')->pluck('id');
+        $workspaceIds = Workspace::accessibleTo()->pluck('id');
         $project = RecentProject::where('user_id', $user_id)->with('project')->has('project.workspace')->whereHas('project', function ($q) use ($workspaceIds) {
             $q->whereIn('workspace_id', $workspaceIds);
         })->orderBy('opened', 'desc')->first();
@@ -52,7 +52,7 @@ class WorkSpacesController extends Controller
     {
         $user_id = auth()->id();
         $user = auth()->user();
-        $workSpaces = Workspace::where('user_id', $user_id)->orWhereHas('member')->with('member')->withCount('projects')->orderBy('name')->get();
+        $workSpaces = Workspace::accessibleTo()->with('member')->withCount('projects')->orderBy('name')->get();
 
         $workSpaces->each(function ($workspace) use ($user_id, $user) {
             $projectIds = Project::where('workspace_id', $workspace->id)->pluck('id');
@@ -62,11 +62,9 @@ class WorkSpacesController extends Controller
                 ->where('is_done', 0)
                 ->isOpen();
 
-            if ($user->role_id != 1) {
-                $query->whereHas('assignees', function ($q) use ($user_id) {
-                    $q->where('user_id', $user_id);
-                });
-            }
+            // Admins see every document; a Normal User only their own and the
+            // ones assigned to them (see Task::scopeVisibleTo).
+            $query->visibleTo($user);
 
             $workspace->incomplete_tasks_count = $query->count();
         });
@@ -131,6 +129,7 @@ class WorkSpacesController extends Controller
         $user = auth()->user();
 
         $tasksQuery = Task::filter($requests)
+            ->visibleTo()
             ->whereHas('project', function ($q) use ($workspace) {
                 $q->where('workspace_id', $workspace->id);
             })
@@ -149,11 +148,7 @@ class WorkSpacesController extends Controller
             ->with('assignees')
             ->orderByOrder();
 
-        if ($user->role_id != 1) {
-            $tasksQuery->whereHas('assignees', function ($q) use ($user) {
-                $q->where('user_id', $user->id);
-            });
-        }
+        $tasksQuery->visibleTo($user);
 
         $tasks = $tasksQuery->get()->toArray();
 
@@ -358,7 +353,8 @@ class WorkSpacesController extends Controller
             $loopIndex+= 1;
         }
 
-        $tasks = Task::filter($requests)->whereHas('project', function ($q) use ($workspace) {
+        $tasks = Task::filter($requests)
+            ->visibleTo()->whereHas('project', function ($q) use ($workspace) {
                 $q->where('workspace_id', $workspace->id);
             })
             ->with('list')
@@ -532,7 +528,8 @@ class WorkSpacesController extends Controller
             'filters' => $requests,
             'list_index' => $list_index,
             'workspace' => $workspace,
-            'tasks' => Task::filter($requests)->whereHas('project', function ($q) use ($workspace) {
+            'tasks' => Task::filter($requests)
+            ->visibleTo()->whereHas('project', function ($q) use ($workspace) {
                 $q->where('workspace_id', $workspace->id);
             })->with('list')->with('taskLabels.label')->with('project.background')->with('assignees')->with('timer')->isOpen()->orderByOrder()->get()
         ]);
@@ -561,6 +558,7 @@ class WorkSpacesController extends Controller
         }
 
         $tasks = Task::filter($requests)
+            ->visibleTo()
             ->whereHas('project', function ($q) use ($workspace) {
                 $q->where('workspace_id', $workspace->id);
             })
@@ -652,11 +650,7 @@ class WorkSpacesController extends Controller
             ->where('is_done', 0)
             ->isOpen();
 
-        if ($user->role_id != 1) {
-            $query->whereHas('assignees', function ($q) use ($user) {
-                $q->where('user_id', $user->id);
-            });
-        }
+        $query->visibleTo($user);
 
         $count = $query->count();
 
@@ -686,6 +680,7 @@ class WorkSpacesController extends Controller
         }
 
         $tasks = Task::filter($requests)
+            ->visibleTo()
             ->whereHas('project', function ($q) use ($workspace) {
                 $q->where('workspace_id', $workspace->id);
             })
@@ -730,6 +725,7 @@ class WorkSpacesController extends Controller
         }
 
         $tasks = Task::filter($requests)
+            ->visibleTo()
             ->whereHas('project', function ($q) use ($workspace) {
                 $q->where('workspace_id', $workspace->id);
             })
@@ -789,6 +785,7 @@ class WorkSpacesController extends Controller
 
         // Get all tasks from all projects in workspace
         $tasks = Task::filter($requests)
+            ->visibleTo()
             ->whereHas('project', function ($q) use ($workspace) {
                 $q->where('workspace_id', $workspace->id);
             })
@@ -888,6 +885,7 @@ class WorkSpacesController extends Controller
 
         // Get all tasks from all projects in workspace
         $tasks = Task::filter($requests)
+            ->visibleTo()
             ->whereHas('project', function ($q) use ($workspace) {
                 $q->where('workspace_id', $workspace->id);
             })
@@ -938,6 +936,7 @@ class WorkSpacesController extends Controller
 
         // Get all tasks from all projects in workspace
         $tasks = Task::filter($requests)
+            ->visibleTo()
             ->whereHas('project', function ($q) use ($workspace) {
                 $q->where('workspace_id', $workspace->id);
             })

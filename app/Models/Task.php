@@ -23,12 +23,26 @@ class Task extends Model
         'is_archive'    => 'boolean',
         'cover'         => 'integer',
         'list_id'       => 'integer',
+        'origin_list_id' => 'integer',
         'order'         => 'integer',
         'user_id'       => 'integer',
         'project_id'    => 'integer',
         'due_date'      => 'datetime',
         'merged_history' => 'array',
     ];
+
+    /**
+     * True once the document has moved on from the board it was created in.
+     * A Normal User's edit rights over their own document end at that point.
+     */
+    public function hasLeftOriginList(): bool
+    {
+        if (empty($this->origin_list_id)) {
+            return false;
+        }
+
+        return (int) $this->list_id !== (int) $this->origin_list_id;
+    }
 
     private function generateTaskCode()
     {
@@ -216,6 +230,29 @@ class Task extends Model
     public function scopeOrderByOrder($query)
     {
         $query->orderBy('order');
+    }
+
+    /**
+     * Documents a user is allowed to see at all.
+     *
+     * Admins (and Super Admins) see every document. A Normal User sees only what
+     * is assigned to them, plus documents they created themselves - they have to
+     * see their own document to review it before it enters the workflow.
+     */
+    public function scopeVisibleTo($query, $user = null)
+    {
+        $user = $user ?: Auth::user();
+
+        if (! $user || $user->isAdmin()) {
+            return $query;
+        }
+
+        return $query->where(function ($query) use ($user) {
+            $query->where('tasks.user_id', $user->id)
+                ->orWhereHas('assignees', function ($assignees) use ($user) {
+                    $assignees->where('user_id', $user->id);
+                });
+        });
     }
 
     public function scopeIsOpen($query)

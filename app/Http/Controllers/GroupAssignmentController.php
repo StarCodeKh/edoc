@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\DB;
 
 class GroupAssignmentController extends Controller
 {
+    use \App\Http\Controllers\Concerns\AuthorizesTasks;
+
     public function store(Request $request)
     {
         $request->validate([
@@ -17,6 +19,7 @@ class GroupAssignmentController extends Controller
         ]);
 
         $taskId = (int) $request->input('task_id');
+        $this->authorizeTask($taskId, 'edit');
         $groupId = (int) $request->input('user_group_id');
 
         $group = UserGroup::findOrFail($groupId);

@@ -24,6 +24,23 @@ class Workspace extends Model
         return $this->hasOne(TeamMember::class, 'workspace_id')->where('user_id', auth()->id());
     }
 
+    /**
+     * Workspaces a user may open. Admins (and Super Admins) run every board flow,
+     * so they are not held to workspace membership; everyone else sees the ones
+     * they own or belong to.
+     */
+    public function scopeAccessibleTo($query, $user = null) {
+        $user = $user ?: \Illuminate\Support\Facades\Auth::user();
+
+        if ($user && $user->isAdmin()) {
+            return $query;
+        }
+
+        return $query->where(function ($query) use ($user) {
+            $query->where('user_id', $user->id ?? null)->orWhereHas('member');
+        });
+    }
+
     public function teamMembers() {
         return $this->hasMany(TeamMember::class);
     }

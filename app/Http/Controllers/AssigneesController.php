@@ -10,12 +10,16 @@ use Illuminate\Http\Request;
 
 class AssigneesController extends Controller
 {
+    use \App\Http\Controllers\Concerns\AuthorizesTasks;
+
     public function assignUserToTask(Request $request)
     {
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
             'task_id' => 'required|exists:tasks,id',
         ]);
+
+        $this->authorizeTask($validated['task_id'], 'edit');
 
         $assignee = Assignee::where('user_id', $validated['user_id'])->where('task_id', $validated['task_id'])->first();
         $wasRemoved = false;

@@ -12,6 +12,8 @@ use Inertia\Inertia;
 
 class LabelsController extends Controller
 {
+    use \App\Http\Controllers\Concerns\AuthorizesTasks;
+
     public function __construct(){
 //        $this->middleware(RedirectIfNotAdmin::class);
     }
@@ -23,6 +25,11 @@ class LabelsController extends Controller
 
     public function addLabelToTask(Request $request){
         $requestData = $request->all();
+
+        if (! empty($requestData['task_id'])) {
+            $this->authorizeTask($requestData['task_id'], 'edit');
+        }
+
         $taskLabel = TaskLabel::where($requestData)->first();
         if(!empty($taskLabel)){
             $taskLabel->delete();

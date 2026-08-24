@@ -29,4 +29,22 @@ export default defineConfig({
     optimizeDeps: {
         include: ['codemirror-editor-vue3']
     },
+    build: {
+        rollupOptions: {
+            output: {
+                // pdf.js ships its worker as .mjs, and a lot of web servers hand
+                // that extension out as application/octet-stream - which browsers
+                // refuse to run as a module ("Failed to fetch dynamically imported
+                // module"). Emit it as .js so the server's normal JavaScript MIME
+                // type applies. Everything else keeps Vite's default name.
+                assetFileNames: (assetInfo) => {
+                    const name = assetInfo.names?.[0] ?? assetInfo.name ?? '';
+                    if (name.endsWith('.mjs')) {
+                        return 'assets/[name]-[hash].js';
+                    }
+                    return 'assets/[name]-[hash][extname]';
+                },
+            },
+        },
+    },
 });

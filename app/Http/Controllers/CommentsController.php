@@ -9,8 +9,15 @@ use Illuminate\Http\Request;
 
 class CommentsController extends Controller
 {
+    use \App\Http\Controllers\Concerns\AuthorizesTasks;
+
     public function saveNew(Request $request){
         $requestData = $request->all();
+
+        if (! empty($requestData['task_id'])) {
+            $this->authorizeTask($requestData['task_id'], 'comment');
+        }
+
         $comment = Comment::create($requestData);
         event(new NewCommentAdded($comment));
         $activity = Activity::where('comment_id', $comment->id)->with('user', 'comment')->first();
@@ -19,6 +26,11 @@ class CommentsController extends Controller
 
     public function update($id, Request $request){
         $comment = Comment::whereId($id)->first();
+
+        if (! empty($comment->task_id)) {
+            $this->authorizeTask($comment->task_id, 'comment');
+        }
+
         $requestData = $request->all();
         foreach ($requestData as $itemKey => $itemValue){
             $comment->{$itemKey} = $itemValue;
@@ -29,6 +41,11 @@ class CommentsController extends Controller
 
     public function deleteItem($id){
         $comment = Comment::whereId($id)->first();
+
+        if (! empty($comment->task_id)) {
+            $this->authorizeTask($comment->task_id, 'comment');
+        }
+
         $comment->delete();
         $activity = Activity::where('comment_id', $id)->where('field_changed', 'comment_delete')->with('user')->first();
         return response()->json($activity);

@@ -8,6 +8,17 @@ use App\Models\BoardList;
 class TaskObserver
 {
     /**
+     * Handle the Task "creating" event - stamp the board the task starts in, so
+     * we can tell later whether it has moved on.
+     */
+    public function creating(Task $task)
+    {
+        if (empty($task->origin_list_id)) {
+            $task->origin_list_id = $task->list_id;
+        }
+    }
+
+    /**
      * Handle the Task "updated" event.
      * This fires AFTER a task has been saved to the database.
      */

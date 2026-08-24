@@ -71,6 +71,30 @@ class User extends Authenticatable
         $this->attributes['password'] = Hash::needsRehash($password) ? Hash::make($password) : $password;
     }
 
+    /**
+     * Roles, as the ministry defines them:
+     *   Super Admin - everything in the system   (roles.id 1)
+     *   Admin       - everything on every board  (roles.id 2)
+     *   Normal      - only their own documents   (roles.slug 'normal')
+     *
+     * Super Admin and Admin share the slug 'admin', so the two are told apart by
+     * role name / id; every existing `slug == 'admin'` check keeps working.
+     */
+    public function isSuperAdmin(): bool
+    {
+        return $this->role_id === 1 || strtolower((string) ($this->role->name ?? '')) === 'super admin';
+    }
+
+    public function isAdmin(): bool
+    {
+        return ($this->role->slug ?? null) === 'admin';
+    }
+
+    public function isNormalUser(): bool
+    {
+        return ! $this->isAdmin();
+    }
+
     public function isDemoUser()
     {
         return $this->email === 'johndoe@example.com';

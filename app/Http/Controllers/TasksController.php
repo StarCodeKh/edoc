@@ -28,6 +28,8 @@ use Inertia\Inertia;
 
 class TasksController extends Controller
 {
+    use \App\Http\Controllers\Concerns\AuthorizesTasks;
+
     public function merge(Request $request)
     {
         $validated = $request->validate([
@@ -38,6 +40,13 @@ class TasksController extends Controller
 
         $target = Task::findOrFail($validated['target_id']);
         $sourceIds = array_unique($validated['source_ids']);
+
+        // Combining documents rewrites all of them, so it needs edit rights on
+        // the target and on every source.
+        $this->authorizeTask($target->id, 'edit');
+        foreach ($sourceIds as $sourceId) {
+            $this->authorizeTask($sourceId, 'edit');
+        }
 
         DB::transaction(function () use ($target, $sourceIds) {
             Comment::whereIn('task_id', $sourceIds)->update(['task_id' => $target->id]);
@@ -83,6 +92,8 @@ class TasksController extends Controller
         ]);
 
         $target = Task::findOrFail($validated['target_id']);
+        $this->authorizeTask($target->id, 'edit');
+
         $history = collect($target->merged_history ?? []);
         $entry = $history->first(fn ($h) => (string) $h['id'] === (string) $validated['history_id']);
 
@@ -121,6 +132,9 @@ class TasksController extends Controller
 
     public function activities($id)
     {
+        // The audit trail says as much about a document as the document does.
+        $this->authorizeTask($id, 'view');
+
         $rows = Activity::where('task_id', $id)
             ->with('user:id,first_name,last_name')
             ->orderByDesc('created_at')
@@ -132,6 +146,23 @@ class TasksController extends Controller
     public function updateTaskOrder(Request $request)
     {
         $requestData = $request->all();
+
+        // Re-ordering only shuffles cards within a board, so it is allowed for
+        // every document the user can see - rows for anything else are dropped.
+        $visibleIds = Task::visibleTo()
+            ->whereIn('id', collect($requestData)->pluck('id')->filter()->all())
+            ->pluck('id')
+            ->map(fn ($id) => (string) $id)
+            ->all();
+
+        $requestData = array_values(array_filter($requestData, function ($row) use ($visibleIds) {
+            return isset($row['id']) && in_array((string) $row['id'], $visibleIds, true);
+        }));
+
+        if (empty($requestData)) {
+            return response()->json(true);
+        }
+
         $result = \Batch::update(new Task, $requestData, 'id');
         return response()->json($result);
     }
@@ -140,9 +171,12 @@ class TasksController extends Controller
     {
         $search = $request->input('q');
         $result = [];
-        $result['tasks'] = Task::where('title', 'like', '%'.$search.'%')
-            ->orWhere('task_code', 'like', '%'.$search.'%')
-            ->orWhere('description', 'like', '%'.$search.'%')
+        $result['tasks'] = Task::visibleTo()
+            ->where(function ($query) use ($search) {
+                $query->where('title', 'like', '%'.$search.'%')
+                    ->orWhere('task_code', 'like', '%'.$search.'%')
+                    ->orWhere('description', 'like', '%'.$search.'%');
+            })
             ->select('id', 'project_id', 'title')->get();
 
         $result['projects'] = Project::where('title', 'like', '%'.$search.'%')
@@ -152,8 +186,13 @@ class TasksController extends Controller
 
     public function updateTask($taskId, Request $request)
     {
-        $task = Task::whereId($taskId)->first();
         $requestData = $request->all();
+
+        // Changing which board a document sits on is the one edit a Normal User
+        // loses first, so it is checked as its own ability.
+        $isMove = array_key_exists('list_id', $requestData) || array_key_exists('project_id', $requestData);
+        $task = $this->authorizeTask($taskId, $isMove ? 'move' : 'edit');
+
         foreach ($requestData as $itemKey => $itemValue){
             $task->{$itemKey} = $itemValue;
         }
@@ -164,7 +203,8 @@ class TasksController extends Controller
 
     public function jsonArchiveTasks($project_id)
     {
-        $archiveTasks = Task::where('is_archive', 1)
+        $archiveTasks = Task::visibleTo()
+            ->where('is_archive', 1)
             ->byProject($project_id)
             ->withCount('checklistDone')
             ->withCount('comments')
@@ -180,6 +220,11 @@ class TasksController extends Controller
     public function updateTaskListByProjectId($projectId, Request $request)
     {
         $data = $request->all();
+
+        if (! empty($data['task_id'])) {
+            $this->authorizeTask($data['task_id'], 'move');
+        }
+
         $from_lists = [];
         $new_list = [];
         if (!empty($data['is_move'])){
@@ -220,6 +265,8 @@ class TasksController extends Controller
 
     public function deleteDask($id)
     {
+        $this->authorizeTask($id, 'delete');
+
         $result = null;
         $task = Task::where('id', $id)->first();
         if(!empty($task)){
@@ -268,6 +315,8 @@ class TasksController extends Controller
         if (empty($task)) {
             abort(404, 'Task not found.');
         }
+
+        $this->authorizeTaskModel($task->loadMissing('assignees'), 'view');
 
         $task->is_demo = (int) config('app.demo');
         $task->load('watchers');
@@ -321,6 +370,8 @@ class TasksController extends Controller
 
     public function addAttachment($id, Request $request)
     {
+        $this->authorizeTask($id, 'attach');
+
         $attachment = [];
 
         // An empty request usually means PHP dropped the body because it went over
@@ -404,6 +455,11 @@ class TasksController extends Controller
     public function removeAttachment($id)
     {
         $attachment = Attachment::find($id);
+
+        if (! empty($attachment) && ! empty($attachment->task_id)) {
+            $this->authorizeTask($attachment->task_id, 'attach');
+        }
+
         if(!empty($attachment) && !empty($attachment->path) && File::exists(public_path($attachment->path))){
             File::delete(public_path($attachment->path));
         }

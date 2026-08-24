@@ -77,20 +77,20 @@
                         <main class="main">
                             <div class="s__1">
                                 <div class="checklist-box">
-                                    <input type="checkbox" :checked="!!task.is_done" @change="saveTask({is_done: $event.target.checked})" />
+                                    <input type="checkbox" :disabled="!can.edit" :checked="!!task.is_done" @change="saveTask({is_done: $event.target.checked})" />
                                     <icon name="checklist_box" />
                                 </div>
                                 <div class="t__l">
-                                    <h2 class="__t" contenteditable="true" @keyup.enter="saveTitle($event)" @blur="saveTitle($event)">
+                                    <h2 class="__t" :contenteditable="can.edit" @keyup.enter="saveTitle($event)" @blur="saveTitle($event)">
                                         {{ task.title }}
                                     </h2>
-                                    <span class="text-xs dark:text-gray-300">in list <span class="cursor-pointer underline dark:text-gray-200" @click="displayMoveCard()">{{ task.list.title }}</span> </span>
+                                    <span class="text-xs dark:text-gray-300">in list <span :class="can.move ? 'cursor-pointer underline dark:text-gray-200' : 'dark:text-gray-200'" @click="can.move && displayMoveCard()">{{ task.list.title }}</span> </span>
 
                                     <div class="flex flex-col mt-5">
                                         <span class="text-xs font-bold mb-1 dark:text-gray-300">{{ $t('Labels') }}</span>
                                         <div class="list_labels flex flex-wrap gap-1">
-                                            <button @click="showLabelBox = true" class="label_button" v-for="(task_label, label_index) in task.task_labels" :style="{ background: task_label.label.color }" :aria-label="task_label.label.name" data-a="">{{ task_label.label.name }}</button>
-                                            <button @click="showLabelBox = true" class="label_button bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"><icon class="dark:text-gray-300" name="plus" /></button>
+                                            <button @click="can.edit && (showLabelBox = true)" class="label_button" v-for="(task_label, label_index) in task.task_labels" :style="{ background: task_label.label.color }" :aria-label="task_label.label.name" data-a="">{{ task_label.label.name }}</button>
+                                            <button v-if="can.edit" @click="showLabelBox = true" class="label_button bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600"><icon class="dark:text-gray-300" name="plus" /></button>
                                         </div>
                                     </div>
                                 </div>
@@ -144,7 +144,7 @@
                                     <icon @click="toggleDetails()" class="w-4 h-4 ml-auto cursor-pointer" name="edit" />
                                 </div>
                                 <div class="__details">
-                                    <div v-if="!editDescription" class="prose pt-4 text-sm cursor-pointer" @click="onDescriptionClick" v-html="task.description || 'Add more details...'"></div>
+                                    <div v-if="!editDescription" class="prose pt-4 text-sm" :class="{ 'cursor-pointer': can.edit }" @click="can.edit ? onDescriptionClick($event) : null" v-html="task.description || 'Add more details...'"></div>
                                     <section class="mt-4" v-if="editDescription">
                                         <CustomEditor
                                             ref="editDescription"
@@ -184,6 +184,7 @@
                                                     class="inp-cbx"
                                                     :id="'cbx-' + check_list.id"
                                                     :checked="!!check_list.is_done"
+                                                    :disabled="!can.edit"
                                                     @click="check_list.is_done = $event.target.checked; saveCheckList(check_list.id, {is_done: check_list.is_done})"
                                                     type="checkbox"
                                                     style="display: none;"
@@ -273,7 +274,7 @@
                                         </div>
                                     </div>
 
-                                    <button class="group flex items-center mt-6" @click="openNewChecklist()">
+                                    <button v-if="can.edit" class="group flex items-center mt-6" @click="openNewChecklist()">
                                         <icon class="w-5 h-5 dark:text-gray-300" name="add" />
                                         <span class="pl-2 text-sm group-hover:opacity-70 dark:text-gray-300">{{ $t('Add a new item') }}</span>
                                     </button>
@@ -312,7 +313,7 @@
                                                         {{ moment(attachment.created_at).format('[Added] MMM D, YYYY [at] h:mm A') }}
                                                     </span>
                                                     -
-                                                    <span class="flex underline cursor-pointer dark:text-gray-300 hover:text-red-500" @click="deleteAttachment(attachment.id)">
+                                                    <span v-if="can.attach" class="flex underline cursor-pointer dark:text-gray-300 hover:text-red-500" @click="deleteAttachment(attachment.id)">
                                                         {{ $t('Delete') }}
                                                     </span>
                                                 </div>
@@ -356,13 +357,13 @@
 
                                 <div class="pl-8 pt-4">
                                     <div>
-                                        <div v-if="!showCommentBox" class="mt-1 mb-4 cursor-pointer rounded-md border border-gray-300 dark:border-gray-600 hover:shadow dark:hover:shadow-lg">
+                                        <div v-if="!showCommentBox && can.comment" class="mt-1 mb-4 cursor-pointer rounded-md border border-gray-300 dark:border-gray-600 hover:shadow dark:hover:shadow-lg">
                                             <p @click="showCommentBox = true" class="px-3 py-2 text-sm dark:text-gray-300">
                                                 {{ $t('Write a comment...') }}
                                             </p>
                                         </div>
 
-                                        <form v-if="showCommentBox" class="mt-1 mb-4 rounded-md border border-gray-300 dark:border-gray-600" enctype="multipart/form-data">
+                                        <form v-if="showCommentBox && can.comment" class="mt-1 mb-4 rounded-md border border-gray-300 dark:border-gray-600" enctype="multipart/form-data">
                                             <CustomEditor
                                                 ref="newCommentEditor"
                                                 v-model="new_comment.details"
@@ -382,7 +383,7 @@
 
                                                 <div class="ml-auto hidden flex">
                                                     <label class="cursor-pointer">
-                                                        <input :accept="allowed_file_types" class="hidden" type="file" multiple @change="uploadAttachment($event, true)">
+                                                        <input :accept="allowed_file_types" :disabled="!can.attach" class="hidden" type="file" multiple @change="uploadAttachment($event, true)">
                                                         <icon class="w-4 h-4" name="attachment" />
                                                     </label>
                                                 </div>
@@ -636,7 +637,7 @@
 
                                 <div class="relative">
                                     <div>
-                                        <div class="group mt-2 flex cursor-pointer items-center td__btn rounded-md px-2 py-1.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600" @click="displayMoveCard();is_move=true;">
+                                        <div v-if="can.move" class="group mt-2 flex cursor-pointer items-center td__btn rounded-md px-2 py-1.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600" @click="displayMoveCard();is_move=true;">
                                             <span class="block h-3.5 text-xs leading-none dark:text-gray-200">{{ task.list.title }}</span>
                                             <icon class="w-3.5 h-3.5 ml-auto cursor-pointer dark:text-gray-300" name="arrow-down" />
                                         </div>
@@ -649,7 +650,7 @@
                                     {{ $t('ប្រភពឯកសារ') }}
                                 </h2>
                                 <div class="relative">
-                                    <div class="group mt-2 flex cursor-pointer items-center td__btn rounded-md px-2 py-1.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600" @click="showSourceBox = true">
+                                    <div v-if="can.edit" class="group mt-2 flex cursor-pointer items-center td__btn rounded-md px-2 py-1.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600" @click="showSourceBox = true">
                                         <span class="block text-xs leading-tight dark:text-gray-200">{{ selectedDocumentSourceName }}</span>
                                         <icon class="w-3.5 h-3.5 ml-auto cursor-pointer dark:text-gray-300 flex-shrink-0" name="arrow-down" />
                                     </div>
@@ -691,7 +692,7 @@
                                     {{ $t('ប្រភេទឯកសារ') }}
                                 </h2>
                                 <div class="relative">
-                                    <div class="group mt-2 flex cursor-pointer items-center td__btn rounded-md px-2 py-1.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600" @click="showTypeBox = true">
+                                    <div v-if="can.edit" class="group mt-2 flex cursor-pointer items-center td__btn rounded-md px-2 py-1.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600" @click="showTypeBox = true">
                                         <span class="block text-xs leading-tight dark:text-gray-200">{{ selectedDocumentTypeName }}</span>
                                         <icon class="w-3.5 h-3.5 ml-auto cursor-pointer dark:text-gray-300 flex-shrink-0" name="arrow-down" />
                                     </div>
@@ -728,7 +729,7 @@
                                     {{ $t('អាទិភាព') }}
                                 </h2>
                                 <div class="relative">
-                                    <div class="group mt-2 flex cursor-pointer items-center td__btn rounded-md px-2 py-1.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600" @click="showPriorityBox = true">
+                                    <div v-if="can.edit" class="group mt-2 flex cursor-pointer items-center td__btn rounded-md px-2 py-1.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600" @click="showPriorityBox = true">
                                         <span v-if="selectedPriorityColor" class="w-2.5 h-2.5 mr-1.5 rounded-full flex-shrink-0" :style="{ backgroundColor: selectedPriorityColor }"></span>
                                         <span class="block text-xs leading-tight dark:text-gray-200">{{ selectedPriorityName }}</span>
                                         <icon class="w-3.5 h-3.5 ml-auto cursor-pointer dark:text-gray-300 flex-shrink-0" name="arrow-down" />
@@ -771,7 +772,7 @@
 
                                     <div class="relative ml-auto" modal="true" name="task-assign">
                                         <div>
-                                            <span class="cursor-pointer" @click="showAssigneeBox = true"><icon class="h-5 w-5 hover:opacity-80 dark:text-gray-300" name="add" /></span>
+                                            <span v-if="can.edit" class="cursor-pointer" @click="showAssigneeBox = true"><icon class="h-5 w-5 hover:opacity-80 dark:text-gray-300" name="add" /></span>
                                         </div>
 
                                         <div class="absolute right-1 flex w-[300px] z-10 text-sm flex-col bg-white dark:bg-gray-800 px-4 py-4 rounded shadow dark:border dark:border-gray-700" v-if="showAssigneeBox">
@@ -905,6 +906,7 @@
                                         <div class="group mt-2 flex cursor-pointer items-center rounded-md py-1.5">
                                             <DateTimePicker
                                                 v-model="task.due_date"
+                                                :disabled="!can.edit"
                                                 @change="saveTask({due_date: moment(task.due_date).format('YYYY-MM-DD HH:mm')})"
                                                 @update:is24Hour="is24HourFormat = $event"
                                                 placeholder="Select Date & Time"
@@ -937,19 +939,19 @@
                             <section class="py-3">
                                 <div class="mt-2 space-y-2 px-1">
                                     <label class="flex cursor-pointer w-full items-center rounded bg-gray-200 dark:bg-gray-700 td__btn hover:bg-gray-300 dark:hover:bg-gray-600 px-3 py-2 text-xs font-medium dark:text-gray-200 focus:outline-none focus:ring-0">
-                                        <input :accept="allowed_file_types" @change="uploadAttachment($event)" class="hidden" type="file" multiple/>
+                                        <input :accept="allowed_file_types" :disabled="!can.attach" @change="uploadAttachment($event)" class="hidden" type="file" multiple/>
                                         <icon class="mr-2 h-4 w-4 dark:text-gray-300" name="attachment" />
                                         {{ $t('Attachment') }}
                                     </label>
-                                    <button v-if="!this.task.is_archive" @click="saveTask({ is_archive: 1 });this.task.is_archive = true" class="flex td__btn w-full items-center rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 px-3 py-2 text-xs font-medium dark:text-gray-200 focus:outline-none focus:ring-0">
+                                    <button v-if="!this.task.is_archive && can.edit" @click="saveTask({ is_archive: 1 });this.task.is_archive = true" class="flex td__btn w-full items-center rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 px-3 py-2 text-xs font-medium dark:text-gray-200 focus:outline-none focus:ring-0">
                                         <icon class="mr-2 h-4 w-4 dark:text-gray-300" name="archive" />
                                         {{ $t('Archive') }}
                                     </button>
-                                    <button v-else @click="saveTask({ is_archive: 0 });this.task.is_archive = false" class="flex td__btn w-full items-center py-1.5 text-xs font-medium rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 px-3 py-2 dark:text-gray-200">
+                                    <button v-else-if="can.edit" @click="saveTask({ is_archive: 0 });this.task.is_archive = false" class="flex td__btn w-full items-center py-1.5 text-xs font-medium rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 px-3 py-2 dark:text-gray-200">
                                         <icon class="mr-2 h-4 w-4 dark:text-gray-300" name="undo" />
                                         {{ $t('Revert Back') }}
                                     </button>
-                                    <button v-if="this.task.is_archive" @click="deleteTask()" class="flex w-full text-white items-center td__btn py-1.5 text-xs font-medium rounded bg-red-700 dark:bg-red-800 hover:bg-red-800 dark:hover:bg-red-900 px-3 py-2">
+                                    <button v-if="this.task.is_archive && can.delete" @click="deleteTask()" class="flex w-full text-white items-center td__btn py-1.5 text-xs font-medium rounded bg-red-700 dark:bg-red-800 hover:bg-red-800 dark:hover:bg-red-900 px-3 py-2">
                                         <icon class="mr-2 h-4 w-4 fill-white" name="dash" />
                                         {{ $t('Delete') }}
                                     </button>
@@ -1052,6 +1054,7 @@
     import CustomEditor from '@/Shared/Components/CustomEditor.vue';
     import WatchButton from '@/Components/WatchButton.vue';
     import axios from 'axios'
+    import { abilities as taskAbilities } from '@/Utils/taskAbility'
 
     export default {
         props: {
@@ -1151,6 +1154,15 @@
             Icon, Loader, Link, DatePicker, DateTimePicker, CustomEditor, Head, WatchButton
         },
         computed: {
+            /**
+             * What the signed-in user may do with this document. Mirrors
+             * App\Support\TaskAbility, which every endpoint enforces anyway - this
+             * only keeps controls that would be refused off the screen.
+             */
+            can() {
+                return taskAbilities(this.$page.props.auth.user, this.task || {});
+            },
+
             // Real ceiling PHP will accept (upload_max_filesize / post_max_size), capped at 50MB.
             maxUploadSize() {
                 return this.$page.props.max_upload_size || 50 * 1024 * 1024;

@@ -37,10 +37,10 @@
                             </button>
                         </div>
                     </div>
-                    <draggable :data-id="listItem.id" class="dragArea" :list="listItem.tasks" group="task" item-key="id" @end="afterDrop($event)">
+                    <draggable :data-id="listItem.id" class="dragArea" :list="listItem.tasks" group="task" item-key="id" :move="onDragMove" @end="afterDrop($event)">
                         <template #item="{ element, index }">
                             <div :data-id="element.id" class="t__box group hover:bg-opacity-100" draggable="true" :class="{ 'is-selected-for-merge': selectedTaskIds.includes(element.id) }">
-                                <label class="task-select-checkbox" :class="{ 'task-select-checkbox--checked': selectedTaskIds.includes(element.id) }" @click.stop>
+                                <label v-if="taskCan('edit', element)" class="task-select-checkbox" :class="{ 'task-select-checkbox--checked': selectedTaskIds.includes(element.id) }" @click.stop>
                                     <input type="checkbox" :checked="selectedTaskIds.includes(element.id)" @change="toggleTaskSelect(element.id)">
                                     <icon name="tick_check" class="w-3 h-3" />
                                 </label>
@@ -58,7 +58,7 @@
                                         {{ $t('Mark complete') }}
                                     </button>
                                 </div>
-                                <button @click="visibleShowMore($event, element)" class="hidden show__more group-hover:flex">
+                                <button v-if="taskCan('edit', element)" @click="visibleShowMore($event, element)" class="hidden show__more group-hover:flex">
                                     <icon class="w-4 h-4" name="more" />
                                 </button>
                                 <icon v-if="element.timer" name="blink" class="w-2 h-2 absolute top-2 right-2 z-20" />
@@ -201,6 +201,12 @@
 
         <right-menu v-if="show_right_menu" :project="project" @menu-toggle="show_right_menu = !show_right_menu" @openTask="(id)=>taskDetailsPopup(id)" />
 
+        <transition name="fade">
+            <div v-if="moveBlockedNotice" class="move-blocked-notice">
+                {{ $t('You are not allowed to move this document to another board.') }}
+            </div>
+        </transition>
+
         <!-- Floating bar: appears once 2+ cards are checked -->
         <transition name="fade-slide-up">
             <div v-if="selectedTaskIds.length >= 2" class="merge-bar">
@@ -318,7 +324,7 @@
                             <div class="doc-drawer__field doc-assign">
                                 <span class="doc-drawer__field-label">
                                     {{ $t('Assigned') }}
-                                    <button type="button" class="doc-assign__add" :title="$t('Assignee')" @click.stop="toggleAssignPicker">
+                                    <button v-if="taskCan('edit', drawerTask)" type="button" class="doc-assign__add" :title="$t('Assignee')" @click.stop="toggleAssignPicker">
                                         <icon name="add" class="w-3 h-3" />
                                     </button>
                                 </span>
@@ -508,6 +514,7 @@
 <script>
     import {Head, Link} from '@inertiajs/vue3'
     import Layout from '@/Shared/Layout.vue'
+    import { abilities as taskAbilities } from '@/Utils/taskAbility'
     import Icon from '@/Shared/Icon.vue'
     import TaskDetails from '@/Shared/Modals/TaskDetails.vue'
     import BoardViewMenu from '@/Shared/BoardViewMenu.vue'
@@ -555,6 +562,12 @@
             return {
                 errors: [],
                 loading: false,
+
+                // Shown when a drag is refused because the document may not be
+                // moved to another board by this user.
+                moveBlockedNotice: false,
+                moveBlockedNoticeAt: 0,
+
                 show_right_menu: false,
                 new_list_open: false,
                 td_pop: false,
@@ -842,6 +855,47 @@
                 return;
             }
             this.taskDetailsPopup(element.slug || element.id);
+        },
+
+        /**
+         * What may the signed-in user do with this document? Mirrors the server
+         * check in App\Support\TaskAbility - the API refuses either way, this
+         * just keeps buttons that would 403 off the screen.
+         */
+        taskCan(ability, task) {
+            if (!task) return false;
+            return taskAbilities(this.$page.props.auth.user, task)[ability] === true;
+        },
+
+        /**
+         * Sortable asks before every hop. Re-ordering inside a board is open to
+         * anyone who can see the card; carrying it to another board is a move,
+         * and a Normal User only has that on their own untouched document.
+         */
+        onDragMove(evt) {
+            const task = evt?.draggedContext?.element;
+            if (!task) return true;
+
+            const targetListId = evt?.to?.dataset?.id;
+            if (targetListId && Number(targetListId) === Number(task.list_id)) {
+                return true;
+            }
+
+            if (this.taskCan('move', task)) {
+                return true;
+            }
+
+            this.warnMoveBlocked();
+            return false;
+        },
+
+        // Sortable calls onDragMove on every pixel of travel, so the warning is
+        // throttled to one per gesture.
+        warnMoveBlocked() {
+            if (this.moveBlockedNoticeAt && Date.now() - this.moveBlockedNoticeAt < 2500) return;
+            this.moveBlockedNoticeAt = Date.now();
+            this.moveBlockedNotice = true;
+            setTimeout(() => { this.moveBlockedNotice = false; }, 2500);
         },
 
         openDrawerById(taskId) {
@@ -1635,6 +1689,31 @@
     }
 
     /* Floating merge bar */
+    .move-blocked-notice {
+        position: fixed;
+        left: 50%;
+        bottom: 28px;
+        transform: translateX(-50%);
+        z-index: 60;
+        max-width: min(520px, calc(100vw - 32px));
+        padding: 10px 16px;
+        border-radius: 10px;
+        background: #7f1d1d;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 500;
+        box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.5);
+    }
+
+    .fade-enter-active,
+    .fade-leave-active {
+        transition: opacity 0.18s ease;
+    }
+    .fade-enter-from,
+    .fade-leave-to {
+        opacity: 0;
+    }
+
     .merge-bar {
         position: fixed;
         left: 50%;
