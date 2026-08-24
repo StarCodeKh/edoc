@@ -86,6 +86,19 @@
                 <span class="hidden sm:inline">{{ $t('Download') }}</span>
             </a>
 
+            <!-- The annotation toolbar below only exists for PDFs, so non-PDF
+                 files get the same action up here. -->
+            <button
+                v-if="canApproveAndSign && attachment && !isPdf(attachment.name)"
+                type="button"
+                @click="approveAndSign"
+                :disabled="signatureSubmitting"
+                class="approve-sign-btn approve-sign-btn--header"
+            >
+                <span v-if="signatureSubmitting" class="approve-sign-btn__spinner"></span>
+                {{ $t('Approve & Sign from Secretariat General') }}
+            </button>
+
             <button
                 type="button"
                 @click="closeViewer"
@@ -159,7 +172,20 @@
                         <span class="hidden sm:inline">{{ $t('Notes') }}</span>
                         <span v-if="documentNotesCount" class="px-1.5 rounded-full text-[10px] font-bold bg-blue-500 text-white">{{ documentNotesCount }}</span>
                     </button>
-                    <button v-if="drawTool !== 'view' || hasUnsavedAnnotations" type="button" @click="manualSaveAnnotation" :disabled="autoSaving" class="px-5 py-1.5 rounded-full bg-white text-gray-900 text-xs font-semibold disabled:opacity-50">
+                    <!-- While the document sits at a signature step, the primary
+                         action here becomes the request itself; it saves any
+                         pending notes on the way through. -->
+                    <button
+                        v-if="canApproveAndSign"
+                        type="button"
+                        @click="approveAndSign"
+                        :disabled="signatureSubmitting || autoSaving"
+                        class="approve-sign-btn"
+                    >
+                        <span v-if="signatureSubmitting || autoSaving" class="approve-sign-btn__spinner"></span>
+                        {{ (signatureSubmitting || autoSaving) ? $t('Saving...') : $t('Approve & Sign from Secretariat General') }}
+                    </button>
+                    <button v-else-if="drawTool !== 'view' || hasUnsavedAnnotations" type="button" @click="manualSaveAnnotation" :disabled="autoSaving" class="px-5 py-1.5 rounded-full bg-white text-gray-900 text-xs font-semibold disabled:opacity-50">
                         {{ autoSaving ? $t('Saving...') : $t('Save & Close') }}
                     </button>
                 </div>
@@ -411,6 +437,12 @@
                 user_search: '',
                 showAssigneeBox: false,
 
+                // "Approve & Sign from Secretariat General". The server decides
+                // whether this document is at a signature step and the signed-in
+                // user may act on it — see SignatureRequestController::show.
+                signatureContext: null,
+                signatureSubmitting: false,
+
                 drawSettings: {
                     color: '#ef4444',
                     size: 4
@@ -469,6 +501,11 @@
                 const name = this.attachment?.name;
                 if (!name || !name.includes('.')) return 'FILE';
                 return name.split('.').pop().toUpperCase().slice(0, 4);
+            },
+
+            /** May this document be approved & signed from here, right now? */
+            canApproveAndSign() {
+                return !!(this.signatureContext && this.signatureContext.eligible);
             },
 
             backUrl() {
@@ -576,11 +613,49 @@
                     }
                     this.openAttachment(found, false);
                     this.loadTeamMembers();
+                    this.loadSignatureContext();
                 } catch (error) {
                     console.error('Error loading the document:', error);
                     this.toastError(this.$t('This file could not be found.'));
                 } finally {
                     this.loading = false;
+                }
+            },
+
+            async loadSignatureContext() {
+                try {
+                    const { data } = await axios.get(
+                        this.route('task.signature.request.show', { taskUid: this.task.id })
+                    );
+                    this.signatureContext = data;
+                } catch (error) {
+                    // Not being able to ask just means the action stays hidden.
+                    this.signatureContext = null;
+                }
+            },
+
+            /**
+             * Confirm the request. Any notes drawn on the page are saved first —
+             * this button stands in for Save & Close while the document is at a
+             * signature step, so nothing the reviewer wrote may be lost.
+             */
+            async approveAndSign() {
+                if (!this.canApproveAndSign || this.signatureSubmitting) return;
+
+                this.signatureSubmitting = true;
+                try {
+                    if (this.hasUnsavedAnnotations) {
+                        await this.manualSaveAnnotation();
+                    }
+
+                    await axios.post(this.route('task.signature.request.store', { taskUid: this.task.id }));
+                    this.leaveViewer();
+                } catch (error) {
+                    const message = (error.response && error.response.data && error.response.data.message)
+                        || this.$t('Failed to send the request.');
+                    this.toastError(message);
+                } finally {
+                    this.signatureSubmitting = false;
                 }
             },
 
@@ -1533,6 +1608,49 @@
 </script>
 
 <style scoped>
+    /* "Approve & Sign from Secretariat General" — stands in for Save & Close
+       while the document is at a signature step. */
+    .approve-sign-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        flex-shrink: 0;
+        max-width: 34rem;
+        padding: 8px 20px;
+        border-radius: 999px;
+        background: #4f46e5;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1.4;
+        text-align: center;
+        box-shadow: 0 6px 16px rgba(79, 70, 229, 0.35);
+        transition: background 0.15s ease, box-shadow 0.15s ease;
+    }
+    .approve-sign-btn:hover:not(:disabled) {
+        background: #4338ca;
+        box-shadow: 0 8px 20px rgba(67, 56, 202, 0.4);
+    }
+    .approve-sign-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    .approve-sign-btn--header {
+        border-radius: 10px;
+        font-size: 12px;
+    }
+    .approve-sign-btn__spinner {
+        width: 13px;
+        height: 13px;
+        flex-shrink: 0;
+        border: 2px solid rgba(255, 255, 255, 0.45);
+        border-top-color: transparent;
+        border-radius: 999px;
+        animation: approve-sign-spin 0.7s linear infinite;
+    }
+    @keyframes approve-sign-spin { to { transform: rotate(360deg); } }
+
     .toast-stack {
         position: fixed;
         top: max(20px, env(safe-area-inset-top));

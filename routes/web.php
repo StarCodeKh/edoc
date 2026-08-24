@@ -25,6 +25,7 @@ use App\Http\Controllers\ProjectsController;
 use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\RequirementsController;
 use App\Http\Controllers\RolesController;
+use App\Http\Controllers\SignatureRequestController;
 use App\Http\Controllers\StarredProjectsController;
 use App\Http\Controllers\TasksController;
 use App\Http\Controllers\TimersController;
@@ -178,6 +179,11 @@ Route::get('task/list/count/{id}', [TasksController::class, 'countListItemsById'
 Route::get('task/other/data/{task_id}/{project_id}', [TasksController::class, 'taskOtherData'])->name('task.other.data')->middleware('auth');
 Route::post('task/attachment/add/{id}', [TasksController::class, 'addAttachment'])->name('task.attachment.add')->middleware('auth');
 Route::get('task/{taskUid}/attachment/{attachmentId}/view', [TasksController::class, 'viewAttachment'])->name('task.attachment.view')->middleware('auth');
+
+// Approve & Sign from Secretariat General — shown on cards sitting in a board
+// whose workflow step has `requires_signature` (Settings → Workflow Roles).
+Route::get('task/{taskUid}/signature-request', [SignatureRequestController::class, 'show'])->name('task.signature.request.show')->middleware('auth');
+Route::post('task/{taskUid}/signature-request', [SignatureRequestController::class, 'store'])->name('task.signature.request.store')->middleware('auth');
 Route::post('project/background/upload/{id}', [ProjectsController::class, 'uploadBackground'])->name('project.background.upload')->middleware('auth');
 Route::post('project/background/update/{id}', [ProjectsController::class, 'updateBackground'])->name('project.background.update')->middleware('auth');
 Route::post('task/attachment/delete/{id}', [TasksController::class, 'removeAttachment'])->name('task.attachment.delete')->middleware('auth');

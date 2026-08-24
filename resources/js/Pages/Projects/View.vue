@@ -398,6 +398,24 @@
                             </div>
                         </div>
 
+                        <!-- "Approve & Sign from Secretariat General" — shown only while the
+                             document sits in a board whose workflow step is a signature step
+                             (Settings → Workflow Roles), and only for the administration.
+                             Opens the document's newest attachment in the viewer, where the
+                             request is confirmed. -->
+                        <button
+                            v-if="canRequestSignature(drawerTask)"
+                            type="button"
+                            class="sign-request-btn"
+                            :disabled="signatureOpening"
+                            @click="openSignatureRequest(drawerTask)"
+                        >
+                            <span v-if="signatureOpening" class="sign-request-btn__spinner"></span>
+                            <svg v-else viewBox="0 0 24 24" fill="none" class="sign-request-btn__icon"><path d="M3 20h18M5.5 16.5l9.9-9.9a1.6 1.6 0 0 1 2.3 0l.7.7a1.6 1.6 0 0 1 0 2.3l-9.9 9.9-3.6.6.6-3.6z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            <span class="sign-request-btn__text">{{ $t('Approve & Sign from Secretariat General') }}</span>
+                        </button>
+                        <p v-if="signatureError" class="sign-request-error">{{ signatureError }}</p>
+
                         <div class="doc-drawer__section-label">{{ $t('Audit trail') }}</div>
                         <div v-if="drawerLoadingActivities" class="doc-drawer__timeline-loading">
                             <span class="doc-drawer__timeline-spinner"></span>
@@ -514,7 +532,7 @@
 <script>
     import {Head, Link} from '@inertiajs/vue3'
     import Layout from '@/Shared/Layout.vue'
-    import { abilities as taskAbilities } from '@/Utils/taskAbility'
+    import { abilities as taskAbilities, isAdmin } from '@/Utils/taskAbility'
     import Icon from '@/Shared/Icon.vue'
     import TaskDetails from '@/Shared/Modals/TaskDetails.vue'
     import BoardViewMenu from '@/Shared/BoardViewMenu.vue'
@@ -576,6 +594,10 @@
                 // State for Document Receipt Modal
                 receiptModalOpen: false,
                 selectedReceiptTask: null,
+
+                // "Approve & Sign" — while we look up the file to open.
+                signatureOpening: false,
+                signatureError: '',
 
                 // Multi-select + merge
                 selectedTaskIds: [],
@@ -692,6 +714,44 @@
             }
         },
         methods: {
+        /**
+         * Is this document sitting in a signature step, and is the signed-in
+         * user the administration? `requires_signature` rides along on the
+         * board list from App\Support\WorkflowStep — nothing here is hard-coded
+         * to a particular workflow.
+         */
+        canRequestSignature(task) {
+            if (!task || task.is_done) return false;
+            if (!isAdmin(this.$page.props.auth.user)) return false;
+
+            const list = (this.lists || []).find(l => Number(l.id) === Number(task.list_id));
+            return !!(list && list.requires_signature);
+        },
+
+        /**
+         * The request is confirmed over the file itself, so this only resolves
+         * which file that is and hands over to the viewer.
+         */
+        openSignatureRequest(task) {
+            if (!task || this.signatureOpening) return;
+
+            this.signatureOpening = true;
+            this.signatureError = '';
+
+            axios.get(this.route('task.signature.request.show', { taskUid: task.id }))
+                .then(({ data }) => {
+                    if (!data.attachment) {
+                        this.signatureError = this.$t('This document has no attached file yet.');
+                        return;
+                    }
+                    window.location.href = data.attachment.view_url;
+                })
+                .catch(() => {
+                    this.signatureError = this.$t('Failed to load the document.');
+                })
+                .finally(() => { this.signatureOpening = false; });
+        },
+
         documentCode(element){
             if (element.task_code) return element.task_code;
             return 'CGMC-' + String(element.id).padStart(9, '0');
@@ -714,6 +774,7 @@
                 due_date: 'time', is_done: 'checklist_box', is_archive: 'archive',
                 description: 'details', cover: 'pulse_image',
                 comment: 'comment', comment_edit: 'comment', comment_delete: 'comment',
+                signature_requested: 'complete',
             };
             return map[field] || 'edit';
         },
@@ -727,6 +788,7 @@
                 cover: 'doc-drawer__timeline-icon--purple',
                 comment: 'doc-drawer__timeline-icon--gold', comment_edit: 'doc-drawer__timeline-icon--gold',
                 comment_delete: 'doc-drawer__timeline-icon--red',
+                signature_requested: 'doc-drawer__timeline-icon--indigo',
             };
             return map[field] || 'doc-drawer__timeline-icon--gray';
         },
@@ -754,6 +816,9 @@
                     return this.$t('Edited a comment');
                 case 'comment_delete':
                     return this.$t('Deleted a comment');
+                case 'signature_requested':
+                    return this.$t('Approve & Sign from Secretariat General')
+                        + ' · ' + (a.old_value || '—') + ' → ' + (a.new_value || '—');
                 default:
                     return field + ' ' + this.$t('updated');
             }
@@ -1392,6 +1457,61 @@
         background: rgba(184, 134, 11, 0.16);
         color: #e6b95c;
         border-color: rgba(184, 134, 11, 0.3);
+    }
+
+    /* "Approve & Sign from Secretariat General" — drawer action, rendered only
+       while the document sits in a board whose step has requires_signature. */
+    .sign-request-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        margin: 4px 0 14px;
+        padding: 11px 14px;
+        border-radius: 10px;
+        border: 1px solid #4338ca;
+        background: #4f46e5;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 700;
+        line-height: 1.45;
+        text-align: center;
+        box-shadow: 0 6px 16px rgba(79, 70, 229, 0.28);
+        transition: background 0.15s ease, box-shadow 0.15s ease;
+    }
+    .sign-request-btn:hover:not(:disabled) {
+        background: #4338ca;
+        box-shadow: 0 8px 20px rgba(67, 56, 202, 0.34);
+    }
+    .sign-request-btn:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+    }
+    .sign-request-btn__icon {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+    }
+    .sign-request-btn__spinner {
+        width: 14px;
+        height: 14px;
+        flex-shrink: 0;
+        border: 2px solid rgba(255, 255, 255, 0.45);
+        border-top-color: transparent;
+        border-radius: 999px;
+        animation: sign-request-spin 0.7s linear infinite;
+    }
+    @keyframes sign-request-spin { to { transform: rotate(360deg); } }
+    .sign-request-error {
+        margin: -8px 0 12px;
+        padding: 7px 10px;
+        border-radius: 8px;
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        color: #b45309;
+        font-size: 11px;
+        font-weight: 600;
     }
 
     /* Assigned field — avatar + name + job title from users.title */

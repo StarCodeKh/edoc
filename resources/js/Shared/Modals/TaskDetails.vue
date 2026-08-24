@@ -457,7 +457,7 @@
                                                 </template>
 
                                                 <!-- System / field-change activity -->
-                                                <template v-else-if="['title', 'slug', 'list_id', 'order', 'due_date', 'priority_id', 'is_done', 'is_archive', 'comment_delete', 'description', 'cover'].includes(activity.field_changed)">
+                                                <template v-else-if="['title', 'slug', 'list_id', 'order', 'due_date', 'priority_id', 'is_done', 'is_archive', 'comment_delete', 'description', 'cover', 'signature_requested'].includes(activity.field_changed)">
                                                     <span class="absolute left-0 top-0.5 w-8 h-8 rounded-full flex items-center justify-center ring-2 ring-white dark:ring-gray-800" :class="activityIconBg(activity.field_changed)">
                                                         <icon class="w-3.5 h-3.5 text-white" :name="activityIcon(activity.field_changed)" />
                                                     </span>
@@ -472,6 +472,10 @@
                                                         <span v-if="activity.field_changed === 'description'"> {{ $t('updated the description') }}</span>
                                                         <span v-if="activity.field_changed === 'cover'"> {{ $t('updated the cover image') }}</span>
                                                         <span v-if="activity.field_changed === 'comment_delete'"> {{ $t('deleted a comment') }}</span>
+                                                        <span v-if="activity.field_changed === 'signature_requested'">
+                                                            {{ $t('Approve & Sign from Secretariat General') }} ·
+                                                            <span class="text-gray-400 line-through">{{ activity.old_value }}</span> → <span class="font-medium">{{ activity.new_value }}</span>
+                                                        </span>
                                                     </p>
                                                     <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{{ moment(activity.created_at).format('MMM D [at] h:mm a') }}</p>
                                                 </template>
@@ -1187,7 +1191,8 @@
 
                     const allowedFieldChanges = [
                         'title', 'slug', 'list_id', 'order', 'due_date',
-                        'is_done', 'is_archive', 'comment_delete', 'description', 'cover'
+                        'is_done', 'is_archive', 'comment_delete', 'description', 'cover',
+                        'signature_requested'
                     ];
 
                     return allowedFieldChanges.includes(activity.field_changed);
@@ -1344,6 +1349,7 @@
                     title: 'edit', slug: 'edit', list_id: 'edit', order: 'edit', priority_id: 'priorities',
                     due_date: 'calendar', is_done: 'checklist_box_2', is_archive: 'archive',
                     description: 'details', cover: 'image', comment_delete: 'trash',
+                    signature_requested: 'complete',
                 };
                 return map[field] || 'edit';
             },
@@ -1352,6 +1358,7 @@
                     title: 'bg-blue-500', slug: 'bg-blue-500', list_id: 'bg-sky-500', order: 'bg-sky-500', priority_id: 'bg-rose-500',
                     due_date: 'bg-orange-500', is_done: 'bg-green-500', is_archive: 'bg-amber-500',
                     description: 'bg-indigo-500', cover: 'bg-purple-500', comment_delete: 'bg-red-500',
+                    signature_requested: 'bg-indigo-600',
                 };
                 return map[field] || 'bg-gray-400';
             },

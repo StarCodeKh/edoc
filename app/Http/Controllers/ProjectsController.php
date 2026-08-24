@@ -8,6 +8,7 @@ use App\Models\Attachment;
 use App\Models\Background;
 use App\Models\BoardList;
 use App\Models\EdocWorkflowRole;
+use App\Support\WorkflowStep;
 use App\Models\CheckList;
 use App\Models\Comment;
 use App\Models\Label;
@@ -245,6 +246,10 @@ class ProjectsController extends Controller {
         }
         unset($listItem);
 
+        // Tells the board which of its columns are signature steps, per
+        // Settings → Workflow Roles.
+        $board_lists = WorkflowStep::decorate($board_lists, $project->workspace_id);
+
         if($project->is_private && (auth()->user()['role_id'] != 1)){
             $requests['private_task'] = $auth_id;
         }
@@ -343,6 +348,10 @@ class ProjectsController extends Controller {
             $listItem['tasks'] = [];
             $loopIndex+= 1;
         }
+        unset($listItem);
+
+        $board_lists = WorkflowStep::decorate($board_lists, $project->workspace_id);
+
         $tasks = Task::filter($requests)
             ->visibleTo()
             ->isOpen()
