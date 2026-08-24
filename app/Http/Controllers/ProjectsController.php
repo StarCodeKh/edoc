@@ -229,7 +229,10 @@ class ProjectsController extends Controller {
             ->with('star')
             ->with('background')
             ->withCount(['tasks' => function ($query) {
-                $query->where('is_done', 0)->visibleTo();
+                $query->where('is_done', 0)
+                    ->where('is_archive', 0)
+                    ->whereHas('list')
+                    ->visibleTo();
             }])
             ->first();
         if(empty($project)){
@@ -250,9 +253,13 @@ class ProjectsController extends Controller {
         // Settings → Workflow Roles.
         $board_lists = WorkflowStep::decorate($board_lists, $project->workspace_id);
 
-        if($project->is_private && (auth()->user()['role_id'] != 1)){
-            $requests['private_task'] = $auth_id;
-        }
+        // Who sees what is Task::scopeVisibleTo's job alone - admins see every
+        // document, a Normal User only their own and the ones assigned to them.
+        // A private project used to add `private_task` on top of that for anyone
+        // but role_id 1, which quietly cut an Admin down to a Normal User and
+        // hid a Normal User's *own* documents (private_task matches assignees
+        // only). The board then disagreed with the sidebar count, which never
+        // had that extra filter.
         $tasks = Task::filter($requests)
             ->visibleTo()
             ->isOpen()

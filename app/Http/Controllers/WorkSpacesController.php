@@ -116,7 +116,13 @@ class WorkSpacesController extends Controller
             // Admins count every document; a Normal User only their own and the
             // ones assigned to them (see Task::scopeVisibleTo).
             ->withCount(['tasks' => function ($query) use ($user) {
-                $query->where('is_done', 0)->visibleTo($user);
+                // Same constraints the board itself uses, or the badge counts
+                // documents the board will not show: archived ones, and ones
+                // whose column has been archived.
+                $query->where('is_done', 0)
+                    ->where('is_archive', 0)
+                    ->whereHas('list')
+                    ->visibleTo($user);
             }])
             ->get(['id', 'tasks_count']);
 
