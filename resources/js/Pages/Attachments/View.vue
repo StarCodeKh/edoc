@@ -628,6 +628,13 @@
                         this.route('task.signature.request.show', { taskUid: this.task.id })
                     );
                     this.signatureContext = data;
+
+                    // A document opened to be signed is opened to be marked up,
+                    // so start on Sketch rather than Read. Only for PDFs — the
+                    // annotator does not exist for anything else.
+                    if (this.canApproveAndSign && this.attachment && this.isPdf(this.attachment.name)) {
+                        this.drawTool = 'pen';
+                    }
                 } catch (error) {
                     // Not being able to ask just means the action stays hidden.
                     this.signatureContext = null;

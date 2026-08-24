@@ -1253,7 +1253,7 @@
                     // Moving a card to another board is a hand-off, so open the
                     // detail panel on the task that just landed - and only once
                     // the update is in, or the audit trail would miss the move.
-                    this.saveTask(movedTaskId, { list_id: e.to.dataset.id }).then((response) => {
+                    this.saveTask(movedTaskId, { list_id: Number(e.to.dataset.id) }).then((response) => {
                         if (response) this.openDrawerById(movedTaskId);
                     })
                 }
@@ -1268,9 +1268,18 @@
                 }
                 return newOrder;
             },
+            /**
+             * Write a saved change back onto the card still on screen.
+             *
+             * The id arrives as a string from `dataset.id` on the drag path and
+             * as a number everywhere else, so the match is made numerically -
+             * a strict compare silently missed every drag and left the card
+             * holding its old list_id until the page was reloaded.
+             */
             updateTaskEntry(taskId, newData) {
+                const id = Number(taskId)
                 for (const list of this.lists) {
-                    const task = list.tasks.find(t => t.id === taskId)
+                    const task = (list.tasks || []).find(t => Number(t.id) === id)
                     if (task) {
                         Object.assign(task, newData)
                         return task

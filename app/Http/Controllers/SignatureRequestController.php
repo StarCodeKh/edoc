@@ -79,9 +79,10 @@ class SignatureRequestController extends Controller
                 'new_value' => $next->title,
             ]);
 
-            // Land at the bottom of the destination column.
+            // Land at the bottom of the destination column, signed off.
             $task->list_id = $next->id;
             $task->order = (int) Task::where('list_id', $next->id)->max('order') + 1;
+            $task->is_done = 1;
             $task->save();
         });
 
@@ -92,6 +93,7 @@ class SignatureRequestController extends Controller
             'to_list_id' => $next->id,
             'to_list_title' => $next->title,
             'order' => $task->order,
+            'is_done' => 1,
         ]);
     }
 
@@ -101,6 +103,7 @@ class SignatureRequestController extends Controller
 
         return $user
             && $user->isAdmin()
+            && ! $task->is_done
             && WorkflowStep::requiresSignature($list)
             && $this->nextList($task, $list) !== null;
     }
