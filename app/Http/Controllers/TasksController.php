@@ -24,6 +24,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Mavinoo\Batch\Batch;
+use Inertia\Inertia;
 
 class TasksController extends Controller
 {
@@ -367,6 +368,37 @@ class TasksController extends Controller
             $attachment = Attachment::create(['task_id' => $id, 'name' => $file_name_origin, 'user_id' => auth()->id(), 'size' => $size, 'path' => $file_path, 'width' => $width, 'height' => $height]);
         }
         return response()->json($attachment);
+    }
+
+    /**
+     * Full-page document viewer / annotator, opened in its own tab from the
+     * attachment list. The page fetches the task itself over JSON, so all this
+     * has to do is resolve the file and prove it belongs to the task.
+     */
+    public function viewAttachment($taskUid, $attachmentId)
+    {
+        $task = Task::withTrashed()
+            ->when(is_numeric($taskUid), function ($query) use ($taskUid) {
+                $query->where('id', $taskUid);
+            }, function ($query) use ($taskUid) {
+                $query->where('slug', $taskUid);
+            })
+            ->first();
+
+        if (empty($task)) {
+            abort(404, 'Task not found.');
+        }
+
+        $attachment = Attachment::where('id', $attachmentId)->where('task_id', $task->id)->first();
+
+        if (empty($attachment)) {
+            abort(404, 'Attachment not found.');
+        }
+
+        return Inertia::render('Attachments/View', [
+            'taskUid' => $taskUid,
+            'attachmentId' => $attachment->id,
+        ]);
     }
 
     public function removeAttachment($id)

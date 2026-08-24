@@ -17,9 +17,8 @@ class PrioritySeeder extends Seeder
 
         $priorities = [
             ['name' => 'ធម្មតា', 'color' => '#9ca3af', 'order' => 1],
-            ['name' => 'ខ្ពស់', 'color' => '#f59e0b', 'order' => 2],
-            ['name' => 'បន្ទាន់', 'color' => '#ef4444', 'order' => 3],
-            ['name' => 'បន្ទាន់ជាទីបំផុត', 'color' => '#7c3aed', 'order' => 4],
+            ['name' => 'បន្ទាន់', 'color' => '#f59e0b', 'order' => 2],
+            ['name' => 'បន្ទាន់ខ្លាំង', 'color' => '#ef4444', 'order' => 3],
         ];
 
         foreach ($priorities as $priority) {
