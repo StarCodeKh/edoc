@@ -5,9 +5,12 @@
         "dev": "vite",
         "build": "vite build && vite build --ssr",
         "format": "prettier --write \"resources/js/**/*.{js,vue}\" \"resources/css/**/*.scss\"",
-        "format:check": "prettier --check \"resources/js/**/*.{js,vue}\" \"resources/css/**/*.scss\""
+        "format:check": "prettier --check \"resources/js/**/*.{js,vue}\" \"resources/css/**/*.scss\"",
+        "test:browser": "playwright test",
+        "test:browser:headed": "playwright test --headed --project=desktop"
     },
     "devDependencies": {
+        "@playwright/test": "^1.62.1",
         "@tailwindcss/typography": "^0.5.20",
         "vite": "^6.4.3",
         "vite-plugin-node-polyfills": "^0.28.0"

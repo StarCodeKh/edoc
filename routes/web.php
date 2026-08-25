@@ -22,7 +22,6 @@ use App\Http\Controllers\InstallerController;
 use App\Http\Controllers\JsonPriorityController;
 use App\Http\Controllers\LabelsController;
 use App\Http\Controllers\LanguagesController;
-use App\Http\Controllers\LicenseController;
 use App\Http\Controllers\ListsController;
 use App\Http\Controllers\MailController;
 use App\Http\Controllers\ModernInstallerController;
@@ -357,12 +356,6 @@ Route::group(['prefix' => 'update', 'as' => 'LaravelUpdater::', 'middleware' => 
 });
 // New code for installer
 
-Route::get('/settings/license', [LicenseController::class, 'showSettings'])->name('license.settings');
-Route::post('/settings/license/deactivate', [LicenseController::class, 'deactivate'])->name('license.deactivate');
-
-Route::get('/license/activate', [LicenseController::class, 'showActivationForm'])->name('license.show');
-Route::post('/license/activate', [LicenseController::class, 'activate'])->name('license.activate');
-
 Route::middleware(['auth'])->group(function () {
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::patch('/notifications/{notification}', [NotificationController::class, 'update'])->name('notifications.update');
@@ -372,9 +365,3 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/settings/notifications', [NotificationSettingController::class, 'index'])->name('notification-settings.index');
     Route::patch('/settings/notifications/{setting}', [NotificationSettingController::class, 'update'])->name('notification-settings.update');
 });
-
-Route::get('/settings/license', [LicenseController::class, 'showSettings'])->name('license.settings');
-Route::post('/settings/license/deactivate', [LicenseController::class, 'deactivate'])->name('license.deactivate');
-
-Route::get('/license/activate', [LicenseController::class, 'showActivationForm'])->name('license.show');
-Route::post('/license/activate', [LicenseController::class, 'activate'])->name('license.activate');
