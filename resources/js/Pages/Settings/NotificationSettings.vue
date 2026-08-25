@@ -6,14 +6,14 @@
             <!-- Enhanced Header -->
             <div class="bg-white border-b border-gray-200/60 shadow-sm">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div class="py-8">
-                        <div class="flex items-center space-x-4">
-                            <div class="p-3 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl">
-                                <icon name="bell" class="w-8 h-8 text-white" />
+                    <div class="py-5 sm:py-8">
+                        <div class="flex items-center gap-3 sm:gap-4">
+                            <div class="p-2.5 sm:p-3 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex-shrink-0">
+                                <icon name="bell" class="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                             </div>
-                            <div>
-                                <h1 class="text-3xl font-bold text-gray-900">{{ $t('Notification Settings') }}</h1>
-                                <p class="text-gray-600 mt-1">Configure email, Slack and Telegram notification preferences</p>
+                            <div class="min-w-0">
+                                <h1 class="text-xl sm:text-3xl font-bold text-gray-900 leading-tight">{{ $t('Notification Settings') }}</h1>
+                                <p class="text-sm sm:text-base text-gray-600 mt-1">{{ $t('Configure email, Slack and Telegram notification preferences') }}</p>
                             </div>
                         </div>
                     </div>
@@ -21,8 +21,8 @@
             </div>
 
             <!-- Main Content -->
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <div class="space-y-8">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8">
+                <div class="space-y-5 sm:space-y-8">
                     <!-- Flash Messages -->
                     <div v-if="flash.success" class="bg-green-50 border border-green-200 rounded-xl p-4">
                         <div class="flex items-center">
@@ -66,16 +66,16 @@
                         :key="'panel_' + activeChannel.key"
                         class="bg-white rounded-2xl shadow-sm border border-gray-200/60 overflow-hidden"
                     >
-                        <div class="px-6 py-4 bg-gradient-to-r from-gray-50/80 to-gray-100/80 border-b border-gray-200/60">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-3">
+                        <div class="px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-gray-50/80 to-gray-100/80 border-b border-gray-200/60">
+                            <div class="flex items-center justify-between gap-3 flex-wrap">
+                                <div class="flex items-center gap-2 sm:gap-3 min-w-0">
                                     <div class="p-2 rounded-lg" :style="{ backgroundColor: hexToRgba(activeChannel.color, 0.12) }">
                                         <icon :name="activeChannel.icon" class="w-5 h-5" :style="{ color: activeChannel.color }" />
                                     </div>
-                                    <h2 class="text-xl font-semibold text-gray-900">{{ $t(activeChannel.label + ' Notifications') }}</h2>
+                                    <h2 class="text-base sm:text-xl font-semibold text-gray-900 truncate">{{ $t(activeChannel.label + ' Notifications') }}</h2>
                                 </div>
-                                <div class="flex items-center space-x-3">
-                                    <span class="text-sm font-medium text-gray-700">{{ $t('Master Toggle') }}</span>
+                                <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                                    <span class="text-xs sm:text-sm font-medium text-gray-700">{{ $t('Master Toggle') }}</span>
                                     <button
                                         @click="toggleAll(activeChannel)"
                                         :class="['relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2']"
@@ -91,11 +91,11 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="p-6">
-                            <div class="space-y-4">
+                        <div class="p-3 sm:p-6">
+                            <div class="space-y-3 sm:space-y-4">
                                 <div v-for="setting in settings" :key="setting.id"
-                                    class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-all duration-200 border border-transparent hover:border-gray-200">
-                                    <div class="flex-1">
+                                    class="flex items-center justify-between gap-3 p-3 sm:p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-all duration-200 border border-transparent hover:border-gray-200">
+                                    <div class="flex-1 min-w-0">
                                         <h3 class="text-sm font-medium text-gray-900">{{ setting.name }}</h3>
                                         <p class="text-xs text-gray-500 mt-1">{{ setting.description }}</p>
                                         <div v-if="activeChannel.capabilityField && !setting[activeChannel.capabilityField]" class="mt-2">
@@ -105,7 +105,7 @@
                                             </span>
                                         </div>
                                     </div>
-                                    <div class="flex items-center space-x-4">
+                                    <div class="flex items-center gap-4 flex-shrink-0">
                                         <button
                                             v-if="!activeChannel.capabilityField || setting[activeChannel.capabilityField]"
                                             @click="updateSetting(setting, activeChannel.field)"

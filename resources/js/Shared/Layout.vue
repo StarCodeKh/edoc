@@ -15,7 +15,7 @@
                                         v-if="hasSidebar"
                                         type="button"
                                         class="app-nav-toggle md:hidden"
-                                        @click.stop="mobile_nav = !mobile_nav"
+                                        @click="toggleDrawer()"
                                         :aria-expanded="mobile_nav ? 'true' : 'false'"
                                         :aria-label="$t('Menu')"
                                     >
@@ -27,16 +27,16 @@
                                         <logo class="site-logo white" name="white" />
                                         <logo class="site-logo color" />
                                     </Link>
-                                    <div class="t__l__wrapper">
-                                        <div class="mobile__menu__top bg-[#a6c5e229]" @click="show__menu__list = !show__menu__list">
+                                    <div class="t__l__wrapper" v-click-outside="closeTopMenus">
+                                        <div class="mobile__menu__top bg-[#a6c5e229]" @click="togglePanel('more')">
                                             <span class="text-white">More</span> <icon class="ml-2 w-4 h-4 text-white" name="arrow-down" />
                                         </div>
                                         <div class="tl_menu_list hidden" :class="{'mobile': show__menu__list}">
-                                            <div class="flex t__menu relative items-center cursor-pointer rounded py-1 px-3 hover:bg-[#a6c5e229]" v-click-outside="()=>{visible.menu_recent = false}" @click="visible['menu_recent'] = !visible['menu_recent']">
+                                            <div class="flex t__menu relative items-center cursor-pointer rounded py-1 px-3 hover:bg-[#a6c5e229]" v-click-outside="()=>{visible.menu_recent = false}" @click="toggleSubMenu('menu_recent')">
                                                 <span class="text-white">{{ $t('Recently Viewed') }}</span> <icon class="ml-2 w-4 h-4 text-white" name="arrow-down" />
                                                 <top-project-menu v-if="visible.menu_recent" filter="recent" tabindex="-1" />
                                             </div>
-                                            <div class="flex t__menu relative items-center cursor-pointer rounded py-1 px-3 hover:bg-[#a6c5e229]" v-click-outside="()=>{visible.menu_workspace = false}" @click="visible['menu_workspace'] = !visible['menu_workspace']">
+                                            <div class="flex t__menu relative items-center cursor-pointer rounded py-1 px-3 hover:bg-[#a6c5e229]" v-click-outside="()=>{visible.menu_workspace = false}" @click="toggleSubMenu('menu_workspace')">
                                                 <span class="text-white">{{ $t('My Workspaces') }}</span> <icon class="ml-2 w-4 h-4 text-white" name="arrow-down" />
                                                 <top-workspace-menu v-if="visible.menu_workspace" tabindex="-1" />
                                             </div>
@@ -45,7 +45,7 @@
 <!--                                                <top-project-menu v-if="visible.menu_star" filter="star" tabindex="-1" />-->
 <!--                                            </div>-->
                                         </div>
-                                        <div v-if="this.$page.props.auth.user.role.create_project || this.$page.props.auth.user.role.create_workspace" class="__creation" v-click-outside="()=>{visible.menu_create = false}" @click="visible['menu_create'] = !visible['menu_create']">
+                                        <div v-if="this.$page.props.auth.user.role.create_project || this.$page.props.auth.user.role.create_workspace" class="__creation" v-click-outside="()=>{visible.menu_create = false}" @click="togglePanel('create')">
                                             {{ $t('Create') }}
                                             <section v-if="visible.menu_create" class="m__create">
                                                 <div tabindex="-1" class="m__area">
@@ -341,9 +341,10 @@ export default {
     },
     // $page.props.counter
     watch: {
-        // Following a link on a phone should leave the drawer behind.
+        // Following a link should leave the drawer and the bar's menus behind.
         '$page.component'() {
             this.mobile_nav = false;
+            this.closeTopMenus();
         },
         mobile_nav(open) {
             if (typeof document === 'undefined') return;
@@ -449,10 +450,52 @@ export default {
             if (resetQuery === true) vm.search_query = '';
             clearTimeout(vm.search_timer);
         },
+        /**
+         * Only one thing is open at a time. Opening More puts Create away, the
+         * drawer puts both away, and a click anywhere else closes the lot -
+         * they overlap each other on a narrow bar, so two at once is a mess.
+         */
+        togglePanel(name) {
+            const opening = name === 'more' ? !this.show__menu__list : !this.visible.menu_create;
+
+            this.show__menu__list = name === 'more' ? opening : false;
+            this.visible.menu_create = name === 'create' ? opening : false;
+
+            if (opening) this.mobile_nav = false;
+            // Closing More collapses the lists inside it, so it does not reopen
+            // with a workspace list already hanging off it.
+            if (name !== 'more' || !opening) this.closeTopSubMenus();
+        },
+
+        toggleDrawer() {
+            this.mobile_nav = !this.mobile_nav;
+            if (this.mobile_nav) this.closeTopMenus();
+        },
+
+        toggleSubMenu(name) {
+            const opening = !this.visible[name];
+            this.closeTopSubMenus();
+            this.visible[name] = opening;
+            this.visible.menu_create = false;
+        },
+
+        closeTopSubMenus() {
+            this.visible.menu_recent = false;
+            this.visible.menu_workspace = false;
+            this.visible.menu_star = false;
+        },
+
+        closeTopMenus() {
+            this.show__menu__list = false;
+            this.visible.menu_create = false;
+            this.closeTopSubMenus();
+        },
+
         /** ⌘K / Ctrl+K puts the cursor in the search box, as everywhere else. */
         focusSearchShortcut(e){
-            if (e.key === 'Escape' && this.mobile_nav) {
-                this.mobile_nav = false;
+            if (e.key === 'Escape') {
+                if (this.mobile_nav) this.mobile_nav = false;
+                this.closeTopMenus();
                 return;
             }
             if (e.key !== 'k' && e.key !== 'K') return;

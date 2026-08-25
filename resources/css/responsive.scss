@@ -225,17 +225,11 @@ body.has-drawer-open {
         font-size: 16px;
     }
 
-    /* Reachable with a thumb. */
-    button,
-    .btn,
-    [role='button'] {
-        min-height: 40px;
-    }
-
-    /* Filter/search rows were laid out for a wide screen. */
-    [scroll-region] .justify-between {
-        flex-wrap: wrap;
-    }
+    /* No blanket min-height for buttons here. It read well in theory - a 40px
+       thumb target - but a button is also a switch, a close X and an icon
+       square, and stretching those distorted them at one breakpoint and not
+       the next. Touch sizing belongs with each control, where its shape is
+       known. */
 }
 
 /* --- Dialogs fill the screen on a phone -------------------------------- */

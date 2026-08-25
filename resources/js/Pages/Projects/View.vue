@@ -1381,27 +1381,35 @@
     }
     .doc-track-row {
         display: flex;
-        align-items: center;
-        gap: 6px;
-        margin: 4px 0;
+        align-items: stretch;
+        justify-content: flex-start;
+        gap: 4px;
+        margin: 6px 0;
+        min-width: 0;
     }
     .doc-track-chip {
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        padding: 4px 8px;
-        border-radius: 6px;
+        padding: 5px 9px;
+        border-radius: 8px;
         background: #eef2ff;
         border: 1px solid #e0e7ff;
         cursor: pointer;
         transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
-        width: fit-content;
+        /* Shrinks with the card instead of pushing the button off the edge. */
+        flex: 0 1 auto;
+        min-width: 0;
     }
     .doc-view-btn {
         flex-shrink: 0;
-        width: 26px;
-        height: 26px;
-        border-radius: 6px;
+        /* Sits right next to the chip and matches its height, so the two read
+           as one control rather than a tall box and a stray square at the far
+           edge of the card. */
+        align-self: stretch;
+        width: 34px;
+        min-height: 34px;
+        border-radius: 8px;
         background: #eef2ff;
         border: 1px solid #e0e7ff;
         color: #4f46e5;
@@ -1439,10 +1447,11 @@
         display: flex;
         flex-direction: column;
         line-height: 1.15;
+        min-width: 0;
     }
 
     .doc-track-chip__label {
-        font-size: 8.5px;
+        font-size: 9px;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.04em;
@@ -1451,9 +1460,13 @@
 
     .doc-track-chip__code {
         font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-        font-size: 11px;
+        font-size: 11.5px;
         font-weight: 600;
         color: #374151;
+        /* A long code ends in an ellipsis rather than widening the card. */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .dark .doc-track-chip {
@@ -2188,20 +2201,24 @@
         position: relative;
         background: linear-gradient(135deg, #1f3d2b, #16241a);
         color: #ffffff;
-        padding: 22px 44px 18px 20px;
+        padding: 22px 60px 18px 20px;
         /* Pinned: the body scrolls beneath it, so the title and close button
            stay reachable however far down the audit trail runs. */
         flex-shrink: 0;
         z-index: 1;
         box-shadow: 0 1px 0 rgba(15, 23, 42, 0.06);
     }
+    /* One shape at every width: a 34px rounded square, the same as the eye
+       button on the cards. It used to be 26px on a desktop, a circle on a
+       phone and a tall pill in between. */
     .doc-drawer__close {
         position: absolute;
-        top: 16px;
-        right: 16px;
-        width: 26px;
-        height: 26px;
-        border-radius: 8px;
+        top: 14px;
+        right: 14px;
+        width: 34px;
+        height: 34px;
+        min-height: 34px;
+        border-radius: 10px;
         background: rgba(255, 255, 255, 0.12);
         border: none;
         color: #ffffff;
@@ -2256,6 +2273,23 @@
         scrollbar-width: thin;
         scrollbar-color: rgba(100, 116, 139, .35) transparent;
     }
+    /* A 450px side sheet on a phone leaves a useless strip of the board
+       showing down the left. Below sm it takes the whole screen. */
+    @media (max-width: 640px) {
+        .doc-drawer {
+            max-width: 100%;
+        }
+        .doc-drawer__header {
+            padding: 16px 56px 14px 16px;
+        }
+        .doc-drawer__title {
+            font-size: 16px;
+        }
+        .doc-drawer__body {
+            padding: 16px 16px calc(28px + env(safe-area-inset-bottom));
+        }
+    }
+
     .doc-drawer__body::-webkit-scrollbar {
         width: 8px;
     }

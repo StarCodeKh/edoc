@@ -4,7 +4,7 @@
 
         <!-- Add a new workflow type -->
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden mr-2 mb-5">
-            <div class="px-8 py-6 flex items-start gap-4">
+            <div class="px-4 sm:px-6 lg:px-8 py-5 sm:py-6 flex items-start gap-3 sm:gap-4">
                 <span class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300">
                     <Icon name="plus" class="w-5 h-5" />
                 </span>
@@ -24,7 +24,7 @@
                             v-model="newWorkflowForm.label"
                             type="text"
                             @keyup.enter="addWorkflowType"
-                            class="flex-1 min-w-[180px] bg-gray-50 dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            class="w-full min-w-0 sm:flex-1 sm:min-w-[180px] bg-gray-50 dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             :placeholder="$t('Display name, e.g. Partner Review')"
                         >
                         <button
@@ -70,7 +70,7 @@
             :key="type"
             class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden mr-2 mb-5"
         >
-            <div class="px-8 py-6 flex items-start gap-4 border-b border-gray-100 dark:border-gray-700">
+            <div class="px-4 sm:px-6 lg:px-8 py-5 sm:py-6 flex items-start gap-3 sm:gap-4 border-b border-gray-100 dark:border-gray-700">
                 <span class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-xl text-white font-bold shadow-sm" :style="{ backgroundColor: workflowMeta(type).color }">
                     <Icon v-if="workflowMeta(type).icon" :name="workflowMeta(type).icon" class="w-5 h-5" />
                     <span v-else>{{ initials(workflowMeta(type).label) }}</span>
@@ -109,20 +109,22 @@
                 <div
                     v-for="role in groupedRoles[type]"
                     :key="role.id"
-                    class="flex flex-wrap items-center gap-2 px-8 py-3"
+                    class="grid grid-cols-2 items-center gap-2 px-4 sm:px-6 lg:px-8 py-3 lg:flex lg:flex-wrap"
                 >
-                    <span class="w-6 text-xs font-semibold text-gray-400 dark:text-gray-500 flex-shrink-0">{{ role.order }}</span>
+                    <span class="col-span-2 lg:col-span-1 w-auto lg:w-6 text-xs font-semibold text-gray-400 dark:text-gray-500 flex-shrink-0">
+                        <span class="lg:hidden">{{ $t('Step') }} </span>{{ role.order }}
+                    </span>
 
                     <input
                         v-model="role.list_title"
                         type="text"
-                        class="flex-1 min-w-[180px] bg-gray-50 dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        class="col-span-2 w-full min-w-0 lg:w-auto lg:flex-1 lg:min-w-[180px] bg-gray-50 dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         :placeholder="$t('Step name')"
                     >
 
                     <select
                         v-model="role.workspace_id"
-                        class="w-40 bg-gray-50 dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        class="col-span-2 w-full lg:w-40 bg-gray-50 dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         :title="$t('Workspace this step belongs to')"
                     >
                         <option :value="null">{{ $t('No workspace') }}</option>
@@ -132,7 +134,7 @@
                     <input
                         v-model="role.responsible_role"
                         type="text"
-                        class="w-24 bg-gray-50 dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        class="w-full lg:w-24 bg-gray-50 dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         :placeholder="$t('Role')"
                     >
 
@@ -140,16 +142,16 @@
                         v-model.number="role.sla_hours"
                         type="number"
                         min="0"
-                        class="w-20 bg-gray-50 dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        class="w-full lg:w-20 bg-gray-50 dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         :placeholder="$t('SLA hrs')"
                     >
 
-                    <label class="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300 flex-shrink-0">
+                    <label class="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300 flex-shrink-0 py-1">
                         <input type="checkbox" v-model="role.requires_signature" class="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 dark:border-gray-600">
                         {{ $t('Signature') }}
                     </label>
 
-                    <label class="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300 flex-shrink-0">
+                    <label class="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300 flex-shrink-0 py-1">
                         <input type="checkbox" v-model="role.is_terminal" class="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 dark:border-gray-600">
                         {{ $t('Terminal') }}
                     </label>
@@ -158,7 +160,7 @@
                         type="button"
                         :disabled="role.saving"
                         @click="saveRole(role)"
-                        class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 flex-shrink-0 transition-colors"
+                        class="col-span-1 justify-center inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 flex-shrink-0 transition-colors"
                     >
                         <Icon name="tick_check" class="w-3 h-3" />
                         {{ role.saving ? $t('Saving...') : $t('Save') }}
@@ -167,30 +169,30 @@
                     <button
                         type="button"
                         @click="deleteRole(type, role)"
-                        class="inline-flex items-center justify-center w-7 h-7 rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 flex-shrink-0 transition-colors"
+                        class="justify-self-end lg:justify-self-auto inline-flex items-center justify-center w-7 h-7 rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 flex-shrink-0 transition-colors"
                         :title="$t('Delete step')"
                     >
                         <Icon name="trash" class="w-3.5 h-3.5" />
                     </button>
                 </div>
 
-                <div v-if="!groupedRoles[type].length" class="px-8 py-6 text-sm text-gray-400 dark:text-gray-500">
+                <div v-if="!groupedRoles[type].length" class="px-4 sm:px-6 lg:px-8 py-6 text-sm text-gray-400 dark:text-gray-500">
                     {{ $t('No steps yet — add one below.') }}
                 </div>
             </div>
 
             <!-- Add new step -->
-            <div class="flex flex-wrap items-center gap-2 px-8 py-4 bg-gray-50 dark:bg-gray-900/30 border-t border-gray-100 dark:border-gray-700">
+            <div class="grid grid-cols-2 items-center gap-2 px-4 sm:px-6 lg:px-8 py-4 bg-gray-50 dark:bg-gray-900/30 border-t border-gray-100 dark:border-gray-700 lg:flex lg:flex-wrap">
                 <input
                     v-model="newRoleForms[type].list_title"
                     type="text"
                     @keyup.enter="addRole(type)"
-                    class="flex-1 min-w-[180px] bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    class="col-span-2 w-full min-w-0 lg:w-auto lg:flex-1 lg:min-w-[180px] bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     :placeholder="$t('e.g. Verify draft')"
                 >
                 <select
                     v-model="newRoleForms[type].workspace_id"
-                    class="w-40 bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    class="col-span-2 w-full lg:w-40 bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     :title="$t('Workspace this step belongs to')"
                 >
                     <option :value="null">{{ $t('No workspace') }}</option>
@@ -200,7 +202,7 @@
                     v-model="newRoleForms[type].responsible_role"
                     type="text"
                     @keyup.enter="addRole(type)"
-                    class="w-24 bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    class="w-full lg:w-24 bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     :placeholder="$t('Role')"
                 >
                 <input
@@ -208,14 +210,14 @@
                     type="number"
                     min="0"
                     @keyup.enter="addRole(type)"
-                    class="w-20 bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    class="w-full lg:w-20 bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     :placeholder="$t('SLA hrs')"
                 >
-                <label class="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300 flex-shrink-0">
+                <label class="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300 flex-shrink-0 py-1">
                     <input type="checkbox" v-model="newRoleForms[type].requires_signature" class="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 dark:border-gray-600">
                     {{ $t('Signature') }}
                 </label>
-                <label class="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300 flex-shrink-0">
+                <label class="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300 flex-shrink-0 py-1">
                     <input type="checkbox" v-model="newRoleForms[type].is_terminal" class="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 dark:border-gray-600">
                     {{ $t('Terminal') }}
                 </label>
@@ -223,7 +225,7 @@
                     type="button"
                     :disabled="!newRoleForms[type].list_title.trim()"
                     @click="addRole(type)"
-                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-gray-800 dark:bg-gray-600 hover:bg-gray-900 dark:hover:bg-gray-500 text-white disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 transition-colors"
+                    class="col-span-2 justify-center inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-gray-800 dark:bg-gray-600 hover:bg-gray-900 dark:hover:bg-gray-500 text-white disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 transition-colors"
                 >
                     <Icon name="plus" class="w-3.5 h-3.5" />
                     {{ $t('Add step') }}
