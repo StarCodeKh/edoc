@@ -25,7 +25,7 @@
             :disabled="$attrs.disabled !== undefined && $attrs.disabled !== false"
             :search-placeholder="searchPlaceholder"
             :class="{ error: error }"
-            class="w-full"
+            class="w-full filter-select--block"
         />
 
         <!-- Keeps native form validation and any name-based submission working. -->

@@ -199,12 +199,35 @@ class WorkSpacesController extends Controller
             return ($a['order'] ?? 0) <=> ($b['order'] ?? 0);
         });
 
+        // Document statistics, counted per project rather than per board column,
+        // so the panel lines up with the project list in the sidebar - including
+        // projects that hold no documents yet, which a task-derived count can
+        // never show. Same visibility rule as everywhere else.
+        $statistics = Project::where('workspace_id', $workspace->id)
+            ->withCount([
+                'tasks as documents_total' => fn ($query) => $query
+                    ->isOpen()->whereHas('list')->visibleTo($user),
+                'tasks as documents_done' => fn ($query) => $query
+                    ->isOpen()->whereHas('list')->where('is_done', 1)->visibleTo($user),
+            ])
+            ->get()
+            ->map(fn (Project $project) => [
+                'label' => $project->title,
+                'done' => (int) $project->documents_done,
+                'total' => (int) $project->documents_total,
+                'percent' => $project->documents_total
+                    ? (int) round($project->documents_done / $project->documents_total * 100)
+                    : 0,
+            ])
+            ->values();
+
         return Inertia::render('Workspaces/MainDashboard', [
             'title' => 'Dashboard | '.$workspace->name,
             'workspace' => $workspace,
             'lists' => $board_lists,
             'list_index' => $list_index,
             'filters' => $requests,
+            'statistics' => $statistics,
         ]);
     }
     

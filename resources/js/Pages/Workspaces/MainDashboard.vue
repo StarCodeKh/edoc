@@ -67,7 +67,7 @@
             </div>
 
             <div class="wdash__panel wdash__panel--stats">
-                <div class="wdash__panel-title">{{ $t('ស្ថិតិឯកសារ') }}</div>
+                <div class="wdash__panel-title">{{ $t('ថ្នាក់/ក្រុម/គម្រោង ឯកសារ') }}</div>
                 <div class="wdash__stat-list">
                     <div v-if="!resolvedStatistics.length" class="wdash__empty-note">{{ $t('No documents yet.') }}</div>
                     <div v-for="(stat, stIdx) in resolvedStatistics" :key="'stat_'+stIdx" class="wdash__stat-row">

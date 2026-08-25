@@ -9,8 +9,9 @@
             <icon name="cheveron-down" class="filter-select__caret" :class="{ 'is-flipped': open }" />
         </button>
 
+        <teleport to="body">
         <transition name="filter-select-fade">
-            <div v-if="open" class="filter-select__panel">
+            <div v-if="open" ref="panel" class="filter-select__panel" :style="panelStyle">
                 <div v-if="searchable" class="filter-select__search">
                     <icon name="search" class="h-3.5 w-3.5 text-gray-400" />
                     <input
@@ -52,6 +53,7 @@
                 </div>
             </div>
         </transition>
+        </teleport>
     </div>
 </template>
 
@@ -87,7 +89,7 @@ export default {
     },
     emits: ['update:modelValue'],
     data() {
-        return { open: false, query: '' }
+        return { open: false, query: '', panelStyle: {} }
     },
     computed: {
         searchable() {
@@ -114,13 +116,55 @@ export default {
         toggle() {
             if (this.disabled) return
             this.open = !this.open
-            if (this.open && this.searchable) {
-                this.$nextTick(() => this.$refs.search && this.$refs.search.focus())
+
+            if (this.open) {
+                this.positionPanel()
+                // The panel is fixed to the viewport, so it has to follow the
+                // trigger while anything behind it moves.
+                window.addEventListener('scroll', this.positionPanel, true)
+                window.addEventListener('resize', this.positionPanel)
+                if (this.searchable) {
+                    this.$nextTick(() => this.$refs.search && this.$refs.search.focus())
+                }
+            } else {
+                this.stopTracking()
             }
         },
         close() {
             this.open = false
             this.query = ''
+            this.stopTracking()
+        },
+        stopTracking() {
+            window.removeEventListener('scroll', this.positionPanel, true)
+            window.removeEventListener('resize', this.positionPanel)
+        },
+        /**
+         * The panel is teleported to <body> and positioned from the trigger's
+         * box. Rendering it inside the component meant any ancestor with
+         * `overflow: hidden` - a rounded form card, a scroll pane - cut the
+         * options off, and the panel could not match the trigger's width.
+         */
+        positionPanel() {
+            const trigger = this.$refs.root && this.$refs.root.querySelector('.filter-select__trigger')
+            if (!trigger) return
+
+            const rect = trigger.getBoundingClientRect()
+            const gap = 6
+            const below = window.innerHeight - rect.bottom - gap
+            const above = rect.top - gap
+            // Flip above the trigger when there is more room up there.
+            const flip = below < 220 && above > below
+
+            this.panelStyle = {
+                position: 'fixed',
+                left: `${Math.round(rect.left)}px`,
+                width: `${Math.round(rect.width)}px`,
+                ...(flip
+                    ? { bottom: `${Math.round(window.innerHeight - rect.top + gap)}px` }
+                    : { top: `${Math.round(rect.bottom + gap)}px` }),
+                '--filter-select-max-h': `${Math.max(160, Math.round((flip ? above : below) - 12))}px`,
+            }
         },
         isSelected(value) {
             return this.selectedValues.includes(String(value))
@@ -146,7 +190,11 @@ export default {
             this.$emit('update:modelValue', next.length ? next.join(',') : null)
         },
         onDocumentClick(e) {
-            if (this.open && this.$refs.root && !this.$refs.root.contains(e.target)) this.close()
+            if (!this.open) return
+            const inTrigger = this.$refs.root && this.$refs.root.contains(e.target)
+            // The panel lives on <body> now, so it is not inside root any more.
+            const inPanel = this.$refs.panel && this.$refs.panel.contains(e.target)
+            if (!inTrigger && !inPanel) this.close()
         },
         onKeydown(e) {
             if (e.key === 'Escape') this.close()
@@ -161,6 +209,7 @@ export default {
     beforeUnmount() {
         document.removeEventListener('click', this.onDocumentClick)
         document.removeEventListener('keydown', this.onKeydown)
+        this.stopTracking()
     },
 }
 </script>
@@ -188,6 +237,33 @@ export default {
 
 .filter-select__trigger:hover {
     border-color: #c7d2fe;
+}
+
+/* Form context (SelectInput). Filter bars want a compact pill sized to its
+   label; a field in a form has to fill its column and line up with the
+   .form-input beside it. */
+.filter-select--block .filter-select__trigger {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    height: 2.3rem;
+    padding: 3px 10px;
+    border-radius: 0.25rem;
+    border-color: #d1d5db;
+    font-size: 15px;
+    font-weight: 400;
+    color: #1f2937;
+}
+
+@media (max-width: 640px) {
+    .filter-select--block .filter-select__trigger {
+        height: 2.6rem;
+        font-size: 16px;
+    }
+}
+
+.filter-select--block.error .filter-select__trigger {
+    border-color: #ef4444;
 }
 
 .filter-select__trigger:disabled {
@@ -237,12 +313,10 @@ export default {
 }
 
 .filter-select__panel {
-    position: absolute;
-    z-index: 50;
-    top: calc(100% + 6px);
-    left: 0;
-    min-width: 100%;
-    max-width: 22rem;
+    /* position / left / top / width are set inline from the trigger's box. */
+    position: fixed;
+    z-index: 1000;
+    min-width: 11rem;
     background: #fff;
     border: 1px solid rgba(15, 23, 42, .08);
     border-radius: 12px;
@@ -272,9 +346,19 @@ export default {
 }
 
 .filter-select__list {
-    max-height: 16rem;
+    max-height: min(16rem, var(--filter-select-max-h, 16rem));
     overflow-y: auto;
     padding: 6px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(100, 116, 139, .35) transparent;
+}
+.filter-select__list::-webkit-scrollbar { width: 8px; }
+.filter-select__list::-webkit-scrollbar-track { background: transparent; }
+.filter-select__list::-webkit-scrollbar-thumb {
+    background: rgba(100, 116, 139, .28);
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background-clip: content-box;
 }
 
 .filter-select__option {
