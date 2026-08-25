@@ -39,13 +39,6 @@ class ProjectsController extends Controller {
         ]);
     }
 
-    public function test()
-    {
-        return Inertia::render('Projects/Test', [
-            'title' => 'Projects',
-        ]);
-    }
-
     public function uploadBackground($id, Request $request)
     {
         $background = null;

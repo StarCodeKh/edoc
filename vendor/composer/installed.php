@@ -3,7 +3,7 @@
         'name' => 'laravel/laravel',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '2b0cdc57b316380962ceb3552b135b8de3f7e6c9',
+        'reference' => '3ee39d2ce6949e40d2b9ddb8acf39353fc93e3b3',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -496,7 +496,7 @@
         'laravel/laravel' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '2b0cdc57b316380962ceb3552b135b8de3f7e6c9',
+            'reference' => '3ee39d2ce6949e40d2b9ddb8acf39353fc93e3b3',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -789,15 +789,6 @@
             'provided' => array(
                 0 => '*',
             ),
-        ),
-        'phpmailer/phpmailer' => array(
-            'pretty_version' => 'v6.12.0',
-            'version' => '6.12.0.0',
-            'reference' => 'd1ac35d784bf9f5e61b424901d5a014967f15b12',
-            'type' => 'library',
-            'install_path' => __DIR__ . '/../phpmailer/phpmailer',
-            'aliases' => array(),
-            'dev_requirement' => false,
         ),
         'phpoffice/phpspreadsheet' => array(
             'pretty_version' => '5.9.0',

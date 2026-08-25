@@ -155,7 +155,6 @@ Route::post('/json/workflow-roles/assign-workspace', [WorkflowRoleController::cl
 
 Route::delete('project/destroy/{id}', [ProjectsController::class, 'destroy'])->name('project.destroy')->middleware('auth');
 Route::get('projects', [ProjectsController::class, 'index'])->name('projects.index')->middleware('auth');
-Route::get('project/test', [ProjectsController::class, 'test'])->name('project.test')->middleware('auth');
 Route::post('project/update/{id}', [ProjectsController::class, 'update'])->name('project.update')->middleware('auth');
 Route::get('p/board/{uid}', [ProjectsController::class, 'view'])->name('projects.view.board')->middleware('auth');
 Route::get('p/na', [ProjectsController::class, 'noProject'])->name('projects.view.na')->middleware('auth');

@@ -23,7 +23,6 @@
         "maatwebsite/excel": "^4.0",
         "mavinoo/laravel-batch": "^2.3",
         "php": "^8.3",
-        "phpmailer/phpmailer": "^6.6",
         "picqer/php-barcode-generator": "^3.2",
         "pusher/pusher-php-server": "^7.2",
         "simplesoftwareio/simple-qrcode": "^4.2",
