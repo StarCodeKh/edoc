@@ -15,7 +15,7 @@
 
         <!-- Menu Items -->
         <div class="menu-content">
-            <div v-for="(menu_item, m_index) in menu_items" :key="m_index" class="menu-item-group" :class="{ 'active': isUrl(menu_item.url) }">
+            <div v-for="(menu_item, m_index) in visibleMenuItems" :key="m_index" class="menu-item-group" :class="{ 'active': isUrl(menu_item.url) }">
                 <!-- Main Menu Item -->
                 <div class="menu-item" :class="{ 'active': isUrl(menu_item.url), 'has-submenu': menu_item.submenu }" @click="menu_item.submenu ? toggleSubmenu(m_index) : null">
                     <Link v-if="!menu_item.submenu"
@@ -158,9 +158,28 @@
                     'icon': 'server',
                     'category': 'communication'
                 },
+                {
+                    'name': 'Error Log',
+                    'route': 'settings.error-log',
+                    'url': 'settings/error-log',
+                    'icon': 'info',
+                    'category': 'system',
+                    // Stack traces carry paths, SQL and payloads; the route
+                    // enforces the same rule server-side (EnsureSuperAdmin).
+                    'superAdminOnly': true
+                },
             ],
             enable_option: {}
             }
+        },
+        computed: {
+            /** Hide what the signed-in user may not open. `is_super_admin` is
+             *  answered once by the server in HandleInertiaRequests, because
+             *  Admin and Super Admin share roles.slug 'admin'. */
+            visibleMenuItems() {
+                const isSuperAdmin = this.$page.props.auth?.user?.is_super_admin === true
+                return this.menu_items.filter(item => !item.superAdminOnly || isSuperAdmin)
+            },
         },
         methods: {
             isUrl(...urls) {
@@ -193,7 +212,8 @@
                     'mail': 'bg-orange-100 text-orange-600',
                     'server': 'bg-gray-100 text-gray-600',
                     'key': 'bg-yellow-100 text-yellow-600',
-                    'download': 'bg-pink-100 text-pink-600'
+                    'download': 'bg-pink-100 text-pink-600',
+                    'info': 'bg-red-100 text-red-600'
                 }
                 return colorMap[iconName] || 'bg-gray-100 text-gray-600'
             },
@@ -209,7 +229,8 @@
                     'Languages': 'Multi-language support',
                     'Email Templates': 'Custom email designs',
                     'SMTP Mail': 'Email server configuration',
-                    'Latest Update': 'System updates and patches'
+                    'Latest Update': 'System updates and patches',
+                    'Error Log': 'Application errors and warnings'
                 }
                 return descriptions[menuName]
             }

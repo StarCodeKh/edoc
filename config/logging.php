@@ -37,7 +37,10 @@ return [
     'channels' => [
         'stack' => [
             'driver' => 'stack',
-            'channels' => ['single'],
+            // Daily rather than single: one unbounded laravel.log is awkward to
+            // read and never gets rotated on its own. Overridable per install
+            // with LOG_STACK.
+            'channels' => explode(',', env('LOG_STACK', 'daily')),
             'ignore_exceptions' => false,
         ],
 
@@ -51,7 +54,7 @@ return [
             'driver' => 'daily',
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
-            'days' => 14,
+            'days' => env('LOG_DAILY_DAYS', 14),
         ],
 
         'slack' => [

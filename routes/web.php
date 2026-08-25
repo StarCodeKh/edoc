@@ -12,6 +12,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DatabaseController;
 use App\Http\Controllers\DemoController;
 use App\Http\Controllers\EnvironmentController;
+use App\Http\Controllers\ErrorLogController;
 use App\Http\Controllers\FinalController;
 use App\Http\Controllers\ImagesController;
 use App\Http\Controllers\InstallerController;
@@ -184,6 +185,10 @@ Route::get('task/{taskUid}/attachment/{attachmentId}/view', [TasksController::cl
 // System-wide audit trail. Super Admin only - see EnsureSuperAdmin.
 Route::get('audit-log', [AuditLogController::class, 'index'])->name('audit.log')->middleware(['auth', 'super.admin']);
 Route::get('audit-log/{id}', [AuditLogController::class, 'show'])->name('audit.log.show')->middleware(['auth', 'super.admin']);
+
+// The application's own log. Super Admin only - traces carry paths and payloads.
+Route::get('settings/error-log', [ErrorLogController::class, 'index'])->name('settings.error-log')->middleware(['auth', 'super.admin']);
+Route::post('settings/error-log/clear', [ErrorLogController::class, 'clear'])->name('settings.error-log.clear')->middleware(['auth', 'super.admin']);
 
 Route::get('task/{taskUid}/signature-request', [SignatureRequestController::class, 'show'])->name('task.signature.request.show')->middleware('auth');
 Route::post('task/{taskUid}/signature-request', [SignatureRequestController::class, 'store'])->name('task.signature.request.store')->middleware('auth');
