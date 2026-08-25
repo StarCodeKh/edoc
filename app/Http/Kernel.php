@@ -38,6 +38,9 @@ class Kernel extends HttpKernel
      */
     protected $middlewareGroups = [
         'web' => [
+            // First in the group so it times the whole request, not just the
+            // part after session and auth have done their work.
+            \App\Http\Middleware\RecordSlowRequests::class,
             \App\Http\Middleware\EncryptCookies::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
             \Illuminate\Session\Middleware\StartSession::class,

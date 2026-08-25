@@ -22,6 +22,7 @@ use App\Http\Controllers\ListsController;
 use App\Http\Controllers\MailController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\NotificationSettingController;
+use App\Http\Controllers\PerformanceController;
 use App\Http\Controllers\PermissionsController;
 use App\Http\Controllers\ProjectsController;
 use App\Http\Controllers\ReportsController;
@@ -189,6 +190,10 @@ Route::get('audit-log/{id}', [AuditLogController::class, 'show'])->name('audit.l
 // The application's own log. Super Admin only - traces carry paths and payloads.
 Route::get('settings/error-log', [ErrorLogController::class, 'index'])->name('settings.error-log')->middleware(['auth', 'super.admin']);
 Route::post('settings/error-log/clear', [ErrorLogController::class, 'clear'])->name('settings.error-log.clear')->middleware(['auth', 'super.admin']);
+
+// Server health and slow-request history. Super Admin only.
+Route::get('settings/performance', [PerformanceController::class, 'index'])->name('settings.performance')->middleware(['auth', 'super.admin']);
+Route::post('settings/performance/clear', [PerformanceController::class, 'clear'])->name('settings.performance.clear')->middleware(['auth', 'super.admin']);
 
 Route::get('task/{taskUid}/signature-request', [SignatureRequestController::class, 'show'])->name('task.signature.request.show')->middleware('auth');
 Route::post('task/{taskUid}/signature-request', [SignatureRequestController::class, 'store'])->name('task.signature.request.store')->middleware('auth');

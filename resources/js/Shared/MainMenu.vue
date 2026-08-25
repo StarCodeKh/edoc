@@ -159,6 +159,14 @@
                     'category': 'communication'
                 },
                 {
+                    'name': 'Performance',
+                    'route': 'settings.performance',
+                    'url': 'settings/performance',
+                    'icon': 'timeline',
+                    'category': 'system',
+                    'superAdminOnly': true
+                },
+                {
                     'name': 'Error Log',
                     'route': 'settings.error-log',
                     'url': 'settings/error-log',
@@ -213,7 +221,8 @@
                     'server': 'bg-gray-100 text-gray-600',
                     'key': 'bg-yellow-100 text-yellow-600',
                     'download': 'bg-pink-100 text-pink-600',
-                    'info': 'bg-red-100 text-red-600'
+                    'info': 'bg-red-100 text-red-600',
+                    'timeline': 'bg-teal-100 text-teal-600'
                 }
                 return colorMap[iconName] || 'bg-gray-100 text-gray-600'
             },
@@ -230,7 +239,8 @@
                     'Email Templates': 'Custom email designs',
                     'SMTP Mail': 'Email server configuration',
                     'Latest Update': 'System updates and patches',
-                    'Error Log': 'Application errors and warnings'
+                    'Error Log': 'Application errors and warnings',
+                    'Performance': 'Server health and slow pages'
                 }
                 return descriptions[menuName]
             }
