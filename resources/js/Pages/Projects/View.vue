@@ -307,147 +307,141 @@
                     </div>
 
                     <div class="doc-drawer__body">
-                        <!-- Particulars, the document list and the action stay put; only the
-                             audit trail below them scrolls. -->
-                        <div class="doc-drawer__fixed">
-                            <div class="doc-drawer__section-label">{{ $t('Particulars') }}</div>
-                            <div class="doc-drawer__grid">
-                                <div class="doc-drawer__field">
-                                    <span class="doc-drawer__field-label">{{ $t('Received') }}</span>
-                                    <span class="doc-drawer__field-value">{{ drawerTask && drawerTask.created_at ? moment(drawerTask.created_at).format('DD MMM, HH:mm') : 'N/A' }}</span>
-                                </div>
-                                <div class="doc-drawer__field">
-                                    <span class="doc-drawer__field-label">{{ $t('Updated') }}</span>
-                                    <span class="doc-drawer__field-value">{{ drawerTask && drawerTask.updated_at ? moment(drawerTask.updated_at).format('DD MMM, HH:mm') : 'N/A' }}</span>
-                                </div>
-                                <div class="doc-drawer__field">
-                                    <span class="doc-drawer__field-label">{{ $t('Priority') }}</span>
-                                    <span class="doc-drawer__field-value">{{ (drawerTask && drawerTask.priority && drawerTask.priority.name) || $t('Normal') }}</span>
-                                </div>
-                                <div class="doc-drawer__field doc-assign">
-                                    <span class="doc-drawer__field-label">
-                                        {{ $t('Assigned') }}
-                                        <button v-if="taskCan('edit', drawerTask)" type="button" class="doc-assign__add" :title="$t('Assignee')" @click.stop="toggleAssignPicker">
-                                            <icon name="add" class="w-3 h-3" />
-                                        </button>
-                                    </span>
+                        <div class="doc-drawer__section-label">{{ $t('Particulars') }}</div>
+                        <div class="doc-drawer__grid">
+                            <div class="doc-drawer__field">
+                                <span class="doc-drawer__field-label">{{ $t('Received') }}</span>
+                                <span class="doc-drawer__field-value">{{ drawerTask && drawerTask.created_at ? moment(drawerTask.created_at).format('DD MMM, HH:mm') : 'N/A' }}</span>
+                            </div>
+                            <div class="doc-drawer__field">
+                                <span class="doc-drawer__field-label">{{ $t('Updated') }}</span>
+                                <span class="doc-drawer__field-value">{{ drawerTask && drawerTask.updated_at ? moment(drawerTask.updated_at).format('DD MMM, HH:mm') : 'N/A' }}</span>
+                            </div>
+                            <div class="doc-drawer__field">
+                                <span class="doc-drawer__field-label">{{ $t('Priority') }}</span>
+                                <span class="doc-drawer__field-value">{{ (drawerTask && drawerTask.priority && drawerTask.priority.name) || $t('Normal') }}</span>
+                            </div>
+                            <div class="doc-drawer__field doc-assign">
+                                <span class="doc-drawer__field-label">
+                                    {{ $t('Assigned') }}
+                                    <button v-if="taskCan('edit', drawerTask)" type="button" class="doc-assign__add" :title="$t('Assignee')" @click.stop="toggleAssignPicker">
+                                        <icon name="add" class="w-3 h-3" />
+                                    </button>
+                                </span>
 
-                                    <div v-if="drawerAssignees.length" class="doc-assign__list">
-                                        <span v-for="a in drawerAssignees" :key="'da_' + a.user_id" class="doc-assign__chip">
-                                            <img class="doc-assign__avatar" :src="(a.user && a.user.photo_path) || '/images/user.svg'" :alt="a.user && a.user.name" />
-                                            <span class="doc-assign__meta">
-                                                <span class="doc-assign__name">{{ a.user && a.user.name }}</span>
-                                                <span v-if="a.user && a.user.title" class="doc-assign__title">{{ a.user.title }}</span>
-                                            </span>
+                                <div v-if="drawerAssignees.length" class="doc-assign__list">
+                                    <span v-for="a in drawerAssignees" :key="'da_' + a.user_id" class="doc-assign__chip">
+                                        <img class="doc-assign__avatar" :src="(a.user && a.user.photo_path) || '/images/user.svg'" :alt="a.user && a.user.name" />
+                                        <span class="doc-assign__meta">
+                                            <span class="doc-assign__name">{{ a.user && a.user.name }}</span>
+                                            <span v-if="a.user && a.user.title" class="doc-assign__title">{{ a.user.title }}</span>
+                                        </span>
+                                    </span>
+                                </div>
+                                <span v-else class="doc-drawer__field-value">{{ '— ' + $t('not yet assigned') + ' —' }}</span>
+
+                                <div v-if="assignPickerOpen" class="doc-assign__picker" @click.stop>
+                                    <div class="doc-assign__head">
+                                        <span class="doc-assign__head-icon"><icon class="h-4 w-4" name="users" /></span>
+                                        <div class="doc-assign__head-text">
+                                            <div class="doc-assign__head-row">
+                                                <h4 class="doc-assign__head-title">{{ $t('Assignee') }}</h4>
+                                                <span v-if="drawerAssignees.length" class="doc-assign__head-count">{{ drawerAssignees.length }}</span>
+                                            </div>
+                                            <p class="doc-assign__head-sub">{{ $t('Select who is responsible') }}</p>
+                                        </div>
+                                        <span class="doc-assign__close" @click.stop="assignPickerOpen = false">
+                                            <icon class="w-4 h-4" name="close" />
                                         </span>
                                     </div>
-                                    <span v-else class="doc-drawer__field-value">{{ '— ' + $t('not yet assigned') + ' —' }}</span>
-
-                                    <div v-if="assignPickerOpen" class="doc-assign__picker" @click.stop>
-                                        <div class="doc-assign__head">
-                                            <span class="doc-assign__head-icon"><icon class="h-4 w-4" name="users" /></span>
-                                            <div class="doc-assign__head-text">
-                                                <div class="doc-assign__head-row">
-                                                    <h4 class="doc-assign__head-title">{{ $t('Assignee') }}</h4>
-                                                    <span v-if="drawerAssignees.length" class="doc-assign__head-count">{{ drawerAssignees.length }}</span>
-                                                </div>
-                                                <p class="doc-assign__head-sub">{{ $t('Select who is responsible') }}</p>
-                                            </div>
-                                            <span class="doc-assign__close" @click.stop="assignPickerOpen = false">
-                                                <icon class="w-4 h-4" name="close" />
-                                            </span>
-                                        </div>
-                                        <input v-model="assignSearch" class="doc-assign__search" :placeholder="$t('Search User')" />
-                                        <ul class="doc-assign__options">
-                                            <li v-if="assignLoading" class="doc-assign__empty">{{ $t('Loading...') }}</li>
-                                            <li v-for="(m, mi) in filteredAssignMembers" :key="'am_' + m.user_id">
-                                                <label class="doc-assign__option" :for="'dw_u_' + mi">
-                                                    <input :id="'dw_u_' + mi" type="checkbox" class="doc-assign__cb" :checked="drawerAssigneeIds.includes(Number(m.user_id))" @change="toggleAssignee($event.target.checked, m.user_id)">
-                                                    <img class="doc-assign__avatar" :src="(m.user && m.user.photo_path) || '/images/user.svg'" :alt="m.user && m.user.name" />
-                                                    <span class="doc-assign__meta">
-                                                        <span class="doc-assign__name">{{ m.user && m.user.name }}</span>
-                                                        <span v-if="m.user && m.user.title" class="doc-assign__title">{{ m.user.title }}</span>
-                                                    </span>
-                                                </label>
-                                            </li>
-                                            <li v-if="!assignLoading && !filteredAssignMembers.length" class="doc-assign__empty">{{ $t('No item found!') }}</li>
-                                        </ul>
-                                    </div>
+                                    <input v-model="assignSearch" class="doc-assign__search" :placeholder="$t('Search User')" />
+                                    <ul class="doc-assign__options">
+                                        <li v-if="assignLoading" class="doc-assign__empty">{{ $t('Loading...') }}</li>
+                                        <li v-for="(m, mi) in filteredAssignMembers" :key="'am_' + m.user_id">
+                                            <label class="doc-assign__option" :for="'dw_u_' + mi">
+                                                <input :id="'dw_u_' + mi" type="checkbox" class="doc-assign__cb" :checked="drawerAssigneeIds.includes(Number(m.user_id))" @change="toggleAssignee($event.target.checked, m.user_id)">
+                                                <img class="doc-assign__avatar" :src="(m.user && m.user.photo_path) || '/images/user.svg'" :alt="m.user && m.user.name" />
+                                                <span class="doc-assign__meta">
+                                                    <span class="doc-assign__name">{{ m.user && m.user.name }}</span>
+                                                    <span v-if="m.user && m.user.title" class="doc-assign__title">{{ m.user.title }}</span>
+                                                </span>
+                                            </label>
+                                        </li>
+                                        <li v-if="!assignLoading && !filteredAssignMembers.length" class="doc-assign__empty">{{ $t('No item found!') }}</li>
+                                    </ul>
                                 </div>
                             </div>
-
-                            <div class="doc-drawer__section-label-row">
-                                <span class="doc-drawer__section-label">
-                                    {{ (drawerTask && hasBeenMerged(drawerTask)) ? $t('Combined from') : $t('Document') }} · {{ drawerDocuments.length }}
-                                </span>
-                                <span class="doc-drawer__hint">{{ $t('Click an item to view its detail') }}</span>
-                            </div>
-
-                            <div class="doc-drawer__doclist">
-                                <div v-for="(doc, i) in drawerDocuments" :key="doc.id" class="doc-drawer__docrow">
-                                    <button type="button" class="doc-drawer__docrow-main" @click="openDocDetail(i)">
-                                        <span class="doc-drawer__app-index">{{ i + 1 }}</span>
-                                        <span class="doc-drawer__docrow-title">{{ doc.title }}</span>
-                                        <svg viewBox="0 0 24 24" fill="none" class="doc-drawer__docrow-chevron doc-drawer__docrow-chevron--arrow"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        class="doc-drawer__docrow-open"
-                                        :title="$t('Open full task')"
-                                        @click.stop="openTaskFromDoc(doc)"
-                                    >
-                                        <svg viewBox="0 0 24 24" fill="none" class="w-3.5 h-3.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 3h6v6M10 14L21 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- "Approve & Sign from Secretariat General" — shown only while the
-                                 document sits in a board whose workflow step is a signature step
-                                 (Settings → Workflow Roles), and only for the administration.
-                                 Opens the document's newest attachment in the viewer, where the
-                                 request is confirmed. -->
-                            <button
-                                v-if="canRequestSignature(drawerTask)"
-                                type="button"
-                                class="sign-request-btn"
-                                :disabled="signatureOpening"
-                                @click="openSignatureRequest(drawerTask)"
-                            >
-                                <span v-if="signatureOpening" class="sign-request-btn__spinner"></span>
-                                <svg v-else viewBox="0 0 24 24" fill="none" class="sign-request-btn__icon"><path d="M3 20h18M5.5 16.5l9.9-9.9a1.6 1.6 0 0 1 2.3 0l.7.7a1.6 1.6 0 0 1 0 2.3l-9.9 9.9-3.6.6.6-3.6z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                                <span class="sign-request-btn__text">{{ $t('Approve & Sign from Secretariat General') }}</span>
-                            </button>
-                            <p v-if="signatureError" class="sign-request-error">{{ signatureError }}</p>
-
-                            <div class="doc-drawer__section-label">{{ $t('Audit trail') }}</div>
                         </div>
 
-                        <div class="doc-drawer__scroll">
-                            <div v-if="drawerLoadingActivities" class="doc-drawer__timeline-loading">
-                                <span class="doc-drawer__timeline-spinner"></span>
-                                {{ $t('Loading...') }}
+                        <div class="doc-drawer__section-label-row">
+                            <span class="doc-drawer__section-label">
+                                {{ (drawerTask && hasBeenMerged(drawerTask)) ? $t('Combined from') : $t('Document') }} · {{ drawerDocuments.length }}
+                            </span>
+                            <span class="doc-drawer__hint">{{ $t('Click an item to view its detail') }}</span>
+                        </div>
+
+                        <div class="doc-drawer__doclist">
+                            <div v-for="(doc, i) in drawerDocuments" :key="doc.id" class="doc-drawer__docrow">
+                                <button type="button" class="doc-drawer__docrow-main" @click="openDocDetail(i)">
+                                    <span class="doc-drawer__app-index">{{ i + 1 }}</span>
+                                    <span class="doc-drawer__docrow-title">{{ doc.title }}</span>
+                                    <svg viewBox="0 0 24 24" fill="none" class="doc-drawer__docrow-chevron doc-drawer__docrow-chevron--arrow"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </button>
+                                <button
+                                    type="button"
+                                    class="doc-drawer__docrow-open"
+                                    :title="$t('Open full task')"
+                                    @click.stop="openTaskFromDoc(doc)"
+                                >
+                                    <svg viewBox="0 0 24 24" fill="none" class="w-3.5 h-3.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 3h6v6M10 14L21 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </button>
                             </div>
-                            <div v-else class="doc-drawer__timeline">
-                                <div v-if="!drawerActivities.length" class="doc-drawer__timeline-empty">
-                                    <svg viewBox="0 0 24 24" fill="none" class="w-5 h-5"><path d="M12 8v4l3 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/></svg>
-                                    <span>{{ $t('No activity recorded yet.') }}</span>
-                                </div>
-                                <div class="doc-drawer__timeline-item" v-for="a in drawerActivities" :key="a.id">
-                                    <span class="doc-drawer__timeline-icon" :class="auditIconBg(a)">
-                                        <icon :name="auditIcon(a)" class="w-3 h-3" />
-                                    </span>
-                                    <div class="doc-drawer__timeline-card">
-                                        <div class="doc-drawer__timeline-top">
-                                            <span class="doc-drawer__timeline-text">{{ auditText(a) }}</span>
-                                            <span class="doc-drawer__timeline-time">{{ moment(a.created_at).fromNow() }}</span>
-                                        </div>
-                                        <div class="doc-drawer__timeline-bottom">
-                                            <span v-if="a.user && a.user.name" class="doc-drawer__timeline-user">
-                                                <span class="doc-drawer__timeline-avatar">{{ (a.user.name || '?').charAt(0).toUpperCase() }}</span>
-                                                {{ a.user.name }}
-                                            </span>
-                                            <span class="doc-drawer__timeline-abs">{{ moment(a.created_at).format('DD MMM, HH:mm') }}</span>
-                                        </div>
+                        </div>
+
+                        <!-- "Approve & Sign from Secretariat General" — shown only while the
+                             document sits in a board whose workflow step is a signature step
+                             (Settings → Workflow Roles), and only for the administration.
+                             Opens the document's newest attachment in the viewer, where the
+                             request is confirmed. -->
+                        <button
+                            v-if="canRequestSignature(drawerTask)"
+                            type="button"
+                            class="sign-request-btn"
+                            :disabled="signatureOpening"
+                            @click="openSignatureRequest(drawerTask)"
+                        >
+                            <span v-if="signatureOpening" class="sign-request-btn__spinner"></span>
+                            <svg v-else viewBox="0 0 24 24" fill="none" class="sign-request-btn__icon"><path d="M3 20h18M5.5 16.5l9.9-9.9a1.6 1.6 0 0 1 2.3 0l.7.7a1.6 1.6 0 0 1 0 2.3l-9.9 9.9-3.6.6.6-3.6z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            <span class="sign-request-btn__text">{{ $t('Approve & Sign from Secretariat General') }}</span>
+                        </button>
+                        <p v-if="signatureError" class="sign-request-error">{{ signatureError }}</p>
+
+                        <div class="doc-drawer__section-label">{{ $t('Audit trail') }}</div>
+
+                        <div v-if="drawerLoadingActivities" class="doc-drawer__timeline-loading">
+                            <span class="doc-drawer__timeline-spinner"></span>
+                            {{ $t('Loading...') }}
+                        </div>
+                        <div v-else class="doc-drawer__timeline">
+                            <div v-if="!drawerActivities.length" class="doc-drawer__timeline-empty">
+                                <svg viewBox="0 0 24 24" fill="none" class="w-5 h-5"><path d="M12 8v4l3 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/></svg>
+                                <span>{{ $t('No activity recorded yet.') }}</span>
+                            </div>
+                            <div class="doc-drawer__timeline-item" v-for="a in drawerActivities" :key="a.id">
+                                <span class="doc-drawer__timeline-icon" :class="auditIconBg(a)">
+                                    <icon :name="auditIcon(a)" class="w-3 h-3" />
+                                </span>
+                                <div class="doc-drawer__timeline-card">
+                                    <div class="doc-drawer__timeline-top">
+                                        <span class="doc-drawer__timeline-text">{{ auditText(a) }}</span>
+                                        <span class="doc-drawer__timeline-time">{{ moment(a.created_at).fromNow() }}</span>
+                                    </div>
+                                    <div class="doc-drawer__timeline-bottom">
+                                        <span v-if="a.user && a.user.name" class="doc-drawer__timeline-user">
+                                            <span class="doc-drawer__timeline-avatar">{{ (a.user.name || '?').charAt(0).toUpperCase() }}</span>
+                                            {{ a.user.name }}
+                                        </span>
+                                        <span class="doc-drawer__timeline-abs">{{ moment(a.created_at).format('DD MMM, HH:mm') }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -2250,44 +2244,32 @@
         background: rgba(216, 172, 65, 0.22);
         color: #f3dfa4;
     }
+    /* The whole body scrolls as one. Pinning Particulars and the document list
+       above a separate scroll pane left too little room for the trail once a
+       document had a few entries and the sign action was showing. */
     .doc-drawer__body {
-        flex: 1;
-        min-height: 0;
-        display: flex;
-        flex-direction: column;
-        /* Deliberately not `overflow: hidden` - the assignee picker is an
-           absolute dropdown anchored to .doc-drawer__grid and has to be able to
-           hang over the trail below it. .doc-drawer clips the panel already. */
-    }
-    /* Particulars, document list and the sign action: always on screen. */
-    .doc-drawer__fixed {
-        flex-shrink: 0;
-        padding: 18px 20px 0;
-    }
-    /* The audit trail is the only thing that scrolls. */
-    .doc-drawer__scroll {
         flex: 1;
         min-height: 0;
         overflow-y: auto;
         overscroll-behavior: contain;
-        padding: 0 20px 28px;
+        padding: 18px 20px 28px;
         scrollbar-width: thin;
-        scrollbar-color: rgba(100, 116, 139, 0.35) transparent;
+        scrollbar-color: rgba(100, 116, 139, .35) transparent;
     }
-    .doc-drawer__scroll::-webkit-scrollbar {
+    .doc-drawer__body::-webkit-scrollbar {
         width: 8px;
     }
-    .doc-drawer__scroll::-webkit-scrollbar-track {
+    .doc-drawer__body::-webkit-scrollbar-track {
         background: transparent;
     }
-    .doc-drawer__scroll::-webkit-scrollbar-thumb {
-        background: rgba(100, 116, 139, 0.28);
-        border-radius: 999px;
+    .doc-drawer__body::-webkit-scrollbar-thumb {
+        background: rgba(100, 116, 139, .28);
         border: 2px solid transparent;
+        border-radius: 999px;
         background-clip: content-box;
     }
-    .doc-drawer__scroll::-webkit-scrollbar-thumb:hover {
-        background: rgba(100, 116, 139, 0.5);
+    .doc-drawer__body::-webkit-scrollbar-thumb:hover {
+        background: rgba(100, 116, 139, .5);
         background-clip: content-box;
     }
 
