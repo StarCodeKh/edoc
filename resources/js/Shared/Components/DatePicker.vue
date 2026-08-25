@@ -180,7 +180,10 @@ export default {
             isOpen: false,
             showYearPicker: false,
             currentDate: moment(),
-            selectedDate: null
+            selectedDate: null,
+            // Real size of the rendered calendar, measured on open.
+            dropdownWidth: 0,
+            dropdownHeight: 0
         }
     },
     computed: {
@@ -205,41 +208,47 @@ export default {
         isInModal() {
             return this.$el && this.$el.closest('.fixed.inset-0')
         },
+        /**
+         * The calendar is positioned against the viewport whenever it is open,
+         * not only inside a modal. Left as `position: absolute; left: 0` it ran
+         * off the right edge of the screen for any trigger sitting near it -
+         * the Saturday column and the Clear button were simply unreachable.
+         */
         dropdownStyle() {
-            if (!this.isInModal || !this.isOpen) return {}
-            
+            if (!this.isOpen) return {}
+
             const rect = this.$el.getBoundingClientRect()
-            const viewportHeight = window.innerHeight
-            const dropdownHeight = 400 // Approximate dropdown height
-            
-            // Check if dropdown would go off screen
-            const spaceBelow = viewportHeight - rect.bottom
+            const gap = 4
+            const margin = 12
+            // The calendar sizes itself; this is the width to keep on screen.
+            const width = Math.max(this.dropdownWidth || 0, 280)
+            const height = this.dropdownHeight || 400
+
+            const spaceBelow = window.innerHeight - rect.bottom
             const spaceAbove = rect.top
-            
-            let top = rect.bottom + 4
+
+            let top = rect.bottom + gap
+            if (spaceBelow < height + margin && spaceAbove > spaceBelow) {
+                top = Math.max(margin, rect.top - height - gap)
+            }
+
+            // Prefer the trigger's left edge, but never past either side.
             let left = rect.left
-            let right = 'auto'
-            let width = rect.width
-            
-            // If not enough space below, position above
-            if (spaceBelow < dropdownHeight && spaceAbove > dropdownHeight) {
-                top = rect.top - dropdownHeight - 4
+            if (left + width > window.innerWidth - margin) {
+                left = window.innerWidth - width - margin
             }
-            
-            // Ensure dropdown stays within viewport
-            if (left + width > window.innerWidth) {
-                left = window.innerWidth - width - 16
+            if (left < margin) {
+                left = margin
             }
-            if (left < 16) {
-                left = 16
-            }
-            
+
             return {
                 position: 'fixed',
-                top: `${top}px`,
-                left: `${left}px`,
+                top: `${Math.round(top)}px`,
+                left: `${Math.round(left)}px`,
                 right: 'auto',
-                width: `${width}px`,
+                // Width is left to the calendar itself - forcing the trigger's
+                // width squashed it whenever the trigger was narrow.
+                maxHeight: `${Math.max(240, window.innerHeight - top - margin)}px`,
                 zIndex: 10000
             }
         },
@@ -308,6 +317,7 @@ export default {
             if (this.disabled) return
             this.isOpen = !this.isOpen
             this.showYearPicker = false
+            if (this.isOpen) this.measureDropdown()
         },
         
         previousMonth() {
@@ -392,9 +402,21 @@ export default {
         },
         
         updatePosition() {
-            if (this.isInModal && this.isOpen) {
+            if (this.isOpen) {
                 this.$forceUpdate()
             }
+        },
+
+        /** Measure the rendered calendar so the clamp works off real numbers
+         *  rather than the 280x400 estimate. */
+        measureDropdown() {
+            this.$nextTick(() => {
+                const panel = this.$el && this.$el.querySelector('.calendar-dropdown')
+                if (!panel) return
+                this.dropdownWidth = panel.offsetWidth
+                this.dropdownHeight = panel.offsetHeight
+                this.$forceUpdate()
+            })
         }
     }
 }
@@ -445,16 +467,19 @@ export default {
 }
 
 .calendar-dropdown {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
+    /* position / top / left come from dropdownStyle, measured against the
+       viewport so the panel cannot run off screen or be clipped. */
+    position: fixed;
+    width: max-content;
+    max-width: calc(100vw - 24px);
+    overflow-y: auto;
     background: white;
     border: 1px solid #e5e7eb;
     border-radius: 0.5rem;
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     z-index: 9999;
-    margin-top: 0.25rem;
+    /* No margin: dropdownStyle already leaves the gap, and a margin here would
+       push the panel the wrong way when it flips above the trigger. */
     min-width: 280px;
 }
 
@@ -666,12 +691,12 @@ export default {
 
 /* Mobile Responsive */
 @media (max-width: 640px) {
+    /* left / right are set inline from the measured position now; only the
+       size of the grid changes on a small screen. */
     .calendar-dropdown {
-        left: -1rem;
-        right: -1rem;
         min-width: auto;
     }
-    
+
     .calendar-day {
         width: 2.5rem;
         height: 2.5rem;

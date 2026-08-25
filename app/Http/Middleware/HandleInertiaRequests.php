@@ -75,6 +75,10 @@ class HandleInertiaRequests extends Middleware
                             'locale' => $request->user()->locale,
                             'country_id' => $request->user()->country_id,
                             'role' => $request->user()->role ?? ['slug' => 'na', 'name' => 'Not Assigned', 'access' => null],
+                            // Admin and Super Admin share roles.slug 'admin', so the UI
+                            // cannot tell them apart from the role alone. Answered here
+                            // once, by User::isSuperAdmin().
+                            'is_super_admin' => $request->user()->isSuperAdmin(),
                             'photo' => $request->user()->photo_path ?? null,
                         ] : null,
                         'timer' => $request->user() ? Timer::with('task')->where('user_id', $request->user()->id)->whereNull('stopped_at')->first() : null,

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\AssigneesController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\BackgroundsController;
@@ -139,9 +140,7 @@ Route::delete('workspace/destroy/{id}', [WorkSpacesController::class, 'destroy']
 Route::get('json/workspace/{id}/assigned-count', [WorkSpacesController::class, 'jsonAssignedTasksCount'])->name('json.workspace.assigned-count')->middleware('auth');
 Route::get('json/workspace/{id}/projects-count', [WorkSpacesController::class, 'jsonProjectsTaskCounts'])->name('json.workspace.projects.count')->middleware('auth');
 
-
 Route::get('/json/priorities', [JsonPriorityController::class, 'all'])->name('json.priorities.all')->middleware('auth');
-
 
 Route::get('/json/workflow-roles/board-lists', [WorkflowRoleController::class, 'listTitlesByWorkspace'])->name('workflow-roles.board-lists');
 Route::get('/settings/workflow-roles', [WorkflowRoleController::class, 'index'])->name('workflow-roles');
@@ -182,6 +181,10 @@ Route::get('task/{taskUid}/attachment/{attachmentId}/view', [TasksController::cl
 
 // Approve & Sign from Secretariat General — shown on cards sitting in a board
 // whose workflow step has `requires_signature` (Settings → Workflow Roles).
+// System-wide audit trail. Super Admin only - see EnsureSuperAdmin.
+Route::get('audit-log', [AuditLogController::class, 'index'])->name('audit.log')->middleware(['auth', 'super.admin']);
+Route::get('audit-log/{id}', [AuditLogController::class, 'show'])->name('audit.log.show')->middleware(['auth', 'super.admin']);
+
 Route::get('task/{taskUid}/signature-request', [SignatureRequestController::class, 'show'])->name('task.signature.request.show')->middleware('auth');
 Route::post('task/{taskUid}/signature-request', [SignatureRequestController::class, 'store'])->name('task.signature.request.store')->middleware('auth');
 Route::post('project/background/upload/{id}', [ProjectsController::class, 'uploadBackground'])->name('project.background.upload')->middleware('auth');

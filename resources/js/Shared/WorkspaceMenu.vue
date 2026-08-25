@@ -54,6 +54,17 @@
                 </Link>
             </li>
 
+            <!-- System-wide audit trail. Super Admin only; the route enforces the
+                 same rule server-side (EnsureSuperAdmin). -->
+            <li v-if="isSuperAdmin">
+                <Link :href="route('audit.log')" class="flex items-center px-3 py-2 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 group" :class="{'active' : isAuditLogActive()}">
+                    <icon class="w-4 h-4" name="security" />
+                    <span class="flex-1 ml-3">
+                        {{ $t('Audit Log') }}
+                    </span>
+                </Link>
+            </li>
+
             <li class="relative" v-if="workspace.member.role === 'admin'">
                 <Link class="flex items-center px-3 p-2 group workspace_members" :href="route('workspace.members', workspace.id)" :class="{'active' : checkActiveClass('component', 'Workspaces_Members')}">
                     <icon class="w-4 h-4" name="user" />
@@ -176,6 +187,16 @@
             enable_option : {}
         }
         },
+        computed: {
+            /**
+             * Admin and Super Admin share roles.slug 'admin', so the role alone
+             * cannot separate them - the server answers it once in
+             * HandleInertiaRequests and the menu just reads the answer.
+             */
+            isSuperAdmin() {
+                return this.$page.props.auth?.user?.is_super_admin === true
+            },
+        },
         watch: {
         '$page.props.project': {
             handler() {
@@ -256,6 +277,9 @@
         },
         isDocumentsActive(){
             return this.$page.component === 'Workspaces/Documents'
+        },
+        isAuditLogActive(){
+            return this.$page.component === 'AuditLog/Index'
         },
         isDashboardActive(){
             const component = this.$page.component;
