@@ -162,11 +162,11 @@
                     <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4"><path d="M15 7l5 5-5 5M20 12H10a6 6 0 000 12h1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </button>
 
-                <p class="hidden lg:block ml-2 text-[11px] text-white/40 truncate">
-                    {{ drawTool === 'view' ? $t('Scroll to browse every page. Pick Sketch or Text to add a note.') : $t('Use the page arrows below to note a different page.') }}
+                <p class="hidden lg:block ml-2 min-w-0 text-[11px] truncate" :class="drawTool === 'view' && hasUnsavedAnnotations ? 'text-blue-300' : 'text-white/40'">
+                    {{ annotationHint }}
                 </p>
 
-                <div class="flex items-center gap-2 ml-auto flex-shrink-0">
+                <div class="flex items-center gap-2 ml-auto flex-shrink-0 sticky right-0 pl-3 bg-gray-900">
                     <button type="button" @click="showDocumentNotes = !showDocumentNotes" class="h-8 px-3 rounded-full flex items-center gap-1 text-xs font-medium" :class="showDocumentNotes ? 'bg-white/20 text-white' : 'text-white/70 hover:bg-white/10'">
                         <svg viewBox="0 0 24 24" fill="none" class="w-3.5 h-3.5"><path d="M4 5.5A1.5 1.5 0 015.5 4h13A1.5 1.5 0 0120 5.5V14l-6 6H5.5A1.5 1.5 0 014 18.5v-13z" stroke="currentColor" stroke-width="1.7"/><path d="M20 14h-4.5a1.5 1.5 0 00-1.5 1.5V20" stroke="currentColor" stroke-width="1.7"/><path d="M8 9h8M8 13h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
                         <span class="hidden sm:inline">{{ $t('Notes') }}</span>
@@ -185,7 +185,8 @@
                         <span v-if="signatureSubmitting || autoSaving" class="approve-sign-btn__spinner"></span>
                         {{ (signatureSubmitting || autoSaving) ? $t('Saving...') : $t('Approve & Sign from Secretariat General') }}
                     </button>
-                    <button v-else-if="drawTool !== 'view' || hasUnsavedAnnotations" type="button" @click="manualSaveAnnotation" :disabled="autoSaving" class="px-5 py-1.5 rounded-full bg-white text-gray-900 text-xs font-semibold disabled:opacity-50">
+                    <button v-else-if="drawTool !== 'view' || hasUnsavedAnnotations" type="button" @click="manualSaveAnnotation" :disabled="autoSaving" class="flex items-center gap-1.5 px-5 py-1.5 rounded-full bg-white text-gray-900 text-xs font-semibold disabled:opacity-50" :title="hasUnsavedAnnotations ? $t('You have notes that are not saved yet.') : $t('Save & Close')">
+                        <span v-if="hasUnsavedAnnotations && !autoSaving" class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
                         {{ autoSaving ? $t('Saving...') : $t('Save & Close') }}
                     </button>
                 </div>
@@ -296,7 +297,7 @@
                         <button type="button" @click="goToDrawPage(1)" :disabled="currentDrawPage >= totalPdfPages" class="w-8 h-8 rounded-full flex items-center justify-center bg-white/10 text-white disabled:opacity-30 disabled:cursor-not-allowed">
                             <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         </button>
-                        <span v-if="drawTool !== 'view' && dirtyPages[currentDrawPage]" class="w-1.5 h-1.5 rounded-full bg-blue-400" :title="$t('This page has unsaved notes')"></span>
+                        <span v-if="dirtyPages[currentDrawPage]" class="w-1.5 h-1.5 rounded-full bg-blue-400" :title="$t('This page has unsaved notes')"></span>
                     </div>
                 </div>
 
@@ -566,6 +567,15 @@
 
             hasUnsavedAnnotations() {
                 return Object.values(this.dirtyPages).some(Boolean);
+            },
+
+            annotationHint() {
+                if (this.drawTool !== 'view') {
+                    return this.$t('Use the page arrows below to note a different page.');
+                }
+                return this.hasUnsavedAnnotations
+                    ? this.$t('You have notes that are not saved yet — click Save & Close.')
+                    : this.$t('Scroll to browse every page. Pick Sketch or Text to add a note.');
             },
         },
 
@@ -1419,6 +1429,7 @@
             },
 
             endNoteDrag() {
+                if (this.draggingNote) this.dirtyPages[this.currentDrawPage] = true;
                 this.draggingNote = null;
                 window.removeEventListener('pointermove', this.onNoteDrag);
                 window.removeEventListener('pointerup', this.endNoteDrag);
@@ -1427,7 +1438,10 @@
 
             removeTextNote(id) {
                 const idx = this.textNotes.findIndex(n => n.id === id);
-                if (idx > -1) this.textNotes.splice(idx, 1);
+                if (idx > -1) {
+                    this.textNotes.splice(idx, 1);
+                    this.dirtyPages[this.currentDrawPage] = true;
+                }
             },
 
             // --- Bottom-bar tool toggles (Sketch groups Pen/Highlight/Eraser) ---
@@ -1472,6 +1486,8 @@
                 this.redoStack.push(canvas.toDataURL());
                 const prev = this.historyStack.pop();
                 await this.restoreFromDataUrl(prev);
+                this.dirtyPages[this.currentDrawPage] = true;
+                this.saveCurrentPageAnnotationState();
             },
 
             async redoDraw() {
@@ -1480,6 +1496,8 @@
                 this.historyStack.push(canvas.toDataURL());
                 const next = this.redoStack.pop();
                 await this.restoreFromDataUrl(next);
+                this.dirtyPages[this.currentDrawPage] = true;
+                this.saveCurrentPageAnnotationState();
             },
 
             async manualSaveAnnotation() {

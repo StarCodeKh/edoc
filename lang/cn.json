@@ -629,6 +629,8 @@
     "Yearly calendar view": "年历视图",
     "Yearly timeline view": "年度时间轴视图",
     "You are not allowed to move this document to another board.": "您无权将此文件移动到其他看板。",
+    "You have notes that are not saved yet.": "您有尚未保存的备注。",
+    "You have notes that are not saved yet — click Save & Close.": "您有尚未保存的备注 — 请点击“保存并关闭”。",
     "You have notes that were never saved. Leave anyway?": "您有未保存的备注。仍要离开吗？",
     "Your assigned tasks": "分配给您的任务",
     "board": "看板",
