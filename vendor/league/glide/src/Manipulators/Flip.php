@@ -1,29 +1,37 @@
 <?php
 
+declare(strict_types=1);
+
 namespace League\Glide\Manipulators;
 
-use Intervention\Image\Image;
+use Intervention\Image\Direction;
+use Intervention\Image\Interfaces\ImageInterface;
 
-/**
- * @property string $flip
- */
 class Flip extends BaseManipulator
 {
+    public function getApiParams(): array
+    {
+        return ['flip'];
+    }
+
     /**
      * Perform flip image manipulation.
      *
-     * @param Image $image The source image.
+     * @param ImageInterface $image The source image.
      *
-     * @return Image The manipulated image.
+     * @return ImageInterface The manipulated image.
      */
-    public function run(Image $image)
+    public function run(ImageInterface $image): ImageInterface
     {
-        if ($flip = $this->getFlip()) {
-            if ('both' === $flip) {
-                return $image->flip('h')->flip('v');
-            }
+        $flip = $this->getFlip();
 
-            return $image->flip($flip);
+        if ($flip !== null) {
+            return match ($flip) {
+                'both' => $image->flip(Direction::HORIZONTAL)->flip(Direction::VERTICAL),
+                'v' => $image->flip(Direction::VERTICAL),
+                'h' => $image->flip(Direction::HORIZONTAL),
+                default => $image,
+            };
         }
 
         return $image;
@@ -34,10 +42,14 @@ class Flip extends BaseManipulator
      *
      * @return string|null The resolved flip.
      */
-    public function getFlip()
+    public function getFlip(): ?string
     {
-        if (in_array($this->flip, ['h', 'v', 'both'], true)) {
-            return $this->flip;
+        $flip = $this->getParam('flip');
+
+        if (in_array($flip, ['h', 'v', 'both'], true)) {
+            return $flip;
         }
+
+        return null;
     }
 }

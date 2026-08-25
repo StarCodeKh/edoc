@@ -2,49 +2,131 @@
 
 namespace Inertia;
 
+use BackedEnum;
 use Closure;
-use Illuminate\Support\Arr;
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\App;
-use GuzzleHttp\Promise\PromiseInterface;
-use Illuminate\Support\Traits\Macroable;
-use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Responsable;
-use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Http\Resources\Json\ResourceResponse;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Response as ResponseFactory;
+use Illuminate\Support\Str;
+use Illuminate\Support\Traits\Macroable;
+use Inertia\DevTools\DevTools;
+use Inertia\Ssr\SsrState;
+use Inertia\Support\Header;
+use Inertia\Support\SessionKey;
+use UnitEnum;
 
 class Response implements Responsable
 {
     use Macroable;
 
+    /**
+     * The name of the root component.
+     *
+     * @var string
+     */
     protected $component;
+
+    /**
+     * The page props.
+     *
+     * @var array<string, mixed>
+     */
     protected $props;
+
+    /**
+     * The name of the root view.
+     *
+     * @var string
+     */
     protected $rootView;
+
+    /**
+     * The asset version.
+     *
+     * @var string
+     */
     protected $version;
+
+    /**
+     * Indicates if the browser history should be cleared.
+     *
+     * @var bool
+     */
+    protected $clearHistory;
+
+    /**
+     * Indicates if the URL fragment should be preserved across redirects.
+     *
+     * @var bool
+     */
+    protected $preserveFragment;
+
+    /**
+     * Indicates if the browser history should be encrypted.
+     *
+     * @var bool
+     */
+    protected $encryptHistory;
+
+    /**
+     * The view data.
+     *
+     * @var array<string, mixed>
+     */
     protected $viewData = [];
 
     /**
-     * @param array|Arrayable $props
+     * The URL resolver callback.
      */
-    public function __construct(string $component, $props, string $rootView = 'app', string $version = '')
-    {
+    protected ?Closure $urlResolver = null;
+
+    /**
+     * The shared properties (before merge with page props).
+     *
+     * @var array<array-key, mixed|ProvidesInertiaProperties>
+     */
+    protected array $sharedProps = [];
+
+    /**
+     * Create a new Inertia response instance.
+     *
+     * @param  array<array-key, mixed|ProvidesInertiaProperties>  $sharedProps
+     * @param  array<array-key, mixed|ProvidesInertiaProperties>  $props
+     */
+    public function __construct(
+        string $component,
+        array $sharedProps,
+        array $props,
+        string $rootView = 'app',
+        string $version = '',
+        bool $encryptHistory = false,
+        ?Closure $urlResolver = null,
+    ) {
         $this->component = $component;
-        $this->props = $props instanceof Arrayable ? $props->toArray() : $props;
+        $this->sharedProps = $sharedProps;
+        $this->props = $props;
         $this->rootView = $rootView;
         $this->version = $version;
+        $this->clearHistory = session()->pull(SessionKey::CLEAR_HISTORY, false);
+        $this->preserveFragment = session()->pull(SessionKey::PRESERVE_FRAGMENT, false);
+        $this->encryptHistory = $encryptHistory;
+        $this->urlResolver = $urlResolver;
     }
 
     /**
-     * @param string|array $key
-     * @param mixed        $value
+     * Add additional properties to the page.
      *
+     * @param  string|array<string, mixed>|ProvidesInertiaProperties  $key
+     * @param  mixed  $value
      * @return $this
      */
     public function with($key, $value = null): self
     {
-        if (is_array($key)) {
+        if ($key instanceof ProvidesInertiaProperties) {
+            $this->props[] = $key;
+        } elseif (is_array($key)) {
             $this->props = array_merge($this->props, $key);
         } else {
             $this->props[$key] = $value;
@@ -54,9 +136,10 @@ class Response implements Responsable
     }
 
     /**
-     * @param string|array $key
-     * @param mixed        $value
+     * Add additional data to the view.
      *
+     * @param  string|array<string, mixed>  $key
+     * @param  mixed  $value
      * @return $this
      */
     public function withViewData($key, $value = null): self
@@ -70,6 +153,11 @@ class Response implements Responsable
         return $this;
     }
 
+    /**
+     * Set the root view.
+     *
+     * @return $this
+     */
     public function rootView(string $rootView): self
     {
         $this->rootView = $rootView;
@@ -78,76 +166,122 @@ class Response implements Responsable
     }
 
     /**
+     * Add flash data to the response.
+     *
+     * @param  BackedEnum|UnitEnum|string|array<string, mixed>  $key
+     * @return $this
+     */
+    public function flash(BackedEnum|UnitEnum|string|array $key, mixed $value = null): self
+    {
+        Inertia::flash($key, $value);
+
+        return $this;
+    }
+
+    /**
      * Create an HTTP response that represents the object.
      *
-     * @param \Illuminate\Http\Request $request
-     *
+     * @param  Request  $request
      * @return \Symfony\Component\HttpFoundation\Response
      */
     public function toResponse($request)
     {
-        $only = array_filter(explode(',', $request->header('X-Inertia-Partial-Data', '')));
+        $resolver = new PropsResolver($request, $this->component);
+        [$resolvedProps, $resolvedMetadata] = $resolver->resolve($this->sharedProps, $this->props);
 
-        $props = ($only && $request->header('X-Inertia-Partial-Component') === $this->component)
-            ? Arr::only($this->props, $only)
-            : array_filter($this->props, static function ($prop) {
-                return ! ($prop instanceof LazyProp);
-            });
+        $page = array_merge(
+            [
+                'component' => $this->component,
+                'props' => $resolvedProps,
+                'url' => $this->getUrl($request),
+                'version' => $this->version,
+            ],
+            $resolvedMetadata,
+            $this->resolveClearHistory($request),
+            $this->resolveEncryptHistory($request),
+            $this->resolveFlashData($request),
+            $this->resolvePreserveFragment($request),
+        );
 
-        $props = $this->resolvePropertyInstances($props, $request);
+        DevTools::recorder($request)?->pageRendered($request, $page, $resolvedProps);
 
-        $page = [
-            'component' => $this->component,
-            'props' => $props,
-            'url' => $request->getBaseUrl().$request->getRequestUri(),
-            'version' => $this->version,
-        ];
-
-        if ($request->header('X-Inertia')) {
-            return new JsonResponse($page, 200, ['X-Inertia' => 'true']);
+        if ($request->header(Header::INERTIA)) {
+            return new JsonResponse($page, 200, [Header::INERTIA => 'true']);
         }
+
+        App::make(SsrState::class)->setPage($page);
 
         return ResponseFactory::view($this->rootView, $this->viewData + ['page' => $page]);
     }
 
     /**
-     * Resolve all necessary class instances in the given props.
+     * Resolve the clear history flag.
+     *
+     * @return array<string, mixed>
      */
-    public function resolvePropertyInstances(array $props, Request $request, bool $unpackDotProps = true): array
+    protected function resolveClearHistory(Request $request): array
     {
-        foreach ($props as $key => $value) {
-            if ($value instanceof Closure) {
-                $value = App::call($value);
-            }
+        return $this->clearHistory ? ['clearHistory' => true] : [];
+    }
 
-            if ($value instanceof LazyProp) {
-                $value = App::call($value);
-            }
+    /**
+     * Resolve the encrypt history flag.
+     *
+     * @return array<string, mixed>
+     */
+    protected function resolveEncryptHistory(Request $request): array
+    {
+        return $this->encryptHistory ? ['encryptHistory' => true] : [];
+    }
 
-            if ($value instanceof PromiseInterface) {
-                $value = $value->wait();
-            }
+    /**
+     * Resolve flash data from the session.
+     *
+     * @return array<string, mixed>
+     */
+    protected function resolveFlashData(Request $request): array
+    {
+        $flash = Inertia::pullFlashed($request);
 
-            if ($value instanceof ResourceResponse || $value instanceof JsonResource) {
-                $value = $value->toResponse($request)->getData(true);
-            }
+        return $flash ? ['flash' => $flash] : [];
+    }
 
-            if ($value instanceof Arrayable) {
-                $value = $value->toArray();
-            }
+    /**
+     * Resolve the preserve fragment flag from the session.
+     *
+     * @return array<string, mixed>
+     */
+    protected function resolvePreserveFragment(Request $request): array
+    {
+        return $this->preserveFragment ? ['preserveFragment' => true] : [];
+    }
 
-            if (is_array($value)) {
-                $value = $this->resolvePropertyInstances($value, $request, false);
-            }
+    /**
+     * Get the URL from the request while preserving the trailing slash.
+     */
+    protected function getUrl(Request $request): string
+    {
+        $urlResolver = $this->urlResolver ?? function (Request $request) {
+            $url = Str::start(Str::after($request->fullUrl(), $request->getSchemeAndHttpHost()), '/');
 
-            if ($unpackDotProps && str_contains($key, '.')) {
-                Arr::set($props, $key, $value);
-                unset($props[$key]);
-            } else {
-                $props[$key] = $value;
-            }
-        }
+            $rawUri = Str::before($request->getRequestUri(), '?');
 
-        return $props;
+            return Str::endsWith($rawUri, '/') ? $this->finishUrlWithTrailingSlash($url) : $url;
+        };
+
+        return App::call($urlResolver, ['request' => $request]);
+    }
+
+    /**
+     * Ensure the URL has a trailing slash before the query string.
+     */
+    protected function finishUrlWithTrailingSlash(string $url): string
+    {
+        // Make sure the relative URL ends with a trailing slash and re-append the query string if it exists.
+        $urlWithoutQueryWithTrailingSlash = Str::finish(Str::before($url, '?'), '/');
+
+        return str_contains($url, '?')
+            ? $urlWithoutQueryWithTrailingSlash.'?'.Str::after($url, '?')
+            : $urlWithoutQueryWithTrailingSlash;
     }
 }

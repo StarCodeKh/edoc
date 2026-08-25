@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
-use Jackiedo\DotenvEditor\Facades\DotenvEditor;
+use App\Support\EnvFile;
 
 class SettingsController extends Controller {
     public function __construct(){
@@ -32,7 +32,7 @@ class SettingsController extends Controller {
     private function configExist($array)
     {
         $hasValue = true;
-        $envLoad = DotenvEditor::load();
+        $envLoad = EnvFile::load();
         $keys = $envLoad->getKeys($array);
         foreach ($keys as $key){
             if(!$key['value']){
@@ -67,7 +67,7 @@ class SettingsController extends Controller {
         }
         $customCss = File::get(public_path('css/custom.css'));
         $settingData['custom_css'] = ['slug' => 'custom_css', 'name' => 'Custom CSS', 'value' => $customCss];
-        $env = DotenvEditor::load();
+        $env = EnvFile::load();
         $site_key = $env->keyExists('RE_CAPTCHA_KEY')?$env->getValue('RE_CAPTCHA_KEY'):'';
         $webhook_url = $env->keyExists('SLACK_ALERT_WEBHOOK')?$env->getValue('SLACK_ALERT_WEBHOOK'):'';
 
@@ -145,7 +145,7 @@ class SettingsController extends Controller {
             Storage::disk('public_path')->put('css/custom.css', $requests['custom_css']);
         }
 
-        $env = DotenvEditor::load();
+        $env = EnvFile::load();
 
         if(isset($requests['site_key']) ){
             $env->setKey('RE_CAPTCHA_KEY', $requests['site_key']);
@@ -201,7 +201,7 @@ class SettingsController extends Controller {
     public function smtp()
     {
         $demo = config('app.demo');
-        $env = DotenvEditor::load();
+        $env = EnvFile::load();
         $keys = $env->getKeys(['MAIL_HOST','MAIL_PORT','MAIL_USERNAME','MAIL_PASSWORD','MAIL_ENCRYPTION','MAIL_FROM_ADDRESS','MAIL_FROM_NAME']);
         return Inertia::render('Settings/Smtp', [
             'title' => 'SMTP Settings',
@@ -247,7 +247,7 @@ class SettingsController extends Controller {
 
     private function setEnvVariables($data)
     {
-        $env = DotenvEditor::load();
+        $env = EnvFile::load();
         foreach ($data as $data_key => $data_value){
             $env->setKey($data_key, $data_value);
         }

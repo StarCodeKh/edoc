@@ -70,7 +70,7 @@
 
 <script>
 import Layout from '@/Shared/Layout.vue'
-import { Link } from '@inertiajs/vue3'
+import { Link, useForm } from '@inertiajs/vue3'
 import TextInput from '@/Shared/TextInput.vue'
 import LoadingButton from '@/Shared/LoadingButton.vue'
 
@@ -116,7 +116,7 @@ export default {
             modules: {
             },
         },
-      form: this.$inertia.form({
+      form: useForm({
           html: this.template.html,
       }),
     }

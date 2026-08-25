@@ -5,25 +5,10 @@ A Laravel wrapper for <a href="https://github.com/ezyang/htmlpurifier" target="_
 </p>
 
 <p align="center">
-<a href="https://github.com/stevebauman/purify/actions" target="_blank">
-<img src="https://img.shields.io/github/actions/workflow/status/stevebauman/purify/run-tests.yml?branch=master&style=flat-square"/>
-</a>
-
-<a href="https://scrutinizer-ci.com/g/stevebauman/purify/?branch=master" target="_blank">
-<img src="https://img.shields.io/scrutinizer/g/stevebauman/purify.svg?style=flat-square"/>
-</a>
-
-<a href="https://packagist.org/packages/stevebauman/purify" target="_blank">
-<img src="https://img.shields.io/packagist/v/stevebauman/purify.svg?style=flat-square"/>
-</a>
-
-<a href="https://packagist.org/packages/stevebauman/purify" target="_blank">
-<img src="https://img.shields.io/packagist/dt/stevebauman/purify.svg?style=flat-square"/>
-</a>
-
-<a href="https://packagist.org/packages/stevebauman/purify" target="_blank">
-<img src="https://img.shields.io/packagist/l/stevebauman/purify.svg?style=flat-square"/>
-</a>
+<a href="https://github.com/stevebauman/purify/actions" target="_blank"><img src="https://img.shields.io/github/actions/workflow/status/stevebauman/purify/run-tests.yml?branch=master&style=flat-square"/></a>
+<a href="https://packagist.org/packages/stevebauman/purify" target="_blank"><img src="https://img.shields.io/packagist/v/stevebauman/purify.svg?style=flat-square"/></a>
+<a href="https://packagist.org/packages/stevebauman/purify" target="_blank"><img src="https://img.shields.io/packagist/dt/stevebauman/purify.svg?style=flat-square"/></a>
+<a href="https://packagist.org/packages/stevebauman/purify" target="_blank"><img src="https://img.shields.io/packagist/l/stevebauman/purify.svg?style=flat-square"/></a>
 </p>
 
 ### Index
@@ -35,6 +20,7 @@ A Laravel wrapper for <a href="https://github.com/ezyang/htmlpurifier" target="_
 - [Cache](#cache)
 - [Practices](#practices)
 - [Upgrading from v4 to v5](#upgrading-from-v4-to-v5)
+- [Upgrading from v5 to v6](#upgrading-from-v5-to-v6)
 
 ### Requirements
 
@@ -93,9 +79,9 @@ var_dump($cleaned);
 
 ##### Dynamic Configuration
 
-Need a different configuration for a single input? Pass in a configuration array into the second parameter:
+Need a different configuration for a single input? Pass in a configuration array to the `config` method:
 
-> **Note**: Configuration passed into the second parameter
+> **Note**: Configuration passed into the config method
 > is **not** merged with your default configuration.
 
 ```php
@@ -142,7 +128,18 @@ http://htmlpurifier.org/live/configdoc/plain.html
 ### Cache
 
 After running Purify once, [HTMLPurifier](https://github.com/ezyang/htmlpurifier) will auto-cache your
-serialized `definitions` into the `serializer` path (both configured inside the `config/purify.php` file).
+serialized `definitions` into the `serializer.cache` definition you have configured in `config/purify.php`.
+
+> [!Important]
+>
+> If you have configured Purify to utilize the `CacheDefinitionCache` in the `serializer` option, 
+> this command will issue a `Cache::clear()` on the cache driver you have configured it to use.
+> 
+> If you have configured Purify to utilize the `FilesystemDefinitionCache` in the `serializer` option, 
+> this command will clear the directory that you have configured it to store in.
+>
+> It is recommended to setup a unique filesystem path or disk (via `config/filesystems.php`) or cache store 
+> (via `config/cache.php`) for Purify if you intended to clear the serialized definitions using this command.
 
 If you ever update the `definitions` configuration option, you must clear this HTMLPurifier cache.
 
@@ -166,7 +163,9 @@ This will cause your definitions to be serialized upon each application request.
 
 This is especially useful when debugging or tweaking definition files to see immediate results.
 
-> **Important**: Caching is recommended in production environments.
+> [!Important]
+>
+> Caching is recommended in production environments.
 
 ### Practices
 
@@ -185,9 +184,18 @@ use Stevebauman\Purify\Casts\PurifyHtmlOnGet;
 
 class Post extends Model
 {
+    // Laravel <= 10.x
     protected $casts = [
         'content' => PurifyHtmlOnGet::class,
     ];
+
+    // Laravel >= 11.x
+    protected function casts()
+    {
+        return [
+            'content' => PurifyHtmlOnGet::class,
+        ];
+    }
 }
 ```
 
@@ -220,9 +228,18 @@ You can even configure the configuration that is used when casting by appending 
 ```
 
 ```php
+// Laravel <= 10.x
 protected $casts = [
     'content' => PurifyHtmlOnGet::class.':other',
 ];
+
+// Laravel >= 11.x
+protected function casts()
+{
+    return [
+        'content' => PurifyHtmlOnGet::class.':other',
+    ];
+}
 ```
 
 This helps tremendously if you change your sanization requirements later down
@@ -291,7 +308,7 @@ class CustomDefinition implements Definition
 ##### Basecamp Trix Definition
 
 Here's an example for customizing the definition in order to support Basecamp's Trix WYSIWYG editor
-(credit to [Antonio Primera](https://github.com/stevebauman/purify/issues/7)):
+(credit to [Antonio Primera](https://github.com/stevebauman/purify/issues/7) & [Daniel Sun](https://github.com/stevebauman/purify/issues/77)):
 
 ```php
 namespace App;
@@ -311,9 +328,12 @@ class TrixPurifierDefinitions implements Definition
     public static function apply(HTMLPurifier_HTMLDefinition $definition)
     {
         $definition->addElement('figure', 'Inline', 'Inline', 'Common');
-        $definition->addAttribute('figure', 'class', 'Text');
+        $definition->addAttribute('figure', 'class', 'Class');
+        $definition->addAttribute('figure', 'data-trix-attachment', 'Text');
+        $definition->addAttribute('figure', 'data-trix-attributes', 'Text');
+
         $definition->addElement('figcaption', 'Inline', 'Inline', 'Common');
-        $definition->addAttribute('figcaption', 'class', 'Text');
+        $definition->addAttribute('figcaption', 'class', 'Class');
         $definition->addAttribute('figcaption', 'data-trix-placeholder', 'Text');
 
         $definition->addAttribute('a', 'rel', 'Text');
@@ -332,6 +352,52 @@ class TrixPurifierDefinitions implements Definition
     }
 }
 ```
+
+
+#### Custom CSS definitions
+
+It's possible to override the CSS definitions, this allows you to customize what
+inline styles you allow and their properties and values. This can help fill in
+missing values for properties such as text-align, which by default is missing start
+and end values. You can do this by creating a CSS definition.
+
+To create your own CSS definition, create a new class and have it implement `CssDefinition`:
+
+```php
+namespace App;
+
+use HTMLPurifier_CSSDefinition;
+use Stevebauman\Purify\Definitions\CssDefinition;
+
+class CustomCssDefinition implements CssDefinition
+{
+    /**
+     * Apply rules to the CSS Purifier definition.
+     *
+     * @param HTMLPurifier_CSSDefinition $definition
+     *
+     * @return void
+     */
+    public static function apply(HTMLPurifier_CSSDefinition $definition)
+    {
+        // Customize the CSS purifier definition.
+        $definition->info['text-align'] = new \HTMLPurifier_AttrDef_Enum(
+            ['right', 'left', 'center', 'start', 'end'],
+            false,
+        );
+    }
+}
+```
+
+Then, reference this class in the `config/purify.php` file in the `css-definitions` key:
+
+```php
+// config/purify.php
+
+'css-definitions' => \App\CustomCssDefinition::class,
+```
+
+See the class HTMLPurifier_CSSDefinition in the HTMLPurifier library for other examples of what can be changed.
 
 ### Upgrading from v4 to v5
 
@@ -395,3 +461,36 @@ key mentioned above), then you may reconfigure this in the new `serializer` conf
 ```
 
 You're all set!
+
+### Upgrading from v5 to v6
+
+In v6, the HTMLPurifier Serializer storage mechanism was updated for Laravel Vapor support, allowing 
+you to store the serialized HTMLPurifier definitions in a Redis cache, or an external filesystem.
+
+To upgrade from v5, install the latest version by running the below command in the root of your project:
+
+```bash
+composer require stevebauman/purify
+```
+
+Then, navigate into your published `config/purify.php` configuration file and 
+replace the `serializer` configuration option with the below:
+
+```diff
+-    'serializer' => storage_path('app/purify'),
+
++    'serializer' => [
++       'disk' => env('FILESYSTEM_DISK', 'local'),
++       'path' => 'purify',
++       'cache' => \Stevebauman\Purify\Cache\FilesystemDefinitionCache::class,
++    ],
++
++    // 'serializer' => [
++    //    'driver' => env('CACHE_DRIVER', 'file'),
++    //    'cache' => \Stevebauman\Purify\Cache\CacheDefinitionCache::class,
++    // ],
+```
+
+This will update the syntax used to control the serializer cache mechanism. You may now uncomment 
+the below `serializer` cache definition if you would like to use a Laravel Cache driver
+(such as Redis) to store the serialized definitions.

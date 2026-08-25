@@ -29,7 +29,9 @@ class TimersController extends Controller
         if ($existingTimer) {
             $start = Carbon::parse($existingTimer->started_at);
             $stopped = new Carbon();
-            $existingTimer->duration = $stopped->diffInSeconds($start);
+            // Carbon 3 hands back a signed float here (Carbon 2 gave an
+            // absolute int), so a running timer would be stored negative.
+            $existingTimer->duration = (int) $start->diffInSeconds($stopped, true);
             $existingTimer->stopped_at = $stopped;
             $existingTimer->save();
         }

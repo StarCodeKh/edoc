@@ -1,20 +1,24 @@
 <?php
 
+declare(strict_types=1);
+
 namespace League\Glide;
 
+use Intervention\Image\Drivers\Gd\Driver as GdDriver;
+use Intervention\Image\Drivers\Imagick\Driver as ImagickDriver;
 use Intervention\Image\ImageManager;
-use InvalidArgumentException;
+use Intervention\Image\Interfaces\ImageManagerInterface;
 use League\Flysystem\Filesystem;
 use League\Flysystem\FilesystemOperator;
 use League\Flysystem\Local\LocalFilesystemAdapter;
 use League\Glide\Api\Api;
+use League\Glide\Api\Encoder;
 use League\Glide\Manipulators\Background;
 use League\Glide\Manipulators\Blur;
 use League\Glide\Manipulators\Border;
 use League\Glide\Manipulators\Brightness;
 use League\Glide\Manipulators\Contrast;
 use League\Glide\Manipulators\Crop;
-use League\Glide\Manipulators\Encode;
 use League\Glide\Manipulators\Filter;
 use League\Glide\Manipulators\Flip;
 use League\Glide\Manipulators\Gamma;
@@ -30,14 +34,14 @@ class ServerFactory
     /**
      * Configuration parameters.
      *
-     * @var array
+     * @var array<string, mixed>
      */
-    protected $config;
+    protected array $config = [];
 
     /**
      * Create ServerFactory instance.
      *
-     * @param array $config Configuration parameters.
+     * @param array<string, mixed> $config Configuration parameters.
      */
     public function __construct(array $config = [])
     {
@@ -49,26 +53,27 @@ class ServerFactory
      *
      * @return Server Configured Glide server.
      */
-    public function getServer()
+    public function getServer(): Server
     {
         $server = new Server(
             $this->getSource(),
             $this->getCache(),
-            $this->getApi()
+            $this->getApi(),
         );
 
-        $server->setSourcePathPrefix($this->getSourcePathPrefix() ?: '');
-        $server->setCachePathPrefix($this->getCachePathPrefix() ?: '');
+        $server->setSourcePathPrefix($this->getSourcePathPrefix() ?? '');
+        $server->setCachePathPrefix($this->getCachePathPrefix() ?? '');
         $server->setGroupCacheInFolders($this->getGroupCacheInFolders());
         $server->setCacheWithFileExtensions($this->getCacheWithFileExtensions());
         $server->setDefaults($this->getDefaults());
         $server->setPresets($this->getPresets());
-        $server->setBaseUrl($this->getBaseUrl() ?: '');
+        $server->setBaseUrl($this->getBaseUrl() ?? '');
         $server->setResponseFactory($this->getResponseFactory());
         $server->setCachePathCallable($this->getCachePathCallable());
 
-        if ($this->getTempDir()) {
-            $server->setTempDir($this->getTempDir());
+        $tempDir = $this->getTempDir();
+        if ($tempDir !== null) {
+            $server->setTempDir($tempDir);
         }
 
         return $server;
@@ -79,15 +84,15 @@ class ServerFactory
      *
      * @return FilesystemOperator Source file system.
      */
-    public function getSource()
+    public function getSource(): FilesystemOperator
     {
         if (!isset($this->config['source'])) {
-            throw new InvalidArgumentException('A "source" file system must be set.');
+            throw new \InvalidArgumentException('A "source" file system must be set.');
         }
 
         if (is_string($this->config['source'])) {
             return new Filesystem(
-                new LocalFilesystemAdapter($this->config['source'])
+                new LocalFilesystemAdapter($this->config['source']),
             );
         }
 
@@ -99,11 +104,9 @@ class ServerFactory
      *
      * @return string|null Source path prefix.
      */
-    public function getSourcePathPrefix()
+    public function getSourcePathPrefix(): ?string
     {
-        if (isset($this->config['source_path_prefix'])) {
-            return $this->config['source_path_prefix'];
-        }
+        return $this->config['source_path_prefix'] ?? null;
     }
 
     /**
@@ -111,15 +114,15 @@ class ServerFactory
      *
      * @return FilesystemOperator Cache file system.
      */
-    public function getCache()
+    public function getCache(): FilesystemOperator
     {
         if (!isset($this->config['cache'])) {
-            throw new InvalidArgumentException('A "cache" file system must be set.');
+            throw new \InvalidArgumentException('A "cache" file system must be set.');
         }
 
         if (is_string($this->config['cache'])) {
             return new Filesystem(
-                new LocalFilesystemAdapter($this->config['cache'])
+                new LocalFilesystemAdapter($this->config['cache']),
             );
         }
 
@@ -131,23 +134,17 @@ class ServerFactory
      *
      * @return string|null Cache path prefix.
      */
-    public function getCachePathPrefix()
+    public function getCachePathPrefix(): ?string
     {
-        if (isset($this->config['cache_path_prefix'])) {
-            return $this->config['cache_path_prefix'];
-        }
+        return $this->config['cache_path_prefix'] ?? null;
     }
 
     /**
      * Get temporary EXIF data directory.
-     *
-     * @return string
      */
-    public function getTempDir()
+    public function getTempDir(): ?string
     {
-        if (isset($this->config['temp_dir'])) {
-            return $this->config['temp_dir'];
-        }
+        return $this->config['temp_dir'] ?? null;
     }
 
     /**
@@ -155,7 +152,7 @@ class ServerFactory
      *
      * @return \Closure|null Cache path callable.
      */
-    public function getCachePathCallable()
+    public function getCachePathCallable(): ?\Closure
     {
         return $this->config['cache_path_callable'] ?? null;
     }
@@ -165,13 +162,9 @@ class ServerFactory
      *
      * @return bool Whether to group cache in folders.
      */
-    public function getGroupCacheInFolders()
+    public function getGroupCacheInFolders(): bool
     {
-        if (isset($this->config['group_cache_in_folders'])) {
-            return $this->config['group_cache_in_folders'];
-        }
-
-        return true;
+        return $this->config['group_cache_in_folders'] ?? true;
     }
 
     /**
@@ -179,13 +172,9 @@ class ServerFactory
      *
      * @return bool Whether to cache with file extensions.
      */
-    public function getCacheWithFileExtensions()
+    public function getCacheWithFileExtensions(): bool
     {
-        if (isset($this->config['cache_with_file_extensions'])) {
-            return $this->config['cache_with_file_extensions'];
-        }
-
-        return false;
+        return $this->config['cache_with_file_extensions'] ?? false;
     }
 
     /**
@@ -193,15 +182,15 @@ class ServerFactory
      *
      * @return FilesystemOperator|null Watermarks file system.
      */
-    public function getWatermarks()
+    public function getWatermarks(): ?FilesystemOperator
     {
         if (!isset($this->config['watermarks'])) {
-            return;
+            return null;
         }
 
         if (is_string($this->config['watermarks'])) {
             return new Filesystem(
-                new LocalFilesystemAdapter($this->config['watermarks'])
+                new LocalFilesystemAdapter($this->config['watermarks']),
             );
         }
 
@@ -213,11 +202,9 @@ class ServerFactory
      *
      * @return string|null Watermarks path prefix.
      */
-    public function getWatermarksPathPrefix()
+    public function getWatermarksPathPrefix(): ?string
     {
-        if (isset($this->config['watermarks_path_prefix'])) {
-            return $this->config['watermarks_path_prefix'];
-        }
+        return $this->config['watermarks_path_prefix'] ?? null;
     }
 
     /**
@@ -225,38 +212,58 @@ class ServerFactory
      *
      * @return Api Image manipulation API.
      */
-    public function getApi()
+    public function getApi(): Api
     {
         return new Api(
             $this->getImageManager(),
-            $this->getManipulators()
+            $this->getManipulators(),
+            $this->getEncoder(),
         );
+    }
+
+    /**
+     * Get image encoder.
+     *
+     * @return Encoder|null Image encoder.
+     */
+    public function getEncoder(): ?Encoder
+    {
+        return $this->config['encoder'] ?? null;
     }
 
     /**
      * Get Intervention image manager.
      *
-     * @return ImageManager Intervention image manager.
+     * @return ImageManagerInterface Intervention image manager.
      */
-    public function getImageManager()
+    public function getImageManager(): ImageManagerInterface
     {
         $driver = 'gd';
+        $options = [];
 
         if (isset($this->config['driver'])) {
             $driver = $this->config['driver'];
         }
 
-        return new ImageManager([
-            'driver' => $driver,
-        ]);
+        if (is_array($driver)) {
+            $options = $driver;
+            $driver = $options['driver'] ?? 'gd';
+            unset($options['driver']);
+        }
+
+        return ImageManager::usingDriver(match ($driver) {
+            'gd' => GdDriver::class,
+            'imagick' => ImagickDriver::class,
+            default => $driver,
+        }, ...$options);
     }
 
     /**
      * Get image manipulators.
      *
-     * @return array Image manipulators.
+     * @return array<Manipulators\ManipulatorInterface> Image manipulators.
      */
-    public function getManipulators()
+    public function getManipulators(): array
     {
         return [
             new Orientation(),
@@ -270,10 +277,9 @@ class ServerFactory
             new Flip(),
             new Blur(),
             new Pixelate(),
-            new Watermark($this->getWatermarks(), $this->getWatermarksPathPrefix() ?: ''),
+            new Watermark($this->getWatermarks(), $this->getWatermarksPathPrefix() ?? ''),
             new Background(),
             new Border(),
-            new Encode(),
         ];
     }
 
@@ -282,39 +288,29 @@ class ServerFactory
      *
      * @return int|null Maximum image size.
      */
-    public function getMaxImageSize()
+    public function getMaxImageSize(): ?int
     {
-        if (isset($this->config['max_image_size'])) {
-            return $this->config['max_image_size'];
-        }
+        return $this->config['max_image_size'] ?? null;
     }
 
     /**
      * Get default image manipulations.
      *
-     * @return array Default image manipulations.
+     * @return array<string, mixed> Default image manipulations.
      */
-    public function getDefaults()
+    public function getDefaults(): array
     {
-        if (isset($this->config['defaults'])) {
-            return $this->config['defaults'];
-        }
-
-        return [];
+        return $this->config['defaults'] ?? [];
     }
 
     /**
      * Get preset image manipulations.
      *
-     * @return array Preset image manipulations.
+     * @return array<string, array<string, mixed>> Preset image manipulations.
      */
-    public function getPresets()
+    public function getPresets(): array
     {
-        if (isset($this->config['presets'])) {
-            return $this->config['presets'];
-        }
-
-        return [];
+        return $this->config['presets'] ?? [];
     }
 
     /**
@@ -322,11 +318,9 @@ class ServerFactory
      *
      * @return string|null Base URL.
      */
-    public function getBaseUrl()
+    public function getBaseUrl(): ?string
     {
-        if (isset($this->config['base_url'])) {
-            return $this->config['base_url'];
-        }
+        return $this->config['base_url'] ?? null;
     }
 
     /**
@@ -334,21 +328,19 @@ class ServerFactory
      *
      * @return ResponseFactoryInterface|null Response factory.
      */
-    public function getResponseFactory()
+    public function getResponseFactory(): ?ResponseFactoryInterface
     {
-        if (isset($this->config['response'])) {
-            return $this->config['response'];
-        }
+        return $this->config['response'] ?? null;
     }
 
     /**
      * Create configured server.
      *
-     * @param array $config Configuration parameters.
+     * @param array<string, mixed> $config Configuration parameters.
      *
      * @return Server Configured server.
      */
-    public static function create(array $config = [])
+    public static function create(array $config = []): Server
     {
         return (new self($config))->getServer();
     }

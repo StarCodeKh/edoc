@@ -26,7 +26,7 @@
 </template>
 
 <script>
-import { Head, Link } from '@inertiajs/vue3'
+import { Head, Link, useForm } from '@inertiajs/vue3'
 import Layout from '@/Shared/Layout.vue'
 import FileInput from '@/Shared/FileInput.vue'
 import TextInput from '@/Shared/TextInput.vue'
@@ -52,7 +52,7 @@ export default {
   remember: 'form',
   data() {
     return {
-      form: this.$inertia.form({
+      form: useForm({
         first_name: '',
         last_name: '',
         phone: '',

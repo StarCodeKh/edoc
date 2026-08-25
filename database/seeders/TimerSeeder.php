@@ -78,8 +78,8 @@ class TimerSeeder extends Seeder
                     }
                     
                     // Calculate duration in minutes and seconds before potentially setting stoppedAt to null
-                    $duration = $startedAt->diffInMinutes($stoppedAt);
-                    $durationSeconds = $startedAt->diffInSeconds($stoppedAt);
+                    $duration = (int) $startedAt->diffInMinutes($stoppedAt, true);
+                    $durationSeconds = (int) $startedAt->diffInSeconds($stoppedAt, true);
                     
                     // All timers are stopped for demo purposes
                     $isRunning = false;

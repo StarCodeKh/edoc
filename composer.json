@@ -2,40 +2,43 @@
     "name": "laravel/laravel",
     "type": "project",
     "description": "eDoc - project management system.",
-    "keywords": ["eDoc", "project management", "task management"],
+    "keywords": [
+        "eDoc",
+        "project management",
+        "task management"
+    ],
     "license": "MIT",
     "require": {
-        "php": "^8.2",
+        "doctrine/dbal": "^4.0",
         "ext-exif": "*",
         "ext-gd": "*",
-        "doctrine/dbal": "^3.0",
         "fakerphp/faker": "^1.9.1",
         "guzzlehttp/guzzle": "^7.0.1",
-        "inertiajs/inertia-laravel": "^0.6.11",
-        "jackiedo/dotenv-editor": "^2.0",
-        "laravel/framework": "^10.0",
-        "laravel/sanctum": "^3.2",
+        "inertiajs/inertia-laravel": "^3.0",
+        "laravel/framework": "^13.0",
+        "laravel/sanctum": "^4.0",
         "laravel/slack-notification-channel": "^3.2",
-        "laravel/tinker": "^2.5",
-        "league/glide-laravel": "^1.0",
-        "maatwebsite/excel": "^3.1",
+        "laravel/tinker": "^3.0",
+        "league/glide": "^4.0",
+        "maatwebsite/excel": "^4.0",
         "mavinoo/laravel-batch": "^2.3",
+        "php": "^8.3",
         "phpmailer/phpmailer": "^6.6",
         "picqer/php-barcode-generator": "^3.2",
         "pusher/pusher-php-server": "^7.2",
         "simplesoftwareio/simple-qrcode": "^4.2",
         "spatie/laravel-slack-alerts": "^1.3",
-        "stevebauman/purify": "^5.0",
-        "symfony/http-client": "^6.3",
-        "symfony/mailgun-mailer": "^6.3",
-        "symfony/postmark-mailer": "^6.3",
+        "stevebauman/purify": "^6.0",
+        "symfony/http-client": "^7.0",
+        "symfony/mailgun-mailer": "^7.0",
+        "symfony/postmark-mailer": "^7.0",
         "tightenco/ziggy": "^2.3"
     },
     "require-dev": {
         "laravel/sail": "^1.0.1",
         "mockery/mockery": "^1.4.2",
-        "nunomaduro/collision": "^6.1",
-        "phpunit/phpunit": "^9.3.3",
+        "nunomaduro/collision": "^8.0",
+        "phpunit/phpunit": "^11.0",
         "spatie/laravel-ignition": "^2.0"
     },
     "autoload": {
@@ -82,6 +85,9 @@
             "advisories": {
                 "block": false
             }
+        },
+        "platform": {
+            "php": "8.3.0"
         }
     },
     "minimum-stability": "stable",

@@ -218,7 +218,7 @@
 </template>
 
 <script>
-    import { Link, Head } from '@inertiajs/vue3'
+    import { Link, Head, useForm } from '@inertiajs/vue3'
     import Icon from '@/Shared/Icon.vue'
     import Layout from '@/Shared/Layout.vue'
     import Pagination from '@/Shared/Pagination.vue'
@@ -261,7 +261,7 @@
             'zip', 'rar', '7z'
             ],
             newFileType: '',
-            form: this.$inertia.form({
+            form: useForm({
                 app_name: this.settings.app_name.value,
                 enable_registration: Boolean(parseInt(this.settings.enable_registration.value, 10)),
                 logo: null,

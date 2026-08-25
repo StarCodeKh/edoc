@@ -5,7 +5,7 @@ namespace App\Helpers;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Jackiedo\DotenvEditor\Facades\DotenvEditor;
+use App\Support\EnvFile;
 
 class EnvironmentManager
 {
@@ -115,7 +115,7 @@ class EnvironmentManager
     public function saveFileWizard(Request $request)
     {
         $results = trans('installer_messages.environment.success');
-        $env = DotenvEditor::load();
+        $env = EnvFile::load();
         $sessionRememberLifetime = $env->getValue('SESSION_REMEMBER_LIFETIME');
         $viteAppName = '${APP_NAME}';
         $recaptchaKey = $env->getValue('RE_CAPTCHA_KEY');

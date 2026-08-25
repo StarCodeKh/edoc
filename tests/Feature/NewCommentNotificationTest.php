@@ -5,11 +5,16 @@ namespace Tests\Feature;
 use App\Models\Task;
 use App\Models\User;
 use App\Notifications\NewCommentNotification;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class NewCommentNotificationTest extends TestCase
 {
+    // The test builds users and a task, so it needs the schema; without this
+    // it ran against an empty in-memory database and could never pass.
+    use RefreshDatabase;
+
     public function test_assignees_are_notified_when_a_comment_is_added()
     {
         Notification::fake(); // Prevents actual notifications from being sent

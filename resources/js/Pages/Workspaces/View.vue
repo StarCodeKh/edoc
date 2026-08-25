@@ -446,7 +446,7 @@
 </template>
 
 <script>
-import {Head, Link} from '@inertiajs/vue3'
+import { Head, Link, useForm } from '@inertiajs/vue3'
 import Layout from '@/Shared/Layout.vue'
 import Icon from '@/Shared/Icon.vue'
 import Pagination from '@/Shared/Pagination.vue'
@@ -501,7 +501,7 @@ export default {
                 { value: 'name_desc', label: 'Name (Z-A)', icon: 'sort-alpha-desc' },
                 { value: 'starred', label: 'Starred First', icon: 'star' },
             ],
-            form: this.$inertia.form({
+            form: useForm({
                 name: this.workspace.name,
                 type_id: this.workspace.type_id,
                 website: this.workspace.website,

@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
-use Jackiedo\DotenvEditor\Facades\DotenvEditor;
+use App\Support\EnvFile;
 use Exception;
 
 class ModernInstallerController extends Controller
@@ -88,7 +88,7 @@ class ModernInstallerController extends Controller
 
         if ($result['success']) {
             // Store purchase code in .env for installer reference
-            $env = DotenvEditor::load();
+            $env = EnvFile::load();
             $env->setKey('APP_PCE', $purchaseCode);
             $env->save();
 
@@ -205,7 +205,7 @@ class ModernInstallerController extends Controller
                 throw new Exception('.env file is not writable. Please check file permissions.');
             }
 
-            $env = DotenvEditor::load();
+            $env = EnvFile::load();
 
             // Application settings
             $env->setKey('APP_NAME', $request->input('app_name'));
@@ -320,7 +320,7 @@ class ModernInstallerController extends Controller
             ]);
 
             // Step 5: Mark as installed
-            $env = DotenvEditor::load();
+            $env = EnvFile::load();
             $env->setKey('APP_INSTALLED', 'true');
             $env->setKey('APP_ENV', 'production');
             $env->setKey('APP_DEBUG', 'false');

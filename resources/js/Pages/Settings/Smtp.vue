@@ -22,7 +22,7 @@
 </template>
 
 <script>
-import { Link, Head } from '@inertiajs/vue3'
+import { Link, Head, useForm } from '@inertiajs/vue3'
 import Icon from '@/Shared/Icon.vue'
 import Layout from '@/Shared/Layout.vue'
 import Pagination from '@/Shared/Pagination.vue'
@@ -51,7 +51,7 @@ export default {
     remember: 'form',
   data() {
     return {
-        form: this.$inertia.form({
+        form: useForm({
             MAIL_HOST: this.demo?'******************':this.keys['MAIL_HOST']['value'],
             MAIL_PORT: this.keys['MAIL_PORT']['value'],
             MAIL_USERNAME: this.demo?'**********************':this.keys['MAIL_USERNAME']['value'],

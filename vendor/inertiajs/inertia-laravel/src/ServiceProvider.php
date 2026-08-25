@@ -2,23 +2,35 @@
 
 namespace Inertia;
 
-use LogicException;
-use Inertia\Ssr\Gateway;
-use ReflectionException;
+use Illuminate\Contracts\Http\Kernel as HttpKernelContract;
+use Illuminate\Foundation\Http\Kernel;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Inertia\Ssr\HttpGateway;
 use Illuminate\Routing\Router;
-use Illuminate\View\FileViewFinder;
-use Illuminate\Testing\TestResponse;
-use Inertia\Testing\TestResponseMacros;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
-use Illuminate\Foundation\Testing\TestResponse as LegacyTestResponse;
+use Illuminate\Testing\TestResponse;
+use Illuminate\View\FileViewFinder;
+use Inertia\DevTools\DevTools;
+use Inertia\DevTools\DevToolsServiceProvider;
+use Inertia\DevTools\SourceLocator;
+use Inertia\Ssr\Gateway;
+use Inertia\Ssr\HttpGateway;
+use Inertia\Ssr\SsrState;
+use Inertia\Support\Header;
+use Inertia\Testing\TestResponseMacros;
+use LogicException;
 
 class ServiceProvider extends BaseServiceProvider
 {
+    /**
+     * Register the service provider.
+     */
     public function register(): void
     {
+        $this->app->singleton(HttpGateway::class);
         $this->app->singleton(ResponseFactory::class);
+        $this->app->scoped(SsrState::class);
         $this->app->bind(Gateway::class, HttpGateway::class);
 
         $this->mergeConfigFrom(
@@ -26,29 +38,63 @@ class ServiceProvider extends BaseServiceProvider
             'inertia'
         );
 
+        $this->registerBladeComponents();
         $this->registerBladeDirectives();
+        $this->registerRedirectMacro();
         $this->registerRequestMacro();
         $this->registerRouterMacro();
         $this->registerTestingMacros();
+        $this->registerMiddleware();
+        $this->app->register(DevToolsServiceProvider::class);
 
-        $this->app->bind('inertia.testing.view-finder', function ($app) {
+        $this->app->bind('inertia.view-finder', function ($app) {
             return new FileViewFinder(
                 $app['files'],
-                $app['config']->get('inertia.testing.page_paths'),
-                $app['config']->get('inertia.testing.page_extensions')
+                $app['config']->get('inertia.pages.paths'),
+                $app['config']->get('inertia.pages.extensions')
             );
         });
     }
 
+    /**
+     * Boot the service provider.
+     */
     public function boot(): void
     {
         $this->registerConsoleCommands();
+        $this->pushRedirectMiddleware();
 
         $this->publishes([
             __DIR__.'/../config/inertia.php' => config_path('inertia.php'),
         ]);
     }
 
+    /**
+     * Register the global redirect middleware for Inertia requests.
+     */
+    protected function pushRedirectMiddleware(): void
+    {
+        $this->callAfterResolving(HttpKernelContract::class, function ($kernel) {
+            if ($kernel instanceof Kernel) {
+                $kernel->pushMiddleware(Middleware\EnsureGetOnRedirect::class);
+            }
+        });
+    }
+
+    /**
+     * Register Blade components for rendering Inertia head and body content.
+     */
+    protected function registerBladeComponents(): void
+    {
+        $this->callAfterResolving('blade.compiler', function () {
+            Blade::componentNamespace('Inertia\\View\\Components', 'inertia');
+        });
+    }
+
+    /**
+     * Register @inertia and @inertiaHead directives for rendering the Inertia
+     * root element and SSR head content in Blade templates.
+     */
     protected function registerBladeDirectives(): void
     {
         $this->callAfterResolving('blade.compiler', function ($blade) {
@@ -57,6 +103,10 @@ class ServiceProvider extends BaseServiceProvider
         });
     }
 
+    /**
+     * Register Artisan commands for managing Inertia middleware creation
+     * and server-side rendering operations when running in console mode.
+     */
     protected function registerConsoleCommands(): void
     {
         if (! $this->app->runningInConsole()) {
@@ -67,43 +117,83 @@ class ServiceProvider extends BaseServiceProvider
             Commands\CreateMiddleware::class,
             Commands\StartSsr::class,
             Commands\StopSsr::class,
+            Commands\CheckSsr::class,
         ]);
     }
 
-    protected function registerRequestMacro(): void
+    /**
+     * Add a 'preserveFragment' method to redirect responses that signals
+     * the frontend to preserve the URL fragment across the redirect.
+     */
+    protected function registerRedirectMacro(): void
     {
-        Request::macro('inertia', function () {
-            return (bool) $this->header('X-Inertia');
-        });
-    }
+        RedirectResponse::macro('preserveFragment', function () {
+            inertia()->preserveFragment();
 
-    protected function registerRouterMacro(): void
-    {
-        Router::macro('inertia', function ($uri, $component, $props = []) {
-            return $this->match(['GET', 'HEAD'], $uri, '\\'.Controller::class)
-                ->defaults('component', $component)
-                ->defaults('props', $props);
+            return $this;
         });
     }
 
     /**
-     * @throws ReflectionException|LogicException
+     * Add an 'inertia' method to the Request class that returns true
+     * if the current request is an Inertia request.
+     */
+    protected function registerRequestMacro(): void
+    {
+        Request::macro('inertia', function () {
+            return (bool) $this->header(Header::INERTIA);
+        });
+    }
+
+    /**
+     * Register the router macro.
+     */
+    protected function registerRouterMacro(): void
+    {
+        /**
+         * @param  array<array-key, mixed>  $props
+         */
+        Router::macro('inertia', function ($uri, $component, $props = []) {
+            $route = $this->match(['GET', 'HEAD'], $uri, '\\'.Controller::class)
+                ->defaults('component', $component)
+                ->defaults('props', $props);
+
+            if (DevTools::enabled()) {
+                $source = app(SourceLocator::class)->captureCallerSource();
+
+                if ($source !== null) {
+                    $route->defaults(DevTools::RENDER_SOURCE_KEY, $source);
+                }
+            }
+
+            return $route;
+        });
+    }
+
+    /**
+     * Register the testing macros.
+     *
+     * @throws LogicException
      */
     protected function registerTestingMacros(): void
     {
         if (class_exists(TestResponse::class)) {
-            TestResponse::mixin(new TestResponseMacros());
-
-            return;
-        }
-
-        // Laravel <= 6.0
-        if (class_exists(LegacyTestResponse::class)) {
-            LegacyTestResponse::mixin(new TestResponseMacros());
+            TestResponse::mixin(new TestResponseMacros);
 
             return;
         }
 
         throw new LogicException('Could not detect TestResponse class.');
+    }
+
+    /**
+     * Register the middleware aliases.
+     */
+    protected function registerMiddleware(): void
+    {
+        $this->app['router']->aliasMiddleware(
+            'inertia.encrypt',
+            EncryptHistoryMiddleware::class
+        );
     }
 }

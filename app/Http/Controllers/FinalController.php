@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\URL;
-use Jackiedo\DotenvEditor\Facades\DotenvEditor;
+use App\Support\EnvFile;
 use App\Events\LaravelInstallerFinished;
 use App\Helpers\EnvironmentManager;
 use App\Helpers\FinalInstallManager;
@@ -56,7 +56,7 @@ class FinalController extends Controller
 
         User::create($userData);
 
-        $env = DotenvEditor::load();
+        $env = EnvFile::load();
         $env->setKey('APP_INSTALLED', 'true');
         $env->setKey('DB_SETUP', 'true');
         $env->save();

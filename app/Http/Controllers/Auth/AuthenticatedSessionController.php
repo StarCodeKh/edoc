@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
-use Jackiedo\DotenvEditor\Facades\DotenvEditor;
+use App\Support\EnvFile;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -30,7 +30,7 @@ class AuthenticatedSessionController extends Controller
     public function create()
     {
         $is_demo = (int)config('app.demo');
-        $env = DotenvEditor::load();
+        $env = EnvFile::load();
         $siteKey = $env->keyExists('RE_CAPTCHA_KEY')?$env->getValue('RE_CAPTCHA_KEY'):'';
         $enable_registration = Setting::where('slug', 'enable_registration')->first();
         $enable_registration = $enable_registration->value ?? 0;
@@ -46,7 +46,7 @@ class AuthenticatedSessionController extends Controller
             abort(403);
         }
 
-        $env = DotenvEditor::load();
+        $env = EnvFile::load();
         $is_demo = (int)config('app.demo');
         $siteKey = $env->keyExists('RE_CAPTCHA_KEY')?$env->getValue('RE_CAPTCHA_KEY'):'';
         return Inertia::render('Auth/Register', ['is_demo' => $is_demo, 'site_key' => $siteKey]);

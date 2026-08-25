@@ -251,7 +251,7 @@
     import Logo from '@/Shared/Logo.vue'
     import TextInput from '@/Shared/TextInput.vue'
     import LoadingButton from '@/Shared/LoadingButton.vue'
-    import { Head, Link } from '@inertiajs/vue3'
+    import { Head, Link, useForm } from '@inertiajs/vue3'
     import FlashMessages from '@/Shared/FlashMessages.vue'
     import vueRecaptcha from 'vue3-recaptcha2'
     import { Crown, Shield, User, Users } from 'lucide-vue-next'
@@ -289,7 +289,7 @@
                     message: '',
                 },
                 toastTimer: null,
-                form: this.$inertia.form({
+                form: useForm({
                     email: '',
                     password: '',
                     remember: false,

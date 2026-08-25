@@ -1,22 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace League\Glide\Signatures;
 
 class Signature implements SignatureInterface
 {
     /**
      * Secret key used to generate signature.
-     *
-     * @var string
      */
-    protected $signKey;
+    protected string $signKey;
 
     /**
      * Create Signature instance.
      *
      * @param string $signKey Secret key used to generate signature.
      */
-    public function __construct($signKey)
+    public function __construct(string $signKey)
     {
         $this->signKey = $signKey;
     }
@@ -24,12 +24,12 @@ class Signature implements SignatureInterface
     /**
      * Add an HTTP signature to manipulation parameters.
      *
-     * @param string $path   The resource path.
-     * @param array  $params The manipulation parameters.
+     * @param string               $path   The resource path.
+     * @param array<string, mixed> $params The manipulation parameters.
      *
-     * @return array The updated manipulation parameters.
+     * @return array<string, mixed> The updated manipulation parameters.
      */
-    public function addSignature($path, array $params)
+    public function addSignature(string $path, array $params): array
     {
         return array_merge($params, ['s' => $this->generateSignature($path, $params)]);
     }
@@ -37,14 +37,12 @@ class Signature implements SignatureInterface
     /**
      * Validate a request signature.
      *
-     * @param string $path   The resource path.
-     * @param array  $params The manipulation params.
+     * @param string               $path   The resource path.
+     * @param array<string, mixed> $params The manipulation params.
      *
      * @throws SignatureException
-     *
-     * @return void
      */
-    public function validateRequest($path, array $params)
+    public function validateRequest(string $path, array $params): void
     {
         if (!isset($params['s'])) {
             throw new SignatureException('Signature is missing.');
@@ -58,16 +56,16 @@ class Signature implements SignatureInterface
     /**
      * Generate an HTTP signature.
      *
-     * @param string $path   The resource path.
-     * @param array  $params The manipulation parameters.
+     * @param string               $path   The resource path.
+     * @param array<string, mixed> $params The manipulation parameters.
      *
      * @return string The generated HTTP signature.
      */
-    public function generateSignature($path, array $params)
+    public function generateSignature(string $path, array $params): string
     {
         unset($params['s']);
         ksort($params);
 
-        return md5($this->signKey.':'.ltrim($path, '/').'?'.http_build_query($params));
+        return md5($this->signKey . ':' . ltrim($path, '/') . '?' . http_build_query($params));
     }
 }

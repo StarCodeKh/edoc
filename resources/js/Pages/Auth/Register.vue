@@ -156,7 +156,7 @@
     import TextInput from '@/Shared/TextInput.vue'
     import LoadingButton from '@/Shared/LoadingButton.vue'
     import FlashMessages from '@/Shared/FlashMessages.vue'
-    import { Head, Link } from '@inertiajs/vue3'
+    import { Head, Link, useForm } from '@inertiajs/vue3'
     import vueRecaptcha from "vue3-recaptcha2";
 
     export default {
@@ -177,7 +177,7 @@
     data() {
         return {
             disable_button: true,
-        form: this.$inertia.form({
+        form: useForm({
             first_name: '',
             last_name: '',
             email: '',

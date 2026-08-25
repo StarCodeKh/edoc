@@ -38,7 +38,7 @@
 </template>
 
 <script>
-import { Link, Head } from '@inertiajs/vue3'
+import { Link, Head, useForm } from '@inertiajs/vue3'
 import Layout from '@/Shared/Layout.vue'
 import TextInput from '@/Shared/TextInput.vue'
 import LoadingButton from '@/Shared/LoadingButton.vue'
@@ -58,7 +58,7 @@ export default {
   remember: 'form',
   data() {
     return {
-      form: this.$inertia.form({
+      form: useForm({
         name: null,
           slug: null,
           create_workspace: null,

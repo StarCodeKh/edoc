@@ -176,7 +176,7 @@
 import Logo from '@/Shared/Logo.vue'
 import TextInput from '@/Shared/TextInput.vue'
 import LoadingButton from '@/Shared/LoadingButton.vue'
-import { Head, Link } from '@inertiajs/vue3'
+import { Head, Link, useForm } from '@inertiajs/vue3'
 import FlashMessages from '@/Shared/FlashMessages.vue'
 import vueRecaptcha from 'vue3-recaptcha2';
 
@@ -201,7 +201,7 @@ export default {
             enable_register: parseInt(this.enable_registration.value, 10),
             loadingTimeout: 30000,
             disable_login_button: true,
-            form: this.$inertia.form({
+            form: useForm({
                 email: '',
                 password: '',
                 remember: false,

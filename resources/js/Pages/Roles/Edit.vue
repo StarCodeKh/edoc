@@ -40,7 +40,7 @@
 
 <script>
 import Layout from '@/Shared/Layout.vue'
-import { Link, Head } from '@inertiajs/vue3'
+import { Link, Head, useForm } from '@inertiajs/vue3'
 import TextInput from '@/Shared/TextInput.vue'
 import LoadingButton from '@/Shared/LoadingButton.vue'
 
@@ -62,7 +62,7 @@ export default {
     remember: 'form',
     data() {
         return {
-            form: this.$inertia.form({
+            form: useForm({
                 name: this.role.name,
                 slug: this.role.slug,
                 create_workspace: !!this.role.create_workspace,

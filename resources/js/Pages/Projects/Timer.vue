@@ -285,8 +285,12 @@
                                             <td class="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 memo-column">
                                                 <div class="text-xs sm:text-sm text-gray-900 max-w-[100px] sm:max-w-[150px] lg:max-w-xs">
                                                     <p v-if="log.title" class="truncate">{{ log.title }}</p>
-                                                    <p v-else class="text-gray-400 italic hidden sm:block">No memo</p>
-                                                    <p v-else class="text-gray-400 italic sm:hidden">-</p>
+                                                    <!-- Two v-else in a row is not a chain; the pair of
+                                                         placeholders belongs inside one v-else. -->
+                                                    <template v-else>
+                                                        <p class="text-gray-400 italic hidden sm:block">{{ $t('No memo') }}</p>
+                                                        <p class="text-gray-400 italic sm:hidden">-</p>
+                                                    </template>
                                     </div>
                                 </td>
                             </tr>

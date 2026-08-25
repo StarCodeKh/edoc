@@ -19,6 +19,12 @@ class ChangePriorityIdTypeOnTasksTable extends Migration
     public function up()
     {
         Schema::table('tasks', function (Blueprint $table) {
+            // The column was created with ->index(). MySQL drops that index
+            // along with the column; SQLite refuses and leaves the migration
+            // half-applied, so the index goes first either way.
+            if (Schema::hasIndex('tasks', 'tasks_priority_id_index')) {
+                $table->dropIndex('tasks_priority_id_index');
+            }
             $table->dropColumn('priority_id');
         });
 

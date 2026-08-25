@@ -181,7 +181,7 @@
 </template>
 
 <script>
-    import { Link, Head } from '@inertiajs/vue3'
+    import { Link, Head, useForm } from '@inertiajs/vue3'
     import Icon from '@/Shared/Icon.vue'
     import Layout from '@/Shared/Layout.vue'
     import Pagination from '@/Shared/Pagination.vue'
@@ -204,7 +204,7 @@
     },
     data() {
         return {
-            form: this.$inertia.form({
+            form: useForm({
                 enable_pre_made_board: this.enable_list,
             }),
             workspaceList: [],

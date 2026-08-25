@@ -44,6 +44,12 @@ class Html5Definition implements Definition
             'type' => 'Text',
         ]);
 
+        // http://developers.whatwg.org/interactive-elements.html
+        $definition->addElement('details', 'Block', 'Flow', 'Common');
+        $definition->addElement('summary', 'Inline', 'Flow', 'Common', [
+            'open' => 'Bool',
+        ]);
+
         // http://developers.whatwg.org/text-level-semantics.html
         $definition->addElement('u', 'Inline', 'Inline', 'Common');
         $definition->addElement('s', 'Inline', 'Inline', 'Common');

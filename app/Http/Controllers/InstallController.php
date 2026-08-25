@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 //use App\Models\BusinessSetting;
 use App\Models\User;
-use Jackiedo\DotenvEditor\Facades\DotenvEditor;
+use App\Support\EnvFile;
 
 class InstallController extends Controller {
 
@@ -37,7 +37,7 @@ class InstallController extends Controller {
 
     public function init() {
         Artisan::call('key:generate');
-        $env = DotenvEditor::load();
+        $env = EnvFile::load();
         $env->setKey('APP_URL', URL::to('/'));
         $env->setKey('APP_ENV', 'local');
         $env->setKey('DB_SETUP', 'false');
@@ -55,7 +55,7 @@ class InstallController extends Controller {
     }
 
     public function database_setup() {
-        $purchaseCode = DotenvEditor::load()->getValue('APP_PCE');
+        $purchaseCode = EnvFile::load()->getValue('APP_PCE');
         if(preg_match("/^(\{)?[a-f\d]{8}(-[a-f\d]{4}){4}[a-f\d]{8}(?(1)\})$/i", $purchaseCode)){
             return view('installation.database_setup');
         }else{
@@ -64,7 +64,7 @@ class InstallController extends Controller {
     }
 
     public function mail_setup() {
-        $db_setup = DotenvEditor::load()->getValue('DB_SETUP');
+        $db_setup = EnvFile::load()->getValue('DB_SETUP');
         if($db_setup == 'true'){
             return view('installation.mail_setup');
         }else{
@@ -79,7 +79,7 @@ class InstallController extends Controller {
     public function purchaseCodeVerify() {
         $purchaseCode = Request::input('purchase_code');
         if(!empty($purchaseCode) && preg_match("/^(\{)?[a-f\d]{8}(-[a-f\d]{4}){4}[a-f\d]{8}(?(1)\})$/i", $purchaseCode)){
-            $env = DotenvEditor::load();
+            $env = EnvFile::load();
             $env->setKey('APP_PCE', $purchaseCode);
             $env->save();
             return redirect()->route('install.database_setup');
@@ -122,7 +122,7 @@ class InstallController extends Controller {
     }
 
     private function setEnvVariables($data) {
-        $env = DotenvEditor::load();
+        $env = EnvFile::load();
         foreach ($data as $data_key => $data_value){
             $env->setKey($data_key, $data_value);
         }
@@ -147,7 +147,7 @@ class InstallController extends Controller {
             'role_id' => $adminRole ? $adminRole->id: null,
             'title' => 'Engineer',
         ]);
-        $env = DotenvEditor::load();
+        $env = EnvFile::load();
         $env->setKey('APP_INSTALLED', 'true');
         $env->setKey('APP_ENV', 'production');
         $env->setKey('APP_DEBUG', 'false');
@@ -211,7 +211,7 @@ class InstallController extends Controller {
     }
 
     private function setDatabaseVariables($data) {
-        $env = DotenvEditor::load();
+        $env = EnvFile::load();
         $env->setKey('DB_HOST', $data['host']);
         $env->setKey('DB_PORT', $data['port']);
         $env->setKey('DB_DATABASE', $data['database']);

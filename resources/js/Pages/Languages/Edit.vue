@@ -65,7 +65,7 @@
 
 <script>
 import Layout from '@/Shared/Layout.vue'
-import { Link, Head } from '@inertiajs/vue3'
+import { Link, Head, useForm } from '@inertiajs/vue3'
 import TextInput from '@/Shared/TextInput.vue'
 import Icon from '@/Shared/Icon.vue'
 import LoadingButton from '@/Shared/LoadingButton.vue'
@@ -88,7 +88,7 @@ export default {
   data() {
     return {
         new_lang_form: false,
-      form: this.$inertia.form({
+      form: useForm({
           language_values: this.language_data.data,
           new_data: {}
       }),

@@ -42,7 +42,7 @@ return [
         'default' => [
             'Core.Encoding' => 'utf-8',
             'HTML.Doctype' => 'HTML 4.01 Transitional',
-            'HTML.Allowed' => 'h1,h2,h3,h4,h5,h6,b,strong,i,em,s,del,a[href|title],ul,ol,li,p[style],br,span,img[width|height|alt|src],blockquote',
+            'HTML.Allowed' => 'h1,h2,h3,h4,h5,h6,b,u,strong,i,em,s,del,a[href|title],ul,ol,li,p[style],br,span,img[width|height|alt|src],blockquote',
             'HTML.ForbiddenElements' => '',
             'CSS.AllowedProperties' => 'font,font-size,font-weight,font-style,font-family,text-decoration,padding-left,color,background-color,text-align',
             'AutoFormat.AutoParagraph' => false,
@@ -72,15 +72,44 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Serializer location
+    | HTMLPurifier CSS definitions
     |--------------------------------------------------------------------------
     |
-    | The location where HTMLPurifier can store its temporary serializer files.
-    | The filepath should be accessible and writable by the web server.
-    | A good place for this is in the framework's own storage path.
+    | Here you may specify a class that augments the CSS definitions used by
+    | HTMLPurifier. When specifying a custom class, make sure it implements
+    | the interface:
+    |
+    |   \Stevebauman\Purify\Definitions\CssDefinition
+    |
+    | Note that these definitions are applied to every Purifier instance.
+    |
+    | CSS should be extending $definition->info['css-attribute'] = values
+    | See HTMLPurifier_CSSDefinition for further explanation
     |
     */
 
-    'serializer' => storage_path('app/purify'),
+    'css-definitions' => null,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Serializer
+    |--------------------------------------------------------------------------
+    |
+    | The storage implementation where HTMLPurifier can store its serializer files.
+    | If the filesystem cache is in use, the path must be writable through the
+    | storage disk by the web server, otherwise an exception will be thrown.
+    |
+    */
+
+    'serializer' => [
+        'driver' => env('CACHE_STORE', env('CACHE_DRIVER', 'file')),
+        'cache' => \Stevebauman\Purify\Cache\CacheDefinitionCache::class,
+    ],
+
+    // 'serializer' => [
+    //    'disk' => env('FILESYSTEM_DISK', 'local'),
+    //    'path' => 'purify',
+    //    'cache' => \Stevebauman\Purify\Cache\FilesystemDefinitionCache::class,
+    // ],
 
 ];

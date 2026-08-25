@@ -88,7 +88,7 @@
     import Logo from '@/Shared/Logo.vue'
     import TextInput from '@/Shared/TextInput.vue'
     import LoadingButton from '@/Shared/LoadingButton.vue'
-    import { Head, Link } from '@inertiajs/vue3'
+    import { Head, Link, useForm } from '@inertiajs/vue3'
     import FlashMessages from '@/Shared/FlashMessages.vue'
 
     export default {
@@ -106,7 +106,7 @@
         },
     data() {
         return {
-        form: this.$inertia.form({
+        form: useForm({
             email: '',
         }),
         }

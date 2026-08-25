@@ -9,7 +9,7 @@ use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\DB;
 use App\Events\EnvironmentSaved;
 use App\Helpers\EnvironmentManager;
-use Jackiedo\DotenvEditor\Facades\DotenvEditor;
+use App\Support\EnvFile;
 use Validator;
 
 class EnvironmentController extends Controller
@@ -103,7 +103,7 @@ class EnvironmentController extends Controller
         if(!empty($purchaseCode) && preg_match("/^(\{)?[a-f\d]{8}(-[a-f\d]{4}){4}[a-f\d]{8}(?(1)\})$/i", $purchaseCode)){
             $result = $this->getPurchaseCode($purchaseCode);
             if(isset($result['item']) && isset($result['item']['id']) && $result['item']['id'] == '49556761'){
-                $env = DotenvEditor::load();
+                $env = EnvFile::load();
                 $env->setKey('APP_PCE', $purchaseCode);
                 $env->save();
                 return $redirect->route('LaravelInstaller::environmentDatabase');
