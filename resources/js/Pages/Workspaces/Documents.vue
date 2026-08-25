@@ -151,23 +151,41 @@
                                     ]">{{ doc.is_done ? $t('Done') : (doc.status || $t('Active')) }}</span>
                                 </div>
 
-                                <!-- Attached files: each one downloads directly -->
-                                <div v-if="doc.files && doc.files.length" class="mt-2.5 flex flex-wrap gap-2 pl-14">
-                                    <a
-                                        v-for="file in doc.files"
-                                        :key="file.id"
-                                        :href="file.path"
-                                        :download="file.name"
-                                        target="_blank"
-                                        rel="noopener"
-                                        class="flex max-w-full items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1.5 transition-colors hover:border-indigo-300 hover:bg-indigo-50"
-                                        :title="`${file.name} · ${fileSize(file.size)}`"
+                                <!-- Attached files. One per line rather than wrapping chips:
+                                     a row with five files used to ragged-wrap into a block
+                                     with every name cut short. -->
+                                <div v-if="doc.files && doc.files.length" class="mt-2.5 pl-14">
+                                    <ul class="divide-y divide-gray-100 overflow-hidden rounded-xl border border-gray-200 bg-white">
+                                        <li
+                                            v-for="file in visibleFiles(doc)"
+                                            :key="file.id"
+                                            class="flex items-center gap-3 px-3 py-2 transition-colors hover:bg-indigo-50/50"
+                                        >
+                                            <icon :name="fileIcon(file.ext)" class="h-6 w-6 flex-shrink-0" />
+                                            <span class="min-w-0 flex-1 truncate text-xs font-medium text-gray-700" :title="file.name">{{ file.name }}</span>
+                                            <span class="flex-shrink-0 text-[11px] text-gray-400">{{ fileSize(file.size) }}</span>
+                                            <a
+                                                :href="file.path"
+                                                :download="file.name"
+                                                class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-indigo-100 hover:text-indigo-600"
+                                                :title="$t('Download')"
+                                            >
+                                                <icon name="download" class="h-3.5 w-3.5" />
+                                            </a>
+                                        </li>
+                                    </ul>
+
+                                    <button
+                                        v-if="doc.files.length > filePreviewLimit"
+                                        type="button"
+                                        @click="toggleFiles(doc.id)"
+                                        class="mt-1.5 flex items-center gap-1 text-[11px] font-semibold text-indigo-600 hover:text-indigo-700"
                                     >
-                                        <icon :name="fileIcon(file.ext)" class="h-5 w-5 flex-shrink-0" />
-                                        <span class="max-w-[16rem] truncate text-xs font-medium text-gray-700">{{ file.name }}</span>
-                                        <span class="flex-shrink-0 text-[11px] text-gray-400">{{ fileSize(file.size) }}</span>
-                                        <icon name="download" class="h-3.5 w-3.5 flex-shrink-0 text-gray-400" />
-                                    </a>
+                                        <icon :name="isFilesExpanded(doc.id) ? 'chevron-up' : 'chevron-down'" class="h-3 w-3" />
+                                        {{ isFilesExpanded(doc.id)
+                                            ? $t('Show less')
+                                            : $t('Show all :count files').replace(':count', khNum(doc.files.length)) }}
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -239,6 +257,11 @@ export default {
                 { key: 'year', label: 'This year' },
                 { key: 'custom', label: 'Custom' },
             ],
+            // Document ids whose full file list is open; long lists collapse so a
+            // single document cannot push the rest of the page off screen.
+            expandedFiles: [],
+            filePreviewLimit: 1,
+
             form: {
                 uploader: this.filters.uploader || null,
                 type: this.filters.type || null,
@@ -297,6 +320,18 @@ export default {
         docIcon(doc) {
             const first = doc.files && doc.files.length ? doc.files[0] : null
             return first ? this.fileIcon(first.ext) : 'file-generic'
+        },
+        isFilesExpanded(docId) {
+            return this.expandedFiles.includes(docId)
+        },
+        toggleFiles(docId) {
+            this.expandedFiles = this.isFilesExpanded(docId)
+                ? this.expandedFiles.filter((id) => id !== docId)
+                : [...this.expandedFiles, docId]
+        },
+        visibleFiles(doc) {
+            const files = doc.files || []
+            return this.isFilesExpanded(doc.id) ? files : files.slice(0, this.filePreviewLimit)
         },
         fileSize(bytes) {
             const size = Number(bytes) || 0

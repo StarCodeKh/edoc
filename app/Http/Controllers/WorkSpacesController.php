@@ -414,7 +414,7 @@ class WorkSpacesController extends Controller
         $projectIds = Project::where('workspace_id', $workspace->id)->pluck('id');
         [$from, $to] = $this->documentDateRange($filters);
 
-        $base = Task::whereIn('project_id', $projectIds)->isOpen();
+        $base = Task::whereIn('project_id', $projectIds)->isOpen()->visibleTo();
 
         $documents = (clone $base)
             ->when($filters['uploader'] ?? null, fn ($q, $uploader) => $q->whereIn('user_id', array_filter(explode(',', (string) $uploader))))
@@ -427,7 +427,10 @@ class WorkSpacesController extends Controller
                 'documentSource:id,name',
                 'list:id,title',
                 'type:id,name',
-                'attachments:id,task_id,name,path,size',
+                'attachments' => fn ($query) => $query
+                    ->select('id', 'task_id', 'name', 'path', 'size', 'created_at')
+                    ->orderByDesc('created_at')
+                    ->orderByDesc('id'),
             ])
             ->withCount('attachments')
             ->latest('created_at')
