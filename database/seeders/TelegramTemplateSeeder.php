@@ -38,7 +38,7 @@ class TelegramTemplateSeeder extends Seeder
                     ."<b>Workspace:</b> {workspace_name}\n"
                     ."<b>By:</b> {actor_name}\n\n"
                     ."{comment}\n\n"
-                    ."<i>{app_name} • {sent_at}</i>",
+                    .'<i>{app_name} • {sent_at}</i>',
             ],
             [
                 'name' => 'Telegram — Assigned to a task',
@@ -51,7 +51,7 @@ class TelegramTemplateSeeder extends Seeder
                     ."<b>Assigned to:</b> {assignee_name}\n"
                     ."<b>Assigned by:</b> {assigner_name}\n"
                     ."<b>Due:</b> {due_date}\n\n"
-                    ."<i>{app_name} • {sent_at}</i>",
+                    .'<i>{app_name} • {sent_at}</i>',
             ],
             [
                 'name' => 'Telegram — Task updated',
@@ -63,7 +63,7 @@ class TelegramTemplateSeeder extends Seeder
                     ."<b>Workspace:</b> {workspace_name}\n"
                     ."<b>Updated by:</b> {actor_name}\n\n"
                     ."{change_message}\n\n"
-                    ."<i>{app_name} • {sent_at}</i>",
+                    .'<i>{app_name} • {sent_at}</i>',
             ],
             [
                 'name' => 'Telegram — New workspace member',
@@ -73,7 +73,7 @@ class TelegramTemplateSeeder extends Seeder
                     ."<b>Workspace:</b> <a href=\"{workspace_link}\">{workspace_name}</a>\n"
                     ."<b>Member:</b> {member_name}\n"
                     ."<b>Added by:</b> {adder_name}\n\n"
-                    ."<i>{app_name} • {sent_at}</i>",
+                    .'<i>{app_name} • {sent_at}</i>',
             ],
             [
                 'name' => 'Telegram — Project updated',
@@ -82,7 +82,7 @@ class TelegramTemplateSeeder extends Seeder
                 'html' => "📋 <b>Project Updated</b>\n"
                     ."<b>Board:</b> <a href=\"{link}\">{board_name}</a>\n"
                     ."<b>Project:</b> {project_name}\n\n"
-                    ."<i>{app_name} • {sent_at}</i>",
+                    .'<i>{app_name} • {sent_at}</i>',
             ],
         ];
     }

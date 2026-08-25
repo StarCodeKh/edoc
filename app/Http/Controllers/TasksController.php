@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\AuthorizesTasks;
+use App\Models\Activity;
 use App\Models\Assignee;
 use App\Models\Attachment;
 use App\Models\BoardList;
 use App\Models\CheckList;
 use App\Models\Comment;
 use App\Models\DocumentSource;
-use App\Models\WorkspaceType;
 use App\Models\Label;
 use App\Models\Priority;
 use App\Models\Project;
@@ -18,18 +19,16 @@ use App\Models\TaskLabel;
 use App\Models\TeamMember;
 use App\Models\Timer;
 use App\Models\UserGroup;
-use App\Models\Activity;
+use App\Models\WorkspaceType;
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
-use Mavinoo\Batch\Batch;
 use Inertia\Inertia;
 
 class TasksController extends Controller
 {
-    use \App\Http\Controllers\Concerns\AuthorizesTasks;
+    use AuthorizesTasks;
 
     public function merge(Request $request)
     {
@@ -52,7 +51,7 @@ class TasksController extends Controller
         DB::transaction(function () use ($target, $sourceIds) {
             Comment::whereIn('task_id', $sourceIds)->update(['task_id' => $target->id]);
             Attachment::whereIn('task_id', $sourceIds)->update(['task_id' => $target->id]);
-            Checklist::whereIn('task_id', $sourceIds)->update(['task_id' => $target->id]);
+            CheckList::whereIn('task_id', $sourceIds)->update(['task_id' => $target->id]);
             $existingLabelIds = $target->taskLabels()->pluck('label_id')->all();
             TaskLabel::whereIn('task_id', $sourceIds)
                 ->whereNotIn('label_id', $existingLabelIds)
@@ -61,14 +60,14 @@ class TasksController extends Controller
 
             $history = collect($target->merged_history ?? []);
             $eventNumber = $history->pluck('merge_code')->filter()->unique()->count() + 1;
-            $mergeCode = 'MRG-' . now()->format('Y') . '-' . str_pad($target->id, 4, '0', STR_PAD_LEFT) . '-' . str_pad($eventNumber, 2, '0', STR_PAD_LEFT);
+            $mergeCode = 'MRG-'.now()->format('Y').'-'.str_pad($target->id, 4, '0', STR_PAD_LEFT).'-'.str_pad($eventNumber, 2, '0', STR_PAD_LEFT);
 
             $sourceTasks = Task::whereIn('id', $sourceIds)->get(['id', 'title', 'task_code', 'slug']);
             foreach ($sourceTasks as $src) {
                 $history->push([
                     'id' => $src->id,
                     'title' => $src->title,
-                    'code' => $src->task_code ?: ('CGMC-' . str_pad($src->id, 9, '0', STR_PAD_LEFT)),
+                    'code' => $src->task_code ?: ('CGMC-'.str_pad($src->id, 9, '0', STR_PAD_LEFT)),
                     'slug' => $src->slug,
                     'merge_code' => $mergeCode,
                     'merged_at' => now()->toDateTimeString(),
@@ -165,6 +164,7 @@ class TasksController extends Controller
         }
 
         $result = \Batch::update(new Task, $requestData, 'id');
+
         return response()->json($result);
     }
 
@@ -182,6 +182,7 @@ class TasksController extends Controller
 
         $result['projects'] = Project::where('title', 'like', '%'.$search.'%')
             ->select('id', 'title')->get();
+
         return response()->json($result);
     }
 
@@ -199,13 +200,14 @@ class TasksController extends Controller
     private function normalizeDateFields(array $data): array
     {
         foreach (self::DATE_FIELDS as $field) {
-            if (! array_key_exists($field, $data)) {
+            if (!array_key_exists($field, $data)) {
                 continue;
             }
 
             $value = $data[$field];
             if (is_null($value) || (is_string($value) && trim($value) === '')) {
                 $data[$field] = null;
+
                 continue;
             }
 
@@ -228,11 +230,12 @@ class TasksController extends Controller
         $isMove = array_key_exists('list_id', $requestData) || array_key_exists('project_id', $requestData);
         $task = $this->authorizeTask($taskId, $isMove ? 'move' : 'edit');
 
-        foreach ($requestData as $itemKey => $itemValue){
+        foreach ($requestData as $itemKey => $itemValue) {
             $task->{$itemKey} = $itemValue;
         }
         $task->save();
         $task->load('list')->load('taskLabels.label')->load('project.background')->load('assignees')->load('timer')->load('documentSource.parent')->load('priority');
+
         return response()->json($task);
     }
 
@@ -249,6 +252,7 @@ class TasksController extends Controller
             ->with('list')
             ->has('list')
             ->get();
+
         return response()->json($archiveTasks);
     }
 
@@ -256,27 +260,28 @@ class TasksController extends Controller
     {
         $data = $request->all();
 
-        if (! empty($data['task_id'])) {
+        if (!empty($data['task_id'])) {
             $this->authorizeTask($data['task_id'], 'move');
         }
 
         $from_lists = [];
         $new_list = [];
-        if (!empty($data['is_move'])){
+        if (!empty($data['is_move'])) {
             $from_lists = Task::where('list_id', $data['previous_list'])->orderBy('order')->select(['id', 'order'])->get()->toArray();
             $to_lists = Task::where('list_id', $data['new_list'])->orderBy('order')->pluck('id')->toArray();
             $previous_order = array_search($data['task_id'], $to_lists);
             $out = array_splice($to_lists, $previous_order, 1);
             array_splice($to_lists, $data['to'] - 1, 0, $out);
-        }else{
+        } else {
             $to_lists = Task::where('list_id', $data['new_list'])->orderBy('order')->pluck('id')->toArray();
             $out = array_splice($to_lists, $data['from'] - 1, 1);
             array_splice($to_lists, $data['to'] - 1, 0, $out);
         }
-        foreach ($to_lists as $item_k => $item_v){
+        foreach ($to_lists as $item_k => $item_v) {
             $new_list[$item_k] = ['id' => $item_v, 'order' => $item_k + 1];
         }
         $result = \Batch::update(new Task, $from_lists + $new_list, 'id');
+
         return response()->json($result);
     }
 
@@ -284,6 +289,7 @@ class TasksController extends Controller
     {
         $out = array_splice($array, $a, 1);
         array_splice($array, $b, 0, $out);
+
         return $array;
     }
 
@@ -295,6 +301,7 @@ class TasksController extends Controller
         $task = Task::create($requestData);
 
         $task->load('lastAssignee')->load('taskLabels.label')->loadCount('checklistDone')->loadCount('comments')->loadCount('checklists')->loadCount('attachments')->loadCount('assignees');
+
         return response()->json($task);
     }
 
@@ -304,10 +311,10 @@ class TasksController extends Controller
 
         $result = null;
         $task = Task::where('id', $id)->first();
-        if(!empty($task)){
+        if (!empty($task)) {
             $attachments = Attachment::where('task_id', $task->id)->get();
-            foreach ($attachments as $attachment){
-                if(!empty($attachment->path) && File::exists(public_path($attachment->path))){
+            foreach ($attachments as $attachment) {
+                if (!empty($attachment->path) && File::exists(public_path($attachment->path))) {
                     File::delete(public_path($attachment->path));
                 }
                 $attachment->delete();
@@ -319,6 +326,7 @@ class TasksController extends Controller
             TaskLabel::where('task_id', $task->id)->delete();
             $result = $task->delete();
         }
+
         return response()->json($result);
     }
 
@@ -363,6 +371,7 @@ class TasksController extends Controller
     public function countListItemsById($id)
     {
         $taskCount = Task::where('list_id', $id)->count();
+
         return response()->json($taskCount);
     }
 
@@ -398,7 +407,7 @@ class TasksController extends Controller
             'team_members' => $teamMembers,
             'document_sources' => $documentSources,
             'document_types' => $documentTypes,
-             'priorities' => $priorities,
+            'priorities' => $priorities,
             'user_groups' => $userGroups,
         ]);
     }
@@ -411,14 +420,14 @@ class TasksController extends Controller
 
         // An empty request usually means PHP dropped the body because it went over
         // post_max_size - the request never reaches validation with a file attached.
-        if(! $request->hasFile('file')){
+        if (!$request->hasFile('file')) {
             return response()->json([
                 'error' => true,
-                'message' => 'The file was not received. It is likely larger than the server allows (upload_max_filesize: '.ini_get('upload_max_filesize').', post_max_size: '.ini_get('post_max_size').').'
+                'message' => 'The file was not received. It is likely larger than the server allows (upload_max_filesize: '.ini_get('upload_max_filesize').', post_max_size: '.ini_get('post_max_size').').',
             ], 422);
         }
 
-        if($request->file('file')){
+        if ($request->file('file')) {
             $file = $request->file('file');
 
             $settingValue = optional(Setting::where('slug', 'allowed_file_types')->first())->value;
@@ -436,11 +445,12 @@ class TasksController extends Controller
                 'file.mimes' => 'Only PDF files are allowed.',
             ]);
 
-            if(! in_array($file->extension(), $allowed_file_types) ){
+            if (!in_array($file->extension(), $allowed_file_types)) {
                 $supportedExtensions = implode(', ', $allowed_file_types);
+
                 return response()->json([
                     'error' => true,
-                    'message' => "The uploaded file type is not allowed. Supported formats: {$supportedExtensions}."
+                    'message' => "The uploaded file type is not allowed. Supported formats: {$supportedExtensions}.",
                 ]);
             }
             // PDFs have no image dimensions - getimagesize() returns false for them.
@@ -453,6 +463,7 @@ class TasksController extends Controller
             $file_path = '/files/'.$file->storeAs('tasks', $file_name, ['disk' => 'file_uploads']);
             $attachment = Attachment::create(['task_id' => $id, 'name' => $file_name_origin, 'user_id' => auth()->id(), 'size' => $size, 'path' => $file_path, 'width' => $width, 'height' => $height]);
         }
+
         return response()->json($attachment);
     }
 
@@ -491,14 +502,15 @@ class TasksController extends Controller
     {
         $attachment = Attachment::find($id);
 
-        if (! empty($attachment) && ! empty($attachment->task_id)) {
+        if (!empty($attachment) && !empty($attachment->task_id)) {
             $this->authorizeTask($attachment->task_id, 'attach');
         }
 
-        if(!empty($attachment) && !empty($attachment->path) && File::exists(public_path($attachment->path))){
+        if (!empty($attachment) && !empty($attachment->path) && File::exists(public_path($attachment->path))) {
             File::delete(public_path($attachment->path));
         }
         $result = $attachment->delete();
+
         return response()->json($result);
     }
 
@@ -507,6 +519,7 @@ class TasksController extends Controller
         $string = str_replace(' ', '-', $string);
         $string = preg_replace('/[^A-Za-z0-9\-]/', '', $string);
         $string = preg_replace('/-+/', '-', $string);
+
         return trim($string, '-');
     }
 }

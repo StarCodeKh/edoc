@@ -53,7 +53,7 @@ class ExtractTranslationsCommand extends Command
     {
         $this->info("Scanning for translation keys in {$this->scanPath}...");
 
-        $finder = new Finder();
+        $finder = new Finder;
         $finder->in(base_path($this->scanPath))->name('*.vue')->files();
 
         $allKeys = [];
@@ -72,7 +72,8 @@ class ExtractTranslationsCommand extends Command
         sort($uniqueKeys);
 
         if (empty($uniqueKeys)) {
-            $this->warn("No translation keys were found.");
+            $this->warn('No translation keys were found.');
+
             return 0;
         }
 
@@ -88,7 +89,7 @@ class ExtractTranslationsCommand extends Command
             json_encode($translationJson, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
         );
 
-        $this->info("Successfully extracted " . count($uniqueKeys) . " keys.");
+        $this->info('Successfully extracted '.count($uniqueKeys).' keys.');
         $this->line("Result saved to: <comment>{$this->outputPath}</comment>");
 
         return 0;

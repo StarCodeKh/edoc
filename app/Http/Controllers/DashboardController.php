@@ -2,36 +2,31 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\City;
-use App\Models\Contact;
-use App\Models\Country;
 use App\Models\Language;
-use App\Models\Role;
-use App\Models\Status;
 use App\Models\User;
-use Carbon\Carbon;
-use Carbon\CarbonInterval;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Request;
-use Illuminate\Support\Facades\URL;
-use Inertia\Inertia;
 use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\File;
+use Inertia\Inertia;
 
-class DashboardController extends Controller {
-    public function setLocale($language){
+class DashboardController extends Controller
+{
+    public function setLocale($language)
+    {
         $rtlCodes = ['sa'];
         $user = Auth()->user();
         Session()->put('locale', $language);
         Session()->put('dir', in_array($language, $rtlCodes) ? 'rtl' : 'ltr');
-        if(!empty($user)){
+        if (!empty($user)) {
             User::where('id', $user['id'])->update(['locale' => $language]);
         }
+
         return redirect()->back();
     }
-    public function editProfile() {
+
+    public function editProfile()
+    {
 
         $user_id = Auth()->id();
         $user = User::where('id', $user_id)->first();
@@ -51,11 +46,12 @@ class DashboardController extends Controller {
                 'photo_path' => $user->photo_path ?? null,
                 'deleted_at' => $user->deleted_at,
             ],
-            'languages' => Language::get()
+            'languages' => Language::get(),
         ]);
     }
 
-    public function editProfileUpdate(User $user) {
+    public function editProfileUpdate(User $user)
+    {
 
         if (config('app.demo')) {
             return Redirect::back()->with('error', 'Updating user is not allowed for the live demo.');
@@ -79,7 +75,7 @@ class DashboardController extends Controller {
                 File::delete(public_path($user->photo_path));
             }
             $path = Request::file('photo')->store('users', ['disk' => 'file_uploads']);
-            $user->update(['photo_path' => '/files/' . $path]);
+            $user->update(['photo_path' => '/files/'.$path]);
         }
 
         if (!empty($validated['password'])) {

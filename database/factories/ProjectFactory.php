@@ -17,18 +17,18 @@ class ProjectFactory extends Factory
             'Mobile App Development', 'Website Redesign', 'API Integration',
             'Marketing Campaign', 'Product Launch', 'System Migration',
             'Brand Identity', 'User Research', 'Quality Assurance',
-            'Content Strategy', 'Database Optimization', 'Security Audit'
+            'Content Strategy', 'Database Optimization', 'Security Audit',
         ];
-        
+
         $projectPrefixes = [
             'Q1', 'Q2', 'Q3', 'Q4', '2024', '2025', 'Phase 1', 'Phase 2',
-            'Beta', 'Alpha', 'MVP', 'V2', 'Next Gen', 'Advanced'
+            'Beta', 'Alpha', 'MVP', 'V2', 'Next Gen', 'Advanced',
         ];
-        
+
         $createdAt = $this->faker->dateTimeBetween('-4 months', '-2 weeks');
-        
+
         return [
-            'title' => $this->faker->randomElement($projectPrefixes) . ' ' . $this->faker->randomElement($projectTypes),
+            'title' => $this->faker->randomElement($projectPrefixes).' '.$this->faker->randomElement($projectTypes),
             'slug' => null, // Will be auto-generated
             'description' => $this->faker->realText(300),
             'is_private' => $this->faker->boolean(20), // 20% private

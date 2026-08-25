@@ -12,4 +12,3 @@ enum NotificationType: string
 
 // Usage in listener:
 NotificationSetting::where('type', NotificationType::NEW_COMMENT->value)->first();
-

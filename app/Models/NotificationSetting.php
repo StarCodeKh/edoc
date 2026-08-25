@@ -10,6 +10,7 @@ class NotificationSetting extends Model
     use HasFactory;
 
     protected $table = 'notification_settings';
+
     public $timestamps = false;
 
     protected $fillable = [

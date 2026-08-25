@@ -11,7 +11,8 @@ class FreshDataSeeder extends Seeder
      *
      * @return void
      */
-    public function run() {
+    public function run()
+    {
         $this->call([
             LanguageSeeder::class,
             UserSeeder::class,

@@ -17,9 +17,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class GlideResponseFactory implements ResponseFactoryInterface
 {
-    public function __construct(private Request $request)
-    {
-    }
+    public function __construct(private Request $request) {}
 
     public function create(FilesystemOperator $cache, string $path): StreamedResponse
     {

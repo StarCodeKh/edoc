@@ -46,14 +46,14 @@ class UserFactory extends Factory
             ]),
             'password' => 'secret',
             'remember_token' => Str::random(10),
-            'role_id' => $this->faker->randomElement([1,2,3,4]),
+            'role_id' => $this->faker->randomElement([1, 2, 3, 4]),
         ];
     }
 
     /**
      * Indicate that the model's email address should be unverified.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return Factory
      */
     public function unverified()
     {
@@ -64,8 +64,10 @@ class UserFactory extends Factory
         });
     }
 
-    private function clean($string) {
+    private function clean($string)
+    {
         $string = str_replace(' ', '-', $string);
+
         return strtolower(preg_replace('/[^A-Za-z0-9\-]/', '', $string));
     }
 }

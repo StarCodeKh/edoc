@@ -2,15 +2,17 @@
 
 namespace Database\Seeders;
 
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Carbon\Carbon;
 
 class UserSeeder extends Seeder
 {
     private const SUPER_ADMIN_ROLE_ID = 1;
+
     private const ADMIN_ROLE_ID = 2;
+
     private const USER_ROLE_ID = 3;
 
     private const DEFAULT_PASSWORD = 'Password@123';
@@ -55,18 +57,18 @@ class UserSeeder extends Seeder
             $exists = DB::table('users')->where('email', $user['email'])->exists();
 
             $attributes = [
-                'role_id'    => $user['role'],
-                'locale'     => 'kh',
-                'address'    => 'Phnom Penh, Cambodia',
+                'role_id' => $user['role'],
+                'locale' => 'kh',
+                'address' => 'Phnom Penh, Cambodia',
                 'first_name' => $user['first'],
-                'last_name'  => $user['last'],
-                'title'      => $user['title'],
+                'last_name' => $user['last'],
+                'title' => $user['title'],
                 'updated_at' => Carbon::now(),
             ];
 
             // Only set the password on first insert, so re-seeding never resets
             // a password someone has already changed.
-            if (! $exists) {
+            if (!$exists) {
                 $attributes['email_verified_at'] = null;
                 $attributes['password'] = Hash::make(self::DEFAULT_PASSWORD);
                 $attributes['created_at'] = Carbon::now();
@@ -81,7 +83,7 @@ class UserSeeder extends Seeder
         }
 
         if ($this->command) {
-            $this->command->info(count(self::USERS) . ' users seeded.');
+            $this->command->info(count(self::USERS).' users seeded.');
         }
     }
 }

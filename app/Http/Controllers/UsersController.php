@@ -4,13 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Events\UserCreated;
 use App\Http\Middleware\RedirectIfNotAdmin;
-use App\Http\Middleware\RedirectIfNotParmitted;
 use App\Models\Assignee;
 use App\Models\Attachment;
 use App\Models\BoardList;
 use App\Models\Comment;
-use App\Models\Label;
-use App\Models\Note;
 use App\Models\Project;
 use App\Models\RecentProject;
 use App\Models\Role;
@@ -20,29 +17,30 @@ use App\Models\TeamMember;
 use App\Models\Timer;
 use App\Models\User;
 use App\Models\Workspace;
-use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Request;
-use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
-class UsersController extends Controller{
-    public function __construct(){
+class UsersController extends Controller
+{
+    public function __construct()
+    {
         $this->middleware(RedirectIfNotAdmin::class);
     }
-    public function index(){
+
+    public function index()
+    {
         return Inertia::render('Users/Index', [
             'title' => 'Users',
-            'filters' => Request::all(['search','role_id']),
+            'filters' => Request::all(['search', 'role_id']),
             'roles' => Role::orderBy('name')
                 ->get()
                 ->map
                 ->only('id', 'name'),
             'users' => User::orderByName()
-                ->filter(Request::all(['search','role_id']))
+                ->filter(Request::all(['search', 'role_id']))
                 ->paginate(9)
                 ->withQueryString()
                 ->through(fn ($user) => [
@@ -58,8 +56,9 @@ class UsersController extends Controller{
         ]);
     }
 
-    public function create(){
-        return Inertia::render('Users/Create',[
+    public function create()
+    {
+        return Inertia::render('Users/Create', [
             'title' => 'Create a new user',
             'roles' => Role::orderBy('name')
                 ->get()
@@ -68,7 +67,8 @@ class UsersController extends Controller{
         ]);
     }
 
-    public function store(){
+    public function store()
+    {
         $userRequest = Request::validate([
             'first_name' => ['required', 'max:50'],
             'last_name' => ['required', 'max:50'],
@@ -80,36 +80,37 @@ class UsersController extends Controller{
             'title' => ['nullable', 'max:100'],
         ]);
 
-        if(Request::file('photo')){
+        if (Request::file('photo')) {
             $userRequest['photo_path'] = '/files/'.Request::file('photo')->store('users', ['disk' => 'file_uploads']);
         }
 
         $customerRole = Role::where('slug', 'customer')->first();
-        if(empty($userRequest['role_id']) && !empty($customerRole)){
+        if (empty($userRequest['role_id']) && !empty($customerRole)) {
             $userRequest['role_id'] = $customerRole->id;
         }
 
         $user = User::create($userRequest);
 
-//        event(new UserCreated(['id' => $user->id, 'password' => $userRequest['password']]));
-
+        //        event(new UserCreated(['id' => $user->id, 'password' => $userRequest['password']]));
 
         return Redirect::route('users')->with('success', 'User created.');
     }
 
-    public function edit(User $user) {
+    public function edit(User $user)
+    {
         $a_user = Auth()->user();
 
         $roles = Role::pluck('id', 'slug')->all();
-        if($a_user['role']['slug'] == 'customer'){
-            if($user->id !=$a_user['id']){
+        if ($a_user['role']['slug'] == 'customer') {
+            if ($user->id != $a_user['id']) {
                 return Redirect::back();
             }
-        }elseif($a_user['role']['slug'] == 'manager'){
-            if($user->id !=$a_user['id'] && $user->role_id != $roles['customer']??0){
+        } elseif ($a_user['role']['slug'] == 'manager') {
+            if ($user->id != $a_user['id'] && $user->role_id != $roles['customer'] ?? 0) {
                 return Redirect::back();
             }
         }
+
         return Inertia::render('Users/Edit', [
             'title' => $user->name,
             'roles' => Role::orderBy('name')
@@ -133,12 +134,15 @@ class UsersController extends Controller{
         ]);
     }
 
-    public function all(){
+    public function all()
+    {
         $users = User::limit(50)->get();
+
         return response()->json($users);
     }
 
-    public function update(User $user) {
+    public function update(User $user)
+    {
         if (config('app.demo')) {
             return Redirect::back()->with('error', 'Updating user is not allowed for the live demo.');
         }
@@ -157,12 +161,12 @@ class UsersController extends Controller{
 
         $user->update(Request::only(['first_name', 'last_name', 'phone', 'email', 'address', 'locale', 'title']));
 
-        if(!empty(Request::get('role_id'))){
+        if (!empty(Request::get('role_id'))) {
             $user->update(['role_id' => Request::get('role_id')]);
         }
 
-        if(Request::file('photo')){
-            if(isset($user->photo_path) && !empty($user->photo_path) && File::exists(public_path($user->photo_path))){
+        if (Request::file('photo')) {
+            if (isset($user->photo_path) && !empty($user->photo_path) && File::exists(public_path($user->photo_path))) {
                 File::delete(public_path($user->photo_path));
             }
             $user->update(['photo_path' => '/files/'.Request::file('photo')->store('users', ['disk' => 'file_uploads'])]);
@@ -175,7 +179,8 @@ class UsersController extends Controller{
         return Redirect::back()->with('success', 'Profile updated.');
     }
 
-    public function destroy(User $user) {
+    public function destroy(User $user)
+    {
 
         if (config('app.demo')) {
             return Redirect::back()->with('error', 'Deleting user is not allowed for the live demo.');
@@ -187,12 +192,16 @@ class UsersController extends Controller{
 
         return Redirect::route('users')->with('success', 'User deleted!');
     }
-    public function restore(User $user){
+
+    public function restore(User $user)
+    {
         $user->restore();
+
         return Redirect::back()->with('success', 'User restored!');
     }
 
-    private function removeUserFromRelatedTables($userId){
+    private function removeUserFromRelatedTables($userId)
+    {
         Comment::where('user_id', $userId)->delete();
         Attachment::where('user_id', $userId)->delete();
         Task::where('user_id', $userId)->update(['user_id' => null]);

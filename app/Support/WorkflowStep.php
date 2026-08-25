@@ -66,7 +66,7 @@ class WorkflowStep
     /** The step behind a single board list, or null when it has no match. */
     public static function forList(?BoardList $list): ?EdocWorkflowRole
     {
-        if (! $list) {
+        if (!$list) {
             return null;
         }
 

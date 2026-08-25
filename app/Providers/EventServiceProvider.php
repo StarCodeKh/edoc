@@ -2,8 +2,6 @@
 
 namespace App\Providers;
 
-use App\Events\AssignedUser;
-use App\Events\AssignedUserToTask;
 use App\Events\BoardUpdated;
 use App\Events\DueTaskReminder;
 use App\Events\ForgotPassword;
@@ -42,26 +40,26 @@ class EventServiceProvider extends ServiceProvider
         Registered::class => [
             SendEmailVerificationNotification::class,
         ],
-//        'App\Events\NewChatMessage' => [
-//            'App\Listeners\SendChatMessageNotification'
-//        ],
+        //        'App\Events\NewChatMessage' => [
+        //            'App\Listeners\SendChatMessageNotification'
+        //        ],
         UserCreated::class => [
-            UserCreatedNotification::class
+            UserCreatedNotification::class,
         ],
         BoardUpdated::class => [
-            BoardUpdateNotification::class
+            BoardUpdateNotification::class,
         ],
         UserAddedToWorkspace::class => [
-            WorkspaceUserAddNotification::class
+            WorkspaceUserAddNotification::class,
         ],
         ForgotPassword::class => [
-            SendForgotPasswordNotification::class
+            SendForgotPasswordNotification::class,
         ],
         SendMail::class => [
-            SendMailNotification::class
+            SendMailNotification::class,
         ],
         DueTaskReminder::class => [
-            DueTaskReminderNotification::class
+            DueTaskReminderNotification::class,
         ],
         NewCommentAdded::class => [
             SendNewCommentNotification::class,

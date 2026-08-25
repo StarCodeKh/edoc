@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Events;
 
 use App\Models\TeamMember;
@@ -10,7 +11,5 @@ class NewMemberAddedToWorkspace
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public function __construct(public TeamMember $teamMember)
-    {
-    }
+    public function __construct(public TeamMember $teamMember) {}
 }

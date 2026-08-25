@@ -16,7 +16,8 @@ class Repeat extends Model
         'if_completed' => 'boolean',
     ];
 
-    public function task(){
+    public function task()
+    {
         return $this->belongsTo(Task::class, 'task_id');
     }
 }

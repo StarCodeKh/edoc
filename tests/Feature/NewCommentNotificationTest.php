@@ -26,14 +26,13 @@ class NewCommentNotificationTest extends TestCase
         $task->assignees()->attach($assignee);
 
         // Action: The commenter adds a comment
-//    $this->actingAs($commenter)->post(route('comments.store'), [
-//        'task_id' => $task->id,
-//        'details' => 'This is a test comment.',
-//    ]);
+        //    $this->actingAs($commenter)->post(route('comments.store'), [
+        //        'task_id' => $task->id,
+        //        'details' => 'This is a test comment.',
+        //    ]);
 
         // Assertions
         Notification::assertSentTo($assignee, NewCommentNotification::class);
         Notification::assertNotSentTo($commenter, NewCommentNotification::class); // Don't notify yourself
     }
 }
-

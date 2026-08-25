@@ -3,11 +3,8 @@
 namespace App\Listeners;
 
 use App\Events\SendMail;
-use App\Mail\SendCustomMessage;
 use App\Mail\SendMailFromHtml;
 use App\Models\EmailTemplate;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Mail;
 
 class SendMailNotification
@@ -25,29 +22,29 @@ class SendMailNotification
     /**
      * Handle the event.
      *
-     * @param  \App\Events\SendMail  $event
      * @return void
      */
-    public function handle(SendMail $event) {
+    public function handle(SendMail $event)
+    {
         $data = $event->mailData;
         $template = EmailTemplate::where('slug', 'custom_mail')->first();
         $template = $template->html;
         $variables = [
-          'name' => $data['to']['name'],
-          'to' => $data['to']['email'],
-          'subject' => $data['subject'],
-          'body' => $data['body'],
-          'sender_name' => $data['sender_name']
+            'name' => $data['to']['name'],
+            'to' => $data['to']['email'],
+            'subject' => $data['subject'],
+            'body' => $data['body'],
+            'sender_name' => $data['sender_name'],
         ];
-        if (preg_match_all("/{(.*?)}/", $template, $m)) {
+        if (preg_match_all('/{(.*?)}/', $template, $m)) {
             foreach ($m[1] as $i => $varname) {
                 $template = str_replace($m[0][$i], sprintf($variables[$m[1][$i]], $varname), $template);
             }
         }
         $messageData = ['html' => $template, 'subject' => $data['subject']];
-        if(config('queue.enable')){
+        if (config('queue.enable')) {
             Mail::to($variables['to'])->queue(new SendMailFromHtml($messageData));
-        }else{
+        } else {
             Mail::to($variables['to'])->send(new SendMailFromHtml($messageData));
         }
     }

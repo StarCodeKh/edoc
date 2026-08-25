@@ -3,8 +3,6 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Facades\Image;
 
 class BlogFactory extends Factory
 {

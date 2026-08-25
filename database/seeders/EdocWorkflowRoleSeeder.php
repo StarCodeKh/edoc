@@ -63,6 +63,7 @@ class EdocWorkflowRoleSeeder extends Seeder
 
         if (empty($roleTables)) {
             $this->command->error("Neither 'edoc_workflow_roles' exists yet — run the migration first.");
+
             return;
         }
 
@@ -89,12 +90,13 @@ class EdocWorkflowRoleSeeder extends Seeder
                             ]
                         );
                     } catch (\Throwable $e) {
-                        $this->command->error("Failed to upsert {$roleTable} for [{$workflowType}] '{$col['title']}': " . $e->getMessage());
+                        $this->command->error("Failed to upsert {$roleTable} for [{$workflowType}] '{$col['title']}': ".$e->getMessage());
+
                         continue;
                     }
                 }
 
-                $this->command->line("[{$workflowType}] Step {$order}: {$col['title']} (role=" . ($col['role'] ?? 'n/a') . ", workspace_id={$workspaceId}, sla=" . ($col['sla_hours'] ?? 'n/a') . 'h)');
+                $this->command->line("[{$workflowType}] Step {$order}: {$col['title']} (role=".($col['role'] ?? 'n/a').", workspace_id={$workspaceId}, sla=".($col['sla_hours'] ?? 'n/a').'h)');
             }
 
             // The definitions above are the source of truth: drop any step this

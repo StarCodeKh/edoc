@@ -3,15 +3,14 @@
 //@import 'tailwindcss/base';
 @tailwind base;
 @include meta.load-css("reset");
-@include meta.load-css('browser_default');
-
+@include meta.load-css("browser_default");
 
 /* Components */
 //@import 'tailwindcss/components';
 @tailwind components;
-@include meta.load-css('buttons');
-@include meta.load-css('form');
-@include meta.load-css('font');
+@include meta.load-css("buttons");
+@include meta.load-css("form");
+@include meta.load-css("font");
 
 /** Typography */
 //@import "";
@@ -44,9 +43,9 @@
 @include meta.load-css("tables");
 @include meta.load-css("chat");
 @include meta.load-css("dashboard");
-@include meta.load-css('custom');
-@include meta.load-css('dark_screen');
-@include meta.load-css('mediaQuery');
+@include meta.load-css("custom");
+@include meta.load-css("dark_screen");
+@include meta.load-css("mediaQuery");
 @include meta.load-css("dad");
 @include meta.load-css("task_details");
 @include meta.load-css("modals");
@@ -60,4 +59,3 @@
 
 /* Loaded last: the responsive baseline has the final say. */
 @include meta.load-css("responsive");
-

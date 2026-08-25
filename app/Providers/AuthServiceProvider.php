@@ -5,7 +5,6 @@ namespace App\Providers;
 use App\Policies\NotificationPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Notifications\DatabaseNotification;
-use Illuminate\Support\Facades\Gate;
 
 class AuthServiceProvider extends ServiceProvider
 {

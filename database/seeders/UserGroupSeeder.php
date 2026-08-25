@@ -24,11 +24,13 @@ class UserGroupSeeder extends Seeder
     {
         if (!Schema::hasTable('user_groups') || !Schema::hasTable('user_group_members')) {
             $this->command->error("'user_groups' / 'user_group_members' don't exist yet — run the migrations first.");
+
             return;
         }
 
         if (!Schema::hasColumn('users', 'edoc_role')) {
             $this->command->error("users.edoc_role column doesn't exist — nothing to group by.");
+
             return;
         }
 
@@ -67,7 +69,7 @@ class UserGroupSeeder extends Seeder
                     ->delete();
             }
 
-            $this->command->line("Group '{$groupName}' (#{$group->id}, edoc_role={$role}): {$userIds->count()} member(s) — added " . $toAdd->count() . ', removed ' . $toRemove->count() . '.');
+            $this->command->line("Group '{$groupName}' (#{$group->id}, edoc_role={$role}): {$userIds->count()} member(s) — added ".$toAdd->count().', removed '.$toRemove->count().'.');
         }
 
         $this->command->info('User groups seeded/synced.');

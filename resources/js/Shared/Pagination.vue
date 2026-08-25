@@ -1,26 +1,38 @@
 <template>
-  <div v-if="links.length > 3">
-    <div class="flex flex-wrap p-nat -mb-1">
-      <template v-for="(link, key) in normalizedLinks">
-        <div v-if="link.url === null" :key="key" class="mr-1 mb-1 px-4 py-3 text-sm leading-4 text-gray-400 border rounded" v-html="link.label" />
-        <Link v-else :key="key+1" class="mr-1 mb-1 px-4 py-3 text-sm leading-4 border rounded" :class="{ 'active': link.active }" :href="link.url" v-html="link.label" />
-      </template>
+    <div v-if="links.length > 3">
+        <div class="flex flex-wrap p-nat -mb-1">
+            <template v-for="(link, key) in normalizedLinks">
+                <div
+                    v-if="link.url === null"
+                    :key="key"
+                    class="mr-1 mb-1 px-4 py-3 text-sm leading-4 text-gray-400 border rounded"
+                    v-html="link.label"
+                />
+                <Link
+                    v-else
+                    :key="key + 1"
+                    class="mr-1 mb-1 px-4 py-3 text-sm leading-4 border rounded"
+                    :class="{ active: link.active }"
+                    :href="link.url"
+                    v-html="link.label"
+                />
+            </template>
+        </div>
     </div>
-  </div>
 </template>
 
 <script>
-import {Link} from '@inertiajs/vue3'
+import { Link } from '@inertiajs/vue3';
 export default {
-  props: {
-    links: Array,
-  },
+    props: {
+        links: Array,
+    },
     components: {
         Link,
     },
     computed: {
         normalizedLinks() {
-            return (this.links || []).map(link => ({ ...link, url: this.samePage(link.url) }))
+            return (this.links || []).map((link) => ({ ...link, url: this.samePage(link.url) }));
         },
     },
     methods: {
@@ -37,14 +49,14 @@ export default {
          * dropped and every link stays on the page we are already on.
          */
         samePage(url) {
-            if (!url) return url
+            if (!url) return url;
             try {
-                const parsed = new URL(url, window.location.origin)
-                return parsed.pathname + parsed.search + parsed.hash
+                const parsed = new URL(url, window.location.origin);
+                return parsed.pathname + parsed.search + parsed.hash;
             } catch (e) {
-                return url
+                return url;
             }
         },
     },
-}
+};
 </script>

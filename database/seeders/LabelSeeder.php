@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Label;
+use App\Models\Project;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -17,7 +18,7 @@ class LabelSeeder extends Seeder
     {
         DB::table('labels')->truncate();
 
-        \App\Models\Project::select('id')->chunk(100, function ($projects) {
+        Project::select('id')->chunk(100, function ($projects) {
             foreach ($projects as $project) {
                 Label::factory()->createMany([
                     ['name' => 'Copy Request', 'color' => '#7366FF', 'project_id' => $project->id],

@@ -1,9 +1,11 @@
-#nprogress{
-    .bar{
+#nprogress {
+    .bar {
         height: 1px !important;
-        background: #27c4f5 linear-gradient(to right,#27c4f5,#a307ba,#fd8d32,#70c050,#27c4f5) !important;
+        background: #27c4f5 linear-gradient(to right, #27c4f5, #a307ba, #fd8d32, #70c050, #27c4f5) !important;
         background-size: 500% !important;
-        animation: 2s linear infinite barprogress, .3s fadein !important;
+        animation:
+            2s linear infinite barprogress,
+            0.3s fadein !important;
         width: 100% !important;
         z-index: 9999 !important;
     }
@@ -11,19 +13,18 @@
         background-color: rgba(255, 255, 255, 0.5);
         position: absolute;
         z-index: 9001 !important;
-        .spinner-icon{
+        .spinner-icon {
             margin-left: -30px;
             margin-bottom: -20px;
-
         }
     }
 }
 
-@keyframes barprogress{
+@keyframes barprogress {
     0% {
-        background-position:0% 0
+        background-position: 0% 0;
     }
-    to{
-        background-position:125% 0
+    to {
+        background-position: 125% 0;
     }
 }

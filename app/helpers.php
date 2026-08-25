@@ -3,10 +3,12 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
 
-function translations($json) {
-    if(!file_exists($json)) {
+function translations($json)
+{
+    if (!file_exists($json)) {
         return [];
     }
+
     return is_string(file_get_contents($json)) ? json_decode(file_get_contents($json), true) : file_get_contents($json);
 }
 
@@ -14,16 +16,18 @@ if (!function_exists('static_asset')) {
     /**
      * Generate an asset path for the application.
      *
-     * @param string $path
-     * @param bool|null $secure
+     * @param  string  $path
+     * @param  bool|null  $secure
      * @return string
      */
-    function static_asset($path, $secure = null) {
-        return app('url')->asset('public/' . $path, $secure);
+    function static_asset($path, $secure = null)
+    {
+        return app('url')->asset('public/'.$path, $secure);
     }
 }
 
-function isActive($route, $className = 'active') {
+function isActive($route, $className = 'active')
+{
     if (is_array($route)) {
         return in_array(Route::currentRouteName(), $route) ? $className : '';
     }

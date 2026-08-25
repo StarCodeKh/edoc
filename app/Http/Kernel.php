@@ -2,8 +2,37 @@
 
 namespace App\Http;
 
+use App\Http\Middleware\AppIntegrityValidator;
+use App\Http\Middleware\Authenticate;
+use App\Http\Middleware\canInstall;
+use App\Http\Middleware\canUpdate;
+use App\Http\Middleware\EncryptCookies;
+use App\Http\Middleware\EnsureSuperAdmin;
+use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\PreventRequestsDuringMaintenance;
+use App\Http\Middleware\RecordSlowRequests;
+use App\Http\Middleware\RedirectIfAuthenticated;
+use App\Http\Middleware\RedirectToInstallerIfNotInstalled;
+use App\Http\Middleware\SetLocale;
+use App\Http\Middleware\TrimStrings;
+use App\Http\Middleware\TrustProxies;
+use App\Http\Middleware\VerifyCsrfToken;
 use App\Http\Middleware\XssSanitization;
+use Illuminate\Auth\Middleware\AuthenticateWithBasicAuth;
+use Illuminate\Auth\Middleware\Authorize;
+use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
+use Illuminate\Auth\Middleware\RequirePassword;
+use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
+use Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull;
+use Illuminate\Foundation\Http\Middleware\ValidatePostSize;
+use Illuminate\Http\Middleware\HandleCors;
+use Illuminate\Http\Middleware\SetCacheHeaders;
+use Illuminate\Routing\Middleware\SubstituteBindings;
+use Illuminate\Routing\Middleware\ThrottleRequests;
+use Illuminate\Routing\Middleware\ValidateSignature;
+use Illuminate\Session\Middleware\StartSession;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class Kernel extends HttpKernel
 {
@@ -16,19 +45,19 @@ class Kernel extends HttpKernel
      */
     protected $middleware = [
         // \App\Http\Middleware\TrustHosts::class,
-        \App\Http\Middleware\TrustProxies::class,
-        \Illuminate\Http\Middleware\HandleCors::class,
-        \App\Http\Middleware\PreventRequestsDuringMaintenance::class,
-        \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
-        \App\Http\Middleware\TrimStrings::class,
+        TrustProxies::class,
+        HandleCors::class,
+        PreventRequestsDuringMaintenance::class,
+        ValidatePostSize::class,
+        TrimStrings::class,
 
         // Installer
-//        \App\Http\Middleware\canInstall::class,
-//        \App\Http\Middleware\canUpdate::class,
+        //        \App\Http\Middleware\canInstall::class,
+        //        \App\Http\Middleware\canUpdate::class,
 
-        \App\Http\Middleware\RedirectToInstallerIfNotInstalled::class,
-        \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
-//        XssSanitization::class,
+        RedirectToInstallerIfNotInstalled::class,
+        ConvertEmptyStringsToNull::class,
+        //        XssSanitization::class,
     ];
 
     /**
@@ -40,25 +69,25 @@ class Kernel extends HttpKernel
         'web' => [
             // First in the group so it times the whole request, not just the
             // part after session and auth have done their work.
-            \App\Http\Middleware\RecordSlowRequests::class,
-            \App\Http\Middleware\EncryptCookies::class,
-            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
-            \Illuminate\Session\Middleware\StartSession::class,
-            \App\Http\Middleware\AppIntegrityValidator::class,
-            \App\Http\Middleware\SetLocale::class,
+            RecordSlowRequests::class,
+            EncryptCookies::class,
+            AddQueuedCookiesToResponse::class,
+            StartSession::class,
+            AppIntegrityValidator::class,
+            SetLocale::class,
             // \Illuminate\Session\Middleware\AuthenticateSession::class,
-            \Illuminate\View\Middleware\ShareErrorsFromSession::class,
-            \App\Http\Middleware\VerifyCsrfToken::class,
-            \Illuminate\Routing\Middleware\SubstituteBindings::class,
-            \App\Http\Middleware\HandleInertiaRequests::class,
+            ShareErrorsFromSession::class,
+            VerifyCsrfToken::class,
+            SubstituteBindings::class,
+            HandleInertiaRequests::class,
         ],
 
-        'install' => [ \App\Http\Middleware\canInstall::class ],
-        'update' => [ \App\Http\Middleware\canUpdate::class ],
+        'install' => [canInstall::class],
+        'update' => [canUpdate::class],
 
         'api' => [
             'throttle:api',
-            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            SubstituteBindings::class,
         ],
     ];
 
@@ -70,24 +99,23 @@ class Kernel extends HttpKernel
      * @var array
      */
     protected $routeMiddleware = [
-        'auth' => \App\Http\Middleware\Authenticate::class,
-        'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
-        'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
-        'can' => \Illuminate\Auth\Middleware\Authorize::class,
-        'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
-        'super.admin' => \App\Http\Middleware\EnsureSuperAdmin::class,
-        'password.confirm' => \Illuminate\Auth\Middleware\RequirePassword::class,
-        'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
-        'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
-        'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+        'auth' => Authenticate::class,
+        'auth.basic' => AuthenticateWithBasicAuth::class,
+        'cache.headers' => SetCacheHeaders::class,
+        'can' => Authorize::class,
+        'guest' => RedirectIfAuthenticated::class,
+        'super.admin' => EnsureSuperAdmin::class,
+        'password.confirm' => RequirePassword::class,
+        'signed' => ValidateSignature::class,
+        'throttle' => ThrottleRequests::class,
+        'verified' => EnsureEmailIsVerified::class,
         'XssSanitizer' => XssSanitization::class,
     ];
 
-
     protected $middlewarePriority = [
         // ...
-        \Illuminate\Session\Middleware\StartSession::class,
-        \App\Http\Middleware\SetLocale::class,
+        StartSession::class,
+        SetLocale::class,
         // ...
     ];
 }

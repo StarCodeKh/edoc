@@ -15,9 +15,9 @@ class BoardList extends Model
 
     protected $casts = [
         'project_id' => 'integer',
-        'order'      => 'integer',
+        'order' => 'integer',
         'is_archive' => 'boolean',
-        'user_id'    => 'integer',
+        'user_id' => 'integer',
     ];
 
     public function resolveRouteBinding($value, $field = null)
@@ -25,8 +25,9 @@ class BoardList extends Model
         return $this->where($field ?? 'id', $value)->firstOrFail();
     }
 
-    public function scopeByProject($query, $id) {
-        if(!empty($id)){
+    public function scopeByProject($query, $id)
+    {
+        if (!empty($id)) {
             $query->where('project_id', $id);
         }
     }
@@ -36,11 +37,13 @@ class BoardList extends Model
         $query->orderBy('order');
     }
 
-    public function scopeIsOpen($query) {
+    public function scopeIsOpen($query)
+    {
         $query->where('is_archive', 0);
     }
 
-    public function tasks(){
+    public function tasks()
+    {
         return $this->hasMany(Task::class, 'list_id');
     }
 
@@ -54,7 +57,8 @@ class BoardList extends Model
         return $this->belongsTo(Project::class);
     }
 
-    public function scopeFilter($query, array $filters){
+    public function scopeFilter($query, array $filters)
+    {
         $query->when($filters['search'] ?? null, function ($query, $search) {
             $query->where(function ($query) use ($search) {
                 $query->where('title', 'like', '%'.$search.'%');

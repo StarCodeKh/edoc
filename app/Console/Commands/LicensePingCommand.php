@@ -10,6 +10,7 @@ use Symfony\Component\Console\Command\Command as CommandAlias;
 class LicensePingCommand extends Command
 {
     protected $signature = 'license:ping';
+
     protected $description = 'Sends a periodic check-in to the license server.';
 
     public function handle(): int
@@ -20,10 +21,10 @@ class LicensePingCommand extends Command
         }
 
         try {
-            Http::timeout(10)->post(config('services.license.server_url') . '/api/ping', [
+            Http::timeout(10)->post(config('services.license.server_url').'/api/ping', [
                 'purchase_code' => $licenseKey,
-                'item_id'       => config('services.license.item_id'),
-                'domain'        => request()->getHttpHost(),
+                'item_id' => config('services.license.item_id'),
+                'domain' => request()->getHttpHost(),
             ]);
         } catch (\Exception $e) {
         }

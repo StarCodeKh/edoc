@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
-use App\Models\Timer;
 use App\Models\Task;
+use App\Models\Timer;
 use App\Models\User;
-use Illuminate\Database\Seeder;
 use Carbon\Carbon;
+use Illuminate\Database\Seeder;
 
 class TimerSeeder extends Seeder
 {
@@ -18,75 +18,78 @@ class TimerSeeder extends Seeder
     public function run()
     {
         $this->command->info('⏱️ Creating time tracking data...');
-        
+
         $tasks = Task::with(['assignees.user', 'project.workspace.teamMembers'])->get();
-        
+
         if ($tasks->count() === 0) {
             $this->command->error('❌ No tasks found. Please run TaskSeeder first.');
+
             return;
         }
-        
+
         $createdTimers = 0;
-        
+
         foreach ($tasks as $task) {
             // 50% of tasks get time tracking
             if (fake()->boolean(50)) {
                 $timerCount = fake()->numberBetween(1, 5);
-                
+
                 // Get users who can track time (assignees + team members)
                 $potentialUsers = collect();
-                
+
                 // Add assignees
                 foreach ($task->assignees as $assignee) {
                     $potentialUsers->push($assignee->user);
                 }
-                
+
                 // Add some team members if no assignees
                 if ($potentialUsers->count() === 0) {
                     $teamMembers = $task->project->workspace->teamMembers->pluck('user_id');
                     $users = User::whereIn('id', $teamMembers)->take(2)->get();
                     $potentialUsers = $potentialUsers->merge($users);
                 }
-                
-                if ($potentialUsers->count() === 0) continue;
-                
+
+                if ($potentialUsers->count() === 0) {
+                    continue;
+                }
+
                 $taskStartDate = Carbon::parse($task->created_at);
                 $taskEndDate = Carbon::parse($task->updated_at);
-                
+
                 // Ensure end date is not before start date
                 if ($taskEndDate->lt($taskStartDate)) {
                     $taskEndDate = $taskStartDate->copy()->addDays(1);
                 }
-                
+
                 for ($i = 0; $i < $timerCount; $i++) {
                     $user = $potentialUsers->random();
-                    
+
                     // Generate realistic work sessions
                     $sessionDate = fake()->dateTimeBetween($taskStartDate, $taskEndDate);
                     $startedAt = Carbon::parse($sessionDate)->setTime(
                         fake()->numberBetween(8, 16), // Work hours
                         fake()->randomElement([0, 15, 30, 45])
                     );
-                    
+
                     // Session duration (15 minutes to 4 hours)
                     $sessionDuration = fake()->numberBetween(15, 240);
                     $stoppedAt = $startedAt->copy()->addMinutes($sessionDuration);
-                    
+
                     // Ensure stopped time doesn't exceed task end date
                     if ($stoppedAt->gt($taskEndDate)) {
                         $stoppedAt = $taskEndDate;
                     }
-                    
+
                     // Calculate duration in minutes and seconds before potentially setting stoppedAt to null
                     $duration = (int) $startedAt->diffInMinutes($stoppedAt, true);
                     $durationSeconds = (int) $startedAt->diffInSeconds($stoppedAt, true);
-                    
+
                     // All timers are stopped for demo purposes
                     $isRunning = false;
-                    
+
                     // Generate realistic memo notes based on task type
                     $memo = $this->generateMemoNote($task->title, $isRunning);
-                    
+
                     Timer::create([
                         'task_id' => $task->id,
                         'user_id' => $user->id,
@@ -98,15 +101,15 @@ class TimerSeeder extends Seeder
                         'created_at' => $startedAt,
                         'updated_at' => $stoppedAt ?? $startedAt,
                     ]);
-                    
+
                     $createdTimers++;
                 }
             }
         }
-        
+
         $this->command->info("🎉 Successfully created {$createdTimers} timer entries!");
     }
-    
+
     private function generateMemoNote($taskTitle, $isRunning)
     {
         // Generate contextual memo notes based on task type and status
@@ -121,7 +124,7 @@ class TimerSeeder extends Seeder
                 'Frontend development and UI updates',
                 'Backend logic implementation',
                 'Testing and quality assurance',
-                'Code refactoring and cleanup'
+                'Code refactoring and cleanup',
             ],
             'design' => [
                 'Creating mockups and wireframes',
@@ -133,7 +136,7 @@ class TimerSeeder extends Seeder
                 'Visual design and asset creation',
                 'Design system updates',
                 'Accessibility improvements',
-                'Design feedback and revisions'
+                'Design feedback and revisions',
             ],
             'marketing' => [
                 'Campaign planning and strategy',
@@ -145,7 +148,7 @@ class TimerSeeder extends Seeder
                 'Content marketing and blogging',
                 'Lead generation activities',
                 'Brand awareness initiatives',
-                'Marketing automation setup'
+                'Marketing automation setup',
             ],
             'management' => [
                 'Team coordination and planning',
@@ -157,7 +160,7 @@ class TimerSeeder extends Seeder
                 'Budget review and analysis',
                 'Risk assessment and mitigation',
                 'Process improvement planning',
-                'Team building and development'
+                'Team building and development',
             ],
             'general' => [
                 'Research and analysis',
@@ -169,19 +172,19 @@ class TimerSeeder extends Seeder
                 'Quality assurance and testing',
                 'Client communication and support',
                 'Project coordination and updates',
-                'Process documentation and review'
-            ]
+                'Process documentation and review',
+            ],
         ];
-        
+
         // Determine task category based on keywords in title
         $category = 'general';
         $titleLower = strtolower($taskTitle);
-        
+
         $developmentKeywords = ['implement', 'develop', 'code', 'fix', 'bug', 'api', 'database', 'frontend', 'backend'];
         $designKeywords = ['design', 'mockup', 'wireframe', 'ui', 'ux', 'visual', 'brand', 'layout'];
         $marketingKeywords = ['marketing', 'campaign', 'social', 'seo', 'content', 'email', 'lead', 'brand'];
         $managementKeywords = ['planning', 'review', 'meeting', 'coordination', 'management', 'strategy', 'budget', 'team'];
-        
+
         if ($this->containsAnyKeyword($titleLower, $developmentKeywords)) {
             $category = 'development';
         } elseif ($this->containsAnyKeyword($titleLower, $designKeywords)) {
@@ -191,9 +194,9 @@ class TimerSeeder extends Seeder
         } elseif ($this->containsAnyKeyword($titleLower, $managementKeywords)) {
             $category = 'management';
         }
-        
+
         $baseMemo = fake()->randomElement($memoTemplates[$category]);
-        
+
         // Add status-specific context
         if ($isRunning) {
             $statusContext = [
@@ -201,7 +204,7 @@ class TimerSeeder extends Seeder
                 ' - Active work session',
                 ' - Ongoing development',
                 ' - Work in progress',
-                ' - Active session'
+                ' - Active session',
             ];
             $baseMemo .= fake()->randomElement($statusContext);
         } else {
@@ -210,11 +213,11 @@ class TimerSeeder extends Seeder
                 ' - Work completed successfully',
                 ' - Task finished',
                 ' - Session ended',
-                ' - Work completed'
+                ' - Work completed',
             ];
             $baseMemo .= fake()->randomElement($statusContext);
         }
-        
+
         // Add some additional context (60% chance)
         if (fake()->boolean(60)) {
             $additionalContext = [
@@ -225,14 +228,14 @@ class TimerSeeder extends Seeder
                 ' - Minor issues resolved',
                 ' - Excellent progress',
                 ' - Need to follow up',
-                ' - Ready for next phase'
+                ' - Ready for next phase',
             ];
             $baseMemo .= fake()->randomElement($additionalContext);
         }
-        
+
         return $baseMemo;
     }
-    
+
     private function containsAnyKeyword($text, $keywords)
     {
         foreach ($keywords as $keyword) {
@@ -240,6 +243,7 @@ class TimerSeeder extends Seeder
                 return true;
             }
         }
+
         return false;
     }
 }

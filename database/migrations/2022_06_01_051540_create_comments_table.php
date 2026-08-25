@@ -13,7 +13,9 @@ class CreateCommentsTable extends Migration
      */
     public function up()
     {
-        if (Schema::hasTable('comments')) { return; }
+        if (Schema::hasTable('comments')) {
+            return;
+        }
         Schema::create('comments', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('task_id')->nullable()->index();

@@ -18,7 +18,7 @@ class BoardListSeeder extends Seeder
     {
         DB::table('board_lists')->truncate();
         $project = Project::first();
-        if($project){
+        if ($project) {
             BoardList::factory()->createMany([
                 ['title' => 'Project Resources', 'order' => 0, 'project_id' => $project->id],
                 ['title' => 'Questions For Next Meeting', 'order' => 1, 'project_id' => $project->id],

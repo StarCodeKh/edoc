@@ -17,14 +17,15 @@ class CommentSeeder extends Seeder
     public function run()
     {
         $this->command->info('💬 Creating task comments...');
-        
+
         $tasks = Task::with(['assignees.user', 'project.workspace.teamMembers'])->get();
-        
+
         if ($tasks->count() === 0) {
             $this->command->error('❌ No tasks found. Please run TaskSeeder first.');
+
             return;
         }
-        
+
         $commentTemplates = [
             'updates' => [
                 'Updated the implementation based on the latest requirements.',
@@ -65,40 +66,42 @@ class CommentSeeder extends Seeder
                 'This looks good to me. Approving for the next phase.',
                 'Nice implementation! I learned something new from your approach.',
                 'Excellent attention to detail. This will work perfectly.',
-            ]
+            ],
         ];
-        
+
         $createdComments = 0;
-        
+
         foreach ($tasks as $task) {
             // 40% of tasks get comments
             if (fake()->boolean(40)) {
                 $commentCount = fake()->numberBetween(1, 5);
-                
+
                 // Get potential commenters (assignees + project team members)
                 $potentialCommenters = collect();
-                
+
                 // Add assignees
                 foreach ($task->assignees as $assignee) {
                     $potentialCommenters->push($assignee->user);
                 }
-                
+
                 // Add some team members
                 $teamMembers = $task->project->workspace->teamMembers->pluck('user_id');
                 $additionalUsers = User::whereIn('id', $teamMembers)->get();
                 $potentialCommenters = $potentialCommenters->merge($additionalUsers)->unique('id');
-                
-                if ($potentialCommenters->count() === 0) continue;
-                
+
+                if ($potentialCommenters->count() === 0) {
+                    continue;
+                }
+
                 for ($i = 0; $i < $commentCount; $i++) {
                     $category = fake()->randomElement(array_keys($commentTemplates));
                     $commentText = fake()->randomElement($commentTemplates[$category]);
-                    
+
                     // Add some variation
                     if (fake()->boolean(30)) {
-                        $commentText .= ' ' . fake()->sentence();
+                        $commentText .= ' '.fake()->sentence();
                     }
-                    
+
                     Comment::create([
                         'task_id' => $task->id,
                         'user_id' => $potentialCommenters->random()->id,
@@ -106,12 +109,12 @@ class CommentSeeder extends Seeder
                         'created_at' => fake()->dateTimeBetween($task->created_at, 'now'),
                         'updated_at' => fake()->dateTimeBetween($task->created_at, 'now'),
                     ]);
-                    
+
                     $createdComments++;
                 }
             }
         }
-        
+
         $this->command->info("🎉 Successfully created {$createdComments} task comments!");
     }
 }

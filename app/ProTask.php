@@ -2,10 +2,10 @@
 
 namespace App;
 
-use App\Models\Setting;
 use App\Models\NotificationSetting;
 
-class ProTask{
+class ProTask
+{
     /**
      * The ProTask version.
      *
@@ -25,11 +25,11 @@ class ProTask{
         // Use the new notification_settings table
         $settings = NotificationSetting::all();
         $notifications = [];
-        
+
         foreach ($settings as $setting) {
             $notifications[$setting->type] = $setting->email_is_active;
         }
-        
+
         return $notifications;
     }
 
@@ -38,11 +38,11 @@ class ProTask{
         // Use the new notification_settings table
         $settings = NotificationSetting::all();
         $notifications = [];
-        
+
         foreach ($settings as $setting) {
             $notifications[$setting->type] = $setting->slack_is_active;
         }
-        
+
         return $notifications;
     }
 }

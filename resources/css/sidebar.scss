@@ -1,101 +1,105 @@
-.sidebar_wrapper{
-    .text, .name, .arrow, .logo{
+.sidebar_wrapper {
+    .text,
+    .name,
+    .arrow,
+    .logo {
         color: #ffffff;
     }
-    .side_p_list{
-        .item{
+    .side_p_list {
+        .item {
             color: #ffffff;
-            &.active{
+            &.active {
                 background-color: #ffffff4d;
             }
-            &:hover{
+            &:hover {
                 background-color: #ffffff29;
             }
         }
-
     }
-    ul{
-        &.items{
-            li{
-                a{
+    ul {
+        &.items {
+            li {
+                a {
                     color: #ffffff;
-                    &:hover{
+                    &:hover {
                         background-color: #ffffff29;
                     }
-                    svg{
+                    svg {
                         fill: #ffffff;
                     }
                 }
             }
         }
     }
-    .add__plus{
-        svg{
+    .add__plus {
+        svg {
             color: #ffffff;
             fill: #ffffff;
         }
-        &:hover{
+        &:hover {
             background-color: #a6c5e229;
             color: #ffffff;
         }
     }
 }
-.project__loading{
+.project__loading {
     @apply p-3 animate-pulse rtl:space-x-reverse gap-3 flex items-center space-y-0;
-    .p__image{
+    .p__image {
         @apply flex items-center justify-center rounded-full bg-gray-300 dark:bg-gray-700;
-        svg{
+        svg {
             @apply w-5 h-5 rounded-full text-gray-200 dark:text-gray-600;
         }
     }
-    .__bar{
+    .__bar {
         @apply w-full flex flex-col pr-2;
-        div{
+        div {
             @apply h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700;
         }
     }
 }
-.dark{
-    &.layout-app{
-        &.main{
-            .sidebar{
-                &.sidebar_wrapper{
-                    .text, .name, .arrow, .logo{
+.dark {
+    &.layout-app {
+        &.main {
+            .sidebar {
+                &.sidebar_wrapper {
+                    .text,
+                    .name,
+                    .arrow,
+                    .logo {
                         color: #ffffff;
                     }
-                    .side_p_list{
-                        .item{
+                    .side_p_list {
+                        .item {
                             color: #ffffff;
-                            &.active{
+                            &.active {
                                 background-color: #ffffff4d;
                             }
-                            &:hover{
+                            &:hover {
                                 background-color: #ffffff29;
                             }
                         }
-
                     }
-                    ul{
-                        &.items{
-                            li{
-                                a{
+                    ul {
+                        &.items {
+                            li {
+                                a {
                                     color: #ffffff;
-                                    &:hover{
+                                    &:hover {
                                         background-color: #ffffff29;
                                     }
-                                    svg{
+                                    svg {
                                         fill: #ffffff;
                                     }
                                 }
                             }
                         }
                     }
-                    .add__plus{
-                        svg{
+                    .add__plus {
+                        svg {
                             color: #ffffff;
                             fill: #ffffff;
                         }
-                        &:hover{
+                        &:hover {
                             background-color: #a6c5e229;
                             color: #ffffff;
                         }
@@ -105,4 +109,3 @@
         }
     }
 }
-

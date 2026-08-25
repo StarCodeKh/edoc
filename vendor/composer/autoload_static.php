@@ -672,10 +672,12 @@ class ComposerStaticInit84d6843af53bf07f69947a3dc27618e0
         'Database\\Seeders\\' =>
         array (
             0 => __DIR__ . '/../..' . '/database/seeders',
+            1 => __DIR__ . '/..' . '/laravel/pint/database/seeders',
         ),
         'Database\\Factories\\' =>
         array (
             0 => __DIR__ . '/../..' . '/database/factories',
+            1 => __DIR__ . '/..' . '/laravel/pint/database/factories',
         ),
         'DASPRiD\\Enum\\' =>
         array (
@@ -716,6 +718,7 @@ class ComposerStaticInit84d6843af53bf07f69947a3dc27618e0
         'App\\' =>
         array (
             0 => __DIR__ . '/../..' . '/app',
+            1 => __DIR__ . '/..' . '/laravel/pint/app',
         ),
     );
 

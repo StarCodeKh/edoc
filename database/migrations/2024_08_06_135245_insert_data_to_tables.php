@@ -21,7 +21,7 @@ return new class extends Migration
                     ['name' => 'Project update', 'slug' => 'project_update', 'value' => false],
                     ['name' => 'New comment', 'slug' => 'new_comment', 'value' => false],
                     ['name' => 'Daily reminder for due task', 'slug' => 'due_task_reminder', 'value' => false],
-                ])
+                ]),
             ]);
         });
     }

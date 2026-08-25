@@ -1,5 +1,7 @@
 <?php
+
 namespace App\Exports;
+
 use App\Models\Task;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\FromQuery;
@@ -10,8 +12,10 @@ class TasksExport implements FromQuery, WithHeadings, WithMapping
 {
     use Exportable;
 
-    public function forProject(int $project_id) {
+    public function forProject(int $project_id)
+    {
         $this->project_id = $project_id;
+
         return $this;
     }
 
@@ -23,8 +27,8 @@ class TasksExport implements FromQuery, WithHeadings, WithMapping
     public function headings(): array
     {
         return [
-            'ID', 'Title', 'Slug', 'Description', 'Board', 'Project Name', 'Due Date', 'Order', 'User ID','List ID',
-            'Created At'
+            'ID', 'Title', 'Slug', 'Description', 'Board', 'Project Name', 'Due Date', 'Order', 'User ID', 'List ID',
+            'Created At',
         ];
     }
 
@@ -33,8 +37,8 @@ class TasksExport implements FromQuery, WithHeadings, WithMapping
         return [
             $row->id, $row->title, $row->slug,
             $row->description, $row->list ? $row->list->title : null,
-            $row->project ? $row->project->title: null, $row->due_date,
-            $row->order, $row->user_id, $row->list_id, $row->created_at
+            $row->project ? $row->project->title : null, $row->due_date,
+            $row->order, $row->user_id, $row->list_id, $row->created_at,
         ];
     }
 }

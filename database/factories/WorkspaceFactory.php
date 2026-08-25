@@ -14,23 +14,23 @@ class WorkspaceFactory extends Factory
     public function definition()
     {
         $companyTypes = [
-            'Technology Startup', 'Digital Marketing Agency', 'Software Development', 
+            'Technology Startup', 'Digital Marketing Agency', 'Software Development',
             'E-commerce Platform', 'Creative Studio', 'Consulting Firm',
             'Healthcare Solutions', 'Educational Technology', 'Financial Services',
-            'Media & Entertainment'
+            'Media & Entertainment',
         ];
-        
+
         $companyNames = [
             'InnovateHub', 'TechForward', 'CreativeFlow', 'DataDriven Solutions',
             'NextGen Systems', 'CloudScale', 'DigitalCraft', 'SmartBuild',
-            'ProActive Labs', 'FutureScope'
+            'ProActive Labs', 'FutureScope',
         ];
-        
+
         $createdAt = $this->faker->dateTimeBetween('-6 months', '-1 month');
-        
+
         return [
-            'name' => $this->faker->randomElement($companyNames) . ' ' . $this->faker->randomElement(['Inc', 'LLC', 'Corp', 'Ltd']),
-            'website' => 'https://' . strtolower(str_replace(' ', '', $this->faker->randomElement($companyNames))) . '.com',
+            'name' => $this->faker->randomElement($companyNames).' '.$this->faker->randomElement(['Inc', 'LLC', 'Corp', 'Ltd']),
+            'website' => 'https://'.strtolower(str_replace(' ', '', $this->faker->randomElement($companyNames))).'.com',
             'description' => $this->faker->realText(200),
             'type_id' => $this->faker->numberBetween(1, 6),
             'created_at' => $createdAt,

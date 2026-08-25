@@ -1,13 +1,13 @@
-.dark{
-    .task_board{
+.dark {
+    .task_board {
         background-blend-mode: darken;
         background-color: #0000004d !important;
     }
-    .top_list{
+    .top_list {
         background-color: #101204;
     }
-    .hover\:bg-white{
-        &:hover{
+    .hover\:bg-white {
+        &:hover {
             background-color: #262932;
         }
     }

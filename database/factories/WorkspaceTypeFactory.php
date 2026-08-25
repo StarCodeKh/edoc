@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Models\Model;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Model>
+ * @extends Factory<Model>
  */
 class WorkspaceTypeFactory extends Factory
 {
@@ -17,7 +18,7 @@ class WorkspaceTypeFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->unique()->randomElement(['Education','Operation','Marketing','Engineering','Small Business','Design & Development','Other']),
+            'name' => $this->faker->unique()->randomElement(['Education', 'Operation', 'Marketing', 'Engineering', 'Small Business', 'Design & Development', 'Other']),
         ];
     }
 }

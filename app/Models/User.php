@@ -4,8 +4,8 @@ namespace App\Models;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\HasApiTokens;
@@ -44,12 +44,13 @@ class User extends Authenticatable
      * @var array<string, string>
      */
     protected $casts = [
-        'role_id'             => 'integer',
-        'email_verified_at'   => 'datetime',
-        'password'            => 'hashed',
+        'role_id' => 'integer',
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
     ];
 
-    public function resolveRouteBinding($value, $field = null) {
+    public function resolveRouteBinding($value, $field = null)
+    {
         return $this->where($field ?? 'id', $value)->firstOrFail();
     }
 
@@ -58,11 +59,13 @@ class User extends Authenticatable
         return $this->first_name.' '.$this->last_name;
     }
 
-    public function getCreatedAtAttribute($date){
+    public function getCreatedAtAttribute($date)
+    {
         return Carbon::parse($date)->format('jS F, Y');
     }
 
-    public function role() {
+    public function role()
+    {
         return $this->belongsTo(Role::class);
     }
 
@@ -92,7 +95,7 @@ class User extends Authenticatable
 
     public function isNormalUser(): bool
     {
-        return ! $this->isAdmin();
+        return !$this->isAdmin();
     }
 
     public function isDemoUser()
@@ -105,17 +108,20 @@ class User extends Authenticatable
         $query->orderBy('last_name')->orderBy('first_name');
     }
 
-    public function scopeByRole($query, array $filters){
+    public function scopeByRole($query, array $filters)
+    {
         $query->when($filters['role'] ?? null, function ($query, $role) {
             $query->whereRole($role);
         });
     }
 
-    public function comments() {
+    public function comments()
+    {
         return $this->hasMany(Comment::class);
     }
 
-    public function tasks(){
+    public function tasks()
+    {
         return $this->hasMany(Task::class);
     }
 
@@ -139,8 +145,9 @@ class User extends Authenticatable
         return [];
     }
 
-    public function getFullNameAttribute(){
-        return ucfirst($this->first_name) . ' ' . ucfirst($this->last_name);
+    public function getFullNameAttribute()
+    {
+        return ucfirst($this->first_name).' '.ucfirst($this->last_name);
     }
 
     public function watchedTasks(): MorphToMany
@@ -153,7 +160,8 @@ class User extends Authenticatable
         return $this->morphedByMany(Project::class, 'watchable', 'watchers');
     }
 
-    public function scopeFilter($query, array $filters) {
+    public function scopeFilter($query, array $filters)
+    {
         $query->when($filters['search'] ?? null, function ($query, $search) {
             $query->where(function ($query) use ($search) {
                 $query->where('first_name', 'like', '%'.$search.'%')

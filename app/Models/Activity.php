@@ -12,8 +12,8 @@ class Activity extends Model
     protected $fillable = ['user_id', 'task_id', 'field_changed', 'old_value', 'new_value', 'comment_id'];
 
     protected $casts = [
-        'user_id'    => 'integer',
-        'task_id'    => 'integer',
+        'user_id' => 'integer',
+        'task_id' => 'integer',
         'comment_id' => 'integer',
     ];
 

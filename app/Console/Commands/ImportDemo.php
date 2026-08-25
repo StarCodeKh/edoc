@@ -37,13 +37,13 @@ class ImportDemo extends Command
      *
      * @return int
      */
-    public function handle() {
+    public function handle()
+    {
         /** Manual Restore
         ini_set('memory_limit', '-1');
         $sql_path = base_path('database/helpdesk.sql');
         DB::unprepared(file_get_contents($sql_path));
-        **/
-
+         **/
         Artisan::call('db:seed --class=FreshDataSeeder --force');
         dd('done');
     }

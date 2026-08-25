@@ -1,5 +1,8 @@
 <template>
-    <div class="custom-editor" :class="{'custom-editor--focused': isFocused, 'custom-editor--fullscreen': isFullscreen}">
+    <div
+        class="custom-editor"
+        :class="{ 'custom-editor--focused': isFocused, 'custom-editor--fullscreen': isFullscreen }"
+    >
         <!-- Toolbar -->
         <div v-if="showToolbar" class="custom-editor__toolbar">
             <div class="toolbar-group">
@@ -7,7 +10,7 @@
                 <button
                     type="button"
                     @click="execCommand('bold')"
-                    :class="{'active': isActive('bold')}"
+                    :class="{ active: isActive('bold') }"
                     class="toolbar-btn"
                     title="Bold (Ctrl+B)"
                 >
@@ -16,7 +19,7 @@
                 <button
                     type="button"
                     @click="execCommand('italic')"
-                    :class="{'active': isActive('italic')}"
+                    :class="{ active: isActive('italic') }"
                     class="toolbar-btn"
                     title="Italic (Ctrl+I)"
                 >
@@ -25,7 +28,7 @@
                 <button
                     type="button"
                     @click="execCommand('underline')"
-                    :class="{'active': isActive('underline')}"
+                    :class="{ active: isActive('underline') }"
                     class="toolbar-btn"
                     title="Underline (Ctrl+U)"
                 >
@@ -34,7 +37,7 @@
                 <button
                     type="button"
                     @click="execCommand('strikeThrough')"
-                    :class="{'active': isActive('strikeThrough')}"
+                    :class="{ active: isActive('strikeThrough') }"
                     class="toolbar-btn"
                     title="Strikethrough"
                 >
@@ -65,7 +68,7 @@
                 <button
                     type="button"
                     @click="execCommand('justifyLeft')"
-                    :class="{'active': isActive('justifyLeft')}"
+                    :class="{ active: isActive('justifyLeft') }"
                     class="toolbar-btn"
                     title="Align Left (Ctrl+Shift+L)"
                 >
@@ -74,7 +77,7 @@
                 <button
                     type="button"
                     @click="execCommand('justifyCenter')"
-                    :class="{'active': isActive('justifyCenter')}"
+                    :class="{ active: isActive('justifyCenter') }"
                     class="toolbar-btn"
                     title="Align Center (Ctrl+Shift+E)"
                 >
@@ -83,7 +86,7 @@
                 <button
                     type="button"
                     @click="execCommand('justifyRight')"
-                    :class="{'active': isActive('justifyRight')}"
+                    :class="{ active: isActive('justifyRight') }"
                     class="toolbar-btn"
                     title="Align Right (Ctrl+Shift+R)"
                 >
@@ -92,7 +95,7 @@
                 <button
                     type="button"
                     @click="execCommand('justifyFull')"
-                    :class="{'active': isActive('justifyFull')}"
+                    :class="{ active: isActive('justifyFull') }"
                     class="toolbar-btn"
                     title="Justify (Ctrl+Shift+J)"
                 >
@@ -107,7 +110,7 @@
                 <button
                     type="button"
                     @click="execCommand('insertUnorderedList')"
-                    :class="{'active': isActive('insertUnorderedList')}"
+                    :class="{ active: isActive('insertUnorderedList') }"
                     class="toolbar-btn"
                     title="Bullet List (Ctrl+Shift+8)"
                 >
@@ -116,7 +119,7 @@
                 <button
                     type="button"
                     @click="execCommand('insertOrderedList')"
-                    :class="{'active': isActive('insertOrderedList')}"
+                    :class="{ active: isActive('insertOrderedList') }"
                     class="toolbar-btn"
                     title="Numbered List (Ctrl+Shift+7)"
                 >
@@ -132,25 +135,15 @@
                     type="button"
                     @click="triggerImageUpload"
                     :disabled="isImageUploading"
-                    :class="['toolbar-btn', {'loading': isImageUploading}]"
+                    :class="['toolbar-btn', { loading: isImageUploading }]"
                     title="Insert Image (Ctrl+Shift+I)"
                 >
                     <Icon name="image" class="w-4 h-4" />
                 </button>
-                <button
-                    type="button"
-                    @click="insertTable"
-                    class="toolbar-btn"
-                    title="Insert Table"
-                >
+                <button type="button" @click="insertTable" class="toolbar-btn" title="Insert Table">
                     <Icon name="table" class="w-4 h-4" />
                 </button>
-                <button
-                    type="button"
-                    @click="insertHorizontalRule"
-                    class="toolbar-btn"
-                    title="Horizontal Rule"
-                >
+                <button type="button" @click="insertHorizontalRule" class="toolbar-btn" title="Horizontal Rule">
                     <Icon name="minus" class="w-4 h-4" />
                 </button>
             </div>
@@ -159,18 +152,13 @@
 
             <div class="toolbar-group">
                 <!-- Other -->
-                <button
-                    type="button"
-                    @click="insertLink"
-                    class="toolbar-btn"
-                    title="Insert Link (Ctrl+K)"
-                >
+                <button type="button" @click="insertLink" class="toolbar-btn" title="Insert Link (Ctrl+K)">
                     <Icon name="link" class="w-4 h-4" />
                 </button>
                 <button
                     type="button"
                     @click="toggleBlockquote"
-                    :class="{'active': isActive('blockquote')}"
+                    :class="{ active: isActive('blockquote') }"
                     class="toolbar-btn"
                     title="Quote (Ctrl+Shift+>)"
                 >
@@ -228,7 +216,11 @@
                     <Icon name="type" class="w-3 h-3" />
                     {{ charCount }} {{ charCount === 1 ? 'char' : 'chars' }}
                 </span>
-                <span v-if="readingTime > 0" class="status-item" :title="`Estimated reading time: ${readingTime} minutes`">
+                <span
+                    v-if="readingTime > 0"
+                    class="status-item"
+                    :title="`Estimated reading time: ${readingTime} minutes`"
+                >
                     <Icon name="clock" class="w-3 h-3" />
                     {{ readingTime }} min
                 </span>
@@ -276,12 +268,14 @@
             <div class="mentions-list">
                 <div class="mentions-header">
                     <span class="mentions-title">Mention someone</span>
-                    <span class="mentions-count">{{ filteredUsers.length }} user{{ filteredUsers.length !== 1 ? 's' : '' }}</span>
+                    <span class="mentions-count"
+                        >{{ filteredUsers.length }} user{{ filteredUsers.length !== 1 ? 's' : '' }}</span
+                    >
                 </div>
                 <div
                     v-for="(user, index) in filteredUsers"
                     :key="user.id"
-                    :class="{'active': index === selectedMentionIndex}"
+                    :class="{ active: index === selectedMentionIndex }"
                     class="mention-item"
                     @click.stop="selectMention(user)"
                     @mousedown.prevent="selectMention(user)"
@@ -289,7 +283,7 @@
                     @mouseup.prevent="selectMention(user)"
                 >
                     <div class="mention-avatar-container" @click.stop="selectMention(user)">
-                        <img v-if="user.avatar" :src="user.avatar" :alt="user.name" class="mention-avatar">
+                        <img v-if="user.avatar" :src="user.avatar" :alt="user.name" class="mention-avatar" />
                         <div v-else class="mention-avatar-placeholder">
                             {{ user.name.charAt(0).toUpperCase() }}
                         </div>
@@ -310,12 +304,7 @@
         </div>
 
         <!-- Emoji Picker -->
-        <div
-            v-if="showEmojiPicker"
-            class="emoji-picker"
-            :style="emojiPickerStyle"
-            @click.stop
-        >
+        <div v-if="showEmojiPicker" class="emoji-picker" :style="emojiPickerStyle" @click.stop>
             <div class="emoji-picker__header">
                 <span>Choose an emoji</span>
                 <button @click="showEmojiPicker = false" class="emoji-picker__close">
@@ -323,12 +312,7 @@
                 </button>
             </div>
             <div class="emoji-picker__content">
-                <div
-                    v-for="emoji in emojiList"
-                    :key="emoji"
-                    @click="insertEmoji(emoji)"
-                    class="emoji-item"
-                >
+                <div v-for="emoji in emojiList" :key="emoji" @click="insertEmoji(emoji)" class="emoji-item">
                     {{ emoji }}
                 </div>
             </div>
@@ -342,7 +326,7 @@
             class="image-controls"
             :style="{
                 left: imageControlsPosition.x + 'px',
-                top: imageControlsPosition.y + 'px'
+                top: imageControlsPosition.y + 'px',
             }"
         >
             <div class="image-controls__header">
@@ -375,7 +359,11 @@
                 <button @click="replaceImage" class="image-control-btn" title="Replace Image">
                     <Icon name="image" class="w-4 h-4" />
                 </button>
-                <button @click="deleteSelectedImage" class="image-control-btn image-control-btn--danger" title="Delete Image">
+                <button
+                    @click="deleteSelectedImage"
+                    class="image-control-btn image-control-btn--danger"
+                    title="Delete Image"
+                >
                     <Icon name="trash" class="w-4 h-4" />
                 </button>
             </div>
@@ -492,18 +480,21 @@
         </div>
 
         <!-- Hidden file inputs -->
-        <input
-            ref="imageInput"
-            type="file"
-            accept="image/*"
-            @change="handleImageUpload"
-            style="display: none;"
-        />
+        <input ref="imageInput" type="file" accept="image/*" @change="handleImageUpload" style="display: none" />
 
         <!-- Notification Toast -->
         <transition name="notification">
             <div v-if="notification.show" :class="['notification', `notification--${notification.type}`]">
-                <Icon :name="notification.type === 'success' ? 'check-circle' : notification.type === 'error' ? 'exclamation-circle' : 'info'" class="w-4 h-4" />
+                <Icon
+                    :name="
+                        notification.type === 'success'
+                            ? 'check-circle'
+                            : notification.type === 'error'
+                              ? 'exclamation-circle'
+                              : 'info'
+                    "
+                    class="w-4 h-4"
+                />
                 <span>{{ notification.message }}</span>
             </div>
         </transition>
@@ -511,66 +502,66 @@
 </template>
 
 <script>
-import Icon from '@/Shared/Icon.vue'
+import Icon from '@/Shared/Icon.vue';
 
 export default {
     name: 'CustomEditor',
     components: {
-        Icon
+        Icon,
     },
     props: {
         modelValue: {
             type: String,
-            default: ''
+            default: '',
         },
         placeholder: {
             type: String,
-            default: 'Start typing...'
+            default: 'Start typing...',
         },
         disabled: {
             type: Boolean,
-            default: false
+            default: false,
         },
         showToolbar: {
             type: Boolean,
-            default: true
+            default: true,
         },
         showStatusBar: {
             type: Boolean,
-            default: true
+            default: true,
         },
         enableAutoSave: {
             type: Boolean,
-            default: true
+            default: true,
         },
         autoSaveInterval: {
             type: Number,
-            default: 30000 // 30 seconds
+            default: 30000, // 30 seconds
         },
         users: {
             type: Array,
-            default: () => []
-        }
+            default: () => [],
+        },
     },
     emits: ['update:modelValue', 'focus', 'blur', 'mention'],
-            data() {
-                return {
-                    content: '',
-                    isFocused: false,
-                    showMentionDropdown: false,
-                    mentionQuery: '',
-                    selectedMentionIndex: 0,
-                    mentionStartPos: 0,
-                    history: [],
-                    historyIndex: -1,
-                    showEmojiPicker: false,
-                    showExportMenu: false,
-                    showKeyboardShortcuts: false,
-                    isFullscreen: false,
-                    isAutoSaving: false,
-                    lastSaved: null,
-                    autoSaveTimer: null,
-                    inputDebounceTimer: null,
+    data() {
+        return {
+            content: '',
+            isFocused: false,
+            showMentionDropdown: false,
+            mentionQuery: '',
+            selectedMentionIndex: 0,
+            mentionStartPos: 0,
+            history: [],
+            historyIndex: -1,
+            showEmojiPicker: false,
+            showExportMenu: false,
+            showKeyboardShortcuts: false,
+            isFullscreen: false,
+            isAutoSaving: false,
+            lastSaved: null,
+            autoSaveTimer: null,
+            inputDebounceTimer: null,
             isTyping: false,
             selectedImage: null,
             showImageControls: false,
@@ -584,58 +575,439 @@ export default {
             toolbarUpdateTimer: null,
             isExecutingCommand: false,
             emojiList: [
-                        '😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇',
-                        '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚',
-                        '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🤩',
-                        '🥳', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣',
-                        '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬',
-                        '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗',
-                        '🤔', '🤭', '🤫', '🤥', '😶', '😐', '😑', '😬', '🙄', '😯',
-                        '😦', '😧', '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐',
-                        '🥴', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑', '🤠', '😈',
-                        '👿', '👹', '👺', '🤡', '💩', '👻', '💀', '☠️', '👽', '👾',
-                        '🤖', '🎃', '😺', '😸', '😹', '😻', '😼', '😽', '🙀', '😿',
-                        '😾', '👶', '🧒', '👦', '👧', '🧑', '👨', '👩', '🧓', '👴',
-                        '👵', '👤', '👥', '🫂', '👪', '👨‍👩‍👧', '👨‍👩‍👧‍👦', '👨‍👩‍👦‍👦', '👨‍👩‍👧‍👧', '👨‍👨‍👦',
-                        '👨‍👨‍👧', '👨‍👨‍👧‍👦', '👨‍👨‍👦‍👦', '👨‍👨‍👧‍👧', '👩‍👩‍👦', '👩‍👩‍👧', '👩‍👩‍👧‍👦', '👩‍👩‍👦‍👦', '👩‍👩‍👧‍👧', '👨‍👦',
-                        '👨‍👦‍👦', '👨‍👧', '👨‍👧‍👦', '👨‍👧‍👧', '👩‍👦', '👩‍👦‍👦', '👩‍👧', '👩‍👧‍👦', '👩‍👧‍👧', '🗣️',
-                        '👤', '👥', '🫂', '👋', '🤚', '🖐️', '✋', '🖖', '👌', '🤌',
-                        '🤏', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉', '👆', '🖕',
-                        '👇', '☝️', '👍', '👎', '✊', '👊', '🤛', '🤜', '👏', '🙌',
-                        '👐', '🤲', '🤝', '🙏', '✍️', '💅', '🤳', '💪', '🦾', '🦿',
-                        '🦵', '🦶', '👂', '🦻', '👃', '🧠', '🦷', '🦴', '👀', '👁️',
-                        '👅', '👄', '💋', '🩸', '❤️', '🧡', '💛', '💚', '💙', '💜',
-                        '🖤', '🤍', '🤎', '💔', '❣️', '💕', '💞', '💓', '💗', '💖',
-                        '💘', '💝', '💟', '☮️', '✝️', '☪️', '🕉️', '☸️', '✡️', '🔯',
-                        '🕎', '☯️', '☦️', '🛐', '⛎', '♈', '♉', '♊', '♋', '♌',
-                        '♍', '♎', '♏', '♐', '♑', '♒', '♓', '🆔', '⚛️', '🉑',
-                        '☢️', '☣️', '📴', '📳', '🈶', '🈚', '🈸', '🈺', '🈷️', '✴️',
-                        '🆚', '💮', '🉐', '㊙️', '㊗️', '🈴', '🈵', '🈹', '🈲', '🅰️',
-                        '🅱️', '🆎', '🆑', '🅾️', '🆘', '❌', '⭕', '🛑', '⛔', '📛',
-                        '🚫', '💯', '💢', '♨️', '🚷', '🚯', '🚳', '🚱', '🔞', '📵',
-                        '🚭', '❗', '❕', '❓', '❔', '‼️', '⁉️', '🔅', '🔆', '〽️',
-                        '⚠️', '🚸', '🔱', '⚜️', '🔰', '♻️', '✅', '🈯', '💹', '❇️',
-                        '✳️', '❎', '🌐', '💠', 'Ⓜ️', '🌀', '💤', '🏧', '🚾', '♿',
-                        '🅿️', '🈳', '🈂️', '🛂', '🛃', '🛄', '🛅', '🚹', '🚺', '🚼',
-                        '🚻', '🚮', '🎦', '📶', '🈁', '🔣', '🔤', '🔡', '🔠', '🆖',
-                        '🆗', '🆙', '🆒', '🆕', '🆓', '0️⃣', '1️⃣', '2️⃣', '3️⃣', '4️⃣',
-                        '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟', '🔢', '#️⃣', '*️⃣', '⏏️',
-                        '▶️', '⏸️', '⏯️', '⏹️', '⏺️', '⏭️', '⏮️', '⏩', '⏪', '⏫',
-                        '⏬', '◀️', '🔼', '🔽', '➡️', '⬅️', '⬆️', '⬇️', '↗️', '↘️',
-                        '↙️', '↖️', '↕️', '↔️', '↩️', '↪️', '⤴️', '⤵️', '🔃', '🔄',
-                        '🔙', '🔚', '🔛', '🔜', '🔝', '🛐', '⚛️', '🕉️', '✡️', '☸️',
-                        '☯️', '✝️', '☦️', '☪️', '☮️', '🕎', '🔯', '♈', '♉', '♊',
-                        '♋', '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓', '⛎'
-                    ]
-                }
-            },
+                '😀',
+                '😃',
+                '😄',
+                '😁',
+                '😆',
+                '😅',
+                '😂',
+                '🤣',
+                '😊',
+                '😇',
+                '🙂',
+                '🙃',
+                '😉',
+                '😌',
+                '😍',
+                '🥰',
+                '😘',
+                '😗',
+                '😙',
+                '😚',
+                '😋',
+                '😛',
+                '😝',
+                '😜',
+                '🤪',
+                '🤨',
+                '🧐',
+                '🤓',
+                '😎',
+                '🤩',
+                '🥳',
+                '😏',
+                '😒',
+                '😞',
+                '😔',
+                '😟',
+                '😕',
+                '🙁',
+                '☹️',
+                '😣',
+                '😖',
+                '😫',
+                '😩',
+                '🥺',
+                '😢',
+                '😭',
+                '😤',
+                '😠',
+                '😡',
+                '🤬',
+                '🤯',
+                '😳',
+                '🥵',
+                '🥶',
+                '😱',
+                '😨',
+                '😰',
+                '😥',
+                '😓',
+                '🤗',
+                '🤔',
+                '🤭',
+                '🤫',
+                '🤥',
+                '😶',
+                '😐',
+                '😑',
+                '😬',
+                '🙄',
+                '😯',
+                '😦',
+                '😧',
+                '😮',
+                '😲',
+                '🥱',
+                '😴',
+                '🤤',
+                '😪',
+                '😵',
+                '🤐',
+                '🥴',
+                '🤢',
+                '🤮',
+                '🤧',
+                '😷',
+                '🤒',
+                '🤕',
+                '🤑',
+                '🤠',
+                '😈',
+                '👿',
+                '👹',
+                '👺',
+                '🤡',
+                '💩',
+                '👻',
+                '💀',
+                '☠️',
+                '👽',
+                '👾',
+                '🤖',
+                '🎃',
+                '😺',
+                '😸',
+                '😹',
+                '😻',
+                '😼',
+                '😽',
+                '🙀',
+                '😿',
+                '😾',
+                '👶',
+                '🧒',
+                '👦',
+                '👧',
+                '🧑',
+                '👨',
+                '👩',
+                '🧓',
+                '👴',
+                '👵',
+                '👤',
+                '👥',
+                '🫂',
+                '👪',
+                '👨‍👩‍👧',
+                '👨‍👩‍👧‍👦',
+                '👨‍👩‍👦‍👦',
+                '👨‍👩‍👧‍👧',
+                '👨‍👨‍👦',
+                '👨‍👨‍👧',
+                '👨‍👨‍👧‍👦',
+                '👨‍👨‍👦‍👦',
+                '👨‍👨‍👧‍👧',
+                '👩‍👩‍👦',
+                '👩‍👩‍👧',
+                '👩‍👩‍👧‍👦',
+                '👩‍👩‍👦‍👦',
+                '👩‍👩‍👧‍👧',
+                '👨‍👦',
+                '👨‍👦‍👦',
+                '👨‍👧',
+                '👨‍👧‍👦',
+                '👨‍👧‍👧',
+                '👩‍👦',
+                '👩‍👦‍👦',
+                '👩‍👧',
+                '👩‍👧‍👦',
+                '👩‍👧‍👧',
+                '🗣️',
+                '👤',
+                '👥',
+                '🫂',
+                '👋',
+                '🤚',
+                '🖐️',
+                '✋',
+                '🖖',
+                '👌',
+                '🤌',
+                '🤏',
+                '✌️',
+                '🤞',
+                '🤟',
+                '🤘',
+                '🤙',
+                '👈',
+                '👉',
+                '👆',
+                '🖕',
+                '👇',
+                '☝️',
+                '👍',
+                '👎',
+                '✊',
+                '👊',
+                '🤛',
+                '🤜',
+                '👏',
+                '🙌',
+                '👐',
+                '🤲',
+                '🤝',
+                '🙏',
+                '✍️',
+                '💅',
+                '🤳',
+                '💪',
+                '🦾',
+                '🦿',
+                '🦵',
+                '🦶',
+                '👂',
+                '🦻',
+                '👃',
+                '🧠',
+                '🦷',
+                '🦴',
+                '👀',
+                '👁️',
+                '👅',
+                '👄',
+                '💋',
+                '🩸',
+                '❤️',
+                '🧡',
+                '💛',
+                '💚',
+                '💙',
+                '💜',
+                '🖤',
+                '🤍',
+                '🤎',
+                '💔',
+                '❣️',
+                '💕',
+                '💞',
+                '💓',
+                '💗',
+                '💖',
+                '💘',
+                '💝',
+                '💟',
+                '☮️',
+                '✝️',
+                '☪️',
+                '🕉️',
+                '☸️',
+                '✡️',
+                '🔯',
+                '🕎',
+                '☯️',
+                '☦️',
+                '🛐',
+                '⛎',
+                '♈',
+                '♉',
+                '♊',
+                '♋',
+                '♌',
+                '♍',
+                '♎',
+                '♏',
+                '♐',
+                '♑',
+                '♒',
+                '♓',
+                '🆔',
+                '⚛️',
+                '🉑',
+                '☢️',
+                '☣️',
+                '📴',
+                '📳',
+                '🈶',
+                '🈚',
+                '🈸',
+                '🈺',
+                '🈷️',
+                '✴️',
+                '🆚',
+                '💮',
+                '🉐',
+                '㊙️',
+                '㊗️',
+                '🈴',
+                '🈵',
+                '🈹',
+                '🈲',
+                '🅰️',
+                '🅱️',
+                '🆎',
+                '🆑',
+                '🅾️',
+                '🆘',
+                '❌',
+                '⭕',
+                '🛑',
+                '⛔',
+                '📛',
+                '🚫',
+                '💯',
+                '💢',
+                '♨️',
+                '🚷',
+                '🚯',
+                '🚳',
+                '🚱',
+                '🔞',
+                '📵',
+                '🚭',
+                '❗',
+                '❕',
+                '❓',
+                '❔',
+                '‼️',
+                '⁉️',
+                '🔅',
+                '🔆',
+                '〽️',
+                '⚠️',
+                '🚸',
+                '🔱',
+                '⚜️',
+                '🔰',
+                '♻️',
+                '✅',
+                '🈯',
+                '💹',
+                '❇️',
+                '✳️',
+                '❎',
+                '🌐',
+                '💠',
+                'Ⓜ️',
+                '🌀',
+                '💤',
+                '🏧',
+                '🚾',
+                '♿',
+                '🅿️',
+                '🈳',
+                '🈂️',
+                '🛂',
+                '🛃',
+                '🛄',
+                '🛅',
+                '🚹',
+                '🚺',
+                '🚼',
+                '🚻',
+                '🚮',
+                '🎦',
+                '📶',
+                '🈁',
+                '🔣',
+                '🔤',
+                '🔡',
+                '🔠',
+                '🆖',
+                '🆗',
+                '🆙',
+                '🆒',
+                '🆕',
+                '🆓',
+                '0️⃣',
+                '1️⃣',
+                '2️⃣',
+                '3️⃣',
+                '4️⃣',
+                '5️⃣',
+                '6️⃣',
+                '7️⃣',
+                '8️⃣',
+                '9️⃣',
+                '🔟',
+                '🔢',
+                '#️⃣',
+                '*️⃣',
+                '⏏️',
+                '▶️',
+                '⏸️',
+                '⏯️',
+                '⏹️',
+                '⏺️',
+                '⏭️',
+                '⏮️',
+                '⏩',
+                '⏪',
+                '⏫',
+                '⏬',
+                '◀️',
+                '🔼',
+                '🔽',
+                '➡️',
+                '⬅️',
+                '⬆️',
+                '⬇️',
+                '↗️',
+                '↘️',
+                '↙️',
+                '↖️',
+                '↕️',
+                '↔️',
+                '↩️',
+                '↪️',
+                '⤴️',
+                '⤵️',
+                '🔃',
+                '🔄',
+                '🔙',
+                '🔚',
+                '🔛',
+                '🔜',
+                '🔝',
+                '🛐',
+                '⚛️',
+                '🕉️',
+                '✡️',
+                '☸️',
+                '☯️',
+                '✝️',
+                '☦️',
+                '☪️',
+                '☮️',
+                '🕎',
+                '🔯',
+                '♈',
+                '♉',
+                '♊',
+                '♋',
+                '♌',
+                '♍',
+                '♎',
+                '♏',
+                '♐',
+                '♑',
+                '♒',
+                '♓',
+                '⛎',
+            ],
+        };
+    },
     computed: {
         filteredUsers() {
             if (!this.mentionQuery) return this.users.slice(0, 5);
-            return this.users.filter(user =>
-                user.name.toLowerCase().includes(this.mentionQuery.toLowerCase()) ||
-                user.email.toLowerCase().includes(this.mentionQuery.toLowerCase())
-            ).slice(0, 5);
+            return this.users
+                .filter(
+                    (user) =>
+                        user.name.toLowerCase().includes(this.mentionQuery.toLowerCase()) ||
+                        user.email.toLowerCase().includes(this.mentionQuery.toLowerCase())
+                )
+                .slice(0, 5);
         },
 
         emojiPickerStyle() {
@@ -643,11 +1015,9 @@ export default {
                 position: 'absolute',
                 top: `${this.emojiPickerPosition.top}px`,
                 left: `${this.emojiPickerPosition.left}px`,
-                zIndex: 1000
+                zIndex: 1000,
             };
         },
-
-
 
         wordCount() {
             if (!this.content) return 0;
@@ -664,7 +1034,7 @@ export default {
             const wordsPerMinute = 200;
             const minutes = Math.ceil(this.wordCount / wordsPerMinute);
             return minutes;
-        }
+        },
     },
     mounted() {
         // Initialize content in the editor
@@ -682,7 +1052,7 @@ export default {
         document.addEventListener('keydown', this.handleGlobalKeydown);
         document.addEventListener('selectionchange', this.onSelectionChange);
     },
-        beforeUnmount() {
+    beforeUnmount() {
         this.stopAutoSave();
         if (this.inputDebounceTimer) {
             clearTimeout(this.inputDebounceTimer);
@@ -693,15 +1063,15 @@ export default {
         if (this.toolbarUpdateTimer) {
             clearTimeout(this.toolbarUpdateTimer);
         }
-        
+
         // Remove selection change listener
         document.removeEventListener('selectionchange', this.onSelectionChange);
-        
+
         // Clean up global reference
         if (window.customEditorInstance === this) {
             window.customEditorInstance = null;
         }
-        
+
         document.removeEventListener('fullscreenchange', this.handleFullscreenChange);
         document.removeEventListener('keydown', this.handleGlobalKeydown);
     },
@@ -718,8 +1088,8 @@ export default {
                         }
                     });
                 }
-            }
-        }
+            },
+        },
     },
     methods: {
         onInput(event) {
@@ -844,7 +1214,10 @@ export default {
                         break;
                     case 'ArrowDown':
                         event.preventDefault();
-                        this.selectedMentionIndex = Math.min(this.selectedMentionIndex + 1, this.filteredUsers.length - 1);
+                        this.selectedMentionIndex = Math.min(
+                            this.selectedMentionIndex + 1,
+                            this.filteredUsers.length - 1
+                        );
                         this.scrollToSelectedMention();
                         break;
                     case 'Enter':
@@ -881,7 +1254,7 @@ export default {
 
             // Handle image paste
             if (files && files.length > 0) {
-                const imageFile = Array.from(files).find(file => file.type.startsWith('image/'));
+                const imageFile = Array.from(files).find((file) => file.type.startsWith('image/'));
                 if (imageFile) {
                     const reader = new FileReader();
                     reader.onload = (e) => {
@@ -953,7 +1326,7 @@ export default {
                 this.$nextTick(() => {
                     try {
                         const success = document.execCommand(command, false, value);
-                        
+
                         if (!success) {
                             console.warn(`Command "${command}" failed to execute`);
                             this.showNotification(`Unable to apply ${command} formatting`, 'error', 2000);
@@ -965,7 +1338,7 @@ export default {
                         this.content = this.$refs.editor.innerHTML;
                         this.$emit('update:modelValue', this.content);
                         this.saveToHistory();
-                        
+
                         // Update toolbar state after a brief delay
                         setTimeout(() => {
                             this.updateToolbarState();
@@ -1019,9 +1392,10 @@ export default {
                     if (selection.rangeCount > 0) {
                         const range = selection.getRangeAt(0);
                         const node = range.commonAncestorContainer;
-                        const blockquote = node.nodeType === Node.ELEMENT_NODE 
-                            ? node.closest('blockquote')
-                            : node.parentElement?.closest('blockquote');
+                        const blockquote =
+                            node.nodeType === Node.ELEMENT_NODE
+                                ? node.closest('blockquote')
+                                : node.parentElement?.closest('blockquote');
                         const isActive = !!blockquote;
                         this.toolbarStateCache[command] = isActive;
                         return isActive;
@@ -1041,7 +1415,7 @@ export default {
         insertLink() {
             const selection = window.getSelection();
             const selectedText = selection.toString().trim();
-            
+
             // Use a more user-friendly link dialog
             const url = prompt('Enter URL:', selectedText ? '' : 'https://');
             if (url && url.trim()) {
@@ -1114,12 +1488,30 @@ export default {
             tempDiv.innerHTML = html;
 
             const allowedElements = [
-                'b', 'strong', 'i', 'em', 'u', 's', 'strike',
-                'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-                'p', 'div', 'span', 'br',
-                'ul', 'ol', 'li',
-                'blockquote', 'code', 'pre',
-                'a'
+                'b',
+                'strong',
+                'i',
+                'em',
+                'u',
+                's',
+                'strike',
+                'h1',
+                'h2',
+                'h3',
+                'h4',
+                'h5',
+                'h6',
+                'p',
+                'div',
+                'span',
+                'br',
+                'ul',
+                'ol',
+                'li',
+                'blockquote',
+                'code',
+                'pre',
+                'a',
             ];
 
             return this.cleanHTML(tempDiv, allowedElements);
@@ -1128,7 +1520,7 @@ export default {
         cleanHTML(element, allowedElements) {
             const children = Array.from(element.childNodes);
 
-            children.forEach(child => {
+            children.forEach((child) => {
                 if (child.nodeType === Node.ELEMENT_NODE) {
                     if (!allowedElements.includes(child.tagName.toLowerCase())) {
                         const span = document.createElement('span');
@@ -1195,7 +1587,6 @@ export default {
             this.saveToHistory();
         },
 
-
         handleMentions() {
             const selection = window.getSelection();
             if (selection.rangeCount === 0) return;
@@ -1217,7 +1608,8 @@ export default {
                     if (!query.includes(' ') && !query.includes('\n') && query.length >= 0) {
                         // Check if there's a space or start of text before @
                         const charBeforeAt = atIndex > 0 ? beforeCursor.charAt(atIndex - 1) : '';
-                        const isValidMentionContext = charBeforeAt === '' || charBeforeAt === ' ' || charBeforeAt === '\n';
+                        const isValidMentionContext =
+                            charBeforeAt === '' || charBeforeAt === ' ' || charBeforeAt === '\n';
 
                         if (isValidMentionContext) {
                             this.mentionQuery = query;
@@ -1338,20 +1730,17 @@ export default {
             this.selectedMentionIndex = 0;
         },
 
-
-
         scrollToSelectedMention() {
             this.$nextTick(() => {
                 const activeItem = this.$el.querySelector('.mention-item.active');
                 if (activeItem) {
                     activeItem.scrollIntoView({
                         behavior: 'smooth',
-                        block: 'nearest'
+                        block: 'nearest',
                     });
                 }
             });
         },
-
 
         saveToHistory() {
             if (this.history.length > 50) {
@@ -1404,7 +1793,7 @@ export default {
         updateToolbarState() {
             // Clear cache to force fresh state check
             this.toolbarStateCache = {};
-            
+
             // Use requestAnimationFrame for smooth updates
             if (this.$refs.editor && document.hasFocus()) {
                 requestAnimationFrame(() => {
@@ -1436,7 +1825,10 @@ export default {
             // Check file size (max 5MB)
             const maxSize = 5 * 1024 * 1024; // 5MB
             if (file.size > maxSize) {
-                this.showNotification(`Image size must be less than ${(maxSize / 1024 / 1024).toFixed(0)}MB. Current size: ${(file.size / 1024 / 1024).toFixed(2)}MB`, 'error');
+                this.showNotification(
+                    `Image size must be less than ${(maxSize / 1024 / 1024).toFixed(0)}MB. Current size: ${(file.size / 1024 / 1024).toFixed(2)}MB`,
+                    'error'
+                );
                 event.target.value = '';
                 return;
             }
@@ -1470,7 +1862,7 @@ export default {
                 this.isImageUploading = false;
             };
             reader.readAsDataURL(file);
-            
+
             // Reset input
             event.target.value = '';
         },
@@ -1486,12 +1878,12 @@ export default {
             img.classList.add('editable-image');
             img.setAttribute('alt', 'Inserted image');
             img.setAttribute('loading', 'lazy');
-            
+
             // Add error handling
             img.onerror = () => {
                 this.showNotification('Failed to load image', 'error');
             };
-            
+
             this.insertHTMLAtCursor(img.outerHTML);
         },
 
@@ -1510,8 +1902,8 @@ export default {
             const editorRect = this.$refs.editor.getBoundingClientRect();
 
             this.imageControlsPosition = {
-                x: rect.left - editorRect.left + (rect.width / 2) - 100, // Center controls
-                y: rect.top - editorRect.top - 60 // Above image
+                x: rect.left - editorRect.left + rect.width / 2 - 100, // Center controls
+                y: rect.top - editorRect.top - 60, // Above image
             };
 
             this.showImageControls = true;
@@ -1545,7 +1937,7 @@ export default {
             const sizes = {
                 small: '25%',
                 medium: '50%',
-                large: '75%'
+                large: '75%',
             };
 
             this.selectedImage.style.maxWidth = sizes[size] || '100%';
@@ -1576,14 +1968,13 @@ export default {
             this.saveToHistory();
         },
 
-
         deleteTable(buttonElement) {
             // Find the table wrapper
             const tableWrapper = buttonElement.closest('.table-wrapper');
             if (tableWrapper) {
                 // Remove the table from DOM
                 tableWrapper.remove();
-                
+
                 // Update the content and trigger Vue reactivity
                 this.content = this.$refs.editor.innerHTML;
                 this.$emit('update:modelValue', this.content);
@@ -1595,19 +1986,19 @@ export default {
             // Prompt for table dimensions
             const rows = prompt('Number of rows (2-10):', '3');
             const cols = prompt('Number of columns (2-10):', '3');
-            
+
             const numRows = Math.min(Math.max(parseInt(rows) || 3, 2), 10);
             const numCols = Math.min(Math.max(parseInt(cols) || 3, 2), 10);
-            
+
             let tableHTML = '<div class="table-wrapper" contenteditable="false"><table class="custom-table">';
-            
+
             // Create header row
             tableHTML += '<thead><tr>';
             for (let i = 0; i < numCols; i++) {
                 tableHTML += `<th>Header ${i + 1}</th>`;
             }
             tableHTML += '</tr></thead>';
-            
+
             // Create body rows
             tableHTML += '<tbody>';
             for (let r = 0; r < numRows; r++) {
@@ -1618,18 +2009,18 @@ export default {
                 tableHTML += '</tr>';
             }
             tableHTML += '</tbody></table>';
-            
+
             // Add delete button
             tableHTML += '<div class="table-controls">';
-            tableHTML += '<button type="button" onclick="window.customEditorInstance.deleteTable(this)" class="table-delete-btn">';
+            tableHTML +=
+                '<button type="button" onclick="window.customEditorInstance.deleteTable(this)" class="table-delete-btn">';
             tableHTML += '🗑️ Delete Table';
             tableHTML += '</button>';
             tableHTML += '</div></div>';
-            
+
             this.insertHTMLAtCursor(tableHTML);
             this.showNotification('Table inserted successfully', 'success');
         },
-
 
         insertHorizontalRule() {
             this.insertHTMLAtCursor('<hr style="margin: 20px 0; border: none; border-top: 2px solid #e5e7eb;">');
@@ -1667,7 +2058,7 @@ export default {
 
                         this.emojiPickerPosition = {
                             top: top,
-                            left: left
+                            left: left,
                         };
                     }
                 });
@@ -1684,7 +2075,10 @@ export default {
                 const selection = window.getSelection();
 
                 // Restore cursor position if it was saved and is inside the editor
-                if (this.savedCursorPosition && this.$refs.editor.contains(this.savedCursorPosition.commonAncestorContainer)) {
+                if (
+                    this.savedCursorPosition &&
+                    this.$refs.editor.contains(this.savedCursorPosition.commonAncestorContainer)
+                ) {
                     selection.removeAllRanges();
                     selection.addRange(this.savedCursorPosition);
                 } else {
@@ -1858,11 +2252,11 @@ export default {
 
         showNotification(message, type = 'info', duration = 3000) {
             this.notification = { message, type, show: true };
-            
+
             if (this.notificationTimer) {
                 clearTimeout(this.notificationTimer);
             }
-            
+
             this.notificationTimer = setTimeout(() => {
                 this.notification.show = false;
             }, duration);
@@ -1919,9 +2313,9 @@ export default {
             markdown = markdown.trim();
 
             return markdown;
-        }
-    }
-}
+        },
+    },
+};
 </script>
 
 <style scoped>
@@ -1930,7 +2324,9 @@ export default {
     border: 1px solid #e5e7eb;
     border-radius: 0.5rem;
     background: white;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition:
+        border-color 0.2s,
+        box-shadow 0.2s;
 }
 
 .custom-editor--focused {
@@ -2025,7 +2421,6 @@ export default {
     color: #374151;
     position: relative;
 }
-
 
 .custom-editor__content h1 {
     font-size: 1.875rem;
@@ -2128,7 +2523,9 @@ export default {
     background: white;
     border: 1px solid #e5e7eb;
     border-radius: 0.5rem;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    box-shadow:
+        0 20px 25px -5px rgba(0, 0, 0, 0.1),
+        0 10px 10px -5px rgba(0, 0, 0, 0.04);
     z-index: 1000;
     max-height: 280px;
     overflow: hidden;
@@ -2238,7 +2635,6 @@ export default {
     margin-left: 0.5rem;
 }
 
-
 @keyframes slideUp {
     from {
         opacity: 0;
@@ -2314,12 +2710,24 @@ export default {
     color: #1f2937;
 }
 
-.custom-editor__preview h1 { font-size: 1.5rem; }
-.custom-editor__preview h2 { font-size: 1.25rem; }
-.custom-editor__preview h3 { font-size: 1.125rem; }
-.custom-editor__preview h4 { font-size: 1rem; }
-.custom-editor__preview h5 { font-size: 0.875rem; }
-.custom-editor__preview h6 { font-size: 0.75rem; }
+.custom-editor__preview h1 {
+    font-size: 1.5rem;
+}
+.custom-editor__preview h2 {
+    font-size: 1.25rem;
+}
+.custom-editor__preview h3 {
+    font-size: 1.125rem;
+}
+.custom-editor__preview h4 {
+    font-size: 1rem;
+}
+.custom-editor__preview h5 {
+    font-size: 0.875rem;
+}
+.custom-editor__preview h6 {
+    font-size: 0.75rem;
+}
 
 .custom-editor__preview p {
     margin: 0.5rem 0;
@@ -2348,7 +2756,7 @@ export default {
     padding: 0.125rem 0.25rem;
     background: #f3f4f6;
     border-radius: 0.25rem;
-    font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+    font-family: ui-monospace, SFMono-Regular, 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
     font-size: 0.875em;
 }
 
@@ -2453,7 +2861,9 @@ export default {
     align-items: center;
 }
 
-.word-count, .char-count, .reading-time {
+.word-count,
+.char-count,
+.reading-time {
     font-weight: 500;
 }
 
@@ -2474,7 +2884,9 @@ export default {
     background: white;
     border: 1px solid #e2e8f0;
     border-radius: 8px;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    box-shadow:
+        0 10px 25px -5px rgba(0, 0, 0, 0.1),
+        0 10px 10px -5px rgba(0, 0, 0, 0.04);
     max-height: 300px;
     width: 320px;
     overflow: hidden;
@@ -2489,7 +2901,9 @@ export default {
     background: white;
     border: 1px solid #e2e8f0;
     border-radius: 8px;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    box-shadow:
+        0 10px 25px -5px rgba(0, 0, 0, 0.1),
+        0 10px 10px -5px rgba(0, 0, 0, 0.04);
     z-index: 1000;
     min-width: 200px;
     overflow: hidden;
@@ -2646,8 +3060,12 @@ kbd {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 @keyframes slideUp {
@@ -2861,8 +3279,6 @@ kbd {
     text-align: center;
 }
 
-
-
 /* Mobile Responsive Enhancements */
 @media (max-width: 768px) {
     .custom-editor__status {
@@ -2994,7 +3410,9 @@ kbd {
     background: white;
     border: 1px solid #e5e7eb;
     border-radius: 8px;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    box-shadow:
+        0 10px 25px -5px rgba(0, 0, 0, 0.1),
+        0 10px 10px -5px rgba(0, 0, 0, 0.04);
     z-index: 1000;
     min-width: 200px;
     animation: slideDown 0.2s ease;
@@ -3081,33 +3499,33 @@ kbd {
 }
 
 /* Image alignment styles */
-.custom-editor__content img[style*="float: left"] {
+.custom-editor__content img[style*='float: left'] {
     float: left;
     margin-right: 1rem;
     margin-bottom: 0.5rem;
 }
 
-.custom-editor__content img[style*="float: right"] {
+.custom-editor__content img[style*='float: right'] {
     float: right;
     margin-left: 1rem;
     margin-bottom: 0.5rem;
 }
 
-.custom-editor__content img[style*="margin: 0 auto"] {
+.custom-editor__content img[style*='margin: 0 auto'] {
     display: block;
     margin: 0.5rem auto;
 }
 
 /* Image size styles */
-.custom-editor__content img[style*="max-width: 25%"] {
+.custom-editor__content img[style*='max-width: 25%'] {
     max-width: 25% !important;
 }
 
-.custom-editor__content img[style*="max-width: 50%"] {
+.custom-editor__content img[style*='max-width: 50%'] {
     max-width: 50% !important;
 }
 
-.custom-editor__content img[style*="max-width: 75%"] {
+.custom-editor__content img[style*='max-width: 75%'] {
     max-width: 75% !important;
 }
 
@@ -3141,7 +3559,9 @@ kbd {
     padding: 0.875rem 1.25rem;
     background: white;
     border-radius: 0.5rem;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    box-shadow:
+        0 10px 25px -5px rgba(0, 0, 0, 0.1),
+        0 10px 10px -5px rgba(0, 0, 0, 0.04);
     z-index: 10001;
     min-width: 250px;
     max-width: 400px;

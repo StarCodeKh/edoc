@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\Comment;
 use App\Events\NewCommentAdded;
+use App\Models\Comment;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -22,6 +22,7 @@ class CommentNotificationSeeder extends Seeder
 
         if ($comments->isEmpty()) {
             $this->command->warn('No comments found.');
+
             return;
         }
 

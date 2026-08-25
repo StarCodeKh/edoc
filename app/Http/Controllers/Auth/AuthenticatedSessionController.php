@@ -10,6 +10,8 @@ use App\Models\Setting;
 use App\Models\User;
 use App\Models\Workspace;
 use App\Providers\RouteServiceProvider;
+use App\Support\EnvFile;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -18,22 +20,23 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
-use App\Support\EnvFile;
+use Inertia\Response;
 
 class AuthenticatedSessionController extends Controller
 {
     /**
      * Display the login view.
      *
-     * @return \Inertia\Response
+     * @return Response
      */
     public function create()
     {
-        $is_demo = (int)config('app.demo');
+        $is_demo = (int) config('app.demo');
         $env = EnvFile::load();
-        $siteKey = $env->keyExists('RE_CAPTCHA_KEY')?$env->getValue('RE_CAPTCHA_KEY'):'';
+        $siteKey = $env->keyExists('RE_CAPTCHA_KEY') ? $env->getValue('RE_CAPTCHA_KEY') : '';
         $enable_registration = Setting::where('slug', 'enable_registration')->first();
         $enable_registration = $enable_registration->value ?? 0;
+
         return Inertia::render('Auth/Login', ['is_demo' => $is_demo, 'enable_registration' => $enable_registration, 'site_key' => $siteKey]);
     }
 
@@ -42,19 +45,21 @@ class AuthenticatedSessionController extends Controller
         $enable_registration = Setting::where('slug', 'enable_registration')->first();
         $enable_registration = $enable_registration->value ?? 0;
 
-        if(!$enable_registration){
+        if (!$enable_registration) {
             abort(403);
         }
 
         $env = EnvFile::load();
-        $is_demo = (int)config('app.demo');
-        $siteKey = $env->keyExists('RE_CAPTCHA_KEY')?$env->getValue('RE_CAPTCHA_KEY'):'';
+        $is_demo = (int) config('app.demo');
+        $siteKey = $env->keyExists('RE_CAPTCHA_KEY') ? $env->getValue('RE_CAPTCHA_KEY') : '';
+
         return Inertia::render('Auth/Register', ['is_demo' => $is_demo, 'site_key' => $siteKey]);
     }
 
     public function forgotPassword()
     {
-        $is_demo = (int)config('app.demo');
+        $is_demo = (int) config('app.demo');
+
         return Inertia::render('Auth/ForgotPassword', ['is_demo' => $is_demo]);
     }
 
@@ -66,7 +71,7 @@ class AuthenticatedSessionController extends Controller
         DB::table('password_resets')->insert([
             'email' => $requestData['email'],
             'token' => $token,
-            'created_at' => Carbon::now()
+            'created_at' => Carbon::now(),
         ]);
 
         event(new ForgotPassword(['email' => $requestData['email'], 'token' => $token]));
@@ -85,22 +90,22 @@ class AuthenticatedSessionController extends Controller
             'email' => 'required|email|exists:users',
             'password' => 'required|string|min:6|confirmed',
             'password_confirmation' => 'required',
-            'token' => 'required'
+            'token' => 'required',
         ]);
 
         $updatePassword = DB::table('password_resets')
             ->where([
                 'email' => $requestData['email'],
-                'token' => $requestData['token']
+                'token' => $requestData['token'],
             ])
             ->first();
 
-        if(!$updatePassword){
+        if (!$updatePassword) {
             return Redirect::back()->with('error', 'Invalid email or token!');
         }
 
         User::where('email', $requestData['email'])->update(['password' => Hash::make($requestData['password'])]);
-        DB::table('password_resets')->where(['email'=> $requestData['email']])->delete();
+        DB::table('password_resets')->where(['email' => $requestData['email']])->delete();
 
         return Redirect::route('login')->with('success', 'Your password has been changed!');
     }
@@ -108,7 +113,7 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      *
-     * @return \Illuminate\Http\RedirectResponse
+     * @return RedirectResponse
      */
     public function store(LoginRequest $request)
     {
@@ -137,25 +142,26 @@ class AuthenticatedSessionController extends Controller
         ]);
     }
 
-    public function registerStore(Request $request) {
+    public function registerStore(Request $request)
+    {
 
         $enable_registration = Setting::where('slug', 'enable_registration')->first();
         $enable_registration = $enable_registration->value ?? 0;
 
-        if(!$enable_registration){
+        if (!$enable_registration) {
             abort(403);
         }
 
         $requestData = $request->validate([
-            'first_name'         => ['required', 'string', 'max:50'],
-            'last_name'          => ['required', 'string', 'max:50'],
-            'email'              => ['required', 'email', 'unique:users'],
-            'password'           => ['required', 'string', 'min:10'],
-            'confirm_password'   => ['required', 'string', 'min:10', 'same:password'],
-            'phone'              => ['nullable', 'string', 'max:18'],
-            'country'            => ['nullable', 'string', 'max:20'],
-            'city'               => ['nullable', 'string', 'max:30'],
-            'address'            => ['nullable', 'string'],
+            'first_name' => ['required', 'string', 'max:50'],
+            'last_name' => ['required', 'string', 'max:50'],
+            'email' => ['required', 'email', 'unique:users'],
+            'password' => ['required', 'string', 'min:10'],
+            'confirm_password' => ['required', 'string', 'min:10', 'same:password'],
+            'phone' => ['nullable', 'string', 'max:18'],
+            'country' => ['nullable', 'string', 'max:20'],
+            'city' => ['nullable', 'string', 'max:30'],
+            'address' => ['nullable', 'string'],
         ]);
 
         $role = Role::where('slug', 'normal')->first();
@@ -174,7 +180,7 @@ class AuthenticatedSessionController extends Controller
     /**
      * Destroy an authenticated session.
      *
-     * @return \Illuminate\Http\RedirectResponse
+     * @return RedirectResponse
      */
     public function destroy(Request $request)
     {

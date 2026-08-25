@@ -1,19 +1,19 @@
-table{
-    &.ticket_list{
-        tr{
-            th{
+table {
+    &.ticket_list {
+        tr {
+            th {
                 padding: 16px 24px;
-                span{
+                span {
                     display: flex;
                     align-items: center;
-                    .icons{
+                    .icons {
                         margin-left: 10px;
                         display: flex;
                         flex-flow: column;
                         justify-content: center;
                         align-items: center;
                         cursor: pointer;
-                        svg{
+                        svg {
                             width: 10px;
                             height: 10px;
                         }

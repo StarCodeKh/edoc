@@ -1,17 +1,17 @@
-.layout-app{
-    &.dark{
+.layout-app {
+    &.dark {
         background-blend-mode: darken;
     }
 }
-.left__bar{
+.left__bar {
     position: relative;
     background-color: #00000029;
     cursor: pointer;
     z-index: 999;
-    &:hover{
+    &:hover {
         background-color: #091e4224;
     }
-    .arr{
+    .arr {
         top: 10px;
         left: 0;
         position: absolute;
@@ -23,40 +23,40 @@
         justify-content: center;
         align-items: center;
         backdrop-filter: blur(16px);
-        border: 1px solid #DFE1E6;
+        border: 1px solid #dfe1e6;
         color: #ffffff;
         fill: #ffffff;
     }
 }
-.project__view__menu{
+.project__view__menu {
     background: #0000003d;
     color: #ffffff;
     backdrop-filter: blur(4px);
-    .__filter{
-        span{
+    .__filter {
+        span {
             padding: 6px;
         }
-        .filter_clear{
+        .filter_clear {
             display: none;
         }
-        &.active{
+        &.active {
             background-color: #dfe1e6;
             color: #000000;
-            .filter_clear{
+            .filter_clear {
                 display: flex;
                 align-items: center;
                 gap: 2px;
                 padding-right: 0;
-                &:hover{
+                &:hover {
                     background-color: #ffffff;
                 }
             }
         }
     }
 }
-.sidebar{
+.sidebar {
     transition: transform 100ms ease-in;
-    &.__hide{
+    &.__hide {
         transform: translate3d(-100%, 0, 0);
         display: none;
     }

@@ -8,13 +8,15 @@ use Illuminate\Database\Eloquent\Model;
 class RecentProject extends Model
 {
     use HasFactory;
+
     public $timestamps = false;
+
     protected $table = 'recent_projects';
 
     protected $casts = [
-        'user_id'    => 'integer',
+        'user_id' => 'integer',
         'project_id' => 'integer',
-        'opened'     => 'datetime',
+        'opened' => 'datetime',
     ];
 
     public function project()

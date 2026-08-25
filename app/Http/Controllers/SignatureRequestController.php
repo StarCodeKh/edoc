@@ -56,17 +56,17 @@ class SignatureRequestController extends Controller
         $user = auth()->user();
         $list = BoardList::with('project')->find($task->list_id);
 
-        if (! $user || ! $user->isAdmin()) {
+        if (!$user || !$user->isAdmin()) {
             abort(403, 'Only the administration may request approval and signature.');
         }
 
-        if (! WorkflowStep::requiresSignature($list)) {
+        if (!WorkflowStep::requiresSignature($list)) {
             abort(422, 'This board does not require a signature.');
         }
 
         $next = $this->nextList($task, $list);
 
-        if (! $next) {
+        if (!$next) {
             abort(422, 'There is no next board to move this document to.');
         }
 
@@ -103,7 +103,7 @@ class SignatureRequestController extends Controller
 
         return $user
             && $user->isAdmin()
-            && ! $task->is_done
+            && !$task->is_done
             && WorkflowStep::requiresSignature($list)
             && $this->nextList($task, $list) !== null;
     }
@@ -111,7 +111,7 @@ class SignatureRequestController extends Controller
     /** The next open column of the same project, by board order. */
     private function nextList(Task $task, ?BoardList $list): ?BoardList
     {
-        if (! $list) {
+        if (!$list) {
             return null;
         }
 
@@ -130,7 +130,7 @@ class SignatureRequestController extends Controller
 
     private function stepPayload(?BoardList $list): ?array
     {
-        if (! $list) {
+        if (!$list) {
             return null;
         }
 
@@ -152,7 +152,7 @@ class SignatureRequestController extends Controller
             ->orderByDesc('id')
             ->first();
 
-        if (! $attachment) {
+        if (!$attachment) {
             return null;
         }
 

@@ -2,10 +2,10 @@
 
 namespace App\Helpers;
 
+use App\Support\EnvFile;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use App\Support\EnvFile;
 
 class EnvironmentManager
 {
@@ -35,7 +35,7 @@ class EnvironmentManager
      */
     public function getEnvContent()
     {
-        if (! file_exists($this->envPath)) {
+        if (!file_exists($this->envPath)) {
             if (file_exists($this->envExamplePath)) {
                 copy($this->envExamplePath, $this->envPath);
             } else {
@@ -69,7 +69,6 @@ class EnvironmentManager
     /**
      * Save the edited content to the .env file.
      *
-     * @param Request $input
      * @return string
      */
     public function saveFileClassic(Request $input)
@@ -88,10 +87,10 @@ class EnvironmentManager
     /**
      * Save the form content to the .env file.
      *
-     * @param Request $request
      * @return string
      */
-    public function saveFileInfo(Request $request) {
+    public function saveFileInfo(Request $request)
+    {
         $results = trans('installer_messages.environment.success');
         $envFileData =
         'APP_NAME=\''.$request->app_name."'\n".
@@ -103,13 +102,13 @@ class EnvironmentManager
         } catch (Exception $e) {
             $results = trans('installer_messages.environment.errors');
         }
+
         return $results;
     }
 
     /**
      * Save the form content to the .env file.
      *
-     * @param Request $request
      * @return string
      */
     public function saveFileWizard(Request $request)
@@ -125,7 +124,7 @@ class EnvironmentManager
             'APP_NAME=\''.$request->app_name."'\n".
             'VERSION=\''.$version."'\n".
             'APP_ENV=local'."\n".
-            'LOCALE=en' . "\n".
+            'LOCALE=en'."\n".
             'APP_DEBUG=true'."\n".
             'APP_INSTALLED='.$request->app_installed."\n".
             'APP_PCE='.$app_pce."\n".
@@ -136,7 +135,7 @@ class EnvironmentManager
             'TIMEZONE=UTC'."\n".
             'APP_DEMO=false'."\n\n".
 
-            'VITE_APP_NAME="' . $viteAppName . '"' . "\n\n".
+            'VITE_APP_NAME="'.$viteAppName.'"'."\n\n".
 
             'LOG_CHANNEL=stack'."\n\n".
 
@@ -155,7 +154,7 @@ class EnvironmentManager
             'QUEUE_CONNECTION=database'."\n".
             'SESSION_DRIVER=file'."\n".
             'SESSION_LIFETIME=800'."\n".
-            'SESSION_REMEMBER_LIFETIME=' . $sessionRememberLifetime . "\n".
+            'SESSION_REMEMBER_LIFETIME='.$sessionRememberLifetime."\n".
             'QUEUE_ENABLE=false'."\n\n".
 
             'MEMCACHED_HOST=127.0.0.1'."\n\n".
@@ -188,7 +187,7 @@ class EnvironmentManager
             'MIX_PUSHER_APP_KEY="${PUSHER_APP_KEY}"'."\n".
             'MIX_PUSHER_APP_CLUSTER="${PUSHER_APP_CLUSTER}"'."\n\n".
 
-            'RE_CAPTCHA_KEY=' . $recaptchaKey . "\n";
+            'RE_CAPTCHA_KEY='.$recaptchaKey."\n";
 
         try {
             file_put_contents($this->envPath, $envFileData);

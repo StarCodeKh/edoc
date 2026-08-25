@@ -23,7 +23,7 @@ export function isOwner(user, task) {
 
 export function isAssigned(user, task) {
     if (!user || !task || !Array.isArray(task.assignees)) return false;
-    return task.assignees.some(a => Number(a.user_id) === Number(user.id));
+    return task.assignees.some((a) => Number(a.user_id) === Number(user.id));
 }
 
 /** Has the document moved on from the board it was created in? */

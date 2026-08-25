@@ -1,9 +1,9 @@
-.layout-app{
-    &.light{
+.layout-app {
+    &.light {
         background-color: rgb(241, 245, 249);
         //background-color: #838c91;
     }
-    &.main{
+    &.main {
         // Default beautiful gradient background for non-project pages
         background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%);
         background-size: 400% 400%;
@@ -22,79 +22,81 @@
         background-position: 0% 50%;
     }
 }
-.dark{
-    .chat_public{
-        .bg-white{
+.dark {
+    .chat_public {
+        .bg-white {
             background-color: rgb(15 23 42 / 1);
         }
-        nav{
+        nav {
             border-bottom: 1px solid #374558;
         }
-        .chat_b_footer{
-            input{
+        .chat_b_footer {
+            input {
                 background-color: rgb(15 23 42 / 1);
             }
         }
     }
 }
-body{
-    .dark{
-        .bg-white{
+body {
+    .dark {
+        .bg-white {
             background-color: #262932;
-            svg{
+            svg {
                 fill: #ffffffb3;
             }
         }
-        &.layout_landing{
-            .bg-white{
+        &.layout_landing {
+            .bg-white {
                 border: initial;
             }
         }
-        .top_bar{
+        .top_bar {
             border: none;
         }
-        .cdc-overlay{
+        .cdc-overlay {
             background-color: #262932 !important;
         }
-        .dd_container{
+        .dd_container {
             background-color: #374558;
         }
-        .chat-top-icon{
+        .chat-top-icon {
             fill: rgba(255, 255, 255, 0.6980392157);
         }
-        .drop-down-caret-icon{
+        .drop-down-caret-icon {
             fill: rgba(255, 255, 255, 0.6980392157);
         }
-        .container-head{
+        .container-head {
             border-color: #374558;
         }
-        .hover\:bg-gray-100{
-            &:hover{
+        .hover\:bg-gray-100 {
+            &:hover {
                 background-color: #7366ff9e;
             }
         }
-        input, button.button{
+        input,
+        button.button {
             background-color: #1d1e26;
         }
-        .bg-gray-50{
+        .bg-gray-50 {
             background-color: #262932;
         }
-        .border-gray-100, .border-gray-200{
+        .border-gray-100,
+        .border-gray-200 {
             border-color: #374558;
         }
-        .comment-box{
-            .chat-header{
+        .comment-box {
+            .chat-header {
                 border-color: #374558;
             }
         }
-        .sec_chat{
-            .chat-area{
-                .chat-header{
+        .sec_chat {
+            .chat-area {
+                .chat-header {
                     border-color: #374558;
                 }
             }
         }
-        .sec_chat .sidebar .chat-left-aside .c-top .about .name{
+        .sec_chat .sidebar .chat-left-aside .c-top .about .name {
             color: #ffffffb3;
         }
     }

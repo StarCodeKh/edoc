@@ -6,28 +6,27 @@ use App\Models\Concerns\Watchable;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
-use Picqer\Barcode\BarcodeGeneratorSVG;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
+use Picqer\Barcode\BarcodeGeneratorSVG;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class Task extends Model
 {
     use HasFactory;
-    use Watchable;
     use SoftDeletes;
+    use Watchable;
 
     protected $casts = [
-        'is_done'       => 'boolean',
-        'is_archive'    => 'boolean',
-        'cover'         => 'integer',
-        'list_id'       => 'integer',
+        'is_done' => 'boolean',
+        'is_archive' => 'boolean',
+        'cover' => 'integer',
+        'list_id' => 'integer',
         'origin_list_id' => 'integer',
-        'order'         => 'integer',
-        'user_id'       => 'integer',
-        'project_id'    => 'integer',
-        'due_date'      => 'datetime',
+        'order' => 'integer',
+        'user_id' => 'integer',
+        'project_id' => 'integer',
+        'due_date' => 'datetime',
         'merged_history' => 'array',
     ];
 
@@ -46,7 +45,7 @@ class Task extends Model
 
     private function generateTaskCode()
     {
-        $prefix = "CGMC-";
+        $prefix = 'CGMC-';
 
         $latestTask = static::latest('id')->first();
         $nextNumber = $latestTask ? $latestTask->id + 1 : 1;
@@ -70,19 +69,20 @@ class Task extends Model
 
         $qrData = route('projects.table.with.task', [
             'projectUid' => $this->project_id,
-            'taskUid'    => $taskUid,
+            'taskUid' => $taskUid,
         ]);
 
         $svg = QrCode::format('svg')->size(200)->generate($qrData);
 
-        return 'data:image/svg+xml;base64,' . base64_encode($svg);
+        return 'data:image/svg+xml;base64,'.base64_encode($svg);
     }
 
     private function generateBarCode($taskCode)
     {
-        $generator = new BarcodeGeneratorSVG();
+        $generator = new BarcodeGeneratorSVG;
         $svg = $generator->getBarcode($taskCode, $generator::TYPE_CODE_128, 2, 60);
-        return 'data:image/svg+xml;base64,' . base64_encode($svg);
+
+        return 'data:image/svg+xml;base64,'.base64_encode($svg);
     }
 
     private function generateUniqueSlug($title, $ignoreId = null)
@@ -96,8 +96,8 @@ class Task extends Model
         $original = $slug;
         $i = 1;
 
-        while (static::where('slug', $slug)->when($ignoreId, fn($q) => $q->where('id', '!=', $ignoreId))->exists()) {
-            $slug = $original . '-' . $i++;
+        while (static::where('slug', $slug)->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))->exists()) {
+            $slug = $original.'-'.$i++;
         }
 
         return $slug;
@@ -159,11 +159,11 @@ class Task extends Model
                 $userId = Auth::id();
 
                 $activityData = [
-                    'user_id'       => $userId,
-                    'task_id'       => $task->id,
+                    'user_id' => $userId,
+                    'task_id' => $task->id,
                     'field_changed' => $field,
-                    'old_value'     => $originalValue,
-                    'new_value'     => $newValue,
+                    'old_value' => $originalValue,
+                    'new_value' => $newValue,
                 ];
 
                 switch ($field) {
@@ -222,7 +222,7 @@ class Task extends Model
 
     public function scopeByUser($query, $id)
     {
-        if(!empty($id)){
+        if (!empty($id)) {
             $query->where('user_id', $id);
         }
     }
@@ -243,7 +243,7 @@ class Task extends Model
     {
         $user = $user ?: Auth::user();
 
-        if (! $user || $user->isAdmin()) {
+        if (!$user || $user->isAdmin()) {
             return $query;
         }
 
@@ -262,7 +262,7 @@ class Task extends Model
 
     public function scopeByProject($query, $id)
     {
-        if(!empty($id)){
+        if (!empty($id)) {
             $query->where('project_id', $id);
         }
     }
@@ -351,10 +351,10 @@ class Task extends Model
         })->when($filters['user'] ?? null, function ($query, $user) {
             $f_users = explode(',', $user);
             $includeTasks = Assignee::whereIn('user_id', $f_users)->groupBy('task_id')->pluck('task_id');
-            if(in_array('null', $f_users)){
+            if (in_array('null', $f_users)) {
                 $excludeTask = Assignee::groupBy('task_id')->pluck('task_id');
                 $query->whereNotIn('id', $excludeTask)->orWhereIn('id', $includeTasks);
-            }else{
+            } else {
                 $query->whereIn('id', $includeTasks);
             }
         })->when($filters['private_task'] ?? null, function ($query, $private_task) {
@@ -365,52 +365,52 @@ class Task extends Model
             $includeTasks = TaskLabel::whereIn('label_id', $f_labels)->groupBy('task_id')->pluck('task_id');
             $query->whereIn('id', $includeTasks);
         })->when($filters['range'] ?? null, function ($query, $filters) {
-            $start = $filters['range']['start'] ?? date("Y-m-d H:i:s", strtotime('monday this week'));
-            $end = $filters['range']['end'] ?? date("Y-m-d H:i:s", strtotime('sunday this week 23:59'));
+            $start = $filters['range']['start'] ?? date('Y-m-d H:i:s', strtotime('monday this week'));
+            $end = $filters['range']['end'] ?? date('Y-m-d H:i:s', strtotime('sunday this week 23:59'));
             $query->whereBetween('created_at', [$start, $end])->orWhereBetween('due_date', [$start, $end]);
         })->when($filters['due'] ?? null, function ($query, $due) {
             $due_dates = explode(',', $due);
             $hasConditions = false;
 
-            if(in_array('over', $due_dates)){
-                $query->where(function($q) {
+            if (in_array('over', $due_dates)) {
+                $query->where(function ($q) {
                     $q->where('is_done', 0)
-                      ->where('due_date', '<', Carbon::now());
+                        ->where('due_date', '<', Carbon::now());
                 });
                 $hasConditions = true;
             }
-            if(in_array('next_day', $due_dates)){
-                if($hasConditions){
+            if (in_array('next_day', $due_dates)) {
+                if ($hasConditions) {
                     $query->orWhereBetween('due_date', [Carbon::now(), Carbon::now()->addDay()]);
-                }else{
+                } else {
                     $query->whereBetween('due_date', [Carbon::now(), Carbon::now()->addDay()]);
                 }
                 $hasConditions = true;
             }
-            if(in_array('next_week', $due_dates)){
+            if (in_array('next_week', $due_dates)) {
                 $weekStart = Carbon::now()->startOfWeek();
                 $weekEnd = Carbon::now()->endOfWeek();
-                if($hasConditions){
+                if ($hasConditions) {
                     $query->orWhereBetween('due_date', [$weekStart, $weekEnd]);
-                }else{
+                } else {
                     $query->whereBetween('due_date', [$weekStart, $weekEnd]);
                 }
                 $hasConditions = true;
             }
-            if(in_array('next_month', $due_dates)){
+            if (in_array('next_month', $due_dates)) {
                 $monthStart = Carbon::now()->startOfMonth();
                 $monthEnd = Carbon::now()->endOfMonth();
-                if($hasConditions){
+                if ($hasConditions) {
                     $query->orWhereBetween('due_date', [$monthStart, $monthEnd]);
-                }else{
+                } else {
                     $query->whereBetween('due_date', [$monthStart, $monthEnd]);
                 }
                 $hasConditions = true;
             }
-            if(in_array('null', $due_dates)){
-                if($hasConditions){
+            if (in_array('null', $due_dates)) {
+                if ($hasConditions) {
                     $query->orWhereNull('due_date');
-                }else{
+                } else {
                     $query->whereNull('due_date');
                 }
             }

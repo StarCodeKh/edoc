@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 
 class RedirectToInstallerIfNotInstalled
@@ -10,15 +11,15 @@ class RedirectToInstallerIfNotInstalled
     /**
      * Handle an incoming request.
      *
-     * @param \Illuminate\Http\Request $request
-     * @param \Closure $next
+     * @param  Request  $request
      * @return mixed
      */
     public function handle($request, Closure $next)
     {
-        if (! config('app.installed') && ! $request->is(['install', 'install/*', 'update', 'update/*', 'chat/init', 'chat/send_message'])) {
+        if (!config('app.installed') && !$request->is(['install', 'install/*', 'update', 'update/*', 'chat/init', 'chat/send_message'])) {
             return Redirect::to('/install');
         }
+
         return $next($request);
     }
 }

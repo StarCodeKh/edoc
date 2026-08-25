@@ -3,15 +3,17 @@
 // Self-hosted @font-face rules (public/fonts/khmer/*.woff2).
 // Declared once here, globally, so no component needs its own
 // @import from fonts.googleapis.com.
-@include meta.load-css('fonts-local');
+@include meta.load-css("fonts-local");
 
 // --- Global typography tokens -------------------------------------------
 // Every font stack in the app resolves through these variables, so changing
 // a family here re-skins the whole app without touching components.
 :root {
-    --font-khmer-body: 'Kantumruy Pro', 'Noto Sans Khmer', 'KHMER OS Battambang', 'Segoe UI', "Roboto", "Noto Sans", "Ubuntu", "Droid Sans", "Helvetica Neue", sans-serif;
-    --font-khmer-serif: 'Battambang', 'Kantumruy Pro', 'Noto Sans Khmer', serif;
-    --font-khmer-display: 'Moul', 'Battambang', 'Kantumruy Pro', serif;
+    --font-khmer-body:
+        "Kantumruy Pro", "Noto Sans Khmer", "KHMER OS Battambang", "Segoe UI", "Roboto", "Noto Sans", "Ubuntu",
+        "Droid Sans", "Helvetica Neue", sans-serif;
+    --font-khmer-serif: "Battambang", "Kantumruy Pro", "Noto Sans Khmer", serif;
+    --font-khmer-display: "Moul", "Battambang", "Kantumruy Pro", serif;
 }
 
 // Applied on <body class="font-inter"> in every blade layout.

@@ -1,30 +1,36 @@
 <template>
-  <button type="button" @click="show = true">
-    <slot />
-      <teleport v-if="show" to="#dropdown">
-          <div>
-              <div
-                  :style="[
-                      { position: 'fixed', top: 0, right: 0, left: 0, bottom: 0, zIndex: 99998 },
-                      dim ? { background: 'black', opacity: 0.2 } : { background: 'transparent' }
-                  ]"
-                  @click="show = false"
-              />
-              <div ref="dropdown" class="dd_container" :class="className" style="position: absolute; z-index: 99999" @click.stop="show = !autoClose">
-                  <slot name="dropdown" />
-              </div>
-          </div>
-      </teleport>
-  </button>
+    <button type="button" @click="show = true">
+        <slot />
+        <teleport v-if="show" to="#dropdown">
+            <div>
+                <div
+                    :style="[
+                        { position: 'fixed', top: 0, right: 0, left: 0, bottom: 0, zIndex: 99998 },
+                        dim ? { background: 'black', opacity: 0.2 } : { background: 'transparent' },
+                    ]"
+                    @click="show = false"
+                />
+                <div
+                    ref="dropdown"
+                    class="dd_container"
+                    :class="className"
+                    style="position: absolute; z-index: 99999"
+                    @click.stop="show = !autoClose"
+                >
+                    <slot name="dropdown" />
+                </div>
+            </div>
+        </teleport>
+    </button>
 </template>
 
 <script>
-import { createPopper } from '@popperjs/core'
-import { router } from '@inertiajs/vue3'
+import { createPopper } from '@popperjs/core';
+import { router } from '@inertiajs/vue3';
 
 export default {
     props: {
-        className :String,
+        className: String,
         placement: {
             type: String,
             default: 'bottom-end',
@@ -55,20 +61,20 @@ export default {
     data() {
         return {
             show: false,
-        }
+        };
     },
     watch: {
         show(show) {
             if (!show) {
-                this.destroyPopper()
-                return
+                this.destroyPopper();
+                return;
             }
 
             this.$nextTick(() => {
                 // The panel can be gone again already if the menu was closed
                 // in the same tick; creating a popper then would throw.
-                if (!this.show || !this.$refs.dropdown) return
-                this.destroyPopper()
+                if (!this.show || !this.$refs.dropdown) return;
+                this.destroyPopper();
                 this.popper = createPopper(this.$el, this.$refs.dropdown, {
                     placement: this.placement,
                     modifiers: [
@@ -83,8 +89,8 @@ export default {
                             },
                         },
                     ],
-                })
-            })
+                });
+            });
         },
     },
     methods: {
@@ -96,28 +102,28 @@ export default {
          */
         destroyPopper() {
             if (this.popper) {
-                this.popper.destroy()
-                this.popper = null
+                this.popper.destroy();
+                this.popper = null;
             }
         },
         onKeydown(e) {
             if (e.key === 'Escape') {
-                this.show = false
+                this.show = false;
             }
         },
     },
     mounted() {
-        document.addEventListener('keydown', this.onKeydown)
+        document.addEventListener('keydown', this.onKeydown);
         // The layout persists across Inertia visits, so without this a panel
         // left open during a navigation stays orphaned on the new page.
         this.stopNavigationListener = router.on('navigate', () => {
-            this.show = false
-        })
+            this.show = false;
+        });
     },
     beforeUnmount() {
-        document.removeEventListener('keydown', this.onKeydown)
-        if (this.stopNavigationListener) this.stopNavigationListener()
-        this.destroyPopper()
+        document.removeEventListener('keydown', this.onKeydown);
+        if (this.stopNavigationListener) this.stopNavigationListener();
+        this.destroyPopper();
     },
-}
+};
 </script>

@@ -34,6 +34,7 @@
         "tightenco/ziggy": "^2.3"
     },
     "require-dev": {
+        "laravel/pint": "^1.30",
         "laravel/sail": "^1.0.1",
         "mockery/mockery": "^1.4.2",
         "nunomaduro/collision": "^8.0",
@@ -68,6 +69,12 @@
         ],
         "compile": [
             "@php artisan migrate:fresh --seed"
+        ],
+        "format": [
+            "@php vendor/bin/pint"
+        ],
+        "format:check": [
+            "@php vendor/bin/pint --test"
         ]
     },
     "extra": {

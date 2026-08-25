@@ -32,7 +32,7 @@ class UserAssignedToWatchedTaskNotification extends Notification implements Shou
     {
         return [
             'action_user_id' => $this->assignerUser->id,
-            'action_user_name' => $this->assignerUser->first_name . ' ' . $this->assignerUser->last_name,
+            'action_user_name' => $this->assignerUser->first_name.' '.$this->assignerUser->last_name,
             'action_user_photo' => $this->assignerUser->photo_path,
             'task_id' => $this->task->id,
             'task_title' => $this->task->title,
@@ -40,7 +40,7 @@ class UserAssignedToWatchedTaskNotification extends Notification implements Shou
             'project_name' => $this->task->project->title,
             'workspace_name' => $this->task->project->workspace->name,
             // The message is different for watchers
-            'message' => 'assigned ' . $this->assignedUser->first_name . ' to the task',
+            'message' => 'assigned '.$this->assignedUser->first_name.' to the task',
             'url' => route('projects.board.with.task', [$this->task->project_id, $this->task->id]),
         ];
     }
@@ -50,8 +50,7 @@ class UserAssignedToWatchedTaskNotification extends Notification implements Shou
         $data = $this->toArray($notifiable);
         $data['created_at'] = now()->toDateTimeString();
         $data['read_at'] = null;
+
         return new BroadcastMessage($data);
     }
-
-
 }

@@ -206,18 +206,18 @@ body.has-drawer-open {
    all the way down to a phone, which is what leaves dashboards unreadable.
    Three columns or more collapse; two are left alone, they still read. */
 @media (max-width: 639px) {
-    [scroll-region] [class*='grid-cols-3'],
-    [scroll-region] [class*='grid-cols-4'],
-    [scroll-region] [class*='grid-cols-5'],
-    [scroll-region] [class*='grid-cols-6'],
-    [scroll-region] [class*='grid-cols-12'] {
+    [scroll-region] [class*="grid-cols-3"],
+    [scroll-region] [class*="grid-cols-4"],
+    [scroll-region] [class*="grid-cols-5"],
+    [scroll-region] [class*="grid-cols-6"],
+    [scroll-region] [class*="grid-cols-12"] {
         grid-template-columns: repeat(1, minmax(0, 1fr));
     }
 }
 @media (min-width: 640px) and (max-width: 1023px) {
-    [scroll-region] [class*='grid-cols-4'],
-    [scroll-region] [class*='grid-cols-5'],
-    [scroll-region] [class*='grid-cols-6'] {
+    [scroll-region] [class*="grid-cols-4"],
+    [scroll-region] [class*="grid-cols-5"],
+    [scroll-region] [class*="grid-cols-6"] {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
@@ -225,7 +225,7 @@ body.has-drawer-open {
 /* --- Forms and controls ------------------------------------------------ */
 @media (max-width: 767px) {
     /* Anything under 16px makes iOS zoom the whole page on focus. */
-    input:not([type='checkbox']):not([type='radio']),
+    input:not([type="checkbox"]):not([type="radio"]),
     select,
     textarea {
         font-size: 16px;
@@ -432,9 +432,9 @@ body.has-drawer-open {
    left/top from wherever the trigger happens to be. On a phone that puts
    half of one off the screen, so they span the content instead. */
 @media (max-width: 640px) {
-    [scroll-region] .absolute[class*='w-[300px]'],
-    [scroll-region] .absolute[class*='w-[320px]'],
-    [scroll-region] .absolute[class*='w-[340px]'] {
+    [scroll-region] .absolute[class*="w-[300px]"],
+    [scroll-region] .absolute[class*="w-[320px]"],
+    [scroll-region] .absolute[class*="w-[340px]"] {
         left: 12px !important;
         right: 12px !important;
         width: auto !important;
@@ -446,8 +446,8 @@ body.has-drawer-open {
 @media (max-width: 767px) {
     /* Anything hard-coded wider than a phone is capped rather than clipped.
        Table cells keep their widths - those scroll inside the card. */
-    [scroll-region] [class*='w-[']:not(td):not(th),
-    [scroll-region] [class*='min-w-[']:not(td):not(th) {
+    [scroll-region] [class*="w-["]:not(td):not(th),
+    [scroll-region] [class*="min-w-["]:not(td):not(th) {
         max-width: 100%;
     }
 }

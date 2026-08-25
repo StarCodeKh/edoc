@@ -1,25 +1,25 @@
-.ck.ck-editor__main>.ck-editor__editable{
+.ck.ck-editor__main > .ck-editor__editable {
     background: transparent !important;
 }
 @media (min-width: 250px) and (max-width: 768px) {
-    .sidebar-left-top{
+    .sidebar-left-top {
         padding: 5px 12px;
-        .help-desk-logo{
+        .help-desk-logo {
             width: 150px;
         }
     }
     /* The top bar's small-screen layout lives in responsive.scss, which owns
        the two-row arrangement; only the odd spacings are left here. */
-    .top_bar{
-        .placement-top-right{
-            .mode-switcher{
+    .top_bar {
+        .placement-top-right {
+            .mode-switcher {
                 margin-left: 0.8rem;
                 margin-right: 0.8rem;
             }
-            .language_menu{
+            .language_menu {
                 margin-right: 0;
             }
-            .chat-top-bar{
+            .chat-top-bar {
                 margin-right: 20px;
             }
         }
@@ -27,5 +27,4 @@
 }
 
 @media (min-width: 769px) and (max-width: 1023px) {
-
 }

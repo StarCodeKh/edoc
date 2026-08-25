@@ -2,31 +2,61 @@
     <div class="h-full">
         <Head :title="$t(title)" />
         <div class="flex flex-col flex-grow-1 flex-shrink-1 h-full">
-            <workspace-view-menu :workspace="workspace" @filter-toggle="open_filter = !open_filter" :filters="filters" view="timeline" />
+            <workspace-view-menu
+                :workspace="workspace"
+                @filter-toggle="open_filter = !open_filter"
+                :filters="filters"
+                view="timeline"
+            />
 
             <!-- Enhanced Timeline Container -->
             <div class="flex-1 flex flex-col bg-gradient-to-br from-gray-50 to-white">
-                <div v-if="timelineReady" class="flex-1 flex flex-col m-2 sm:m-4 bg-white rounded-2xl shadow-xl border border-gray-200/60 overflow-hidden">
-
+                <div
+                    v-if="timelineReady"
+                    class="flex-1 flex flex-col m-2 sm:m-4 bg-white rounded-2xl shadow-xl border border-gray-200/60 overflow-hidden"
+                >
                     <!-- Enhanced Timeline Header -->
-                    <div class="timeline-header border-b border-gray-200/60 bg-gradient-to-r from-white via-gray-50/30 to-white">
+                    <div
+                        class="timeline-header border-b border-gray-200/60 bg-gradient-to-r from-white via-gray-50/30 to-white"
+                    >
                         <div class="px-3 py-4 sm:px-6 sm:py-5">
                             <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                                 <!-- Navigation Section -->
                                 <div class="flex items-center justify-center lg:justify-start">
-                                    <div class="flex items-center bg-white rounded-2xl shadow-sm border border-gray-200/60 p-1">
-                                        <button @click="navigatePeriod(-1)" class="p-2 sm:p-3 hover:bg-gray-50 rounded-xl transition-all duration-200 group">
-                                            <icon name="arrow-left" class="w-5 h-5 text-gray-600 group-hover:text-indigo-600 transition-colors" />
+                                    <div
+                                        class="flex items-center bg-white rounded-2xl shadow-sm border border-gray-200/60 p-1"
+                                    >
+                                        <button
+                                            @click="navigatePeriod(-1)"
+                                            class="p-2 sm:p-3 hover:bg-gray-50 rounded-xl transition-all duration-200 group"
+                                        >
+                                            <icon
+                                                name="arrow-left"
+                                                class="w-5 h-5 text-gray-600 group-hover:text-indigo-600 transition-colors"
+                                            />
                                         </button>
                                         <div class="px-3 sm:px-6 text-center min-w-0 sm:min-w-[200px]">
                                             <h2 class="text-lg sm:text-2xl font-bold text-gray-900 tracking-tight">
                                                 {{ currentPeriodTitle }}
                                             </h2>
-                                            <p class="text-sm text-gray-500 mt-0.5 font-medium">{{ currentPeriodSubtitle }}</p>
-                                            <p v-if="khPeriodLabel" class="text-xs text-indigo-600 mt-1 font-semibold khmer-lunar-text leading-snug">{{ khPeriodLabel }}</p>
+                                            <p class="text-sm text-gray-500 mt-0.5 font-medium">
+                                                {{ currentPeriodSubtitle }}
+                                            </p>
+                                            <p
+                                                v-if="khPeriodLabel"
+                                                class="text-xs text-indigo-600 mt-1 font-semibold khmer-lunar-text leading-snug"
+                                            >
+                                                {{ khPeriodLabel }}
+                                            </p>
                                         </div>
-                                        <button @click="navigatePeriod(1)" class="p-2 sm:p-3 hover:bg-gray-50 rounded-xl transition-all duration-200 group">
-                                            <icon name="arrow-right" class="w-5 h-5 text-gray-600 group-hover:text-indigo-600 transition-colors" />
+                                        <button
+                                            @click="navigatePeriod(1)"
+                                            class="p-2 sm:p-3 hover:bg-gray-50 rounded-xl transition-all duration-200 group"
+                                        >
+                                            <icon
+                                                name="arrow-right"
+                                                class="w-5 h-5 text-gray-600 group-hover:text-indigo-600 transition-colors"
+                                            />
                                         </button>
                                     </div>
                                 </div>
@@ -34,7 +64,9 @@
                                 <!-- Controls Section -->
                                 <div class="flex flex-col sm:flex-row items-center gap-4">
                                     <!-- View Mode Switcher -->
-                                    <div class="flex bg-gray-100/80 rounded-2xl p-1.5 shadow-sm border border-gray-200/40">
+                                    <div
+                                        class="flex bg-gray-100/80 rounded-2xl p-1.5 shadow-sm border border-gray-200/40"
+                                    >
                                         <button
                                             v-for="view in availableViews"
                                             :key="view.key"
@@ -43,7 +75,7 @@
                                                 'flex items-center px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-300 whitespace-nowrap',
                                                 currentView === view.key
                                                     ? 'bg-white text-indigo-600 shadow-md shadow-indigo-100/50 ring-1 ring-indigo-100'
-                                                    : 'text-gray-600 hover:text-gray-900 hover:bg-white/60'
+                                                    : 'text-gray-600 hover:text-gray-900 hover:bg-white/60',
                                             ]"
                                             :title="$t(view.description)"
                                         >
@@ -59,17 +91,24 @@
                                             'flex items-center px-3 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 border',
                                             khmerCalendarOn
                                                 ? 'text-white bg-amber-500 border-amber-500 hover:bg-amber-600 shadow-md shadow-amber-200'
-                                                : 'text-gray-400 bg-white border-dashed border-gray-300 hover:text-gray-600 hover:border-gray-400'
+                                                : 'text-gray-400 bg-white border-dashed border-gray-300 hover:text-gray-600 hover:border-gray-400',
                                         ]"
                                         :aria-pressed="khmerCalendarOn ? 'true' : 'false'"
-                                        :title="khmerCalendarOn ? $t('Hide the Khmer lunar calendar') : $t('Show the Khmer lunar calendar')"
+                                        :title="
+                                            khmerCalendarOn
+                                                ? $t('Hide the Khmer lunar calendar')
+                                                : $t('Show the Khmer lunar calendar')
+                                        "
                                     >
                                         <icon name="moon" class="w-4 h-4 mr-2" />
                                         {{ $t('Lunar') }}
                                     </button>
 
                                     <!-- Today Button -->
-                                    <button @click="goToToday" class="flex items-center px-4 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 bg-white hover:bg-gray-50 rounded-xl border border-gray-200/60 transition-all duration-200">
+                                    <button
+                                        @click="goToToday"
+                                        class="flex items-center px-4 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 bg-white hover:bg-gray-50 rounded-xl border border-gray-200/60 transition-all duration-200"
+                                    >
                                         <icon name="calendar-today" class="w-4 h-4 mr-2" />
                                         {{ $t('Today') }}
                                     </button>
@@ -84,10 +123,18 @@
                         <div v-if="currentView === 'month'" class="month-view h-full flex flex-col">
                             <div class="flex-1 overflow-y-auto p-3 sm:p-6">
                                 <div class="timeline-container">
-                                    <div v-for="month in monthsInView" :key="month.month + '-' + month.year" class="mb-8">
+                                    <div
+                                        v-for="month in monthsInView"
+                                        :key="month.month + '-' + month.year"
+                                        class="mb-8"
+                                    >
                                         <div class="month-header mb-6">
-                                            <h3 class="text-xl font-bold text-gray-900">{{ month.name }} {{ khNum(month.year) }}</h3>
-                                            <div class="w-full h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent mt-2"></div>
+                                            <h3 class="text-xl font-bold text-gray-900">
+                                                {{ month.name }} {{ khNum(month.year) }}
+                                            </h3>
+                                            <div
+                                                class="w-full h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent mt-2"
+                                            ></div>
                                         </div>
 
                                         <div class="timeline-events space-y-4">
@@ -96,18 +143,36 @@
                                                 :key="task.id"
                                                 :class="[
                                                     'timeline-event p-3 sm:p-4 rounded-xl border-l-4 transition-all duration-300 hover:shadow-lg hover:scale-[1.02] cursor-pointer',
-                                                    getTaskColorClass(task)
+                                                    getTaskColorClass(task),
                                                 ]"
                                                 @click="openTask(task)"
                                             >
                                                 <div class="flex items-start justify-between">
                                                     <div class="flex-1">
-                                                        <h4 class="font-semibold text-gray-900 mb-1">{{ task.title }}</h4>
-                                                        <p v-if="task.description" class="text-sm text-gray-600 mb-2 line-clamp-2">{{ task.description }}</p>
+                                                        <h4 class="font-semibold text-gray-900 mb-1">
+                                                            {{ task.title }}
+                                                        </h4>
+                                                        <p
+                                                            v-if="task.description"
+                                                            class="text-sm text-gray-600 mb-2 line-clamp-2"
+                                                        >
+                                                            {{ task.description }}
+                                                        </p>
                                                         <div class="flex items-center space-x-4 text-xs text-gray-500">
                                                             <span v-if="task.project" class="flex items-center">
-                                                                <div class="project__color w-4 h-4 rounded-full inline-block mr-1" :aria-label="task.project.title"
-                                                                     :style="[task.project.background?{background: 'url('+task.project.background.image+')'}:{}]"
+                                                                <div
+                                                                    class="project__color w-4 h-4 rounded-full inline-block mr-1"
+                                                                    :aria-label="task.project.title"
+                                                                    :style="[
+                                                                        task.project.background
+                                                                            ? {
+                                                                                  background:
+                                                                                      'url(' +
+                                                                                      task.project.background.image +
+                                                                                      ')',
+                                                                              }
+                                                                            : {},
+                                                                    ]"
                                                                 ></div>
                                                                 {{ task.project.title }}
                                                             </span>
@@ -119,18 +184,31 @@
                                                                 <icon name="calendar" class="w-3 h-3 mr-1" />
                                                                 {{ formatDate(task.due_date) }}
                                                             </span>
-                                                            <span v-if="task.assignees && task.assignees.length" class="flex items-center">
+                                                            <span
+                                                                v-if="task.assignees && task.assignees.length"
+                                                                class="flex items-center"
+                                                            >
                                                                 <icon name="user" class="w-3 h-3 mr-1" />
-                                                                {{ $t(':count assignee(s)', { count: khNum(task.assignees.length) }) }}
+                                                                {{
+                                                                    $t(':count assignee(s)', {
+                                                                        count: khNum(task.assignees.length),
+                                                                    })
+                                                                }}
                                                             </span>
                                                         </div>
                                                     </div>
                                                     <div class="flex items-center space-x-2 ml-4">
-                                                        <div v-if="task.taskLabels && task.taskLabels.length" class="flex space-x-1">
+                                                        <div
+                                                            v-if="task.taskLabels && task.taskLabels.length"
+                                                            class="flex space-x-1"
+                                                        >
                                                             <span
                                                                 v-for="label in task.taskLabels.slice(0, 3)"
                                                                 :key="label.id"
-                                                                :style="{ backgroundColor: label.label.color + '20', color: label.label.color }"
+                                                                :style="{
+                                                                    backgroundColor: label.label.color + '20',
+                                                                    color: label.label.color,
+                                                                }"
                                                                 class="px-2 py-1 rounded-full text-xs font-medium"
                                                             >
                                                                 {{ label.label.name }}
@@ -157,7 +235,9 @@
                                             <h3 class="text-lg font-bold text-gray-900">
                                                 {{ formatWeekRange(week.start, week.end) }}
                                             </h3>
-                                            <div class="w-full h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent mt-2"></div>
+                                            <div
+                                                class="w-full h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent mt-2"
+                                            ></div>
                                         </div>
 
                                         <div class="timeline-events space-y-3">
@@ -166,14 +246,21 @@
                                                 :key="task.id"
                                                 :class="[
                                                     'timeline-event p-3 sm:p-4 rounded-xl border-l-4 transition-all duration-300 hover:shadow-lg hover:scale-[1.02] cursor-pointer',
-                                                    getTaskColorClass(task)
+                                                    getTaskColorClass(task),
                                                 ]"
                                                 @click="openTask(task)"
                                             >
                                                 <div class="flex items-start justify-between">
                                                     <div class="flex-1">
-                                                        <h4 class="font-semibold text-gray-900 mb-1">{{ task.title }}</h4>
-                                                        <p v-if="task.description" class="text-sm text-gray-600 mb-2 line-clamp-2">{{ task.description }}</p>
+                                                        <h4 class="font-semibold text-gray-900 mb-1">
+                                                            {{ task.title }}
+                                                        </h4>
+                                                        <p
+                                                            v-if="task.description"
+                                                            class="text-sm text-gray-600 mb-2 line-clamp-2"
+                                                        >
+                                                            {{ task.description }}
+                                                        </p>
                                                         <div class="flex items-center space-x-4 text-xs text-gray-500">
                                                             <span v-if="task.list" class="flex items-center">
                                                                 <icon name="list" class="w-3 h-3 mr-1" />
@@ -186,11 +273,17 @@
                                                         </div>
                                                     </div>
                                                     <div class="flex items-center space-x-2 ml-4">
-                                                        <div v-if="task.taskLabels && task.taskLabels.length" class="flex space-x-1">
+                                                        <div
+                                                            v-if="task.taskLabels && task.taskLabels.length"
+                                                            class="flex space-x-1"
+                                                        >
                                                             <span
                                                                 v-for="label in task.taskLabels.slice(0, 2)"
                                                                 :key="label.id"
-                                                                :style="{ backgroundColor: label.label.color + '20', color: label.label.color }"
+                                                                :style="{
+                                                                    backgroundColor: label.label.color + '20',
+                                                                    color: label.label.color,
+                                                                }"
                                                                 class="px-2 py-1 rounded-full text-xs font-medium"
                                                             >
                                                                 {{ label.label.name }}
@@ -210,9 +303,18 @@
                             <div class="flex-1 overflow-y-auto p-3 sm:p-6">
                                 <div class="timeline-container">
                                     <div class="day-header mb-6">
-                                        <h3 class="text-xl font-bold text-gray-900">{{ formatFullDate(selectedDate) }}</h3>
-                                        <khmer-date-card v-if="khmerCalendarOn" :date="selectedDate" :locale="khLocale" class="mt-3" />
-                                        <div class="w-full h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent mt-2"></div>
+                                        <h3 class="text-xl font-bold text-gray-900">
+                                            {{ formatFullDate(selectedDate) }}
+                                        </h3>
+                                        <khmer-date-card
+                                            v-if="khmerCalendarOn"
+                                            :date="selectedDate"
+                                            :locale="khLocale"
+                                            class="mt-3"
+                                        />
+                                        <div
+                                            class="w-full h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent mt-2"
+                                        ></div>
                                     </div>
 
                                     <div class="timeline-events space-y-3">
@@ -221,14 +323,19 @@
                                             :key="task.id"
                                             :class="[
                                                 'timeline-event p-3 sm:p-4 rounded-xl border-l-4 transition-all duration-300 hover:shadow-lg hover:scale-[1.02] cursor-pointer',
-                                                getTaskColorClass(task)
+                                                getTaskColorClass(task),
                                             ]"
                                             @click="openTask(task)"
                                         >
                                             <div class="flex items-start justify-between">
                                                 <div class="flex-1">
                                                     <h4 class="font-semibold text-gray-900 mb-1">{{ task.title }}</h4>
-                                                    <p v-if="task.description" class="text-sm text-gray-600 mb-2 line-clamp-2">{{ task.description }}</p>
+                                                    <p
+                                                        v-if="task.description"
+                                                        class="text-sm text-gray-600 mb-2 line-clamp-2"
+                                                    >
+                                                        {{ task.description }}
+                                                    </p>
                                                     <div class="flex items-center space-x-4 text-xs text-gray-500">
                                                         <span v-if="task.list" class="flex items-center">
                                                             <icon name="list" class="w-3 h-3 mr-1" />
@@ -238,18 +345,31 @@
                                                             <icon name="calendar" class="w-3 h-3 mr-1" />
                                                             {{ formatDate(task.due_date) }}
                                                         </span>
-                                                        <span v-if="task.assignees && task.assignees.length" class="flex items-center">
+                                                        <span
+                                                            v-if="task.assignees && task.assignees.length"
+                                                            class="flex items-center"
+                                                        >
                                                             <icon name="user" class="w-3 h-3 mr-1" />
-                                                            {{ $t(':count assignee(s)', { count: khNum(task.assignees.length) }) }}
+                                                            {{
+                                                                $t(':count assignee(s)', {
+                                                                    count: khNum(task.assignees.length),
+                                                                })
+                                                            }}
                                                         </span>
                                                     </div>
                                                 </div>
                                                 <div class="flex items-center space-x-2 ml-4">
-                                                    <div v-if="task.taskLabels && task.taskLabels.length" class="flex space-x-1">
+                                                    <div
+                                                        v-if="task.taskLabels && task.taskLabels.length"
+                                                        class="flex space-x-1"
+                                                    >
                                                         <span
                                                             v-for="label in task.taskLabels.slice(0, 3)"
                                                             :key="label.id"
-                                                            :style="{ backgroundColor: label.label.color + '20', color: label.label.color }"
+                                                            :style="{
+                                                                backgroundColor: label.label.color + '20',
+                                                                color: label.label.color,
+                                                            }"
                                                             class="px-2 py-1 rounded-full text-xs font-medium"
                                                         >
                                                             {{ label.label.name }}
@@ -271,7 +391,9 @@
                 <!-- Loading State -->
                 <div v-else class="flex-1 flex items-center justify-center">
                     <div class="text-center">
-                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+                        <div
+                            class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"
+                        ></div>
                         <p class="text-gray-600">{{ $t('Loading timeline...') }}</p>
                     </div>
                 </div>
@@ -279,19 +401,25 @@
         </div>
 
         <!-- Task Details Modal -->
-      <task-details v-if="taskDetailsOpen" :id="taskDetailsId" view="timeline" :isPopup="true" @closeModal="closeDetails()" />
+        <task-details
+            v-if="taskDetailsOpen"
+            :id="taskDetailsId"
+            view="timeline"
+            :isPopup="true"
+            @closeModal="closeDetails()"
+        />
     </div>
 </template>
 
 <script>
-import Layout from '@/Shared/Layout.vue'
-import { Head, Link } from '@inertiajs/vue3'
-import WorkspaceViewMenu from '@/Shared/WorkspaceViewMenu.vue'
-import Icon from '@/Shared/Icon.vue'
-import KhmerDateCard from '@/Shared/KhmerDateCard.vue'
-import khmerCalendarMixin from '@/Utils/khmerCalendarMixin'
-import TaskDetails from '@/Shared/Modals/TaskDetails.vue'
-import moment_timezone from 'moment-timezone'
+import Layout from '@/Shared/Layout.vue';
+import { Head, Link } from '@inertiajs/vue3';
+import WorkspaceViewMenu from '@/Shared/WorkspaceViewMenu.vue';
+import Icon from '@/Shared/Icon.vue';
+import KhmerDateCard from '@/Shared/KhmerDateCard.vue';
+import khmerCalendarMixin from '@/Utils/khmerCalendarMixin';
+import TaskDetails from '@/Shared/Modals/TaskDetails.vue';
+import moment_timezone from 'moment-timezone';
 
 export default {
     metaInfo: { title: 'Timeline' },
@@ -332,216 +460,216 @@ export default {
             form: {
                 range: { start: '', end: '' },
                 period: 'timeline',
-                task: null
-            }
-        }
+                task: null,
+            },
+        };
     },
     computed: {
         currentPeriodTitle() {
             switch (this.currentView) {
                 case 'year':
-                    return this.khNum(this.moment(this.currentDate).year())
+                    return this.khNum(this.moment(this.currentDate).year());
                 case 'month':
-                    return this.khMonthYear(this.currentDate)
+                    return this.khMonthYear(this.currentDate);
                 case 'week':
-                    const weekStart = this.moment(this.selectedDate).startOf('week')
-                    const weekEnd = this.moment(this.selectedDate).endOf('week')
-                    return `${this.khShortDate(weekStart.toDate())} - ${this.khShortDate(weekEnd.toDate(), true)}`
+                    const weekStart = this.moment(this.selectedDate).startOf('week');
+                    const weekEnd = this.moment(this.selectedDate).endOf('week');
+                    return `${this.khShortDate(weekStart.toDate())} - ${this.khShortDate(weekEnd.toDate(), true)}`;
                 case 'day':
-                    return this.khFullDate(this.selectedDate)
+                    return this.khFullDate(this.selectedDate);
                 default:
-                    return this.khMonthYear(this.currentDate)
+                    return this.khMonthYear(this.currentDate);
             }
         },
         currentPeriodSubtitle() {
             switch (this.currentView) {
                 case 'year':
-                    return this.$t('Yearly timeline view')
+                    return this.$t('Yearly timeline view');
                 case 'month':
-                    return this.$t('Monthly timeline view')
+                    return this.$t('Monthly timeline view');
                 case 'week':
-                    return this.$t('Weekly timeline view')
+                    return this.$t('Weekly timeline view');
                 case 'day':
-                    return this.$t('Daily timeline view')
+                    return this.$t('Daily timeline view');
                 default:
-                    return this.$t('Timeline view')
+                    return this.$t('Timeline view');
             }
         },
         monthsInView() {
-            const months = []
-            const startDate = this.moment(this.currentDate).startOf('month')
-            const endDate = this.moment(this.currentDate).endOf('month')
+            const months = [];
+            const startDate = this.moment(this.currentDate).startOf('month');
+            const endDate = this.moment(this.currentDate).endOf('month');
 
-            let current = this.moment(startDate)
+            let current = this.moment(startDate);
             while (current.isSameOrBefore(endDate, 'month')) {
                 months.push({
                     month: current.month(),
                     year: current.year(),
-                    name: this.khSolarMonth(current.month())
-                })
-                current.add(1, 'month')
+                    name: this.khSolarMonth(current.month()),
+                });
+                current.add(1, 'month');
             }
 
-            return months
+            return months;
         },
         weeksInView() {
-            const weeks = []
-            const startDate = this.moment(this.selectedDate).startOf('week')
-            const endDate = this.moment(this.selectedDate).endOf('week')
+            const weeks = [];
+            const startDate = this.moment(this.selectedDate).startOf('week');
+            const endDate = this.moment(this.selectedDate).endOf('week');
 
-            let current = this.moment(startDate)
+            let current = this.moment(startDate);
             while (current.isSameOrBefore(endDate, 'week')) {
                 weeks.push({
                     start: current.toDate(),
-                    end: this.moment(current).endOf('week').toDate()
-                })
-                current.add(1, 'week')
+                    end: this.moment(current).endOf('week').toDate(),
+                });
+                current.add(1, 'week');
             }
 
-            return weeks
-        }
+            return weeks;
+        },
     },
     methods: {
         changeView(view) {
-            this.currentView = view
-            this.updateFormRange()
+            this.currentView = view;
+            this.updateFormRange();
         },
         navigatePeriod(direction) {
             switch (this.currentView) {
                 case 'year':
-                    this.currentDate = this.moment(this.currentDate).add(direction, 'year').toDate()
-                    break
+                    this.currentDate = this.moment(this.currentDate).add(direction, 'year').toDate();
+                    break;
                 case 'month':
-                    this.currentDate = this.moment(this.currentDate).add(direction, 'month').toDate()
-                    break
+                    this.currentDate = this.moment(this.currentDate).add(direction, 'month').toDate();
+                    break;
                 case 'week':
-                    this.selectedDate = this.moment(this.selectedDate).add(direction, 'week').toDate()
-                    break
+                    this.selectedDate = this.moment(this.selectedDate).add(direction, 'week').toDate();
+                    break;
                 case 'day':
-                    this.selectedDate = this.moment(this.selectedDate).add(direction, 'day').toDate()
-                    break
+                    this.selectedDate = this.moment(this.selectedDate).add(direction, 'day').toDate();
+                    break;
             }
-            this.updateFormRange()
+            this.updateFormRange();
         },
         goToToday() {
-            this.selectedDate = new Date()
-            this.currentDate = new Date()
-            this.updateFormRange()
+            this.selectedDate = new Date();
+            this.currentDate = new Date();
+            this.updateFormRange();
         },
         updateFormRange() {
-            let start, end
+            let start, end;
 
             switch (this.currentView) {
                 case 'year':
-                    start = this.moment(this.currentDate).startOf('year')
-                    end = this.moment(this.currentDate).endOf('year')
-                    break
+                    start = this.moment(this.currentDate).startOf('year');
+                    end = this.moment(this.currentDate).endOf('year');
+                    break;
                 case 'month':
-                    start = this.moment(this.currentDate).startOf('month')
-                    end = this.moment(this.currentDate).endOf('month')
-                    break
+                    start = this.moment(this.currentDate).startOf('month');
+                    end = this.moment(this.currentDate).endOf('month');
+                    break;
                 case 'week':
-                    start = this.moment(this.selectedDate).startOf('week')
-                    end = this.moment(this.selectedDate).endOf('week')
-                    break
+                    start = this.moment(this.selectedDate).startOf('week');
+                    end = this.moment(this.selectedDate).endOf('week');
+                    break;
                 case 'day':
-                    start = this.moment(this.selectedDate).startOf('day')
-                    end = this.moment(this.selectedDate).endOf('day')
-                    break
+                    start = this.moment(this.selectedDate).startOf('day');
+                    end = this.moment(this.selectedDate).endOf('day');
+                    break;
                 default:
-                    start = this.moment(this.currentDate).startOf('month')
-                    end = this.moment(this.currentDate).endOf('month')
+                    start = this.moment(this.currentDate).startOf('month');
+                    end = this.moment(this.currentDate).endOf('month');
             }
 
             this.form.range = {
                 start: start.format('YYYY-MM-DD'),
-                end: end.format('YYYY-MM-DD')
-            }
-            this.form.period = 'timeline'
+                end: end.format('YYYY-MM-DD'),
+            };
+            this.form.period = 'timeline';
         },
         getTasksForMonth(month, year) {
-            return this.tasks.filter(task => {
-                const taskDate = task.due_date ? this.moment(task.due_date) : this.moment(task.created_at)
-                return taskDate.month() === month && taskDate.year() === year
-            })
+            return this.tasks.filter((task) => {
+                const taskDate = task.due_date ? this.moment(task.due_date) : this.moment(task.created_at);
+                return taskDate.month() === month && taskDate.year() === year;
+            });
         },
         getTasksForWeek(startDate, endDate) {
-            return this.tasks.filter(task => {
-                const taskDate = task.due_date ? this.moment(task.due_date) : this.moment(task.created_at)
-                return taskDate.isBetween(this.moment(startDate), this.moment(endDate), 'day', '[]')
-            })
+            return this.tasks.filter((task) => {
+                const taskDate = task.due_date ? this.moment(task.due_date) : this.moment(task.created_at);
+                return taskDate.isBetween(this.moment(startDate), this.moment(endDate), 'day', '[]');
+            });
         },
         getTasksForDay(date) {
-            return this.tasks.filter(task => {
-                const taskDate = task.due_date ? this.moment(task.due_date) : this.moment(task.created_at)
-                return taskDate.isSame(this.moment(date), 'day')
-            })
+            return this.tasks.filter((task) => {
+                const taskDate = task.due_date ? this.moment(task.due_date) : this.moment(task.created_at);
+                return taskDate.isSame(this.moment(date), 'day');
+            });
         },
         getTaskColorClass(task) {
             if (task.is_done) {
-                return 'bg-green-50 border-green-400 hover:bg-green-100'
+                return 'bg-green-50 border-green-400 hover:bg-green-100';
             }
             if (this.isOverdue(task)) {
-                return 'bg-red-50 border-red-400 hover:bg-red-100'
+                return 'bg-red-50 border-red-400 hover:bg-red-100';
             }
             if (this.isHighPriority(task)) {
-                return 'bg-orange-50 border-orange-400 hover:bg-orange-100'
+                return 'bg-orange-50 border-orange-400 hover:bg-orange-100';
             }
-            return 'bg-blue-50 border-blue-400 hover:bg-blue-100'
+            return 'bg-blue-50 border-blue-400 hover:bg-blue-100';
         },
         getTaskTooltip(task) {
-            let tooltip = task.title
+            let tooltip = task.title;
             if (task.description) {
-                tooltip += `\n${task.description}`
+                tooltip += `\n${task.description}`;
             }
             if (task.assignees && task.assignees.length) {
-                tooltip += `\nAssigned to: ${task.assignees.map(a => a.user.name).join(', ')}`
+                tooltip += `\nAssigned to: ${task.assignees.map((a) => a.user.name).join(', ')}`;
             }
-            return tooltip
+            return tooltip;
         },
         isOverdue(task) {
-            return task.due_date && this.moment(task.due_date).isBefore(this.moment()) && !task.is_done
+            return task.due_date && this.moment(task.due_date).isBefore(this.moment()) && !task.is_done;
         },
         isHighPriority(task) {
-            return task.taskLabels && task.taskLabels.some(label => label.label.name.toLowerCase().includes('high'))
+            return task.taskLabels && task.taskLabels.some((label) => label.label.name.toLowerCase().includes('high'));
         },
         isToday(date) {
-            return this.moment(date).isSame(this.moment(), 'day')
+            return this.moment(date).isSame(this.moment(), 'day');
         },
         formatFullDate(date) {
-            return this.khFullDate(date)
+            return this.khFullDate(date);
         },
         formatDate(date) {
-            return this.khShortDate(date, true)
+            return this.khShortDate(date, true);
         },
         formatWeekRange(start, end) {
-            return `${this.khShortDate(start)} - ${this.khShortDate(end, true)}`
+            return `${this.khShortDate(start)} - ${this.khShortDate(end, true)}`;
         },
         openTask(task) {
-            this.taskDetailsPopup(task.id)
+            this.taskDetailsPopup(task.id);
         },
         taskDetailsPopup(id) {
-            this.form.task = id
-            this.td_pop = true
-            this.taskDetailsId = id
-            this.taskDetailsOpen = true
+            this.form.task = id;
+            this.td_pop = true;
+            this.taskDetailsId = id;
+            this.taskDetailsOpen = true;
         },
         closeDetails() {
-            this.form.task = null
-            this.taskDetailsOpen = false
+            this.form.task = null;
+            this.taskDetailsOpen = false;
         },
         initializeTimeline() {
-            this.updateFormRange()
-            this.timelineReady = true
-        }
+            this.updateFormRange();
+            this.timelineReady = true;
+        },
     },
     mounted() {
-        this.initializeTimeline()
+        this.initializeTimeline();
     },
     created() {
-        this.moment = moment_timezone
-    }
-}
+        this.moment = moment_timezone;
+    },
+};
 </script>
 
 <style scoped>
@@ -573,7 +701,9 @@ export default {
 
 .timeline-event:hover {
     transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    box-shadow:
+        0 10px 25px -5px rgba(0, 0, 0, 0.1),
+        0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
 .line-clamp-2 {

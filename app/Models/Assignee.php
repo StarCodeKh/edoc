@@ -8,8 +8,9 @@ use Illuminate\Notifications\Notifiable;
 
 class Assignee extends Model
 {
-    use Notifiable;
     use HasFactory;
+    use Notifiable;
+
     protected $table = 'assignees';
 
     protected $casts = [
@@ -19,7 +20,7 @@ class Assignee extends Model
 
     public $timestamps = false;
 
-    public function user() 
+    public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
     }

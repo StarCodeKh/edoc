@@ -1,0 +1,12 @@
+node_modules
+vendor
+public/build
+public/landing
+bootstrap/ssr
+bootstrap/cache
+storage
+package-lock.json
+composer.lock
+yarn.lock
+*.min.js
+*.min.css

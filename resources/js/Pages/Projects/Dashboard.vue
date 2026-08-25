@@ -11,14 +11,24 @@
                 </div>
                 <div class="w-full bg-white rounded-lg shadow-lg p-10">
                     <div class="w-full">
-                        <apexchart type="bar" :options="co_per_label" height="400" :series="series_per_label"></apexchart>
+                        <apexchart
+                            type="bar"
+                            :options="co_per_label"
+                            height="400"
+                            :series="series_per_label"
+                        ></apexchart>
                     </div>
                 </div>
             </div>
             <div class="flex gap-5 flex-col lg:flex-row w-full">
                 <div class="w-full lg:w-1/2 bg-white rounded-lg shadow-lg p-10">
                     <div class="w-full">
-                        <apexchart type="bar" :options="co_per_assignee" height="400" :series="series_per_assignee"></apexchart>
+                        <apexchart
+                            type="bar"
+                            :options="co_per_assignee"
+                            height="400"
+                            :series="series_per_assignee"
+                        ></apexchart>
                     </div>
                 </div>
                 <div class="w-full lg:w-1/2 bg-white rounded-lg shadow-lg p-10">
@@ -28,15 +38,14 @@
                 </div>
             </div>
         </div>
-
     </div>
 </template>
 
 <script>
-import {Head, Link} from '@inertiajs/vue3'
-import Layout from '@/Shared/Layout.vue'
-import Icon from '@/Shared/Icon.vue'
-import BoardViewMenu from '@/Shared/BoardViewMenu.vue'
+import { Head, Link } from '@inertiajs/vue3';
+import Layout from '@/Shared/Layout.vue';
+import Icon from '@/Shared/Icon.vue';
+import BoardViewMenu from '@/Shared/BoardViewMenu.vue';
 
 export default {
     components: {
@@ -55,7 +64,7 @@ export default {
         per_label: Object,
         due_data: {
             required: true,
-        }
+        },
     },
     data() {
         return {
@@ -75,25 +84,25 @@ export default {
             series_per_label: [],
             co_per_due: {},
             series_per_due: [],
-        }
+        };
     },
     computed: {
         isModalVisible() {
             return this.taskDetailsOpen;
-        }
+        },
     },
     created() {
         this.getPerListReady('co_per_list', 'series_per_list', 'per_list', 'list', 'title');
         this.getPerListReady('co_per_assignee', 'series_per_assignee', 'per_assignee', 'user', 'name');
         this.getPerListReady('co_per_label', 'series_per_label', 'per_label', 'label', 'name');
         this.getPerListReady('co_per_due', 'series_per_due', 'due_data', 'due', 'name');
-        this.co_per_label.colors = this.per_label.map( pl => pl.label.color );
+        this.co_per_label.colors = this.per_label.map((pl) => pl.label.color);
         this.co_per_label.plotOptions.bar.distributed = true;
-        this.co_per_due.colors = this.due_data.map( pl => pl.due.color );
+        this.co_per_due.colors = this.due_data.map((pl) => pl.due.color);
         this.co_per_due.plotOptions.bar.distributed = true;
     },
     methods: {
-        getPerListReady(co_prop, series_prop, props, prop_c, prop_v){
+        getPerListReady(co_prop, series_prop, props, prop_c, prop_v) {
             const co = {
                 colors: ['#7366ff'],
                 plotOptions: {
@@ -103,7 +112,7 @@ export default {
                 },
                 xaxis: {
                     labels: {
-                        rotate: -45
+                        rotate: -45,
                     },
                     categories: [],
                     tickPlacement: 'on',
@@ -117,20 +126,22 @@ export default {
                             pan: false,
                             reset: false,
                         },
-                    }
+                    },
                 },
             };
-            const series = [{
-                name: 'Total',
-                data: []
-            }];
-            if(this[props]){
+            const series = [
+                {
+                    name: 'Total',
+                    data: [],
+                },
+            ];
+            if (this[props]) {
                 this[co_prop] = Object.assign({}, co);
                 this[series_prop] = [...series];
-                this[co_prop].xaxis.categories = this[props].map( pl => pl[prop_c][prop_v] );
-                this[series_prop][0].data = this[props].map( pl => pl.total );
+                this[co_prop].xaxis.categories = this[props].map((pl) => pl[prop_c][prop_v]);
+                this[series_prop][0].data = this[props].map((pl) => pl.total);
             }
         },
     },
-}
+};
 </script>

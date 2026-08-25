@@ -19,10 +19,9 @@
         background: #ffffff;
     }
 }
-.dark{
+.dark {
     // #262932
     @layer utilities {
-
         ::-webkit-scrollbar-track {
             background: #374558;
         }
@@ -37,7 +36,7 @@
         }
     }
 }
-.task_board{
+.task_board {
     &::-webkit-scrollbar {
         width: 14px;
         height: 14px;

@@ -101,7 +101,7 @@ class WorkflowRoleController extends Controller
 
         return response()->json($role);
     }
-    
+
     public function update(Request $request, $id)
     {
         $role = EdocWorkflowRole::findOrFail($id);

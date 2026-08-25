@@ -1,18 +1,19 @@
 <?php
+
 namespace App\Notifications;
 
-use App\Notifications\Concerns\SendsTelegramNotification;
 use App\Models\BoardList;
+use App\Models\EmailTemplate;
+use App\Models\NotificationSetting;
 use App\Models\Task;
 use App\Models\User;
+use App\Notifications\Concerns\SendsTelegramNotification;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\Notification;
 use Spatie\SlackAlerts\Facades\SlackAlert;
-use App\Models\EmailTemplate;
-use App\Models\NotificationSetting;
 
 class TaskUpdatedNotification extends Notification implements ShouldQueue
 {
@@ -51,12 +52,12 @@ class TaskUpdatedNotification extends Notification implements ShouldQueue
     {
         return [
             'action_user_id' => $this->updatingUser->id,
-            'action_user_name' => $this->updatingUser->first_name . ' ' . $this->updatingUser->last_name,
+            'action_user_name' => $this->updatingUser->first_name.' '.$this->updatingUser->last_name,
             'action_user_photo' => $this->updatingUser->photo_path,
             'task_title' => $this->task->title, // Always use the current title for context
             'project_name' => $this->task->project->title,
             'workspace_name' => $this->task->project->workspace->name,
-            'actor_name' => $this->updatingUser->first_name . ' ' . $this->updatingUser->last_name,
+            'actor_name' => $this->updatingUser->first_name.' '.$this->updatingUser->last_name,
             'change_message' => $this->generateMessage(),
             'message' => $this->generateMessage(), // Generate the dynamic message
             'url' => route('projects.board.with.task', [$this->task->project_id, $this->task->id]),
@@ -70,17 +71,17 @@ class TaskUpdatedNotification extends Notification implements ShouldQueue
         $template = EmailTemplate::where('slug', 'task_updated')->first();
 
         $replacements = [
-            '{user}'          => trim($notifiable->first_name.' '.($notifiable->last_name ?? '')),
-            '{task_name}'     => $this->task->title,
-            '{project_name}'  => $this->task->project->title,
-            '{task_link}'     => $url,
-            '{task_url}'      => $url,
+            '{user}' => trim($notifiable->first_name.' '.($notifiable->last_name ?? '')),
+            '{task_name}' => $this->task->title,
+            '{project_name}' => $this->task->project->title,
+            '{task_link}' => $url,
+            '{task_url}' => $url,
             // Common aliases your templates might use
-            '{task_title}'    => $this->task->title,
+            '{task_title}' => $this->task->title,
             '{project_title}' => $this->task->project->title,
-            '{action_url}'    => $url,
+            '{action_url}' => $url,
             // Extra context for templates
-            '{actor_name}'     => trim($this->updatingUser->first_name.' '.($this->updatingUser->last_name ?? '')),
+            '{actor_name}' => trim($this->updatingUser->first_name.' '.($this->updatingUser->last_name ?? '')),
             '{change_message}' => $this->generateMessage(),
             '{workspace_name}' => $this->task->project->workspace->name,
         ];
@@ -132,31 +133,33 @@ class TaskUpdatedNotification extends Notification implements ShouldQueue
     {
         switch ($this->field) {
             case 'title':
-                return 'renamed the task from "' . $this->oldValue . '" to "' . $this->newValue . '"';
+                return 'renamed the task from "'.$this->oldValue.'" to "'.$this->newValue.'"';
 
             case 'description':
-                return 'updated the description for task "' . $this->task->title . '"';
+                return 'updated the description for task "'.$this->task->title.'"';
 
             case 'due_date':
-                return 'changed the due date from ' . $this->shortDate($this->oldValue)
-                    . ' to ' . $this->shortDate($this->newValue);
+                return 'changed the due date from '.$this->shortDate($this->oldValue)
+                    .' to '.$this->shortDate($this->newValue);
 
             case 'list_id':
                 $fromTitle = $this->oldValue ? (BoardList::find($this->oldValue)?->title) : null;
-                $toTitle   = $this->newValue ? (BoardList::find($this->newValue)?->title) : null;
-                return 'moved task "' . $this->task->title . '" from "' . ($fromTitle ?? 'Unknown') . '" to "' . ($toTitle ?? 'Unknown') . '"';
+                $toTitle = $this->newValue ? (BoardList::find($this->newValue)?->title) : null;
+
+                return 'moved task "'.$this->task->title.'" from "'.($fromTitle ?? 'Unknown').'" to "'.($toTitle ?? 'Unknown').'"';
 
             case 'is_done':
                 if ($this->newValue === true || $this->newValue === '1' || $this->newValue === 1 || $this->newValue === 'true') {
-                    return 'marked "' . $this->task->title . '" as done';
+                    return 'marked "'.$this->task->title.'" as done';
                 }
                 if ($this->oldValue === true || $this->oldValue === '1' || $this->oldValue === 1 || $this->oldValue === 'true') {
-                    return 'marked "' . $this->task->title . '" as not done';
+                    return 'marked "'.$this->task->title.'" as not done';
                 }
-                return 'updated the completion status of task "' . $this->task->title . '"';
+
+                return 'updated the completion status of task "'.$this->task->title.'"';
 
             default:
-                return 'updated task "' . $this->task->title . '"';
+                return 'updated task "'.$this->task->title.'"';
         }
     }
 
@@ -169,14 +172,14 @@ class TaskUpdatedNotification extends Notification implements ShouldQueue
 
         $url = route('projects.board.with.task', [$this->task->project_id, $this->task->id]);
         $changeMessage = $this->generateMessage();
-        
+
         $message = "📝 *Task Updated*\n";
         $message .= "*Task:* <{$url}|{$this->task->title}>\n";
         $message .= "*Project:* {$this->task->project->title}\n";
         $message .= "*Workspace:* {$this->task->project->workspace->name}\n";
         $message .= "*Updated by:* {$this->updatingUser->first_name} {$this->updatingUser->last_name}\n";
         $message .= "*Change:* {$changeMessage}\n";
-        $message .= "_eDoc • " . now()->format('M d, Y g:i A') . "_";
+        $message .= '_eDoc • '.now()->format('M d, Y g:i A').'_';
 
         SlackAlert::message($message);
     }

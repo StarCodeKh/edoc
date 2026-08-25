@@ -6,6 +6,8 @@ use App\Install\Requirement;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\LicenseCore;
+use App\Support\EnvFile;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -13,8 +15,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
-use App\Support\EnvFile;
-use Exception;
 
 class ModernInstallerController extends Controller
 {
@@ -31,36 +31,36 @@ class ModernInstallerController extends Controller
     public function checkRequirements()
     {
         try {
-            $requirement = new Requirement();
+            $requirement = new Requirement;
 
             $requirements = [
                 'php' => version_compare(phpversion(), '8.2.0', '>='),
                 'extensions' => $requirement->extensions(),
-                'permissions' => $requirement->directories()
+                'permissions' => $requirement->directories(),
             ];
 
             $serverInfo = [
                 'software' => $_SERVER['SERVER_SOFTWARE'] ?? 'Unknown',
                 'memoryLimit' => ini_get('memory_limit'),
-                'maxExecutionTime' => ini_get('max_execution_time')
+                'maxExecutionTime' => ini_get('max_execution_time'),
             ];
 
             return response()->json([
                 'success' => true,
                 'phpVersion' => phpversion(),
                 'requirements' => $requirements,
-                'serverInfo' => $serverInfo
+                'serverInfo' => $serverInfo,
             ]);
         } catch (Exception $e) {
             \Log::error('Requirements check failed', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to check system requirements: ' . $e->getMessage(),
-                'error' => $e->getMessage()
+                'message' => 'Failed to check system requirements: '.$e->getMessage(),
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -71,13 +71,13 @@ class ModernInstallerController extends Controller
     public function verifyLicense(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'purchase_code' => 'required|string'
+            'purchase_code' => 'required|string',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Purchase code is required'
+                'message' => 'Purchase code is required',
             ], 400);
         }
 
@@ -94,13 +94,13 @@ class ModernInstallerController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => $result['message']
+                'message' => $result['message'],
             ]);
         }
 
         return response()->json([
             'success' => false,
-            'message' => $result['message']
+            'message' => $result['message'],
         ], 400);
     }
 
@@ -115,13 +115,13 @@ class ModernInstallerController extends Controller
             'port' => 'required_if:connection,mysql,pgsql|integer',
             'name' => 'required_if:connection,mysql,pgsql|string',
             'username' => 'required_if:connection,mysql,pgsql|string',
-            'password' => 'nullable|string'
+            'password' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Invalid database configuration'
+                'message' => 'Invalid database configuration',
             ], 400);
         }
 
@@ -134,13 +134,13 @@ class ModernInstallerController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Database connection successful'
+                'message' => 'Database connection successful',
             ]);
 
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Database connection failed: ' . $e->getMessage()
+                'message' => 'Database connection failed: '.$e->getMessage(),
             ], 400);
         }
     }
@@ -171,14 +171,14 @@ class ModernInstallerController extends Controller
             'pusher_app_id' => 'nullable|string',
             'pusher_app_key' => 'nullable|string',
             'pusher_app_secret' => 'nullable|string',
-            'pusher_app_cluster' => 'nullable|string'
+            'pusher_app_cluster' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid configuration data',
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 400);
         }
 
@@ -241,18 +241,18 @@ class ModernInstallerController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Environment configuration saved successfully'
+                'message' => 'Environment configuration saved successfully',
             ]);
 
         } catch (Exception $e) {
             Log::error('Environment save failed', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to save configuration: ' . $e->getMessage()
+                'message' => 'Failed to save configuration: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -266,14 +266,14 @@ class ModernInstallerController extends Controller
             'first_name' => 'required|string|max:100',
             'last_name' => 'required|string|max:100',
             'email' => 'required|email|max:100',
-            'password' => 'required|string|min:8'
+            'password' => 'required|string|min:8',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid admin data',
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 400);
         }
 
@@ -306,7 +306,7 @@ class ModernInstallerController extends Controller
             if (!$adminRole) {
                 $adminRole = Role::create([
                     'name' => 'Administrator',
-                    'slug' => 'admin'
+                    'slug' => 'admin',
                 ]);
             }
 
@@ -316,7 +316,7 @@ class ModernInstallerController extends Controller
                 'email' => $request->input('email'),
                 'password' => Hash::make($request->input('password')),
                 'role_id' => $adminRole->id,
-                'email_verified_at' => now()
+                'email_verified_at' => now(),
             ]);
 
             // Step 5: Mark as installed
@@ -327,7 +327,7 @@ class ModernInstallerController extends Controller
             $env->save();
 
             // Create installed file for backward compatibility
-            file_put_contents(storage_path('installed'), 'Installation completed on ' . now());
+            file_put_contents(storage_path('installed'), 'Installation completed on '.now());
 
             // Step 6: Clear cache
             Artisan::call('config:cache');
@@ -340,20 +340,20 @@ class ModernInstallerController extends Controller
                 'admin' => [
                     'id' => $admin->id,
                     'name' => $admin->name,
-                    'email' => $admin->email
-                ]
+                    'email' => $admin->email,
+                ],
             ]);
 
         } catch (Exception $e) {
             Log::error('Installation failed', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Installation failed: ' . $e->getMessage(),
-                'error' => $e->getMessage()
+                'message' => 'Installation failed: '.$e->getMessage(),
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -378,10 +378,9 @@ class ModernInstallerController extends Controller
                 'prefix' => '',
                 'strict' => false,
                 'engine' => null,
-            ]
+            ],
         ]);
 
         return $connectionName;
     }
 }
-

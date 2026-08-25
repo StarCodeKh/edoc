@@ -3,42 +3,53 @@
 
     <!-- Strict 2-color (green + gold) cool register — building photo background -->
     <div class="min-h-screen flex items-center justify-center p-4 sm:p-6 relative overflow-hidden">
-
         <!-- Background photo -->
-        <img
-            src="/images/hero-building.jpg"
-            alt=""
-            class="absolute inset-0 w-full h-full object-cover"
-        />
+        <img src="/images/hero-building.jpg" alt="" class="absolute inset-0 w-full h-full object-cover" />
 
         <!-- Brand tint overlay -->
-        <div class="absolute inset-0" style="background: linear-gradient(180deg, rgba(6,20,12,0.65) 0%, rgba(11,92,50,0.45) 45%, rgba(6,20,12,0.75) 100%);"></div>
+        <div
+            class="absolute inset-0"
+            style="
+                background: linear-gradient(
+                    180deg,
+                    rgba(6, 20, 12, 0.65) 0%,
+                    rgba(11, 92, 50, 0.45) 45%,
+                    rgba(6, 20, 12, 0.75) 100%
+                );
+            "
+        ></div>
 
         <!-- Faint dot texture -->
-        <div class="pointer-events-none absolute inset-0" style="background-image: radial-gradient(#D4AF37 0.6px, transparent 0.6px); background-size: 26px 26px; opacity: 0.12;"></div>
+        <div
+            class="pointer-events-none absolute inset-0"
+            style="
+                background-image: radial-gradient(#d4af37 0.6px, transparent 0.6px);
+                background-size: 26px 26px;
+                opacity: 0.12;
+            "
+        ></div>
 
         <div class="relative w-full max-w-xl">
-
             <!-- Emblem -->
             <div class="text-center mb-6">
                 <Link :href="route('dashboard')" class="inline-block group">
-                    <div class="mx-auto w-24 h-24 flex items-center justify-center rounded-full bg-white border-2 border-[#D4AF37] shadow-[0_8px_25px_-8px_rgba(0,0,0,0.5)] transition-transform duration-300 group-hover:scale-105">
+                    <div
+                        class="mx-auto w-24 h-24 flex items-center justify-center rounded-full bg-white border-2 border-[#D4AF37] shadow-[0_8px_25px_-8px_rgba(0,0,0,0.5)] transition-transform duration-300 group-hover:scale-105"
+                    >
                         <Logo class="w-12 h-12 fill-[#149954]" />
                     </div>
                 </Link>
                 <p class="mt-6 text-[11px] tracking-[0.3em] uppercase text-[#F1C74F] font-semibold">
                     E-Document System
                 </p>
-                <h1 class="mt-2 text-3xl font-bold text-white drop-shadow-md">
-                    ចុះឈ្មោះ
-                </h1>
-                <p class="mt-2 text-white/80 text-sm">
-                    បង្កើតគណនីថ្មីដើម្បីចាប់ផ្តើមប្រើប្រាស់ប្រព័ន្ធ
-                </p>
+                <h1 class="mt-2 text-3xl font-bold text-white drop-shadow-md">ចុះឈ្មោះ</h1>
+                <p class="mt-2 text-white/80 text-sm">បង្កើតគណនីថ្មីដើម្បីចាប់ផ្តើមប្រើប្រាស់ប្រព័ន្ធ</p>
             </div>
 
             <!-- Register Card — frosted glass -->
-            <div class="relative rounded-[10px] bg-white/10 border-1 border-white/10 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.55)]">
+            <div
+                class="relative rounded-[10px] bg-white/10 border-1 border-white/10 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.55)]"
+            >
                 <flash-messages />
                 <form class="px-8 sm:px-10 pt-8 pb-8" @submit.prevent="login">
                     <div class="flex flex-wrap">
@@ -128,7 +139,14 @@
                             type="submit"
                         >
                             <span class="w-full inline-flex items-center justify-center gap-2">
-                                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M12 4v16m8-8H4"
+                                    />
+                                </svg>
                                 ដាក់ស្នើ
                             </span>
                         </loading-button>
@@ -136,7 +154,10 @@
 
                     <div class="mt-6 text-center text-sm text-white/80">
                         មានគណនីរួចហើយ?
-                        <Link class="ml-1 font-semibold text-[#149954] hover:text-[#B8901E] transition-colors" :href="route('login')">
+                        <Link
+                            class="ml-1 font-semibold text-[#149954] hover:text-[#B8901E] transition-colors"
+                            :href="route('login')"
+                        >
                             ចូលប្រើប្រាស់
                         </Link>
                     </div>
@@ -152,14 +173,14 @@
 </template>
 
 <script>
-    import Logo from '@/Shared/Logo.vue'
-    import TextInput from '@/Shared/TextInput.vue'
-    import LoadingButton from '@/Shared/LoadingButton.vue'
-    import FlashMessages from '@/Shared/FlashMessages.vue'
-    import { Head, Link, useForm } from '@inertiajs/vue3'
-    import vueRecaptcha from "vue3-recaptcha2";
+import Logo from '@/Shared/Logo.vue';
+import TextInput from '@/Shared/TextInput.vue';
+import LoadingButton from '@/Shared/LoadingButton.vue';
+import FlashMessages from '@/Shared/FlashMessages.vue';
+import { Head, Link, useForm } from '@inertiajs/vue3';
+import vueRecaptcha from 'vue3-recaptcha2';
 
-    export default {
+export default {
     metaInfo: { title: 'ចុះឈ្មោះ - E-Document System' },
     components: {
         LoadingButton,
@@ -170,80 +191,82 @@
         FlashMessages,
         vueRecaptcha,
     },
-        props: {
-            is_demo: Number,
-            site_key: String,
-        },
+    props: {
+        is_demo: Number,
+        site_key: String,
+    },
     data() {
         return {
             disable_button: true,
-        form: useForm({
-            first_name: '',
-            last_name: '',
-            email: '',
-            phone: '',
-            address: '',
-            password: '',
-            confirm_password: '',
-        }),
-        }
+            form: useForm({
+                first_name: '',
+                last_name: '',
+                email: '',
+                phone: '',
+                address: '',
+                password: '',
+                confirm_password: '',
+            }),
+        };
     },
     methods: {
         recaptchaVerified(response) {
-            this.disable_button = false
-            console.log(response)
+            this.disable_button = false;
+            console.log(response);
         },
         recaptchaExpired() {
             this.$refs.vueRecaptcha.reset();
         },
-        recaptchaFailed() {
-        },
+        recaptchaFailed() {},
         recaptchaError(reason) {
-            console.log(reason)
+            console.log(reason);
         },
         login() {
-            if(this.form.password !== this.form.confirm_password){
-                alert('Your password is not matched correctly.')
-                return
+            if (this.form.password !== this.form.confirm_password) {
+                alert('Your password is not matched correctly.');
+                return;
             }
-            this.form.post(this.route('register.store'))
+            this.form.post(this.route('register.store'));
         },
-        autofillLogin(e, role){
-            e.preventDefault()
-            const roleEmails = { 'admin': 'john.due.helo@mail.com', 'manager': 'robert.slaughter@mail.com', 'customer' : 'mmarks@example.com'}
-            this.form.email = roleEmails[role]
-            this.form.password = 'secret'
+        autofillLogin(e, role) {
+            e.preventDefault();
+            const roleEmails = {
+                admin: 'john.due.helo@mail.com',
+                manager: 'robert.slaughter@mail.com',
+                customer: 'mmarks@example.com',
+            };
+            this.form.email = roleEmails[role];
+            this.form.password = 'secret';
             this.login();
-        }
-    }
-    }
+        },
+    },
+};
 </script>
 
 <style scoped>
+* {
+    font-family: 'Noto Sans Khmer', 'Kantumruy Pro', ui-sans-serif, sans-serif;
+}
 
-    * {
-        font-family: 'Noto Sans Khmer', 'Kantumruy Pro', ui-sans-serif, sans-serif;
-    }
+.login-input :deep(.form-input) {
+    @apply border-[#149954]/25 focus:border-[#149954] focus:ring-[#149954] rounded-2xl shadow-sm transition-all duration-200 py-3;
+    background-color: rgba(255, 255, 255, 0.451);
+}
 
-    .login-input :deep(.form-input) {
-        @apply border-[#149954]/25 focus:border-[#149954] focus:ring-[#149954] rounded-2xl shadow-sm transition-all duration-200 py-3;
-        background-color: rgba(255, 255, 255, 0.451);
-    }
+.login-input :deep(.form-input):focus {
+    box-shadow: 0 0 0 3px rgba(20, 153, 84, 0.12);
+}
 
-    .login-input :deep(.form-input):focus {
-        box-shadow: 0 0 0 3px rgba(20, 153, 84, 0.12);
-    }
+.login-input :deep(.form-label) {
+    @apply text-[#ffffff] font-semibold text-sm;
+}
 
-    .login-input :deep(.form-label) {
-        @apply text-[#ffffff] font-semibold text-sm;
-    }
+.loading-button:disabled {
+    @apply cursor-not-allowed;
+}
 
-    .loading-button:disabled {
-        @apply cursor-not-allowed;
-    }
-
-    input:focus,
-    button:focus {
-        outline: none;
-    }
+input:focus,
+button:focus {
+    outline: none;
+}
 </style>

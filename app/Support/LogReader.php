@@ -29,7 +29,7 @@ class LogReader
     {
         $dir = storage_path('logs');
 
-        if (! File::isDirectory($dir)) {
+        if (!File::isDirectory($dir)) {
             return collect();
         }
 
@@ -80,7 +80,7 @@ class LogReader
     {
         $path = storage_path('logs/'.$name);
 
-        if (! File::exists($path) || ! File::isReadable($path)) {
+        if (!File::exists($path) || !File::isReadable($path)) {
             return [];
         }
 
@@ -107,6 +107,7 @@ class LogReader
                     'message' => trim($m[4]),
                     'context' => [],
                 ];
+
                 continue;
             }
 

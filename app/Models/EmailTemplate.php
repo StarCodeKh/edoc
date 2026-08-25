@@ -21,11 +21,13 @@ class EmailTemplate extends Model
     public $timestamps = false;
 
     public const CHANNEL_EMAIL = 'email';
+
     public const CHANNEL_TELEGRAM = 'telegram';
 
     public const CHANNELS = [self::CHANNEL_EMAIL, self::CHANNEL_TELEGRAM];
 
-    public function scopeFilter($query, array $filters){
+    public function scopeFilter($query, array $filters)
+    {
         $query->when($filters['search'] ?? null, function ($query, $search) {
             $query->where(function ($query) use ($search) {
                 $query->where('name', 'like', '%'.$search.'%');

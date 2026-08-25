@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Listeners;
 
 use App\Events\NewMemberAddedToWorkspace;
@@ -29,7 +30,7 @@ class SendNewMemberNotification implements ShouldQueue
         // Send the notification directly to the new user
         $notification = new NewMemberAddedNotification($teamMember, $emailIsActive);
         $newUser->notify($notification);
-        
+
         // Send Slack notification
         $notification->sendSlackNotification();
         $notification->sendTelegramNotification();

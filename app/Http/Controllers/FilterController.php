@@ -6,11 +6,13 @@ use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\Request;
 
-class FilterController extends Controller {
+class FilterController extends Controller
+{
     //
-    public function customers(){
+    public function customers()
+    {
         $customerRole = Role::where('slug', 'customer')->first();
-        $customers = User::where('role_id', $customerRole ? $customerRole->id: 0)
+        $customers = User::where('role_id', $customerRole ? $customerRole->id : 0)
             ->filter(Request::only('search'))
             ->limit(6)
             ->get()
@@ -20,8 +22,8 @@ class FilterController extends Controller {
         return response()->json($customers);
     }
 
-
-    public function usersExceptCustomer(){
+    public function usersExceptCustomer()
+    {
         $customerRole = Role::where('slug', 'customer')->first();
         $customers = User::where('role_id', '!=', $customerRole ? $customerRole->id : 0)
             ->filter(Request::only('search'))
@@ -29,6 +31,7 @@ class FilterController extends Controller {
             ->get()
             ->map
             ->only('id', 'name');
+
         return response()->json($customers);
     }
 }

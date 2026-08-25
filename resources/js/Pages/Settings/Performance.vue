@@ -2,7 +2,6 @@
     <div class="h-full">
         <Head :title="$t('Performance')" />
         <div class="flex h-full flex-col overflow-hidden bg-gradient-to-br from-gray-50 to-white">
-
             <div class="flex-shrink-0 px-4 pt-4">
                 <div class="rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-teal-900 px-6 py-5 shadow-lg">
                     <div class="flex flex-wrap items-center justify-between gap-4">
@@ -13,13 +12,19 @@
                             <div>
                                 <h1 class="text-xl font-bold text-white">{{ $t('Performance') }}</h1>
                                 <p class="text-sm text-slate-300">
-                                    {{ $t('Requests slower than :ms ms, kept for :days days').replace(':ms', threshold).replace(':days', retention) }}
+                                    {{
+                                        $t('Requests slower than :ms ms, kept for :days days')
+                                            .replace(':ms', threshold)
+                                            .replace(':days', retention)
+                                    }}
                                 </p>
                             </div>
                         </div>
                         <div class="flex flex-wrap items-center gap-2">
                             <div class="perf-tile">
-                                <div class="perf-tile__value" :class="warnCount ? 'text-orange-400' : 'text-green-400'">{{ khNum(warnCount) }}</div>
+                                <div class="perf-tile__value" :class="warnCount ? 'text-orange-400' : 'text-green-400'">
+                                    {{ khNum(warnCount) }}
+                                </div>
                                 <div class="perf-tile__label">{{ $t('Warnings') }}</div>
                             </div>
                             <div class="perf-tile">
@@ -27,11 +32,21 @@
                                 <div class="perf-tile__label">{{ $t('Slow requests') }}</div>
                             </div>
                             <div class="perf-tile">
-                                <div class="perf-tile__value" :class="summary.avg_ms >= 800 ? 'text-orange-400' : 'text-white'">{{ ms(summary.avg_ms) }}</div>
+                                <div
+                                    class="perf-tile__value"
+                                    :class="summary.avg_ms >= 800 ? 'text-orange-400' : 'text-white'"
+                                >
+                                    {{ ms(summary.avg_ms) }}
+                                </div>
                                 <div class="perf-tile__label">{{ $t('Average') }}</div>
                             </div>
                             <div class="perf-tile">
-                                <div class="perf-tile__value" :class="summary.max_ms >= 2000 ? 'text-red-400' : 'text-white'">{{ ms(summary.max_ms) }}</div>
+                                <div
+                                    class="perf-tile__value"
+                                    :class="summary.max_ms >= 2000 ? 'text-red-400' : 'text-white'"
+                                >
+                                    {{ ms(summary.max_ms) }}
+                                </div>
                                 <div class="perf-tile__label">{{ $t('Worst') }}</div>
                             </div>
                         </div>
@@ -40,12 +55,16 @@
             </div>
 
             <div class="perf-scroll min-h-0 flex-1 overflow-y-auto px-4 pb-4">
-
                 <!-- Server health -->
                 <div class="mt-4 rounded-2xl border border-gray-200/70 bg-white p-4 shadow-sm">
                     <div class="perf-section">{{ $t('Server health') }}</div>
                     <div class="perf-checks">
-                        <div v-for="check in checks" :key="check.label" class="perf-check" :class="'is-' + check.status">
+                        <div
+                            v-for="check in checks"
+                            :key="check.label"
+                            class="perf-check"
+                            :class="'is-' + check.status"
+                        >
                             <span class="perf-check__dot"></span>
                             <div class="min-w-0 flex-1">
                                 <div class="perf-check__label">{{ $t(check.label) }}</div>
@@ -68,7 +87,9 @@
                                 class="perf-range"
                                 :class="{ 'is-active': form.days === option }"
                                 @click="form.days = option"
-                            >{{ $t(':days days').replace(':days', khNum(option)) }}</button>
+                            >
+                                {{ $t(':days days').replace(':days', khNum(option)) }}
+                            </button>
                         </div>
                     </div>
 
@@ -79,7 +100,11 @@
                                 <div class="perf-route__path">{{ row.path }}</div>
                             </div>
                             <div class="perf-route__bar">
-                                <div class="perf-route__fill" :class="barClass(row.avg_ms)" :style="{ width: barWidth(row.avg_ms) }"></div>
+                                <div
+                                    class="perf-route__fill"
+                                    :class="barClass(row.avg_ms)"
+                                    :style="{ width: barWidth(row.avg_ms) }"
+                                ></div>
                             </div>
                             <span class="perf-route__stat" :class="msClass(row.avg_ms)">{{ ms(row.avg_ms) }}</span>
                             <span class="perf-route__muted">{{ $t('max') }} {{ ms(row.max_ms) }}</span>
@@ -87,7 +112,9 @@
                             <span class="perf-route__hits">{{ khNum(row.hits) }}×</span>
                         </div>
                     </div>
-                    <p v-else class="px-4 py-10 text-center text-sm text-gray-400">{{ $t('Nothing has been slow enough to record.') }}</p>
+                    <p v-else class="px-4 py-10 text-center text-sm text-gray-400">
+                        {{ $t('Nothing has been slow enough to record.') }}
+                    </p>
                 </div>
 
                 <!-- Recent slow requests -->
@@ -97,7 +124,12 @@
                         <div class="flex flex-wrap items-end gap-2">
                             <div class="perf-search">
                                 <icon name="search" class="perf-search__icon" />
-                                <input v-model="form.search" type="text" class="perf-search__input" :placeholder="$t('Path…')" />
+                                <input
+                                    v-model="form.search"
+                                    type="text"
+                                    class="perf-search__input"
+                                    :placeholder="$t('Path…')"
+                                />
                             </div>
                             <filter-select
                                 v-model="form.route"
@@ -118,11 +150,14 @@
 
                     <div v-if="entries.data.length" class="mt-3 divide-y divide-gray-100">
                         <div v-for="entry in entries.data" :key="entry.id" class="perf-row">
-                            <span class="perf-row__ms" :class="msClass(entry.duration_ms)">{{ ms(entry.duration_ms) }}</span>
+                            <span class="perf-row__ms" :class="msClass(entry.duration_ms)">{{
+                                ms(entry.duration_ms)
+                            }}</span>
                             <span class="perf-row__method">{{ entry.method }}</span>
                             <span class="perf-row__path" :title="entry.path">{{ entry.path }}</span>
                             <span class="perf-row__meta" :title="$t('Database queries')">
-                                <icon name="table" class="h-3 w-3" />{{ khNum(entry.query_count) }} · {{ ms(entry.query_ms) }}
+                                <icon name="table" class="h-3 w-3" />{{ khNum(entry.query_count) }} ·
+                                {{ ms(entry.query_ms) }}
                             </span>
                             <span class="perf-row__meta">{{ khNum(Math.round(entry.memory_kb / 1024)) }} MB</span>
                             <span v-if="entry.user" class="perf-row__user">{{ entry.user }}</span>
@@ -141,15 +176,15 @@
 </template>
 
 <script>
-import Layout from '@/Shared/Layout.vue'
-import { Head } from '@inertiajs/vue3'
-import Icon from '@/Shared/Icon.vue'
-import Pagination from '@/Shared/Pagination.vue'
-import FilterSelect from '@/Shared/Components/FilterSelect.vue'
-import pickBy from 'lodash/pickBy'
-import throttle from 'lodash/throttle'
-import moment from 'moment'
-import khmerCalendarMixin from '@/Utils/khmerCalendarMixin'
+import Layout from '@/Shared/Layout.vue';
+import { Head } from '@inertiajs/vue3';
+import Icon from '@/Shared/Icon.vue';
+import Pagination from '@/Shared/Pagination.vue';
+import FilterSelect from '@/Shared/Components/FilterSelect.vue';
+import pickBy from 'lodash/pickBy';
+import throttle from 'lodash/throttle';
+import moment from 'moment';
+import khmerCalendarMixin from '@/Utils/khmerCalendarMixin';
 
 export default {
     metaInfo: { title: 'Performance' },
@@ -176,18 +211,18 @@ export default {
                 route: this.filters.route || null,
                 search: this.filters.search || null,
             },
-        }
+        };
     },
     computed: {
         warnCount() {
-            return this.checks.filter(c => c.status !== 'ok').length
+            return this.checks.filter((c) => c.status !== 'ok').length;
         },
         routeOptions() {
-            return this.routes.map(r => ({ value: r, label: r }))
+            return this.routes.map((r) => ({ value: r, label: r }));
         },
         /** The slowest page sets the scale for every bar. */
         peak() {
-            return this.slowest.reduce((max, r) => Math.max(max, r.avg_ms), 0) || 1
+            return this.slowest.reduce((max, r) => Math.max(max, r.avg_ms), 0) || 1;
         },
     },
     watch: {
@@ -197,60 +232,68 @@ export default {
                 this.$inertia.get(this.route('settings.performance'), pickBy(this.form), {
                     preserveState: true,
                     replace: true,
-                })
+                });
             }, 400),
         },
     },
     methods: {
         ms(value) {
-            const n = Number(value) || 0
-            return n >= 1000 ? `${this.khNum((n / 1000).toFixed(1))} s` : `${this.khNum(n)} ms`
+            const n = Number(value) || 0;
+            return n >= 1000 ? `${this.khNum((n / 1000).toFixed(1))} s` : `${this.khNum(n)} ms`;
         },
         msClass(value) {
-            if (value >= 2000) return 'is-bad'
-            if (value >= 1000) return 'is-warn'
-            return 'is-ok'
+            if (value >= 2000) return 'is-bad';
+            if (value >= 1000) return 'is-warn';
+            return 'is-ok';
         },
         barClass(value) {
-            return this.msClass(value)
+            return this.msClass(value);
         },
         barWidth(value) {
-            return `${Math.max(4, Math.round((value / this.peak) * 100))}%`
+            return `${Math.max(4, Math.round((value / this.peak) * 100))}%`;
         },
         confirmClear() {
-            if (!window.confirm(this.$t('Discard the recorded request history?'))) return
-            this.$inertia.post(this.route('settings.performance.clear'))
+            if (!window.confirm(this.$t('Discard the recorded request history?'))) return;
+            this.$inertia.post(this.route('settings.performance.clear'));
         },
     },
-}
+};
 </script>
 
 <style scoped>
 .perf-tile {
     padding: 8px 14px;
     border-radius: 12px;
-    background: rgba(255, 255, 255, .1);
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .2);
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
     text-align: center;
 }
-.perf-tile__value { font-size: 16px; font-weight: 700; line-height: 1.2; }
+.perf-tile__value {
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.2;
+}
 .perf-tile__label {
     font-size: 10px;
     font-weight: 500;
     text-transform: uppercase;
-    letter-spacing: .04em;
+    letter-spacing: 0.04em;
     color: #cbd5e1;
 }
 
 .perf-scroll {
     overscroll-behavior: contain;
     scrollbar-width: thin;
-    scrollbar-color: rgba(100, 116, 139, .35) transparent;
+    scrollbar-color: rgba(100, 116, 139, 0.35) transparent;
 }
-.perf-scroll::-webkit-scrollbar { width: 8px; }
-.perf-scroll::-webkit-scrollbar-track { background: transparent; }
+.perf-scroll::-webkit-scrollbar {
+    width: 8px;
+}
+.perf-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
 .perf-scroll::-webkit-scrollbar-thumb {
-    background: rgba(100, 116, 139, .28);
+    background: rgba(100, 116, 139, 0.28);
     border: 2px solid transparent;
     border-radius: 999px;
     background-clip: content-box;
@@ -260,7 +303,7 @@ export default {
     margin-bottom: 10px;
     font-size: 11px;
     font-weight: 800;
-    letter-spacing: .06em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     color: #6b7280;
 }
@@ -280,8 +323,14 @@ export default {
     border-radius: 12px;
     background: #fbfdff;
 }
-.perf-check.is-warn { border-color: #fed7aa; background: #fffbeb; }
-.perf-check.is-bad { border-color: #fecaca; background: #fef2f2; }
+.perf-check.is-warn {
+    border-color: #fed7aa;
+    background: #fffbeb;
+}
+.perf-check.is-bad {
+    border-color: #fecaca;
+    background: #fef2f2;
+}
 .perf-check__dot {
     width: 8px;
     height: 8px;
@@ -290,18 +339,33 @@ export default {
     border-radius: 999px;
     background: #22c55e;
 }
-.perf-check.is-warn .perf-check__dot { background: #f59e0b; }
-.perf-check.is-bad .perf-check__dot { background: #ef4444; }
+.perf-check.is-warn .perf-check__dot {
+    background: #f59e0b;
+}
+.perf-check.is-bad .perf-check__dot {
+    background: #ef4444;
+}
 .perf-check__label {
     font-size: 10.5px;
     font-weight: 800;
-    letter-spacing: .05em;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
     color: #94a3b8;
 }
-.perf-check__value { font-size: 13px; font-weight: 600; color: #1f2937; }
-.perf-check__hint { margin-top: 3px; font-size: 11px; line-height: 1.45; color: #b45309; }
-.perf-check.is-bad .perf-check__hint { color: #b91c1c; }
+.perf-check__value {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2937;
+}
+.perf-check__hint {
+    margin-top: 3px;
+    font-size: 11px;
+    line-height: 1.45;
+    color: #b45309;
+}
+.perf-check.is-bad .perf-check__hint {
+    color: #b91c1c;
+}
 
 /* ---- slowest pages ---- */
 .perf-range {
@@ -311,8 +375,13 @@ export default {
     font-weight: 700;
     color: #6b7280;
 }
-.perf-range:hover { background: #f1f5f9; }
-.perf-range.is-active { background: #6574cd; color: #fff; }
+.perf-range:hover {
+    background: #f1f5f9;
+}
+.perf-range.is-active {
+    background: #6574cd;
+    color: #fff;
+}
 
 .perf-route {
     display: flex;
@@ -344,21 +413,57 @@ export default {
     background: #f1f5f9;
     overflow: hidden;
 }
-.perf-route__fill { height: 100%; border-radius: 999px; }
-.perf-route__fill.is-ok { background: #22c55e; }
-.perf-route__fill.is-warn { background: #f59e0b; }
-.perf-route__fill.is-bad { background: #ef4444; }
+.perf-route__fill {
+    height: 100%;
+    border-radius: 999px;
+}
+.perf-route__fill.is-ok {
+    background: #22c55e;
+}
+.perf-route__fill.is-warn {
+    background: #f59e0b;
+}
+.perf-route__fill.is-bad {
+    background: #ef4444;
+}
 
-.perf-route__stat { width: 4.5rem; flex-shrink: 0; text-align: right; font-size: 12.5px; font-weight: 700; }
-.perf-route__muted { width: 5.5rem; flex-shrink: 0; text-align: right; font-size: 11px; color: #94a3b8; }
-.perf-route__hits { width: 3rem; flex-shrink: 0; text-align: right; font-size: 11px; font-weight: 600; color: #6b7280; }
+.perf-route__stat {
+    width: 4.5rem;
+    flex-shrink: 0;
+    text-align: right;
+    font-size: 12.5px;
+    font-weight: 700;
+}
+.perf-route__muted {
+    width: 5.5rem;
+    flex-shrink: 0;
+    text-align: right;
+    font-size: 11px;
+    color: #94a3b8;
+}
+.perf-route__hits {
+    width: 3rem;
+    flex-shrink: 0;
+    text-align: right;
+    font-size: 11px;
+    font-weight: 600;
+    color: #6b7280;
+}
 
-.is-ok { color: #15803d; }
-.is-warn { color: #b45309; }
-.is-bad { color: #b91c1c; }
+.is-ok {
+    color: #15803d;
+}
+.is-warn {
+    color: #b45309;
+}
+.is-bad {
+    color: #b91c1c;
+}
 
 /* ---- recent requests ---- */
-.perf-search { position: relative; }
+.perf-search {
+    position: relative;
+}
 .perf-search__icon {
     position: absolute;
     top: 50%;
@@ -380,7 +485,7 @@ export default {
 .perf-search__input:focus {
     outline: none;
     border-color: #818cf8;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, .12);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
 }
 .perf-select :deep(.filter-select__trigger) {
     height: 34px;
@@ -403,7 +508,10 @@ export default {
     color: #b91c1c;
     background: #fff;
 }
-.perf-danger:hover { background: #fef2f2; border-color: #fca5a5; }
+.perf-danger:hover {
+    background: #fef2f2;
+    border-color: #fca5a5;
+}
 
 .perf-row {
     display: flex;
@@ -411,8 +519,16 @@ export default {
     gap: 10px;
     padding: 8px 16px;
 }
-.perf-row:hover { background: rgba(238, 242, 255, .5); }
-.perf-row__ms { width: 4.5rem; flex-shrink: 0; text-align: right; font-size: 12.5px; font-weight: 700; }
+.perf-row:hover {
+    background: rgba(238, 242, 255, 0.5);
+}
+.perf-row__ms {
+    width: 4.5rem;
+    flex-shrink: 0;
+    text-align: right;
+    font-size: 12.5px;
+    font-weight: 700;
+}
 .perf-row__method {
     width: 3.2rem;
     flex-shrink: 0;
@@ -454,7 +570,13 @@ export default {
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-.perf-row__time { width: 6.5rem; flex-shrink: 0; text-align: right; font-size: 11px; color: #9ca3af; }
+.perf-row__time {
+    width: 6.5rem;
+    flex-shrink: 0;
+    text-align: right;
+    font-size: 11px;
+    color: #9ca3af;
+}
 
 /* ---------------------------------------------------------------------
    Narrow screens: the row is a desktop table line, so the path, the meta
@@ -467,8 +589,17 @@ export default {
         gap: 6px 8px;
         padding: 10px 12px;
     }
-    .perf-row__ms { order: 0; width: auto; text-align: left; }
-    .perf-row__method { order: 1; width: auto; padding-left: 8px; padding-right: 8px; }
+    .perf-row__ms {
+        order: 0;
+        width: auto;
+        text-align: left;
+    }
+    .perf-row__method {
+        order: 1;
+        width: auto;
+        padding-left: 8px;
+        padding-right: 8px;
+    }
     .perf-row__path {
         order: 2;
         flex: 1 1 100%;
@@ -479,7 +610,13 @@ export default {
         -webkit-box-orient: vertical;
     }
     .perf-row__meta,
-    .perf-row__user { order: 3; }
-    .perf-row__time { order: 4; margin-left: auto; text-align: right; }
+    .perf-row__user {
+        order: 3;
+    }
+    .perf-row__time {
+        order: 4;
+        margin-left: auto;
+        text-align: right;
+    }
 }
 </style>

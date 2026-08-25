@@ -3,58 +3,101 @@
         <Head :title="$t(title)" />
 
         <div class="flex flex-col flex-grow-1 flex-shrink-1 h-full">
-        <board-view-menu :project="project" @filter-toggle="open_filter = !open_filter" @fClear="reset()" :filters="filters" view="time_logs" />
-            <board-filter :project="project" @board-filter="open_filter = false" :filters="filters" v-if="open_filter" @do-filter="doFilter" options="user" />
+            <board-view-menu
+                :project="project"
+                @filter-toggle="open_filter = !open_filter"
+                @fClear="reset()"
+                :filters="filters"
+                view="time_logs"
+            />
+            <board-filter
+                :project="project"
+                @board-filter="open_filter = false"
+                :filters="filters"
+                v-if="open_filter"
+                @do-filter="doFilter"
+                options="user"
+            />
 
             <!-- Enhanced Time Logs Container -->
             <div class="flex-1 flex flex-col bg-gradient-to-br from-gray-50 to-white">
-                <div class="flex-1 flex flex-col m-4 bg-white rounded-2xl shadow-xl border border-gray-200/60 overflow-hidden">
-
+                <div
+                    class="flex-1 flex flex-col m-4 bg-white rounded-2xl shadow-xl border border-gray-200/60 overflow-hidden"
+                >
                     <!-- Enhanced Header -->
-                    <div class="time-logs-header border-b border-gray-200/60 bg-gradient-to-br from-white via-gray-50/50 to-white relative overflow-hidden">
+                    <div
+                        class="time-logs-header border-b border-gray-200/60 bg-gradient-to-br from-white via-gray-50/50 to-white relative overflow-hidden"
+                    >
                         <!-- Background Pattern -->
                         <div class="absolute inset-0 opacity-5">
-                            <div class="absolute inset-0" style="background-image: radial-gradient(circle at 1px 1px, rgba(99, 102, 241, 0.3) 1px, transparent 0); background-size: 20px 20px;"></div>
-                    </div>
+                            <div
+                                class="absolute inset-0"
+                                style="
+                                    background-image: radial-gradient(
+                                        circle at 1px 1px,
+                                        rgba(99, 102, 241, 0.3) 1px,
+                                        transparent 0
+                                    );
+                                    background-size: 20px 20px;
+                                "
+                            ></div>
+                        </div>
 
                         <div class="relative px-6 py-6">
                             <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                                 <!-- Title and Stats -->
                                 <div class="flex flex-col lg:flex-row lg:items-center gap-6">
                                     <div class="flex items-center space-x-4">
-                                        <div class="p-3 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-lg">
+                                        <div
+                                            class="p-3 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-lg"
+                                        >
                                             <icon name="clock" class="w-6 h-6 text-white" />
-                </div>
+                                        </div>
                                         <div>
                                             <h2 class="text-3xl font-bold text-gray-900 tracking-tight">Time Logs</h2>
-                                            <p class="text-sm text-gray-500 mt-1 font-medium">Track and manage time spent on tasks</p>
+                                            <p class="text-sm text-gray-500 mt-1 font-medium">
+                                                Track and manage time spent on tasks
+                                            </p>
                                         </div>
                                     </div>
 
                                     <!-- Stats Cards -->
                                     <div class="flex flex-col sm:flex-row gap-4">
                                         <!-- Total Duration Card -->
-                                        <div v-if="total_duration" class="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl p-4 text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
+                                        <div
+                                            v-if="total_duration"
+                                            class="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl p-4 text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+                                        >
                                             <div class="flex items-center">
                                                 <div class="p-2 bg-white/20 rounded-xl mr-3">
                                                     <icon name="clock" class="w-5 h-5" />
                                                 </div>
                                                 <div>
-                                                    <p class="text-xs opacity-90 font-medium uppercase tracking-wide">Total Duration</p>
-                                                    <p class="text-lg font-bold">{{ formatDuration(total_duration, 'minutes') }}</p>
+                                                    <p class="text-xs opacity-90 font-medium uppercase tracking-wide">
+                                                        Total Duration
+                                                    </p>
+                                                    <p class="text-lg font-bold">
+                                                        {{ formatDuration(total_duration, 'minutes') }}
+                                                    </p>
                                                 </div>
                                             </div>
                                         </div>
 
                                         <!-- Logs Count Card -->
-                                        <div class="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl p-4 text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
+                                        <div
+                                            class="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl p-4 text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+                                        >
                                             <div class="flex items-center">
                                                 <div class="p-2 bg-white/20 rounded-xl mr-3">
                                                     <icon name="list" class="w-5 h-5" />
                                                 </div>
                                                 <div>
-                                                    <p class="text-xs opacity-90 font-medium uppercase tracking-wide">Total Logs</p>
-                                                    <p class="text-lg font-bold">{{ time_logs.total || time_logs.data.length }}</p>
+                                                    <p class="text-xs opacity-90 font-medium uppercase tracking-wide">
+                                                        Total Logs
+                                                    </p>
+                                                    <p class="text-lg font-bold">
+                                                        {{ time_logs.total || time_logs.data.length }}
+                                                    </p>
                                                 </div>
                                             </div>
                                         </div>
@@ -84,7 +127,9 @@
                                         </button>
 
                                         <!-- Export Button -->
-                                        <button class="flex items-center px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
+                                        <button
+                                            class="flex items-center px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+                                        >
                                             <icon name="download" class="w-4 h-4 mr-2" />
                                             Export
                                         </button>
@@ -99,7 +144,9 @@
                         <!-- Responsive Table Container -->
                         <div class="h-full">
                             <!-- Enhanced Scroll Controls for Mobile/Tablet -->
-                            <div class="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-gray-50/80 to-gray-100/80 border-b border-gray-200/60 xl:hidden backdrop-blur-sm">
+                            <div
+                                class="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-gray-50/80 to-gray-100/80 border-b border-gray-200/60 xl:hidden backdrop-blur-sm"
+                            >
                                 <div class="flex items-center text-xs text-gray-600 font-medium">
                                     <div class="p-1.5 bg-indigo-100 rounded-lg mr-3">
                                         <icon name="info" class="w-3 h-3 text-indigo-600" />
@@ -146,13 +193,22 @@
                                 @scroll="handleScroll"
                             >
                                 <table class="min-w-full divide-y divide-gray-200/60 responsive-table">
-                                    <thead class="bg-gradient-to-r from-gray-50/80 to-gray-100/80 sticky top-0 backdrop-blur-sm">
+                                    <thead
+                                        class="bg-gradient-to-r from-gray-50/80 to-gray-100/80 sticky top-0 backdrop-blur-sm"
+                                    >
                                         <tr>
                                             <!-- Task Column -->
-                                            <th class="px-3 sm:px-4 lg:px-6 py-4 sm:py-5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider task-column">
+                                            <th
+                                                class="px-3 sm:px-4 lg:px-6 py-4 sm:py-5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider task-column"
+                                            >
                                                 <div class="flex items-center group">
-                                                    <div class="p-1.5 bg-indigo-100 rounded-lg mr-2 sm:mr-3 group-hover:bg-indigo-200 transition-colors">
-                                                        <icon name="task" class="w-3 h-3 sm:w-4 sm:h-4 text-indigo-600 flex-shrink-0" />
+                                                    <div
+                                                        class="p-1.5 bg-indigo-100 rounded-lg mr-2 sm:mr-3 group-hover:bg-indigo-200 transition-colors"
+                                                    >
+                                                        <icon
+                                                            name="task"
+                                                            class="w-3 h-3 sm:w-4 sm:h-4 text-indigo-600 flex-shrink-0"
+                                                        />
                                                     </div>
                                                     <span class="hidden sm:inline font-semibold">Task</span>
                                                     <span class="sm:hidden font-semibold">Task</span>
@@ -160,10 +216,17 @@
                                             </th>
 
                                             <!-- Member Column -->
-                                            <th class="px-3 sm:px-4 lg:px-6 py-4 sm:py-5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider member-column">
+                                            <th
+                                                class="px-3 sm:px-4 lg:px-6 py-4 sm:py-5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider member-column"
+                                            >
                                                 <div class="flex items-center group">
-                                                    <div class="p-1.5 bg-blue-100 rounded-lg mr-2 sm:mr-3 group-hover:bg-blue-200 transition-colors">
-                                                        <icon name="user" class="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 flex-shrink-0" />
+                                                    <div
+                                                        class="p-1.5 bg-blue-100 rounded-lg mr-2 sm:mr-3 group-hover:bg-blue-200 transition-colors"
+                                                    >
+                                                        <icon
+                                                            name="user"
+                                                            class="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 flex-shrink-0"
+                                                        />
                                                     </div>
                                                     <span class="hidden sm:inline font-semibold">Member</span>
                                                     <span class="sm:hidden font-semibold">User</span>
@@ -171,10 +234,17 @@
                                             </th>
 
                                             <!-- Started Column -->
-                                            <th class="px-3 sm:px-4 lg:px-6 py-4 sm:py-5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider started-column">
+                                            <th
+                                                class="px-3 sm:px-4 lg:px-6 py-4 sm:py-5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider started-column"
+                                            >
                                                 <div class="flex items-center group">
-                                                    <div class="p-1.5 bg-green-100 rounded-lg mr-2 sm:mr-3 group-hover:bg-green-200 transition-colors">
-                                                        <icon name="play" class="w-3 h-3 sm:w-4 sm:h-4 text-green-600 flex-shrink-0" />
+                                                    <div
+                                                        class="p-1.5 bg-green-100 rounded-lg mr-2 sm:mr-3 group-hover:bg-green-200 transition-colors"
+                                                    >
+                                                        <icon
+                                                            name="play"
+                                                            class="w-3 h-3 sm:w-4 sm:h-4 text-green-600 flex-shrink-0"
+                                                        />
                                                     </div>
                                                     <span class="hidden sm:inline font-semibold">Started</span>
                                                     <span class="sm:hidden font-semibold">Start</span>
@@ -182,10 +252,17 @@
                                             </th>
 
                                             <!-- Stopped Column -->
-                                            <th class="px-3 sm:px-4 lg:px-6 py-4 sm:py-5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider stopped-column">
+                                            <th
+                                                class="px-3 sm:px-4 lg:px-6 py-4 sm:py-5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider stopped-column"
+                                            >
                                                 <div class="flex items-center group">
-                                                    <div class="p-1.5 bg-red-100 rounded-lg mr-2 sm:mr-3 group-hover:bg-red-200 transition-colors">
-                                                        <icon name="stop" class="w-3 h-3 sm:w-4 sm:h-4 text-red-600 flex-shrink-0" />
+                                                    <div
+                                                        class="p-1.5 bg-red-100 rounded-lg mr-2 sm:mr-3 group-hover:bg-red-200 transition-colors"
+                                                    >
+                                                        <icon
+                                                            name="stop"
+                                                            class="w-3 h-3 sm:w-4 sm:h-4 text-red-600 flex-shrink-0"
+                                                        />
                                                     </div>
                                                     <span class="hidden sm:inline font-semibold">Stopped</span>
                                                     <span class="sm:hidden font-semibold">End</span>
@@ -193,10 +270,17 @@
                                             </th>
 
                                             <!-- Duration Column -->
-                                            <th class="px-3 sm:px-4 lg:px-6 py-4 sm:py-5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider duration-column">
+                                            <th
+                                                class="px-3 sm:px-4 lg:px-6 py-4 sm:py-5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider duration-column"
+                                            >
                                                 <div class="flex items-center group">
-                                                    <div class="p-1.5 bg-purple-100 rounded-lg mr-2 sm:mr-3 group-hover:bg-purple-200 transition-colors">
-                                                        <icon name="clock" class="w-3 h-3 sm:w-4 sm:h-4 text-purple-600 flex-shrink-0" />
+                                                    <div
+                                                        class="p-1.5 bg-purple-100 rounded-lg mr-2 sm:mr-3 group-hover:bg-purple-200 transition-colors"
+                                                    >
+                                                        <icon
+                                                            name="clock"
+                                                            class="w-3 h-3 sm:w-4 sm:h-4 text-purple-600 flex-shrink-0"
+                                                        />
                                                     </div>
                                                     <span class="hidden sm:inline font-semibold">Duration</span>
                                                     <span class="sm:hidden font-semibold">Time</span>
@@ -204,10 +288,17 @@
                                             </th>
 
                                             <!-- Memo Column -->
-                                            <th class="px-3 sm:px-4 lg:px-6 py-4 sm:py-5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider memo-column">
+                                            <th
+                                                class="px-3 sm:px-4 lg:px-6 py-4 sm:py-5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider memo-column"
+                                            >
                                                 <div class="flex items-center group">
-                                                    <div class="p-1.5 bg-yellow-100 rounded-lg mr-2 sm:mr-3 group-hover:bg-yellow-200 transition-colors">
-                                                        <icon name="note" class="w-3 h-3 sm:w-4 sm:h-4 text-yellow-600 flex-shrink-0" />
+                                                    <div
+                                                        class="p-1.5 bg-yellow-100 rounded-lg mr-2 sm:mr-3 group-hover:bg-yellow-200 transition-colors"
+                                                    >
+                                                        <icon
+                                                            name="note"
+                                                            class="w-3 h-3 sm:w-4 sm:h-4 text-yellow-600 flex-shrink-0"
+                                                        />
                                                     </div>
                                                     <span class="hidden sm:inline font-semibold">Memo</span>
                                                     <span class="sm:hidden font-semibold">Note</span>
@@ -225,12 +316,25 @@
                                             <td class="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 task-column">
                                                 <button
                                                     @click="openTask(log.task)"
-                                                    class="group flex items-center text-xs sm:text-sm font-medium text-gray-900 hover:text-indigo-600 transition-colors duration-150">
+                                                    class="group flex items-center text-xs sm:text-sm font-medium text-gray-900 hover:text-indigo-600 transition-colors duration-150"
+                                                >
                                                     <div class="flex-1 min-w-0">
-                                                        <p class="truncate max-w-[120px] sm:max-w-[200px] lg:max-w-none text-left">{{ log.task.title }}</p>
-                                                        <p v-if="log.task.description" class="text-xs text-gray-500 truncate mt-1 max-w-[120px] sm:max-w-[200px] lg:max-w-none hidden sm:block">{{ log.task.description }}</p>
+                                                        <p
+                                                            class="truncate max-w-[120px] sm:max-w-[200px] lg:max-w-none text-left"
+                                                        >
+                                                            {{ log.task.title }}
+                                                        </p>
+                                                        <p
+                                                            v-if="log.task.description"
+                                                            class="text-xs text-gray-500 truncate mt-1 max-w-[120px] sm:max-w-[200px] lg:max-w-none hidden sm:block"
+                                                        >
+                                                            {{ log.task.description }}
+                                                        </p>
                                                     </div>
-                                                    <icon name="external-link" class="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+                                                    <icon
+                                                        name="external-link"
+                                                        class="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                                                    />
                                                 </button>
                                             </td>
 
@@ -242,11 +346,19 @@
                                                             class="h-6 w-6 sm:h-8 sm:w-8 rounded-full border border-white shadow-sm"
                                                             :src="log.user.photo_path"
                                                             :alt="log.user.name"
-                                                        >
+                                                        />
                                                     </div>
                                                     <div class="ml-2 sm:ml-3 min-w-0">
-                                                        <p class="text-xs sm:text-sm font-medium text-gray-900 truncate max-w-[150px] sm:max-w-none">{{ log.user.name }}</p>
-                                                        <p class="text-xs text-gray-500 truncate max-w-[200px] sm:max-w-none hidden sm:block">{{ log.user.email }}</p>
+                                                        <p
+                                                            class="text-xs sm:text-sm font-medium text-gray-900 truncate max-w-[150px] sm:max-w-none"
+                                                        >
+                                                            {{ log.user.name }}
+                                                        </p>
+                                                        <p
+                                                            class="text-xs text-gray-500 truncate max-w-[200px] sm:max-w-none hidden sm:block"
+                                                        >
+                                                            {{ log.user.email }}
+                                                        </p>
                                                     </div>
                                                 </div>
                                             </td>
@@ -254,25 +366,39 @@
                                             <!-- Started Column -->
                                             <td class="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 started-column">
                                                 <div class="text-xs sm:text-sm text-gray-900">
-                                                    <div class="font-medium hidden sm:block">{{ moment(log.started_at).format('MMM D, YYYY') }}</div>
-                                                    <div class="font-medium sm:hidden">{{ moment(log.started_at).format('MMM D') }}</div>
-                                                    <div class="text-gray-500">{{ moment(log.started_at).format('h:mm a') }}</div>
+                                                    <div class="font-medium hidden sm:block">
+                                                        {{ moment(log.started_at).format('MMM D, YYYY') }}
+                                                    </div>
+                                                    <div class="font-medium sm:hidden">
+                                                        {{ moment(log.started_at).format('MMM D') }}
+                                                    </div>
+                                                    <div class="text-gray-500">
+                                                        {{ moment(log.started_at).format('h:mm a') }}
+                                                    </div>
                                                 </div>
                                             </td>
 
                                             <!-- Stopped Column -->
                                             <td class="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 stopped-column">
                                                 <div class="text-xs sm:text-sm text-gray-900">
-                                                    <div class="font-medium hidden sm:block">{{ moment(log.stopped_at).format('MMM D, YYYY') }}</div>
-                                                    <div class="font-medium sm:hidden">{{ moment(log.stopped_at).format('MMM D') }}</div>
-                                                    <div class="text-gray-500">{{ moment(log.stopped_at).format('h:mm a') }}</div>
+                                                    <div class="font-medium hidden sm:block">
+                                                        {{ moment(log.stopped_at).format('MMM D, YYYY') }}
+                                                    </div>
+                                                    <div class="font-medium sm:hidden">
+                                                        {{ moment(log.stopped_at).format('MMM D') }}
+                                                    </div>
+                                                    <div class="text-gray-500">
+                                                        {{ moment(log.stopped_at).format('h:mm a') }}
+                                                    </div>
                                                 </div>
                                             </td>
 
                                             <!-- Duration Column -->
                                             <td class="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 duration-column">
                                                 <div class="flex items-center">
-                                                    <div class="bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-800 px-3 py-1.5 rounded-full text-xs sm:text-sm font-bold shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105">
+                                                    <div
+                                                        class="bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-800 px-3 py-1.5 rounded-full text-xs sm:text-sm font-bold shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105"
+                                                    >
                                                         <div class="flex items-center">
                                                             <icon name="clock" class="w-3 h-3 mr-1" />
                                                             {{ formatDuration(log.duration, 'minutes') }}
@@ -283,30 +409,38 @@
 
                                             <!-- Memo Column -->
                                             <td class="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 memo-column">
-                                                <div class="text-xs sm:text-sm text-gray-900 max-w-[100px] sm:max-w-[150px] lg:max-w-xs">
+                                                <div
+                                                    class="text-xs sm:text-sm text-gray-900 max-w-[100px] sm:max-w-[150px] lg:max-w-xs"
+                                                >
                                                     <p v-if="log.title" class="truncate">{{ log.title }}</p>
                                                     <!-- Two v-else in a row is not a chain; the pair of
                                                          placeholders belongs inside one v-else. -->
                                                     <template v-else>
-                                                        <p class="text-gray-400 italic hidden sm:block">{{ $t('No memo') }}</p>
+                                                        <p class="text-gray-400 italic hidden sm:block">
+                                                            {{ $t('No memo') }}
+                                                        </p>
                                                         <p class="text-gray-400 italic sm:hidden">-</p>
                                                     </template>
-                                    </div>
-                                </td>
-                            </tr>
+                                                </div>
+                                            </td>
+                                        </tr>
 
                                         <!-- Empty State -->
-                            <tr v-if="time_logs.data.length === 0">
+                                        <tr v-if="time_logs.data.length === 0">
                                             <td colspan="6" class="px-6 py-12 text-center">
                                                 <div class="flex flex-col items-center">
                                                     <icon name="clock" class="w-12 h-12 text-gray-400 mb-4" />
-                                                    <h3 class="text-lg font-medium text-gray-900 mb-2">No time logs found</h3>
-                                                    <p class="text-gray-500">Start tracking time on your tasks to see logs here.</p>
+                                                    <h3 class="text-lg font-medium text-gray-900 mb-2">
+                                                        No time logs found
+                                                    </h3>
+                                                    <p class="text-gray-500">
+                                                        Start tracking time on your tasks to see logs here.
+                                                    </p>
                                                 </div>
                                             </td>
-                            </tr>
-                            </tbody>
-                        </table>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
 
@@ -321,15 +455,29 @@
                                     <!-- Task Header -->
                                     <div class="flex items-start justify-between mb-3">
                                         <Link
-                                            :href="this.route('projects.board.with.task', {projectUid: project.slug || project.id, taskUid: log.task.slug || log.task.id})"
+                                            :href="
+                                                this.route('projects.board.with.task', {
+                                                    projectUid: project.slug || project.id,
+                                                    taskUid: log.task.slug || log.task.id,
+                                                })
+                                            "
                                             class="flex-1 min-w-0 group"
                                         >
-                                            <h3 class="text-sm font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors truncate">
+                                            <h3
+                                                class="text-sm font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors truncate"
+                                            >
                                                 {{ log.task.title }}
                                             </h3>
-                                            <p v-if="log.task.description" class="text-xs text-gray-500 mt-1 line-clamp-2">{{ log.task.description }}</p>
+                                            <p
+                                                v-if="log.task.description"
+                                                class="text-xs text-gray-500 mt-1 line-clamp-2"
+                                            >
+                                                {{ log.task.description }}
+                                            </p>
                                         </Link>
-                                        <div class="bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-800 px-3 py-1.5 rounded-full text-xs font-bold shadow-sm ml-2 flex-shrink-0">
+                                        <div
+                                            class="bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-800 px-3 py-1.5 rounded-full text-xs font-bold shadow-sm ml-2 flex-shrink-0"
+                                        >
                                             <div class="flex items-center">
                                                 <icon name="clock" class="w-3 h-3 mr-1" />
                                                 {{ formatDuration(log.duration, 'seconds') }}
@@ -343,7 +491,7 @@
                                             class="h-6 w-6 rounded-full border border-white shadow-sm"
                                             :src="log.user.photo_path"
                                             :alt="log.user.name"
-                                        >
+                                        />
                                         <span class="ml-2 text-sm font-medium text-gray-900">{{ log.user.name }}</span>
                                     </div>
 
@@ -351,11 +499,15 @@
                                     <div class="grid grid-cols-2 gap-4 mb-3">
                                         <div>
                                             <p class="text-xs text-gray-500 uppercase tracking-wide">Started</p>
-                                            <p class="text-sm font-medium text-gray-900">{{ moment(log.started_at).format('MMM D, h:mm a') }}</p>
+                                            <p class="text-sm font-medium text-gray-900">
+                                                {{ moment(log.started_at).format('MMM D, h:mm a') }}
+                                            </p>
                                         </div>
                                         <div>
                                             <p class="text-xs text-gray-500 uppercase tracking-wide">Stopped</p>
-                                            <p class="text-sm font-medium text-gray-900">{{ moment(log.stopped_at).format('MMM D, h:mm a') }}</p>
+                                            <p class="text-sm font-medium text-gray-900">
+                                                {{ moment(log.stopped_at).format('MMM D, h:mm a') }}
+                                            </p>
                                         </div>
                                     </div>
 
@@ -376,10 +528,14 @@
                         </div>
 
                         <!-- Enhanced Pagination -->
-                        <div v-if="time_logs.data.length > 0" class="border-t border-gray-200/60 bg-gradient-to-r from-gray-50/80 to-gray-100/80 px-6 py-5 backdrop-blur-sm">
+                        <div
+                            v-if="time_logs.data.length > 0"
+                            class="border-t border-gray-200/60 bg-gradient-to-r from-gray-50/80 to-gray-100/80 px-6 py-5 backdrop-blur-sm"
+                        >
                             <div class="flex items-center justify-between">
                                 <div class="text-sm text-gray-600 font-medium">
-                                    Showing {{ time_logs.from || 0 }} to {{ time_logs.to || 0 }} of {{ time_logs.total || time_logs.data.length }} results
+                                    Showing {{ time_logs.from || 0 }} to {{ time_logs.to || 0 }} of
+                                    {{ time_logs.total || time_logs.data.length }} results
                                 </div>
                                 <pagination :links="time_logs.links" />
                             </div>
@@ -388,24 +544,29 @@
                 </div>
             </div>
         </div>
-        <task-details v-if="taskDetailsOpen" :id="selected_task?.id" view="timeline" :isPopup="true" @closeModal="closeDetails()" />
+        <task-details
+            v-if="taskDetailsOpen"
+            :id="selected_task?.id"
+            view="timeline"
+            :isPopup="true"
+            @closeModal="closeDetails()"
+        />
     </div>
 </template>
 
 <script>
-import {Head, Link} from '@inertiajs/vue3'
-import Layout from '@/Shared/Layout.vue'
-import Icon from '@/Shared/Icon.vue'
-import pickBy from 'lodash/pickBy'
-import Pagination from '@/Shared/Pagination.vue'
-import mapValues from 'lodash/mapValues'
-import throttle from 'lodash/throttle'
-import BoardViewMenu from '@/Shared/BoardViewMenu.vue'
-import moment from 'moment'
-import SearchInput from '@/Shared/SearchInput.vue'
-import BoardFilter from "@/Shared/BoardFilter.vue";
-import TaskDetails from '@/Shared/Modals/TaskDetails.vue'
-
+import { Head, Link } from '@inertiajs/vue3';
+import Layout from '@/Shared/Layout.vue';
+import Icon from '@/Shared/Icon.vue';
+import pickBy from 'lodash/pickBy';
+import Pagination from '@/Shared/Pagination.vue';
+import mapValues from 'lodash/mapValues';
+import throttle from 'lodash/throttle';
+import BoardViewMenu from '@/Shared/BoardViewMenu.vue';
+import moment from 'moment';
+import SearchInput from '@/Shared/SearchInput.vue';
+import BoardFilter from '@/Shared/BoardFilter.vue';
+import TaskDetails from '@/Shared/Modals/TaskDetails.vue';
 
 export default {
     components: {
@@ -437,25 +598,27 @@ export default {
                 search: this.filters.search,
                 user: this.filters.user,
                 due: this.filters.due,
-                label: this.filters.label
+                label: this.filters.label,
             },
             canScrollLeft: false,
             canScrollRight: true,
-        }
+        };
     },
     watch: {
         form: {
             deep: true,
-            handler: throttle(function() {
-                this.$inertia.get(this.route('projects.view.time_logs', this.project.slug || this.project.id), pickBy(this.form), { preserveState: true })
+            handler: throttle(function () {
+                this.$inertia.get(
+                    this.route('projects.view.time_logs', this.project.slug || this.project.id),
+                    pickBy(this.form),
+                    { preserveState: true }
+                );
             }, 150),
         },
     },
-    computed: {
-
-    },
+    computed: {},
     created() {
-        this.moment = moment
+        this.moment = moment;
     },
     mounted() {
         // Initialize scroll state
@@ -495,19 +658,19 @@ export default {
 
             return result;
         },
-        doFilter(form){
+        doFilter(form) {
             Object.assign(this.form, form);
         },
         openTask(task) {
-            this.selected_task = task
-            this.taskDetailsOpen = true
+            this.selected_task = task;
+            this.taskDetailsOpen = true;
         },
         closeDetails() {
-            this.selected_task = null
-            this.taskDetailsOpen = false
+            this.selected_task = null;
+            this.taskDetailsOpen = false;
         },
         reset() {
-            this.form = mapValues(this.form, () => null)
+            this.form = mapValues(this.form, () => null);
         },
         scrollTable(direction) {
             const container = this.$refs.tableContainer;
@@ -551,7 +714,7 @@ export default {
                 } else {
                     // On smaller screens, check actual scroll state
                     this.canScrollLeft = container.scrollLeft > 0;
-                    this.canScrollRight = container.scrollLeft < (container.scrollWidth - container.clientWidth);
+                    this.canScrollRight = container.scrollLeft < container.scrollWidth - container.clientWidth;
                 }
             }
         },
@@ -566,7 +729,7 @@ export default {
             }, 150);
         },
     },
-}
+};
 </script>
 
 <style scoped>
@@ -842,7 +1005,6 @@ export default {
         overflow: hidden;
         text-overflow: ellipsis;
     }
-
 }
 
 /* Better table layout */
@@ -851,7 +1013,8 @@ table {
 }
 
 /* Column width constraints */
-th, td {
+th,
+td {
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -920,9 +1083,10 @@ tbody tr {
 tbody tr:hover {
     background: linear-gradient(135deg, rgba(248, 250, 252, 0.8) 0%, rgba(241, 245, 249, 0.8) 100%);
     transform: translateY(-2px);
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    box-shadow:
+        0 10px 25px -5px rgba(0, 0, 0, 0.1),
+        0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
-
 
 /* Duration badge animation */
 .bg-indigo-100 {
@@ -985,7 +1149,8 @@ a:focus {
 
 /* Loading state animation */
 @keyframes pulse {
-    0%, 100% {
+    0%,
+    100% {
         opacity: 1;
     }
     50% {

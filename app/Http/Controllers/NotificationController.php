@@ -1,11 +1,11 @@
 <?php
+
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use Illuminate\Notifications\DatabaseNotification;
-use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
-use App\Policies\NotificationPolicy; // Import the policy
+
+// Import the policy
 
 class NotificationController extends Controller
 {
@@ -14,7 +14,7 @@ class NotificationController extends Controller
         return Inertia::render('Notifications/Index', [
             'notifications' => auth()->user()->notifications()
                 ->where('created_at', '>=', now()->subDays(30))
-                ->paginate(20)
+                ->paginate(20),
         ]);
     }
 
@@ -34,6 +34,7 @@ class NotificationController extends Controller
     public function markAllAsRead()
     {
         auth()->user()->unreadNotifications->markAsRead();
+
         return back()->with('success', 'All notifications marked as read.');
     }
 }

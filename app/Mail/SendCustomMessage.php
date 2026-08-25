@@ -3,7 +3,6 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
@@ -18,7 +17,8 @@ class SendCustomMessage extends Mailable
      *
      * @return void
      */
-    public function __construct($mailData) {
+    public function __construct($mailData)
+    {
         $this->mailData = $mailData;
     }
 
@@ -27,7 +27,8 @@ class SendCustomMessage extends Mailable
      *
      * @return $this
      */
-    public function build() {
+    public function build()
+    {
         return $this->html($this->mailData['html'])->subject($this->mailData['subject']);
     }
 }

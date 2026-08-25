@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\AuthorizesTasks;
 use App\Models\Assignee;
 use App\Models\UserGroup;
 use Illuminate\Http\Request;
@@ -9,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 
 class GroupAssignmentController extends Controller
 {
-    use \App\Http\Controllers\Concerns\AuthorizesTasks;
+    use AuthorizesTasks;
 
     public function store(Request $request)
     {

@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\AuthorizesTasks;
 use App\Http\Middleware\RedirectIfNotAdmin;
 use App\Models\Label;
-use App\Models\Project;
 use App\Models\TaskLabel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
@@ -12,29 +12,33 @@ use Inertia\Inertia;
 
 class LabelsController extends Controller
 {
-    use \App\Http\Controllers\Concerns\AuthorizesTasks;
+    use AuthorizesTasks;
 
-    public function __construct(){
-//        $this->middleware(RedirectIfNotAdmin::class);
+    public function __construct()
+    {
+        //        $this->middleware(RedirectIfNotAdmin::class);
     }
 
-    public function all(){
+    public function all()
+    {
         $labels = Label::limit(50)->get();
+
         return response()->json($labels);
     }
 
-    public function addLabelToTask(Request $request){
+    public function addLabelToTask(Request $request)
+    {
         $requestData = $request->all();
 
-        if (! empty($requestData['task_id'])) {
+        if (!empty($requestData['task_id'])) {
             $this->authorizeTask($requestData['task_id'], 'edit');
         }
 
         $taskLabel = TaskLabel::where($requestData)->first();
-        if(!empty($taskLabel)){
+        if (!empty($taskLabel)) {
             $taskLabel->delete();
-            $taskLabel = ['success' => true ];
-        }else{
+            $taskLabel = ['success' => true];
+        } else {
             $taskLabel = TaskLabel::create($requestData);
             $taskLabel->load('label');
         }
@@ -42,21 +46,24 @@ class LabelsController extends Controller
         return response()->json($taskLabel);
     }
 
-    public function saveLabel(Request $request){
+    public function saveLabel(Request $request)
+    {
         $requestData = $request->all();
-        if(isset($requestData['id']) && !empty($requestData['id'])){
+        if (isset($requestData['id']) && !empty($requestData['id'])) {
             $label = Label::whereId($requestData['id'])->first();
-            foreach ($requestData as $itemKey => $itemValue){
+            foreach ($requestData as $itemKey => $itemValue) {
                 $label->{$itemKey} = $itemValue;
             }
             $label->save();
-        }else{
+        } else {
             $label = Label::create($requestData);
         }
+
         return response()->json($label);
     }
 
-    public function index(){
+    public function index()
+    {
         return Inertia::render('Labels/Index', [
             'title' => 'Labels',
             'filters' => Request::all(['search']),
@@ -70,13 +77,13 @@ class LabelsController extends Controller
                         'name' => $priority->name,
                         'color' => $priority->color,
                     ];
-                } ),
+                }),
         ]);
     }
 
     public function create()
     {
-        return Inertia::render('Labels/Create',[
+        return Inertia::render('Labels/Create', [
             'title' => 'Create a new label',
         ]);
     }
@@ -88,7 +95,7 @@ class LabelsController extends Controller
             'color' => ['max:20'],
         ]);
 
-        Label::create([ 'name' => $request_data['name'], 'color' => $request_data['color'] ]);
+        Label::create(['name' => $request_data['name'], 'color' => $request_data['color']]);
 
         return Redirect::route('labels')->with('success', 'Label created.');
     }
@@ -117,22 +124,28 @@ class LabelsController extends Controller
         return Redirect::back()->with('success', 'Label updated.');
     }
 
-    public function destroy(Label $label){
+    public function destroy(Label $label)
+    {
         $label->delete();
+
         return Redirect::route('labels')->with('success', 'Label deleted.');
     }
 
-    public function restore(Label $label){
+    public function restore(Label $label)
+    {
         $label->restore();
+
         return Redirect::back()->with('success', 'Label restored.');
     }
 
-    public function deleteLabel($id){
+    public function deleteLabel($id)
+    {
         $label = Label::whereId($id)->first();
-        if(!empty($label)){
+        if (!empty($label)) {
             TaskLabel::where('label_id', $id)->delete();
             $label->delete();
         }
+
         return response()->json(['success' => true]);
     }
 }

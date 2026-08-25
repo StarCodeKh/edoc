@@ -2,20 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Middleware\RedirectIfNotAdmin;
 use App\Http\Middleware\RedirectIfNotParmitted;
 use App\Models\EmailTemplate;
-use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Request;
 use Inertia\Inertia;
 
-class EmailTemplatesController extends Controller {
-
-    public function __construct(){
-//        $this->middleware(RedirectIfNotParmitted::class.':email_template');
+class EmailTemplatesController extends Controller
+{
+    public function __construct()
+    {
+        //        $this->middleware(RedirectIfNotParmitted::class.':email_template');
     }
 
-    public function index(){
+    public function index()
+    {
         return Inertia::render('EmailTemplates/Index', [
             'title' => 'Notification Templates',
             'filters' => Request::all('search', 'channel'),
@@ -35,7 +36,7 @@ class EmailTemplatesController extends Controller {
                         'channel' => $template->channel ?: EmailTemplate::CHANNEL_EMAIL,
                         'html' => $template->html,
                     ];
-                } ),
+                }),
         ]);
     }
 
@@ -55,7 +56,8 @@ class EmailTemplatesController extends Controller {
         ];
     }
 
-    public function edit(EmailTemplate $emailTemplate){
+    public function edit(EmailTemplate $emailTemplate)
+    {
         return Inertia::render('EmailTemplates/Edit', [
             'title' => $emailTemplate->name,
             'template' => [
@@ -70,7 +72,8 @@ class EmailTemplatesController extends Controller {
         ]);
     }
 
-    public function update(EmailTemplate $emailTemplate) {
+    public function update(EmailTemplate $emailTemplate)
+    {
         if (config('app.demo')) {
             return Redirect::back()->with('error', 'Updating template are not allowed for the live demo.');
         }

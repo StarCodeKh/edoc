@@ -11,8 +11,11 @@ class CreateBackupTable extends Migration
      *
      * @return void
      */
-    public function up() {
-        if (Schema::hasTable('backup')) { return; }
+    public function up()
+    {
+        if (Schema::hasTable('backup')) {
+            return;
+        }
         Schema::create('backup', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name', '100');

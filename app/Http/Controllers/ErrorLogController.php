@@ -72,7 +72,7 @@ class ErrorLogController extends Controller
         $known = LogReader::files()->pluck('name');
 
         // Never write to a path the caller made up.
-        if (! $name || ! $known->contains($name)) {
+        if (!$name || !$known->contains($name)) {
             abort(422, 'Unknown log file.');
         }
 

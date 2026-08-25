@@ -6,21 +6,21 @@ import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 import { i18nVue } from 'laravel-vue-i18n';
-import VueApexCharts from "vue3-apexcharts"
+import VueApexCharts from 'vue3-apexcharts';
 
 const appName = import.meta.env.VITE_APP_NAME || 'eDoc';
 
 const clickOutside = {
     beforeMount: (el, binding) => {
-        el.clickOutsideEvent = event => {
+        el.clickOutsideEvent = (event) => {
             if (!(el == event.target || el.contains(event.target))) {
                 binding.value();
             }
         };
-        document.addEventListener("click", el.clickOutsideEvent);
+        document.addEventListener('click', el.clickOutsideEvent);
     },
-    unmounted: el => {
-        document.removeEventListener("click", el.clickOutsideEvent);
+    unmounted: (el) => {
+        document.removeEventListener('click', el.clickOutsideEvent);
     },
 };
 
@@ -34,13 +34,13 @@ createInertiaApp({
             .use(ZiggyVue)
             .use(i18nVue, {
                 lang: 'en',
-                resolve: async lang => {
+                resolve: async (lang) => {
                     const langs = import.meta.glob('../../lang/*.json');
                     return await langs[`../../lang/${lang}.json`]();
-                }
+                },
             })
             .use(VueApexCharts)
-            .directive("click-outside", clickOutside)
+            .directive('click-outside', clickOutside)
             .mount(el);
     },
     progress: {

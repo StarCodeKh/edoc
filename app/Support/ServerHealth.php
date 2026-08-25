@@ -78,7 +78,7 @@ class ServerHealth
         $free = @disk_free_space($path);
         $total = @disk_total_space($path);
 
-        if (! $free || ! $total) {
+        if (!$free || !$total) {
             return self::check('Disk', 'unavailable', 'warn', 'Could not read disk usage for the storage path.', 'runtime');
         }
 
@@ -129,7 +129,7 @@ class ServerHealth
     {
         $driver = config('queue.default');
 
-        if (! $driver) {
+        if (!$driver) {
             return self::check('Queue driver', null, 'warn', 'QUEUE_CONNECTION is not set.', 'config');
         }
 
@@ -143,7 +143,7 @@ class ServerHealth
     {
         $driver = config('cache.default');
 
-        if (! $driver) {
+        if (!$driver) {
             return self::check('Cache driver', null, 'warn', 'CACHE_DRIVER is not set; Laravel falls back to the file store.', 'config');
         }
 
@@ -159,8 +159,8 @@ class ServerHealth
         $production = app()->environment('production');
 
         return self::check('Config cache', $cached ? 'cached' : 'not cached',
-            ($production && ! $cached) ? 'warn' : 'ok',
-            ($production && ! $cached) ? 'Run php artisan config:cache in production.' : null,
+            ($production && !$cached) ? 'warn' : 'ok',
+            ($production && !$cached) ? 'Run php artisan config:cache in production.' : null,
             'config');
     }
 
@@ -193,7 +193,7 @@ class ServerHealth
 
     private static function averageResponse(): array
     {
-        if (! config('performance.enabled', true)) {
+        if (!config('performance.enabled', true)) {
             return self::check('Slow-request log', 'disabled', 'warn',
                 'Set PERFORMANCE_MONITORING=true to record slow requests.', 'requests');
         }
@@ -201,7 +201,7 @@ class ServerHealth
         $avg = (int) round(SlowRequest::since(7)->avg('duration_ms') ?? 0);
         $count = SlowRequest::since(7)->count();
 
-        if (! $count) {
+        if (!$count) {
             return self::check('Slow requests (7 days)', 'none recorded', 'ok',
                 'Nothing has crossed the '.config('performance.slow_request_ms').' ms threshold.', 'requests');
         }
@@ -233,9 +233,15 @@ class ServerHealth
 
     private static function human(int $bytes): string
     {
-        if ($bytes < 1024) return $bytes.' B';
-        if ($bytes < 1024 ** 2) return round($bytes / 1024).' KB';
-        if ($bytes < 1024 ** 3) return round($bytes / 1024 ** 2, 1).' MB';
+        if ($bytes < 1024) {
+            return $bytes.' B';
+        }
+        if ($bytes < 1024 ** 2) {
+            return round($bytes / 1024).' KB';
+        }
+        if ($bytes < 1024 ** 3) {
+            return round($bytes / 1024 ** 2, 1).' MB';
+        }
 
         return round($bytes / 1024 ** 3, 2).' GB';
     }

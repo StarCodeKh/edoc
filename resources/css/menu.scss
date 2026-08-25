@@ -33,7 +33,7 @@ body {
         gap: 7px;
 
         .time {
-            color: #8D8D8D;
+            color: #8d8d8d;
             font-size: 12px;
         }
     }
@@ -204,7 +204,7 @@ body {
 }
 
 .mobile-menu-selector {
-    fill: #8D8D8D;
+    fill: #8d8d8d;
 }
 
 /* Enhanced Main Menu Styling */
@@ -265,7 +265,7 @@ body {
 
         /* Scroll indicators */
         &::before {
-            content: '';
+            content: "";
             position: absolute;
             top: 0;
             left: 0;
@@ -279,7 +279,7 @@ body {
         }
 
         &::after {
-            content: '';
+            content: "";
             position: absolute;
             bottom: 0;
             left: 0;
@@ -313,16 +313,36 @@ body {
             margin-bottom: 0.5rem;
         }
 
-        &:nth-child(1) { animation-delay: 0.05s; }
-        &:nth-child(2) { animation-delay: 0.1s; }
-        &:nth-child(3) { animation-delay: 0.15s; }
-        &:nth-child(4) { animation-delay: 0.2s; }
-        &:nth-child(5) { animation-delay: 0.25s; }
-        &:nth-child(6) { animation-delay: 0.3s; }
-        &:nth-child(7) { animation-delay: 0.35s; }
-        &:nth-child(8) { animation-delay: 0.4s; }
-        &:nth-child(9) { animation-delay: 0.45s; }
-        &:nth-child(10) { animation-delay: 0.5s; }
+        &:nth-child(1) {
+            animation-delay: 0.05s;
+        }
+        &:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+        &:nth-child(3) {
+            animation-delay: 0.15s;
+        }
+        &:nth-child(4) {
+            animation-delay: 0.2s;
+        }
+        &:nth-child(5) {
+            animation-delay: 0.25s;
+        }
+        &:nth-child(6) {
+            animation-delay: 0.3s;
+        }
+        &:nth-child(7) {
+            animation-delay: 0.35s;
+        }
+        &:nth-child(8) {
+            animation-delay: 0.4s;
+        }
+        &:nth-child(9) {
+            animation-delay: 0.45s;
+        }
+        &:nth-child(10) {
+            animation-delay: 0.5s;
+        }
 
         &.active {
             background-color: rgba(238, 242, 255, 0.3);
@@ -366,7 +386,7 @@ body {
             transform: translateX(2px);
 
             &::before {
-                content: '';
+                content: "";
                 position: absolute;
                 left: 0;
                 top: 0;
@@ -872,7 +892,8 @@ body {
 }
 
 @keyframes pulse {
-    0%, 100% {
+    0%,
+    100% {
         opacity: 1;
     }
     50% {
@@ -924,7 +945,7 @@ body {
 
         &.have-sub-menu {
             &:after {
-                content: '';
+                content: "";
                 position: absolute;
                 width: 15px;
                 height: 15px;
@@ -1172,7 +1193,8 @@ nav {
             li {
                 @apply flex items-center;
 
-                button, a {
+                button,
+                a {
                     @apply w-full flex py-2 px-4 justify-start items-center;
                     color: #172b4d;
 
@@ -1180,7 +1202,8 @@ nav {
                         background-color: #091e420f;
                     }
 
-                    svg, .icon {
+                    svg,
+                    .icon {
                         width: 16px;
                         height: 16px;
                         margin-right: 10px;
@@ -1209,7 +1232,7 @@ nav {
                 border-radius: 3px;
                 padding: 6px 8px;
                 transition-duration: 85ms;
-                transition-property: background-color,border-color,box-shadow;
+                transition-property: background-color, border-color, box-shadow;
                 display: flex;
                 align-items: center;
 
@@ -1230,7 +1253,7 @@ nav {
         border-radius: 3px;
         padding: 6px 8px;
         transition-duration: 85ms;
-        transition-property: background-color,border-color,box-shadow;
+        transition-property: background-color, border-color, box-shadow;
         display: flex;
         align-items: center;
 

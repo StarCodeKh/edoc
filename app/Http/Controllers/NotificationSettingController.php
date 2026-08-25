@@ -1,7 +1,7 @@
 <?php
+
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\NotificationSetting;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -25,13 +25,13 @@ class NotificationSettingController extends Controller
      */
     public function update(Request $request, NotificationSetting $setting)
     {
-        $is_demo = (int)config('app.demo');
-        
+        $is_demo = (int) config('app.demo');
+
         // Prevent updates in demo mode
         if ($is_demo) {
             return back()->withErrors(['demo_mode' => 'Settings cannot be updated in demo mode.']);
         }
-        
+
         $validated = $request->validate([
             'is_active' => 'sometimes|boolean',
             'email_is_active' => 'sometimes|boolean',

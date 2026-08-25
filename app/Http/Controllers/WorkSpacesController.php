@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Events\NewMemberAddedToWorkspace;
-use App\Http\Middleware\RedirectIfNotAdmin;
 use App\Models\Assignee;
 use App\Models\Attachment;
 use App\Models\BoardList;
@@ -34,17 +33,18 @@ class WorkSpacesController extends Controller
         $project = RecentProject::where('user_id', $user_id)->with('project')->has('project.workspace')->whereHas('project', function ($q) use ($workspaceIds) {
             $q->whereIn('workspace_id', $workspaceIds);
         })->orderBy('opened', 'desc')->first();
-        if(!empty($project)){
-            return Redirect::route('projects.view.board', $project->project->slug?:$project->project->id);
+        if (!empty($project)) {
+            return Redirect::route('projects.view.board', $project->project->slug ?: $project->project->id);
         }
         $project = Project::whereIn('workspace_id', $workspaceIds)->orderBy('updated_at', 'desc')->first();
-        if(!empty($project)){
-            return Redirect::route('projects.view.board', $project->slug?:$project->id);
+        if (!empty($project)) {
+            return Redirect::route('projects.view.board', $project->slug ?: $project->id);
         }
         $assignee = Assignee::where('user_id', $user_id)->whereHas('task')->with('task')->first();
-        if(!empty($assignee)){
+        if (!empty($assignee)) {
             return Redirect::route('projects.view.board', ['uid' => $assignee->task->project_id, 'task' => $assignee->task->id]);
         }
+
         return Redirect::route('projects.view.na');
     }
 
@@ -54,7 +54,7 @@ class WorkSpacesController extends Controller
         $user = auth()->user();
         $workSpaces = Workspace::accessibleTo()->with('member')->withCount('projects')->orderBy('name')->get();
 
-        $workSpaces->each(function ($workspace) use ($user_id, $user) {
+        $workSpaces->each(function ($workspace) use ($user) {
             $projectIds = Project::where('workspace_id', $workspace->id)->pluck('id');
             $listIds = BoardList::whereIn('project_id', $projectIds)->isOpen()->pluck('id');
 
@@ -85,8 +85,8 @@ class WorkSpacesController extends Controller
         }
 
         $count = Task::whereHas('assignees', function ($q) use ($user) {
-                $q->where('user_id', $user->id);
-            })
+            $q->where('user_id', $user->id);
+        })
             ->whereHas('project', function ($q) use ($workspace) {
                 $q->where('workspace_id', $workspace->id);
             })
@@ -129,10 +129,11 @@ class WorkSpacesController extends Controller
         return response()->json($projects);
     }
 
-    public function viewMainDashboard($uid, Request $request){
+    public function viewMainDashboard($uid, Request $request)
+    {
         $requests = $request->all();
         $workspace = Workspace::where('id', $uid)->orWhere('slug', $uid)->whereHas('member')->with('member')->first();
-        if(empty($workspace)){
+        if (empty($workspace)) {
             return abort(404);
         }
 
@@ -181,7 +182,7 @@ class WorkSpacesController extends Controller
                     'order' => $task['list']['order'] ?? $orderCounter,
                     'project_id' => $task['list']['project_id'] ?? null,
                     'tasks' => [],
-                    'list_ids' => []
+                    'list_ids' => [],
                 ];
                 $list_index[$listTitle] = $orderCounter;
                 $orderCounter++;
@@ -195,7 +196,7 @@ class WorkSpacesController extends Controller
         }
 
         $board_lists = array_values($listsByTitle);
-        usort($board_lists, function($a, $b) {
+        usort($board_lists, function ($a, $b) {
             return ($a['order'] ?? 0) <=> ($b['order'] ?? 0);
         });
 
@@ -230,10 +231,11 @@ class WorkSpacesController extends Controller
             'statistics' => $statistics,
         ]);
     }
-    
+
     public function jsonMineAll()
     {
         $myWorkspaces = Workspace::where('user_id', auth()->id())->limit(50)->get()->toArray();
+
         return response()->json($myWorkspaces);
     }
 
@@ -245,8 +247,8 @@ class WorkSpacesController extends Controller
 
         $slug = $this->clean($workspace->name);
         $existingItem = Workspace::where('slug', $slug)->first();
-        if(!empty($existingItem)){
-            $slug = $slug . '-' . $workspace->id;
+        if (!empty($existingItem)) {
+            $slug = $slug.'-'.$workspace->id;
         }
         $workspace->slug = $slug;
         $workspace->save();
@@ -262,6 +264,7 @@ class WorkSpacesController extends Controller
         $project = Project::where('id', $requestData['project_id'])->first();
         $project->workspace_id = $requestData['workspace_id'];
         $project->save();
+
         return response()->json($project);
     }
 
@@ -275,20 +278,20 @@ class WorkSpacesController extends Controller
         ]);
 
         $workspace = Workspace::where('id', $id)->first();
-        if($request->file('logo') && !empty($workspace->logo) && File::exists(public_path($workspace->logo))){
+        if ($request->file('logo') && !empty($workspace->logo) && File::exists(public_path($workspace->logo))) {
             File::delete(public_path($workspace->logo));
         }
-        foreach ($requestData as $itemKey => $itemValue){
+        foreach ($requestData as $itemKey => $itemValue) {
             $workspace->{$itemKey} = $itemValue;
         }
-        if($request->file('logo')){
+        if ($request->file('logo')) {
             $workspace->logo = '/files/'.$request->file('logo')->store('users', ['disk' => 'file_uploads']);
         }
 
         $slug = $this->clean($workspace->name);
         $existingItem = Workspace::where('id', '!=', $workspace->id)->where('slug', $slug)->first();
-        if(!empty($existingItem)){
-            $slug = $slug . '-' . $workspace->id;
+        if (!empty($existingItem)) {
+            $slug = $slug.'-'.$workspace->id;
         }
         $workspace->slug = $slug;
 
@@ -301,10 +304,10 @@ class WorkSpacesController extends Controller
     {
         $requestData = $request->all();
         $teamMember = TeamMember::where(['workspace_id' => $requestData['workspace_id'], 'user_id' => $requestData['user_id']])->first();
-        if(!empty($teamMember)){
+        if (!empty($teamMember)) {
             $teamMember->delete();
-            $teamMember = ['success' => true ];
-        }else{
+            $teamMember = ['success' => true];
+        } else {
             $requestData['added_by'] = auth()->id();
             $teamMember = TeamMember::create($requestData);
             $teamMember->load('user');
@@ -318,24 +321,26 @@ class WorkSpacesController extends Controller
     public function workspaceView($uid)
     {
         $workspace = Workspace::whereId($uid)->orWhere('slug', $uid)->whereHas('member')->with('member')->first();
-        if(empty($workspace)){
+        if (empty($workspace)) {
             return abort(404);
         }
         $projects = Project::where('workspace_id', $workspace->id)->with('star')->with('background')->get();
+
         return Inertia::render('Workspaces/View', [
             'title' => 'Projects | '.$workspace->name,
             'workspace' => $workspace,
-            'projects' => $projects
+            'projects' => $projects,
         ]);
     }
 
     public function workspaceMembers($uid, Request $request)
     {
         $workspace = Workspace::whereId($uid)->orWhere('slug', $uid)->whereHas('member')->with('member')->first();
-        if($workspace->member->role != 'admin'){
-                return Redirect::route('workspace.view', $workspace->id);
+        if ($workspace->member->role != 'admin') {
+            return Redirect::route('workspace.view', $workspace->id);
         }
         $projects = Project::where('workspace_id', $workspace->id)->with('star')->with('background')->get();
+
         return Inertia::render('Workspaces/Members', [
             'title' => 'Members | '.$workspace->name,
             'workspace' => $workspace,
@@ -349,13 +354,13 @@ class WorkSpacesController extends Controller
                     return [
                         'id' => $member->id,
                         'name' => $member->user ? $member->user->first_name.' '.$member->user->last_name : '',
-                        'photo' => $member->user? $member->user->photo_path : '',
+                        'photo' => $member->user ? $member->user->photo_path : '',
                         'role' => $member->role,
                         'workspace_id' => $member->workspace_id,
                         'user_id' => $member->user_id,
                         'created_at' => $member->created_at,
                     ];
-                } ),
+                }),
         ]);
     }
 
@@ -363,16 +368,16 @@ class WorkSpacesController extends Controller
     {
         $user = auth()->user()->load('role');
         $requests = $request->all();
-        if(!empty($user->role)){
-            if($user->role->slug != 'admin' && empty($requests['user'])){
+        if (!empty($user->role)) {
+            if ($user->role->slug != 'admin' && empty($requests['user'])) {
                 return Redirect::route('workspace.view.my-tasks', ['uid' => $uid]);
             }
-        }else{
+        } else {
             return abort(404);
         }
 
         $workspace = Workspace::where('id', $uid)->orWhere('slug', $uid)->whereHas('member')->with('member')->first();
-        if(empty($workspace)){
+        if (empty($workspace)) {
             return abort(404);
         }
 
@@ -380,10 +385,10 @@ class WorkSpacesController extends Controller
         $list_index = [];
         $board_lists = BoardList::whereIn('project_id', $projectIds)->isOpen()->orderByOrder()->get()->toArray();
         $loopIndex = 0;
-        foreach ($board_lists as &$listItem){
+        foreach ($board_lists as &$listItem) {
             $list_index[$listItem['id']] = $loopIndex;
             $listItem['tasks'] = [];
-            $loopIndex+= 1;
+            $loopIndex += 1;
         }
 
         $tasks = Task::filter($requests)
@@ -405,8 +410,8 @@ class WorkSpacesController extends Controller
             ->get()
             ->toArray();
 
-        foreach ($tasks as $task){
-            if(isset($list_index[$task['list_id']])){
+        foreach ($tasks as $task) {
+            if (isset($list_index[$task['list_id']])) {
                 $board_lists[$list_index[$task['list_id']]]['tasks'][] = $task;
             }
         }
@@ -529,6 +534,7 @@ class WorkSpacesController extends Controller
             case 'custom':
                 $from = !empty($filters['from']) ? Carbon::parse($filters['from'])->startOfDay() : null;
                 $to = !empty($filters['to']) ? Carbon::parse($filters['to'])->endOfDay() : null;
+
                 return [$from, $to];
             default:
                 return [null, null];
@@ -549,15 +555,16 @@ class WorkSpacesController extends Controller
         $list_index = [];
         $board_lists = BoardList::orderByOrder()->get();
         $workspace = Workspace::where('id', $uid)->orWhere('slug', $uid)->whereHas('member')->with('member')->first();
-        if(empty($workspace)){
+        if (empty($workspace)) {
             return abort(404);
         }
         $loopIndex = 0;
-        foreach ($board_lists as &$listItem){
+        foreach ($board_lists as &$listItem) {
             $list_index[$listItem->id] = $loopIndex;
             $listItem['tasks'] = [];
-            $loopIndex+= 1;
+            $loopIndex += 1;
         }
+
         return Inertia::render('Workspaces/MyTasks', [
             'title' => 'My Tasks | '.$workspace->name,
             'board_lists' => $board_lists,
@@ -565,9 +572,9 @@ class WorkSpacesController extends Controller
             'list_index' => $list_index,
             'workspace' => $workspace,
             'tasks' => Task::filter($requests)
-            ->visibleTo()->whereHas('project', function ($q) use ($workspace) {
-                $q->where('workspace_id', $workspace->id);
-            })->with('list')->with('taskLabels.label')->with('project.background')->with('assignees')->with('timer')->isOpen()->orderByOrder()->get()
+                ->visibleTo()->whereHas('project', function ($q) use ($workspace) {
+                    $q->where('workspace_id', $workspace->id);
+                })->with('list')->with('taskLabels.label')->with('project.background')->with('assignees')->with('timer')->isOpen()->orderByOrder()->get(),
         ]);
     }
 
@@ -579,7 +586,7 @@ class WorkSpacesController extends Controller
         $requests['user'] = $user->id;
 
         $workspace = Workspace::where('id', $uid)->orWhere('slug', $uid)->whereHas('member')->with('member')->first();
-        if(empty($workspace)){
+        if (empty($workspace)) {
             return abort(404);
         }
 
@@ -587,10 +594,10 @@ class WorkSpacesController extends Controller
         $projectIds = Project::where('workspace_id', $workspace->id)->pluck('id');
         $board_lists = BoardList::whereIn('project_id', $projectIds)->isOpen()->orderByOrder()->get()->toArray();
         $loopIndex = 0;
-        foreach ($board_lists as &$listItem){
+        foreach ($board_lists as &$listItem) {
             $list_index[$listItem['id']] = $loopIndex;
             $listItem['tasks'] = [];
-            $loopIndex+= 1;
+            $loopIndex += 1;
         }
 
         $tasks = Task::filter($requests)
@@ -615,8 +622,8 @@ class WorkSpacesController extends Controller
             ->toArray();
 
         $assignedTasksCount = Task::whereHas('assignees', function ($q) use ($user) {
-                $q->where('user_id', $user->id);
-            })
+            $q->where('user_id', $user->id);
+        })
             ->whereHas('project', function ($q) use ($workspace) {
                 $q->where('workspace_id', $workspace->id);
             })
@@ -642,7 +649,7 @@ class WorkSpacesController extends Controller
                     'order' => $task['list']['order'] ?? $orderCounter,
                     'project_id' => $task['list']['project_id'] ?? null,
                     'tasks' => [],
-                    'list_ids' => []
+                    'list_ids' => [],
                 ];
                 $list_index[$listTitle] = $orderCounter;
                 $orderCounter++;
@@ -656,7 +663,7 @@ class WorkSpacesController extends Controller
         }
 
         $board_lists = array_values($listsByTitle);
-        usort($board_lists, function($a, $b) {
+        usort($board_lists, function ($a, $b) {
             return ($a['order'] ?? 0) <=> ($b['order'] ?? 0);
         });
 
@@ -681,8 +688,8 @@ class WorkSpacesController extends Controller
         }
 
         $query = Task::whereHas('project', function ($q) use ($workspace) {
-                $q->where('workspace_id', $workspace->id);
-            })
+            $q->where('workspace_id', $workspace->id);
+        })
             ->where('is_done', 0)
             ->isOpen();
 
@@ -701,7 +708,7 @@ class WorkSpacesController extends Controller
         $requests['user'] = $user->id;
 
         $workspace = Workspace::where('id', $uid)->orWhere('slug', $uid)->whereHas('member')->with('member')->first();
-        if(empty($workspace)){
+        if (empty($workspace)) {
             return abort(404);
         }
 
@@ -709,10 +716,10 @@ class WorkSpacesController extends Controller
         $projectIds = Project::where('workspace_id', $workspace->id)->pluck('id');
         $board_lists = BoardList::whereIn('project_id', $projectIds)->isOpen()->orderByOrder()->get()->toArray();
         $loopIndex = 0;
-        foreach ($board_lists as &$listItem){
+        foreach ($board_lists as &$listItem) {
             $list_index[$listItem['id']] = $loopIndex;
             $listItem['tasks'] = [];
-            $loopIndex+= 1;
+            $loopIndex += 1;
         }
 
         $tasks = Task::filter($requests)
@@ -731,8 +738,8 @@ class WorkSpacesController extends Controller
             ->get()
             ->toArray();
 
-        foreach ($tasks as $task){
-            if(isset($list_index[$task['list_id']])){
+        foreach ($tasks as $task) {
+            if (isset($list_index[$task['list_id']])) {
                 $board_lists[$list_index[$task['list_id']]]['tasks'][] = $task;
             }
         }
@@ -744,7 +751,7 @@ class WorkSpacesController extends Controller
             'list_index' => $list_index,
             'workspace' => $workspace,
             'filters' => $requests,
-            'tasks' => $tasks
+            'tasks' => $tasks,
         ]);
     }
 
@@ -756,7 +763,7 @@ class WorkSpacesController extends Controller
         $requests['user'] = $user->id;
 
         $workspace = Workspace::where('id', $uid)->orWhere('slug', $uid)->whereHas('member')->with('member')->first();
-        if(empty($workspace)){
+        if (empty($workspace)) {
             return abort(404);
         }
 
@@ -798,7 +805,7 @@ class WorkSpacesController extends Controller
             'title' => 'My Tasks - Timeline | '.$workspace->name,
             'workspace' => $workspace,
             'filters' => $requests,
-            'tasks' => $tasks
+            'tasks' => $tasks,
         ]);
     }
 
@@ -806,16 +813,16 @@ class WorkSpacesController extends Controller
     {
         $user = auth()->user()->load('role');
         $requests = $request->all();
-        if(!empty($user->role)){
-            if($user->role->slug != 'admin' && empty($requests['user'])){
+        if (!empty($user->role)) {
+            if ($user->role->slug != 'admin' && empty($requests['user'])) {
                 return Redirect::route('workspace.view.board', ['uid' => $uid, 'user' => $user->id]);
             }
-        }else{
+        } else {
             return abort(404);
         }
 
         $workspace = Workspace::where('id', $uid)->orWhere('slug', $uid)->whereHas('member')->with('member')->first();
-        if(empty($workspace)){
+        if (empty($workspace)) {
             return abort(404);
         }
 
@@ -859,7 +866,7 @@ class WorkSpacesController extends Controller
                     'order' => $task['list']['order'] ?? $orderCounter,
                     'project_id' => $task['list']['project_id'] ?? null,
                     'tasks' => [],
-                    'list_ids' => [] // Track all list IDs with this title
+                    'list_ids' => [], // Track all list IDs with this title
                 ];
                 $list_index[$listTitle] = $orderCounter;
                 $orderCounter++;
@@ -876,7 +883,7 @@ class WorkSpacesController extends Controller
 
         // Convert to array and sort by order
         $board_lists = array_values($listsByTitle);
-        usort($board_lists, function($a, $b) {
+        usort($board_lists, function ($a, $b) {
             return ($a['order'] ?? 0) <=> ($b['order'] ?? 0);
         });
 
@@ -895,16 +902,16 @@ class WorkSpacesController extends Controller
     {
         $user = auth()->user()->load('role');
         $requests = $request->all();
-        if(!empty($user->role)){
-            if($user->role->slug != 'admin' && empty($requests['user'])){
+        if (!empty($user->role)) {
+            if ($user->role->slug != 'admin' && empty($requests['user'])) {
                 return Redirect::route('workspace.view.calendar', ['uid' => $uid, 'user' => $user->id]);
             }
-        }else{
+        } else {
             return abort(404);
         }
 
         $workspace = Workspace::where('id', $uid)->orWhere('slug', $uid)->whereHas('member')->with('member')->first();
-        if(empty($workspace)){
+        if (empty($workspace)) {
             return abort(404);
         }
 
@@ -913,10 +920,10 @@ class WorkSpacesController extends Controller
         $projectIds = Project::where('workspace_id', $workspace->id)->pluck('id');
         $board_lists = BoardList::whereIn('project_id', $projectIds)->isOpen()->orderByOrder()->get()->toArray();
         $loopIndex = 0;
-        foreach ($board_lists as &$listItem){
+        foreach ($board_lists as &$listItem) {
             $list_index[$listItem['id']] = $loopIndex;
             $listItem['tasks'] = [];
-            $loopIndex+= 1;
+            $loopIndex += 1;
         }
 
         // Get all tasks from all projects in workspace
@@ -936,8 +943,8 @@ class WorkSpacesController extends Controller
             ->get()
             ->toArray();
 
-        foreach ($tasks as $task){
-            if(isset($list_index[$task['list_id']])){
+        foreach ($tasks as $task) {
+            if (isset($list_index[$task['list_id']])) {
                 $board_lists[$list_index[$task['list_id']]]['tasks'][] = $task;
             }
         }
@@ -949,7 +956,7 @@ class WorkSpacesController extends Controller
             'list_index' => $list_index,
             'workspace' => $workspace,
             'filters' => $requests,
-            'tasks' => $tasks
+            'tasks' => $tasks,
         ]);
     }
 
@@ -957,16 +964,16 @@ class WorkSpacesController extends Controller
     {
         $user = auth()->user()->load('role');
         $requests = $request->all();
-        if(!empty($user->role)){
-            if($user->role->slug != 'admin' && empty($requests['user'])){
+        if (!empty($user->role)) {
+            if ($user->role->slug != 'admin' && empty($requests['user'])) {
                 return Redirect::route('workspace.view.timeline', ['uid' => $uid, 'user' => $user->id]);
             }
-        }else{
+        } else {
             return abort(404);
         }
 
         $workspace = Workspace::where('id', $uid)->orWhere('slug', $uid)->whereHas('member')->with('member')->first();
-        if(empty($workspace)){
+        if (empty($workspace)) {
             return abort(404);
         }
 
@@ -1009,7 +1016,7 @@ class WorkSpacesController extends Controller
             'title' => 'Timeline | '.$workspace->name,
             'workspace' => $workspace,
             'filters' => $requests,
-            'tasks' => $tasks
+            'tasks' => $tasks,
         ]);
     }
 
@@ -1017,6 +1024,7 @@ class WorkSpacesController extends Controller
     {
         $workspaceUsers = TeamMember::where('workspace_id', $workspace_id)->groupBy('user_id')->pluck('user_id');
         $users = User::select('id', 'first_name', 'last_name', 'photo_path')->where('id', '!=', auth()->id())->get();
+
         return response()->json(['users' => $users, 'workspace_users' => $workspaceUsers]);
     }
 
@@ -1024,6 +1032,7 @@ class WorkSpacesController extends Controller
     {
         $string = str_replace(' ', '-', $string);
         $string = filter_var($string, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+
         return preg_replace('/-+/', '-', $string);
     }
 
@@ -1033,15 +1042,15 @@ class WorkSpacesController extends Controller
         $workspace->delete();
         TeamMember::where('workspace_id', $id)->delete();
         $projects = Project::where('workspace_id', $id)->get();
-        foreach ($projects as $project){
+        foreach ($projects as $project) {
             BoardList::where('project_id', $project->id)->delete();
             RecentProject::where('project_id', $project->id)->delete();
             StarredProject::where('project_id', $project->id)->delete();
             $tasks = Task::where('project_id', $project->id)->get();
-            foreach ($tasks as $task){
+            foreach ($tasks as $task) {
                 $attachments = Attachment::where('task_id', $task->id)->get();
-                foreach ($attachments as $attachment){
-                    if(!empty($attachment->path) && File::exists(public_path($attachment->path))){
+                foreach ($attachments as $attachment) {
+                    if (!empty($attachment->path) && File::exists(public_path($attachment->path))) {
                         File::delete(public_path($attachment->path));
                     }
                     $attachment->delete();
@@ -1055,6 +1064,7 @@ class WorkSpacesController extends Controller
             }
             $project->delete();
         }
+
         return Redirect::route('dashboard');
     }
 }

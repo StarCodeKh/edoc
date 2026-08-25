@@ -1,7 +1,7 @@
 <template>
     <div class="custom-date-picker" :class="{ 'is-open': isOpen }">
         <!-- Input Trigger -->
-        <div 
+        <div
             class="date-picker-trigger"
             @click="togglePicker"
             @keydown.enter="togglePicker"
@@ -16,8 +16,8 @@
                 <span class="trigger-text">
                     {{ displayValue || placeholder }}
                 </span>
-                <Icon 
-                    :name="isOpen ? 'chevron-up' : 'chevron-down'" 
+                <Icon
+                    :name="isOpen ? 'chevron-up' : 'chevron-down'"
                     class="w-4 h-4 text-gray-400 transition-transform duration-200"
                 />
             </div>
@@ -25,39 +25,25 @@
 
         <!-- Calendar Dropdown -->
         <Transition name="calendar-fade">
-            <div 
-                v-if="isOpen" 
+            <div
+                v-if="isOpen"
                 :class="['calendar-dropdown', { 'modal-positioning': isInModal }]"
                 :style="dropdownStyle"
                 @click.stop
             >
                 <!-- Header -->
                 <div class="calendar-header">
-                    <button 
-                        @click="previousMonth"
-                        class="nav-button"
-                        type="button"
-                        aria-label="Previous month"
-                    >
+                    <button @click="previousMonth" class="nav-button" type="button" aria-label="Previous month">
                         <Icon name="chevron-left" class="w-4 h-4" />
                     </button>
-                    
+
                     <div class="month-year-display">
-                        <button 
-                            @click="showYearPicker = !showYearPicker"
-                            class="month-year-button"
-                            type="button"
-                        >
+                        <button @click="showYearPicker = !showYearPicker" class="month-year-button" type="button">
                             {{ currentMonthYear }}
                         </button>
                     </div>
-                    
-                    <button 
-                        @click="nextMonth"
-                        class="nav-button"
-                        type="button"
-                        aria-label="Next month"
-                    >
+
+                    <button @click="nextMonth" class="nav-button" type="button" aria-label="Next month">
                         <Icon name="chevron-right" class="w-4 h-4" />
                     </button>
                 </div>
@@ -81,11 +67,7 @@
                 <div v-else class="calendar-grid">
                     <!-- Day Headers -->
                     <div class="day-headers">
-                        <div 
-                            v-for="day in dayHeaders" 
-                            :key="day" 
-                            class="day-header"
-                        >
+                        <div v-for="day in dayHeaders" :key="day" class="day-header">
                             {{ day }}
                         </div>
                     </div>
@@ -102,8 +84,8 @@
                                     'is-today': day.isToday,
                                     'is-selected': day.isSelected,
                                     'is-other-month': day.isOtherMonth,
-                                    'is-disabled': day.isDisabled
-                                }
+                                    'is-disabled': day.isDisabled,
+                                },
                             ]"
                             :disabled="day.isDisabled"
                             type="button"
@@ -115,20 +97,8 @@
 
                 <!-- Footer -->
                 <div class="calendar-footer">
-                    <button 
-                        @click="selectToday"
-                        class="today-button"
-                        type="button"
-                    >
-                        Today
-                    </button>
-                    <button 
-                        @click="clearDate"
-                        class="clear-button"
-                        type="button"
-                    >
-                        Clear
-                    </button>
+                    <button @click="selectToday" class="today-button" type="button">Today</button>
+                    <button @click="clearDate" class="clear-button" type="button">Clear</button>
                 </div>
             </div>
         </Transition>
@@ -136,43 +106,43 @@
 </template>
 
 <script>
-import Icon from '@/Shared/Icon.vue'
-import moment from 'moment'
+import Icon from '@/Shared/Icon.vue';
+import moment from 'moment';
 
 export default {
     name: 'DatePicker',
     components: {
-        Icon
+        Icon,
     },
     props: {
         modelValue: {
             type: [Date, String, null],
-            default: null
+            default: null,
         },
         placeholder: {
             type: String,
-            default: 'Select date'
+            default: 'Select date',
         },
         format: {
             type: String,
-            default: 'MMM D, YYYY'
+            default: 'MMM D, YYYY',
         },
         disabled: {
             type: Boolean,
-            default: false
+            default: false,
         },
         minDate: {
             type: [Date, String, null],
-            default: null
+            default: null,
         },
         maxDate: {
             type: [Date, String, null],
-            default: null
+            default: null,
         },
         disabledDates: {
             type: Array,
-            default: () => []
-        }
+            default: () => [],
+        },
     },
     emits: ['update:modelValue', 'change'],
     data() {
@@ -183,30 +153,30 @@ export default {
             selectedDate: null,
             // Real size of the rendered calendar, measured on open.
             dropdownWidth: 0,
-            dropdownHeight: 0
-        }
+            dropdownHeight: 0,
+        };
     },
     computed: {
         displayValue() {
-            if (!this.selectedDate) return ''
-            return moment(this.selectedDate).format(this.format)
+            if (!this.selectedDate) return '';
+            return moment(this.selectedDate).format(this.format);
         },
         currentMonthYear() {
-            return this.currentDate.format('MMMM YYYY')
+            return this.currentDate.format('MMMM YYYY');
         },
         currentYear() {
-            return this.currentDate.year()
+            return this.currentDate.year();
         },
         yearRange() {
-            const currentYear = this.currentDate.year()
-            const years = []
+            const currentYear = this.currentDate.year();
+            const years = [];
             for (let i = currentYear - 10; i <= currentYear + 10; i++) {
-                years.push(i)
+                years.push(i);
             }
-            return years
+            return years;
         },
         isInModal() {
-            return this.$el && this.$el.closest('.fixed.inset-0')
+            return this.$el && this.$el.closest('.fixed.inset-0');
         },
         /**
          * The calendar is positioned against the viewport whenever it is open,
@@ -215,30 +185,30 @@ export default {
          * the Saturday column and the Clear button were simply unreachable.
          */
         dropdownStyle() {
-            if (!this.isOpen) return {}
+            if (!this.isOpen) return {};
 
-            const rect = this.$el.getBoundingClientRect()
-            const gap = 4
-            const margin = 12
+            const rect = this.$el.getBoundingClientRect();
+            const gap = 4;
+            const margin = 12;
             // The calendar sizes itself; this is the width to keep on screen.
-            const width = Math.max(this.dropdownWidth || 0, 280)
-            const height = this.dropdownHeight || 400
+            const width = Math.max(this.dropdownWidth || 0, 280);
+            const height = this.dropdownHeight || 400;
 
-            const spaceBelow = window.innerHeight - rect.bottom
-            const spaceAbove = rect.top
+            const spaceBelow = window.innerHeight - rect.bottom;
+            const spaceAbove = rect.top;
 
-            let top = rect.bottom + gap
+            let top = rect.bottom + gap;
             if (spaceBelow < height + margin && spaceAbove > spaceBelow) {
-                top = Math.max(margin, rect.top - height - gap)
+                top = Math.max(margin, rect.top - height - gap);
             }
 
             // Prefer the trigger's left edge, but never past either side.
-            let left = rect.left
+            let left = rect.left;
             if (left + width > window.innerWidth - margin) {
-                left = window.innerWidth - width - margin
+                left = window.innerWidth - width - margin;
             }
             if (left < margin) {
-                left = margin
+                left = margin;
             }
 
             return {
@@ -249,28 +219,28 @@ export default {
                 // Width is left to the calendar itself - forcing the trigger's
                 // width squashed it whenever the trigger was narrow.
                 maxHeight: `${Math.max(240, window.innerHeight - top - margin)}px`,
-                zIndex: 10000
-            }
+                zIndex: 10000,
+            };
         },
         dayHeaders() {
-            return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+            return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         },
         calendarDays() {
-            const startOfMonth = this.currentDate.clone().startOf('month')
-            const endOfMonth = this.currentDate.clone().endOf('month')
-            const startOfCalendar = startOfMonth.clone().startOf('week')
-            const endOfCalendar = endOfMonth.clone().endOf('week')
-            
-            const days = []
-            const current = startOfCalendar.clone()
-            const today = moment()
-            
+            const startOfMonth = this.currentDate.clone().startOf('month');
+            const endOfMonth = this.currentDate.clone().endOf('month');
+            const startOfCalendar = startOfMonth.clone().startOf('week');
+            const endOfCalendar = endOfMonth.clone().endOf('week');
+
+            const days = [];
+            const current = startOfCalendar.clone();
+            const today = moment();
+
             while (current.isSameOrBefore(endOfCalendar)) {
-                const isToday = current.isSame(today, 'day')
-                const isSelected = this.selectedDate && current.isSame(this.selectedDate, 'day')
-                const isOtherMonth = !current.isSame(this.currentDate, 'month')
-                const isDisabled = this.isDateDisabled(current)
-                
+                const isToday = current.isSame(today, 'day');
+                const isSelected = this.selectedDate && current.isSame(this.selectedDate, 'day');
+                const isOtherMonth = !current.isSame(this.currentDate, 'month');
+                const isDisabled = this.isDateDisabled(current);
+
                 days.push({
                     date: current.date(),
                     month: current.month(),
@@ -279,131 +249,129 @@ export default {
                     isToday,
                     isSelected,
                     isOtherMonth,
-                    isDisabled
-                })
-                
-                current.add(1, 'day')
+                    isDisabled,
+                });
+
+                current.add(1, 'day');
             }
-            
-            return days
-        }
+
+            return days;
+        },
     },
     watch: {
         modelValue: {
             immediate: true,
             handler(newValue) {
                 if (newValue) {
-                    this.selectedDate = moment(newValue).toDate()
+                    this.selectedDate = moment(newValue).toDate();
                 } else {
-                    this.selectedDate = null
+                    this.selectedDate = null;
                 }
-            }
-        }
+            },
+        },
     },
     mounted() {
-        document.addEventListener('click', this.handleClickOutside)
-        document.addEventListener('keydown', this.handleKeydown)
-        window.addEventListener('resize', this.updatePosition)
-        window.addEventListener('scroll', this.updatePosition, true)
+        document.addEventListener('click', this.handleClickOutside);
+        document.addEventListener('keydown', this.handleKeydown);
+        window.addEventListener('resize', this.updatePosition);
+        window.addEventListener('scroll', this.updatePosition, true);
     },
     beforeUnmount() {
-        document.removeEventListener('click', this.handleClickOutside)
-        document.removeEventListener('keydown', this.handleKeydown)
-        window.removeEventListener('resize', this.updatePosition)
-        window.removeEventListener('scroll', this.updatePosition, true)
+        document.removeEventListener('click', this.handleClickOutside);
+        document.removeEventListener('keydown', this.handleKeydown);
+        window.removeEventListener('resize', this.updatePosition);
+        window.removeEventListener('scroll', this.updatePosition, true);
     },
     methods: {
         togglePicker() {
-            if (this.disabled) return
-            this.isOpen = !this.isOpen
-            this.showYearPicker = false
-            if (this.isOpen) this.measureDropdown()
+            if (this.disabled) return;
+            this.isOpen = !this.isOpen;
+            this.showYearPicker = false;
+            if (this.isOpen) this.measureDropdown();
         },
-        
+
         previousMonth() {
-            this.currentDate = this.currentDate.clone().subtract(1, 'month')
+            this.currentDate = this.currentDate.clone().subtract(1, 'month');
             this.$nextTick(() => {
                 // Force reactivity update
-            })
+            });
         },
-        
+
         nextMonth() {
-            this.currentDate = this.currentDate.clone().add(1, 'month')
+            this.currentDate = this.currentDate.clone().add(1, 'month');
             this.$nextTick(() => {
                 // Force reactivity update
-            })
+            });
         },
-        
+
         selectYear(year) {
-            this.currentDate = this.currentDate.clone().year(year)
-            this.showYearPicker = false
+            this.currentDate = this.currentDate.clone().year(year);
+            this.showYearPicker = false;
         },
-        
+
         selectDate(day) {
-            if (day.isDisabled) return
-            
-            this.selectedDate = day.moment.toDate()
-            this.$emit('update:modelValue', this.selectedDate)
-            this.$emit('change', this.selectedDate)
-            
+            if (day.isDisabled) return;
+
+            this.selectedDate = day.moment.toDate();
+            this.$emit('update:modelValue', this.selectedDate);
+            this.$emit('change', this.selectedDate);
+
             // Close picker after selection
-            this.isOpen = false
+            this.isOpen = false;
         },
-        
+
         selectToday() {
-            const today = moment().toDate()
-            this.selectedDate = today
-            this.currentDate = moment()
-            this.$emit('update:modelValue', today)
-            this.$emit('change', today)
-            this.isOpen = false
+            const today = moment().toDate();
+            this.selectedDate = today;
+            this.currentDate = moment();
+            this.$emit('update:modelValue', today);
+            this.$emit('change', today);
+            this.isOpen = false;
         },
-        
+
         clearDate() {
-            this.selectedDate = null
-            this.$emit('update:modelValue', null)
-            this.$emit('change', null)
-            this.isOpen = false
+            this.selectedDate = null;
+            this.$emit('update:modelValue', null);
+            this.$emit('change', null);
+            this.isOpen = false;
         },
-        
+
         isDateDisabled(date) {
-            if (this.minDate && date.isBefore(this.minDate, 'day')) return true
-            if (this.maxDate && date.isAfter(this.maxDate, 'day')) return true
-            
-            return this.disabledDates.some(disabledDate => 
-                date.isSame(moment(disabledDate), 'day')
-            )
+            if (this.minDate && date.isBefore(this.minDate, 'day')) return true;
+            if (this.maxDate && date.isAfter(this.maxDate, 'day')) return true;
+
+            return this.disabledDates.some((disabledDate) => date.isSame(moment(disabledDate), 'day'));
         },
-        
+
         handleClickOutside(event) {
             if (!this.$el.contains(event.target)) {
-                this.isOpen = false
-                this.showYearPicker = false
+                this.isOpen = false;
+                this.showYearPicker = false;
             }
         },
-        
+
         handleKeydown(event) {
-            if (!this.isOpen) return
-            
+            if (!this.isOpen) return;
+
             switch (event.key) {
                 case 'Escape':
-                    this.isOpen = false
-                    this.showYearPicker = false
-                    break
+                    this.isOpen = false;
+                    this.showYearPicker = false;
+                    break;
                 case 'ArrowLeft':
-                    event.preventDefault()
-                    this.previousMonth()
-                    break
+                    event.preventDefault();
+                    this.previousMonth();
+                    break;
                 case 'ArrowRight':
-                    event.preventDefault()
-                    this.nextMonth()
-                    break
+                    event.preventDefault();
+                    this.nextMonth();
+                    break;
             }
         },
-        
+
         updatePosition() {
             if (this.isOpen) {
-                this.$forceUpdate()
+                this.$forceUpdate();
             }
         },
 
@@ -411,15 +379,15 @@ export default {
          *  rather than the 280x400 estimate. */
         measureDropdown() {
             this.$nextTick(() => {
-                const panel = this.$el && this.$el.querySelector('.calendar-dropdown')
-                if (!panel) return
-                this.dropdownWidth = panel.offsetWidth
-                this.dropdownHeight = panel.offsetHeight
-                this.$forceUpdate()
-            })
-        }
-    }
-}
+                const panel = this.$el && this.$el.querySelector('.calendar-dropdown');
+                if (!panel) return;
+                this.dropdownWidth = panel.offsetWidth;
+                this.dropdownHeight = panel.offsetHeight;
+                this.$forceUpdate();
+            });
+        },
+    },
+};
 </script>
 
 <style scoped>
@@ -476,7 +444,9 @@ export default {
     background: white;
     border: 1px solid #e5e7eb;
     border-radius: 0.5rem;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    box-shadow:
+        0 10px 25px -5px rgba(0, 0, 0, 0.1),
+        0 10px 10px -5px rgba(0, 0, 0, 0.04);
     z-index: 9999;
     /* No margin: dropdownStyle already leaves the gap, and a margin here would
        push the panel the wrong way when it flips above the trigger. */
@@ -701,7 +671,7 @@ export default {
         width: 2.5rem;
         height: 2.5rem;
     }
-    
+
     .year-grid {
         grid-template-columns: repeat(3, 1fr);
     }

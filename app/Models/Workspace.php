@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class Workspace extends Model
 {
@@ -16,11 +17,13 @@ class Workspace extends Model
         'type_id' => 'integer',
     ];
 
-    public function projects() {
+    public function projects()
+    {
         return $this->hasMany(Project::class);
     }
 
-    public function member() {
+    public function member()
+    {
         return $this->hasOne(TeamMember::class, 'workspace_id')->where('user_id', auth()->id());
     }
 
@@ -29,8 +32,9 @@ class Workspace extends Model
      * so they are not held to workspace membership; everyone else sees the ones
      * they own or belong to.
      */
-    public function scopeAccessibleTo($query, $user = null) {
-        $user = $user ?: \Illuminate\Support\Facades\Auth::user();
+    public function scopeAccessibleTo($query, $user = null)
+    {
+        $user = $user ?: Auth::user();
 
         if ($user && $user->isAdmin()) {
             return $query;
@@ -41,19 +45,23 @@ class Workspace extends Model
         });
     }
 
-    public function teamMembers() {
+    public function teamMembers()
+    {
         return $this->hasMany(TeamMember::class);
     }
 
-    public function members() {
+    public function members()
+    {
         return $this->hasMany(TeamMember::class);
     }
 
-    public function type() {
+    public function type()
+    {
         return $this->belongsTo(WorkspaceType::class, 'type_id');
     }
 
-    public function scopeFilter($query, array $filters){
+    public function scopeFilter($query, array $filters)
+    {
         $query->when($filters['search'] ?? null, function ($query, $search) {
             $query->where(function ($query) use ($search) {
                 $query->where('name', 'like', '%'.$search.'%')
@@ -62,7 +70,8 @@ class Workspace extends Model
         });
     }
 
-    public function boards() {
+    public function boards()
+    {
         return $this->hasMany(WorkspaceBoard::class)->orderBy('order');
     }
 }

@@ -36,8 +36,8 @@
 </template>
 
 <script>
-import { v4 as uuid } from 'uuid'
-import FilterSelect from '@/Shared/Components/FilterSelect.vue'
+import { v4 as uuid } from 'uuid';
+import FilterSelect from '@/Shared/Components/FilterSelect.vue';
 
 /**
  * Callers still write `<select-input><option :value="x">…</option></select-input>`;
@@ -52,7 +52,7 @@ export default {
         id: {
             type: String,
             default() {
-                return `select-input-${uuid()}`
+                return `select-input-${uuid()}`;
             },
         },
         error: String,
@@ -64,7 +64,7 @@ export default {
             type: Boolean,
             default() {
                 return false;
-            }
+            },
         },
         modelValue: [String, Number, Boolean, null],
     },
@@ -72,19 +72,19 @@ export default {
     data() {
         return {
             selected: this.modelValue,
-        }
+        };
     },
     computed: {
         parsedOptions() {
-            return this.flattenOptions(this.$slots.default ? this.$slots.default() : [])
+            return this.flattenOptions(this.$slots.default ? this.$slots.default() : []);
         },
     },
     watch: {
         selected(selected) {
-            this.$emit('update:modelValue', selected)
+            this.$emit('update:modelValue', selected);
         },
         modelValue(value) {
-            this.selected = value
+            this.selected = value;
         },
     },
     methods: {
@@ -94,43 +94,47 @@ export default {
          */
         flattenOptions(nodes, acc = []) {
             for (const node of nodes) {
-                if (!node) continue
+                if (!node) continue;
 
                 // v-for normally yields a Fragment, but a slot can also hand back
                 // a plain nested array before normalisation.
                 if (Array.isArray(node)) {
-                    this.flattenOptions(node, acc)
-                    continue
+                    this.flattenOptions(node, acc);
+                    continue;
                 }
 
                 if (node.type === 'option') {
-                    const value = node.props ? node.props.value : undefined
+                    const value = node.props ? node.props.value : undefined;
                     acc.push({
                         value: value === undefined ? null : value,
                         label: this.nodeText(node.children),
-                    })
-                    continue
+                    });
+                    continue;
                 }
 
                 if (Array.isArray(node.children)) {
-                    this.flattenOptions(node.children, acc)
+                    this.flattenOptions(node.children, acc);
                 }
             }
-            return acc
+            return acc;
         },
         nodeText(children) {
-            if (children == null) return ''
-            if (typeof children === 'string') return children.trim()
-            if (Array.isArray(children)) return children.map((c) => this.nodeText(c && c.children !== undefined ? c.children : c)).join('').trim()
-            if (typeof children === 'object' && children.default) return this.nodeText(children.default())
-            return String(children).trim()
+            if (children == null) return '';
+            if (typeof children === 'string') return children.trim();
+            if (Array.isArray(children))
+                return children
+                    .map((c) => this.nodeText(c && c.children !== undefined ? c.children : c))
+                    .join('')
+                    .trim();
+            if (typeof children === 'object' && children.default) return this.nodeText(children.default());
+            return String(children).trim();
         },
         focus() {
-            if (this.$refs.input) this.$refs.input.focus()
+            if (this.$refs.input) this.$refs.input.focus();
         },
         select() {
-            if (this.$refs.input) this.$refs.input.select()
+            if (this.$refs.input) this.$refs.input.select();
         },
     },
-}
+};
 </script>

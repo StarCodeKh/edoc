@@ -18,7 +18,7 @@ class NoteSeeder extends Seeder
     {
         DB::table('notes')->truncate();
         $users = User::limit(4)->orderBy('id')->get();
-        Note::factory(45)->create()->each(function ($post) use ($users){
+        Note::factory(45)->create()->each(function ($post) use ($users) {
             $post->update(['user_id' => $users->random()->id]);
         });
     }

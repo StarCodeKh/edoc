@@ -35,6 +35,7 @@ class TelegramService
 
         if (blank($token) || blank($chatId)) {
             Log::debug('Telegram notification skipped: bot token or chat id is not configured.');
+
             return false;
         }
 
@@ -44,7 +45,7 @@ class TelegramService
         }
 
         if (mb_strlen($message) > self::MAX_LENGTH) {
-            $message = mb_substr($message, 0, self::MAX_LENGTH - 1) . '…';
+            $message = mb_substr($message, 0, self::MAX_LENGTH - 1).'…';
         }
 
         try {

@@ -1,12 +1,12 @@
 <template>
     <div class="animate-fade-in-up">
         <div class="text-center mb-8">
-            <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <div
+                class="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6"
+            >
                 <Rocket class="w-10 h-10 text-white" />
             </div>
-            <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-4">
-                System Requirements Check
-            </h2>
+            <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-4">System Requirements Check</h2>
             <p class="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
                 Before we begin, let's make sure your server meets all the requirements for running eDoc.
             </p>
@@ -20,9 +20,11 @@
                     <div class="flex items-center space-x-3">
                         <div
                             :class="[
-                'w-8 h-8 rounded-full flex items-center justify-center',
-                requirements.php ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30'
-              ]"
+                                'w-8 h-8 rounded-full flex items-center justify-center',
+                                requirements.php
+                                    ? 'bg-green-100 dark:bg-green-900/30'
+                                    : 'bg-red-100 dark:bg-red-900/30',
+                            ]"
                         >
                             <Check v-if="requirements.php" class="w-5 h-5 text-green-600 dark:text-green-400" />
                             <X v-else class="w-5 h-5 text-red-600 dark:text-red-400" />
@@ -36,11 +38,11 @@
                     </div>
                     <div
                         :class="[
-              'px-3 py-1 rounded-full text-sm font-medium',
-              requirements.php
-                ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-            ]"
+                            'px-3 py-1 rounded-full text-sm font-medium',
+                            requirements.php
+                                ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                                : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+                        ]"
                     >
                         {{ requirements.php ? 'Passed' : 'Failed' }}
                     </div>
@@ -61,12 +63,7 @@
                             <X v-else class="w-4 h-4 text-red-600 dark:text-red-400" />
                             <span class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ extension }}</span>
                         </div>
-                        <div
-                            :class="[
-                'w-2 h-2 rounded-full',
-                status ? 'bg-green-500' : 'bg-red-500'
-              ]"
-                        ></div>
+                        <div :class="['w-2 h-2 rounded-full', status ? 'bg-green-500' : 'bg-red-500']"></div>
                     </div>
                 </div>
             </div>
@@ -85,12 +82,7 @@
                             <X v-else class="w-4 h-4 text-red-600 dark:text-red-400" />
                             <span class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ directory }}</span>
                         </div>
-                        <div
-                            :class="[
-                'w-2 h-2 rounded-full',
-                status ? 'bg-green-500' : 'bg-red-500'
-              ]"
-                        ></div>
+                        <div :class="['w-2 h-2 rounded-full', status ? 'bg-green-500' : 'bg-red-500']"></div>
                     </div>
                 </div>
             </div>
@@ -102,7 +94,9 @@
                     <div class="space-y-2">
                         <div class="flex justify-between">
                             <span class="text-sm text-slate-600 dark:text-slate-400">Server Software:</span>
-                            <span class="text-sm font-medium text-slate-900 dark:text-white">{{ serverInfo.software }}</span>
+                            <span class="text-sm font-medium text-slate-900 dark:text-white">{{
+                                serverInfo.software
+                            }}</span>
                         </div>
                         <div class="flex justify-between">
                             <span class="text-sm text-slate-600 dark:text-slate-400">PHP Version:</span>
@@ -112,11 +106,15 @@
                     <div class="space-y-2">
                         <div class="flex justify-between">
                             <span class="text-sm text-slate-600 dark:text-slate-400">Memory Limit:</span>
-                            <span class="text-sm font-medium text-slate-900 dark:text-white">{{ serverInfo.memoryLimit }}</span>
+                            <span class="text-sm font-medium text-slate-900 dark:text-white">{{
+                                serverInfo.memoryLimit
+                            }}</span>
                         </div>
                         <div class="flex justify-between">
                             <span class="text-sm text-slate-600 dark:text-slate-400">Max Execution Time:</span>
-                            <span class="text-sm font-medium text-slate-900 dark:text-white">{{ serverInfo.maxExecutionTime }}s</span>
+                            <span class="text-sm font-medium text-slate-900 dark:text-white"
+                                >{{ serverInfo.maxExecutionTime }}s</span
+                            >
                         </div>
                     </div>
                 </div>
@@ -138,11 +136,11 @@
                 @click="$emit('next')"
                 :disabled="!allRequirementsMet"
                 :class="[
-          'px-8 py-3 rounded-lg font-semibold transition-all duration-200 transform',
-          allRequirementsMet
-            ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white hover:scale-105 shadow-lg hover:shadow-xl'
-            : 'bg-slate-300 dark:bg-slate-600 text-slate-500 dark:text-slate-400 cursor-not-allowed'
-        ]"
+                    'px-8 py-3 rounded-lg font-semibold transition-all duration-200 transform',
+                    allRequirementsMet
+                        ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white hover:scale-105 shadow-lg hover:shadow-xl'
+                        : 'bg-slate-300 dark:bg-slate-600 text-slate-500 dark:text-slate-400 cursor-not-allowed',
+                ]"
             >
                 Continue Installation
                 <ArrowRight class="w-4 h-4 ml-2 inline" />
@@ -152,9 +150,9 @@
 </template>
 
 <script>
-import { ref, reactive, computed, onMounted } from 'vue'
-import { Rocket, Check, X, ArrowRight } from 'lucide-vue-next'
-import { installerApiRequest, handleApiResponse } from '../../../Utils/InstallerApi.js'
+import { ref, reactive, computed, onMounted } from 'vue';
+import { Rocket, Check, X, ArrowRight } from 'lucide-vue-next';
+import { installerApiRequest, handleApiResponse } from '../../../Utils/InstallerApi.js';
 
 export default {
     name: 'InstallerWelcome',
@@ -162,95 +160,97 @@ export default {
         Rocket,
         Check,
         X,
-        ArrowRight
+        ArrowRight,
     },
     emits: ['next'],
     setup() {
         const requirements = reactive({
             php: false,
             extensions: {
-                'OpenSSL': false,
-                'PDO': false,
-                'Mbstring': false,
-                'Tokenizer': false,
-                'XML': false,
-                'Ctype': false,
-                'JSON': false,
-                'cURL': false,
-                'Intl': false
+                OpenSSL: false,
+                PDO: false,
+                Mbstring: false,
+                Tokenizer: false,
+                XML: false,
+                Ctype: false,
+                JSON: false,
+                cURL: false,
+                Intl: false,
             },
             permissions: {
                 'storage/': false,
                 'storage/framework/': false,
                 'storage/logs/': false,
                 'bootstrap/cache/': false,
-                'public/': false
-            }
-        })
+                'public/': false,
+            },
+        });
 
         const serverInfo = reactive({
             software: '',
             memoryLimit: '',
-            maxExecutionTime: ''
-        })
+            maxExecutionTime: '',
+        });
 
-        const phpVersion = ref('')
+        const phpVersion = ref('');
 
         const allRequirementsMet = computed(() => {
-            return requirements.php &&
-                Object.values(requirements.extensions).every(ext => ext) &&
-                Object.values(requirements.permissions).every(perm => perm)
-        })
+            return (
+                requirements.php &&
+                Object.values(requirements.extensions).every((ext) => ext) &&
+                Object.values(requirements.permissions).every((perm) => perm)
+            );
+        });
 
         const checkRequirements = async () => {
             try {
-                const response = await installerApiRequest('/install/check-requirements')
-                const data = await handleApiResponse(response)
+                const response = await installerApiRequest('/install/check-requirements');
+                const data = await handleApiResponse(response);
 
-                phpVersion.value = data.phpVersion
-                requirements.php = data.requirements.php
-                requirements.extensions = data.requirements.extensions
-                requirements.permissions = data.requirements.permissions
-                serverInfo.software = data.serverInfo.software
-                serverInfo.memoryLimit = data.serverInfo.memoryLimit
-                serverInfo.maxExecutionTime = data.serverInfo.maxExecutionTime
+                phpVersion.value = data.phpVersion;
+                requirements.php = data.requirements.php;
+                requirements.extensions = data.requirements.extensions;
+                requirements.permissions = data.requirements.permissions;
+                serverInfo.software = data.serverInfo.software;
+                serverInfo.memoryLimit = data.serverInfo.memoryLimit;
+                serverInfo.maxExecutionTime = data.serverInfo.maxExecutionTime;
             } catch (error) {
-                console.error('Error checking requirements:', error)
+                console.error('Error checking requirements:', error);
                 // Fallback to basic checks
-                checkBasicRequirements()
+                checkBasicRequirements();
             }
-        }
+        };
 
         const checkBasicRequirements = () => {
             // Basic client-side checks
-            phpVersion.value = '8.2.0' // This would come from server response
-            requirements.php = true
+            phpVersion.value = '8.2.0'; // This would come from server response
+            requirements.php = true;
 
             // Simulate extension checks (these would be server-side)
-            Object.keys(requirements.extensions).forEach(ext => {
-                requirements.extensions[ext] = true
-            })
+            Object.keys(requirements.extensions).forEach((ext) => {
+                requirements.extensions[ext] = true;
+            });
 
             // Simulate permission checks
-            Object.keys(requirements.permissions).forEach(perm => {
-                requirements.permissions[perm] = true
-            })
+            Object.keys(requirements.permissions).forEach((perm) => {
+                requirements.permissions[perm] = true;
+            });
 
-            serverInfo.software = 'Apache/Nginx'
-            serverInfo.memoryLimit = '256M'
-            serverInfo.maxExecutionTime = '300'
-        }
+            serverInfo.software = 'Apache/Nginx';
+            serverInfo.memoryLimit = '256M';
+            serverInfo.maxExecutionTime = '300';
+        };
 
         onMounted(() => {
-            checkRequirements()
-        })
+            checkRequirements();
+        });
 
         return {
             requirements,
             serverInfo,
             phpVersion,
-            allRequirementsMet
-        }
-    }
-}
+            allRequirementsMet,
+        };
+    },
+};
 </script>

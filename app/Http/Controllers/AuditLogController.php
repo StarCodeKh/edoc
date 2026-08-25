@@ -17,20 +17,20 @@ class AuditLogController extends Controller
 {
     /** field_changed values the app writes, for the action filter. */
     private const ACTIONS = [
-        'list_id'             => 'Moved between boards',
+        'list_id' => 'Moved between boards',
         'signature_requested' => 'Approval & signature requested',
-        'is_done'             => 'Completion changed',
-        'is_archive'          => 'Archive status changed',
-        'title'               => 'Title changed',
-        'description'         => 'Description updated',
-        'priority_id'         => 'Priority changed',
-        'due_date'            => 'Due date changed',
-        'order'               => 'Reordered',
-        'cover'               => 'Cover image changed',
-        'comment'             => 'Comment posted',
-        'comment_edit'        => 'Comment edited',
-        'comment_delete'      => 'Comment deleted',
-        'deleted_at'          => 'Deleted or restored',
+        'is_done' => 'Completion changed',
+        'is_archive' => 'Archive status changed',
+        'title' => 'Title changed',
+        'description' => 'Description updated',
+        'priority_id' => 'Priority changed',
+        'due_date' => 'Due date changed',
+        'order' => 'Reordered',
+        'cover' => 'Cover image changed',
+        'comment' => 'Comment posted',
+        'comment_edit' => 'Comment edited',
+        'comment_delete' => 'Comment deleted',
+        'deleted_at' => 'Deleted or restored',
     ];
 
     /** One entry, in full — the list stays terse, this fills in the rest. */
@@ -88,12 +88,12 @@ class AuditLogController extends Controller
                     $q->whereHas('task', fn ($t) => $t
                         ->where('title', 'like', "%{$search}%")
                         ->orWhere('task_code', 'like', "%{$search}%"))
-                      ->orWhereHas('user', fn ($u) => $u
-                        ->where('first_name', 'like', "%{$search}%")
-                        ->orWhere('last_name', 'like', "%{$search}%")
-                        ->orWhere('email', 'like', "%{$search}%"))
-                      ->orWhere('old_value', 'like', "%{$search}%")
-                      ->orWhere('new_value', 'like', "%{$search}%");
+                        ->orWhereHas('user', fn ($u) => $u
+                            ->where('first_name', 'like', "%{$search}%")
+                            ->orWhere('last_name', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%"))
+                        ->orWhere('old_value', 'like', "%{$search}%")
+                        ->orWhere('new_value', 'like', "%{$search}%");
                 });
             })
             ->when($filters['action'] ?? null, fn ($q, $action) => $q

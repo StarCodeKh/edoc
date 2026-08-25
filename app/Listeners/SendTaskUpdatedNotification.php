@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Listeners;
 
 use App\Events\TaskFieldUpdated;
@@ -24,7 +25,7 @@ class SendTaskUpdatedNotification implements ShouldQueue
         // Notify all assignees and watchers, except the person who made the change
         // Normalize potential pivot models (Assignee/Watcher) to underlying User models
         $assigneeUsers = collect($task->assignees)->map(fn ($a) => $a->user ?? null);
-        $watcherUsers  = collect($task->watchers)->map(fn ($w) => $w->user ?? $w);
+        $watcherUsers = collect($task->watchers)->map(fn ($w) => $w->user ?? $w);
 
         Log::info($watcherUsers);
 
@@ -47,9 +48,9 @@ class SendTaskUpdatedNotification implements ShouldQueue
                 $event->newValue,
                 $emailIsActive
             );
-            
+
             Notification::send($usersToNotify, $notification);
-            
+
             // Send ONE Slack notification for the task update (not per user)
             $notification->sendSlackNotification();
             $notification->sendTelegramNotification();

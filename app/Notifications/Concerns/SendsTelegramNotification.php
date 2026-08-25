@@ -44,7 +44,7 @@ trait SendsTelegramNotification
         $clean = trim(strip_tags((string) $value));
 
         if ($limit > 0 && mb_strlen($clean) > $limit) {
-            $clean = mb_substr($clean, 0, $limit) . '…';
+            $clean = mb_substr($clean, 0, $limit).'…';
         }
 
         return htmlspecialchars($clean, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');

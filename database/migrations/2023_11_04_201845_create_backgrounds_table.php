@@ -15,10 +15,10 @@ class CreateBackgroundsTable extends Migration
     {
         Schema::create('backgrounds', function (Blueprint $table) {
             $table->id();
-            $table->string('bg')->default("#624b66");
+            $table->string('bg')->default('#624b66');
             $table->string('image')->default(null)->nullable();
-            $table->string('top')->default("#624b66");
-            $table->string('color', 50)->default("#ffffff");
+            $table->string('top')->default('#624b66');
+            $table->string('color', 50)->default('#ffffff');
             $table->string('type')->default('default');
             $table->string('side');
         });

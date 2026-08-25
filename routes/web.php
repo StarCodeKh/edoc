@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\AssigneesController;
+use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\BackgroundsController;
 use App\Http\Controllers\BackupController;
@@ -11,44 +11,42 @@ use App\Http\Controllers\CronJobsController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DatabaseController;
 use App\Http\Controllers\DemoController;
+use App\Http\Controllers\EmailTemplatesController;
 use App\Http\Controllers\EnvironmentController;
 use App\Http\Controllers\ErrorLogController;
+use App\Http\Controllers\FilterController;
 use App\Http\Controllers\FinalController;
+use App\Http\Controllers\GroupAssignmentController;
 use App\Http\Controllers\ImagesController;
 use App\Http\Controllers\InstallerController;
+use App\Http\Controllers\JsonPriorityController;
 use App\Http\Controllers\LabelsController;
 use App\Http\Controllers\LanguagesController;
+use App\Http\Controllers\LicenseController;
 use App\Http\Controllers\ListsController;
 use App\Http\Controllers\MailController;
+use App\Http\Controllers\ModernInstallerController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\NotificationSettingController;
 use App\Http\Controllers\PerformanceController;
 use App\Http\Controllers\PermissionsController;
 use App\Http\Controllers\ProjectsController;
-use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\RequirementsController;
 use App\Http\Controllers\RolesController;
+use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SignatureRequestController;
 use App\Http\Controllers\StarredProjectsController;
+use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\TasksController;
 use App\Http\Controllers\TimersController;
 use App\Http\Controllers\UpdateController;
 use App\Http\Controllers\UsersController;
-use App\Http\Controllers\FilterController;
-use App\Http\Controllers\EmailTemplatesController;
-use App\Http\Controllers\SettingsController;
-use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\WatcherController;
+use App\Http\Controllers\WorkflowRoleController;
 use App\Http\Controllers\WorkSpacesController;
 use App\Http\Controllers\WorkspaceTypesController;
-use App\Http\Controllers\LicenseController;
-use App\Http\Controllers\ModernInstallerController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-
-use App\Http\Controllers\GroupAssignmentController;
-use App\Http\Controllers\WorkflowRoleController;
-use App\Http\Controllers\JsonPriorityController;
 
 /*
 |--------------------------------------------------------------------------
@@ -81,10 +79,12 @@ Route::delete('logout', [AuthenticatedSessionController::class, 'destroy'])->nam
 
 // Dashboard
 Route::get('/', [WorkSpacesController::class, 'index'])->name('dashboard')->middleware('auth');
-Route::get('/home', function() { return redirect()->route('dashboard'); })->name('home')->middleware('auth');
+Route::get('/home', function () {
+    return redirect()->route('dashboard');
+})->name('home')->middleware('auth');
 
 // Main Dashboard
-Route::get('/workspace/{uid}/main-dashboard', [WorkspacesController::class, 'viewMainDashboard'])->name('workspace.view.maindashboard');
+Route::get('/workspace/{uid}/main-dashboard', [WorkSpacesController::class, 'viewMainDashboard'])->name('workspace.view.maindashboard');
 
 Route::get('json/workspaces/mine', [WorkSpacesController::class, 'jsonMineAll'])->name('json.workspaces.mine')->middleware('auth');
 Route::get('json/workspaces/all', [WorkSpacesController::class, 'jsonAll'])->name('json.workspaces.all')->middleware('auth');
@@ -108,7 +108,6 @@ Route::get('json/projects/star', [ProjectsController::class, 'jsonStar'])->name(
 Route::post('json/project/create', [ProjectsController::class, 'jsonCreate'])->name('json.project.create')->middleware('auth');
 Route::get('json/project/members/{project_id}', [ProjectsController::class, 'jsonMembers'])->name('json.project.members')->middleware('auth');
 Route::get('json/project/filter/data/{project_id}', [ProjectsController::class, 'jsonFilterData'])->name('json.project.filter.data')->middleware('auth');
-
 
 Route::post('/json/task/merge', [TasksController::class, 'merge'])->name('task.merge');
 Route::post('/json/task/unmerge', [TasksController::class, 'unmerge'])->name('task.unmerge');
@@ -151,7 +150,6 @@ Route::post('/workflow-roles/update/{id}', [WorkflowRoleController::class, 'upda
 Route::post('/workflow-roles/delete/{id}', [WorkflowRoleController::class, 'destroy'])->name('workflow-roles.delete');
 Route::get('/json/workflow-roles/types', [WorkflowRoleController::class, 'workflowTypesSummary'])->name('workflow-roles.types');
 Route::post('/json/workflow-roles/assign-workspace', [WorkflowRoleController::class, 'assignWorkspace'])->name('workflow-roles.assign-workspace');
-
 
 Route::delete('project/destroy/{id}', [ProjectsController::class, 'destroy'])->name('project.destroy')->middleware('auth');
 Route::get('projects', [ProjectsController::class, 'index'])->name('projects.index')->middleware('auth');
@@ -224,7 +222,6 @@ Route::post('comments/new', [CommentsController::class, 'saveNew'])->name('comme
 Route::post('comments/update/{id}', [CommentsController::class, 'update'])->name('comment.update')->middleware('auth');
 
 /** Status Routing */
-
 Route::get('settings/filter/customers', [FilterController::class, 'customers'])->name('filter.customers')->middleware('auth');
 Route::get('settings/filter/assignees', [FilterController::class, 'assignees'])->name('filter.assignees')->middleware('auth');
 Route::get('settings/filter/users_except_customer', [FilterController::class, 'usersExceptCustomer'])->name('filter.users_except_customer')->middleware('auth');
@@ -333,10 +330,11 @@ Route::group(['prefix' => 'install', 'middleware' => ['web', 'install']], functi
         try {
             return Inertia::render('Installer/Index');
         } catch (Exception $e) {
-            \Log::error('Installer page failed to load', [
+            Log::error('Installer page failed to load', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
+
             return view('install');
         }
     })->name('installer.index');

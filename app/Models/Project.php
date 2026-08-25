@@ -13,59 +13,69 @@ class Project extends Model
     use Watchable;
 
     protected $casts = [
-        'user_id'       => 'integer',
+        'user_id' => 'integer',
         'background_id' => 'integer',
-        'workspace_id'  => 'integer',
-        'is_private'    => 'boolean',
+        'workspace_id' => 'integer',
+        'is_private' => 'boolean',
     ];
 
-    public function getCreatedAtAttribute($date) {
+    public function getCreatedAtAttribute($date)
+    {
         return Carbon::parse($date)->format('jS F, Y');
     }
 
-    public function tasks() {
+    public function tasks()
+    {
         return $this->hasMany(Task::class);
     }
 
-    public function workspace() {
+    public function workspace()
+    {
         return $this->belongsTo(Workspace::class);
     }
 
-    public function projectWhereIdOrSlug($id, $slug){
+    public function projectWhereIdOrSlug($id, $slug)
+    {
         return $this->belongsTo(Task::class, 'task_id')->where('project_id', $id);
     }
 
-    public function scopeBySlugOrId($query, $id) {
-        if(!empty($id)){
+    public function scopeBySlugOrId($query, $id)
+    {
+        if (!empty($id)) {
             $query->where('id', $id)->orWhere('slug', $id);
         }
     }
 
-    public function star() {
+    public function star()
+    {
         return $this->hasOne(StarredProject::class, 'project_id')->where('user_id', auth()->id());
     }
 
-    public function background() {
+    public function background()
+    {
         return $this->belongsTo(Background::class, 'background_id', 'id');
     }
 
-    public function boards() {
+    public function boards()
+    {
         return $this->hasMany(BoardList::class, 'project_id');
     }
 
-    public function labels() {
+    public function labels()
+    {
         return $this->hasMany(Label::class, 'project_id');
     }
 
-//    public function scopeStarred(){
-//        return $this->belongsTo(StarredProject::class, 'task_id')->where('user_id', auth()->id());
-//    }
+    //    public function scopeStarred(){
+    //        return $this->belongsTo(StarredProject::class, 'task_id')->where('user_id', auth()->id());
+    //    }
 
-//    public function scopeStarred($query) {
-//        $query->where('is_star', 1);
-//    }
+    //    public function scopeStarred($query) {
+    //        $query->where('is_star', 1);
+    //    }
 
-    public function scopeFilter($query, array $filters){
+    public function scopeFilter($query, array $filters)
+    {
         $query->when($filters['search'] ?? null, function ($query, $search) {
             $query->where(function ($query) use ($search) {
                 $query->where('title', 'like', '%'.$search.'%')

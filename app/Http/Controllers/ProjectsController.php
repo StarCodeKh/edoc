@@ -7,31 +7,29 @@ use App\Models\Assignee;
 use App\Models\Attachment;
 use App\Models\Background;
 use App\Models\BoardList;
-use App\Models\EdocWorkflowRole;
-use App\Support\WorkflowStep;
 use App\Models\CheckList;
 use App\Models\Comment;
+use App\Models\EdocWorkflowRole;
 use App\Models\Label;
 use App\Models\Project;
 use App\Models\RecentProject;
-use App\Models\Setting;
 use App\Models\StarredProject;
 use App\Models\Task;
 use App\Models\TaskLabel;
 use App\Models\TeamMember;
 use App\Models\Timer;
 use App\Models\Workspace;
+use App\Support\WorkflowStep;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Response;
 use Inertia\Inertia;
 use Maatwebsite\Excel\Excel;
 
-class ProjectsController extends Controller {
-
+class ProjectsController extends Controller
+{
     public function index()
     {
         return Inertia::render('Projects/Index', [
@@ -42,12 +40,12 @@ class ProjectsController extends Controller {
     public function uploadBackground($id, Request $request)
     {
         $background = null;
-        if($request->file('file')){
+        if ($request->file('file')) {
             $file = $request->file('file');
-            $allowedMimeTypes = [ 'image/jpeg','image/gif','image/png', 'image/svg+xml', 'image/webp' ];
+            $allowedMimeTypes = ['image/jpeg', 'image/gif', 'image/png', 'image/svg+xml', 'image/webp'];
             $contentType = $file->getClientmimeType();
 
-            if(! in_array($contentType, $allowedMimeTypes) ){
+            if (!in_array($contentType, $allowedMimeTypes)) {
                 return response()->json(['error' => true, 'message' => 'File type is not supported!']);
             }
             $file_name_origin = $file->getClientOriginalName();
@@ -55,6 +53,7 @@ class ProjectsController extends Controller {
             $file_path = '/files/'.$file->storeAs('projects', $file_name, ['disk' => 'file_uploads']);
             $background = Background::create(['image' => $file_path, 'bg' => '#624b66', 'top' => '#624b66', 'side' => '#705675e6', 'type' => 'custom']);
         }
+
         return response()->json($background);
     }
 
@@ -62,15 +61,15 @@ class ProjectsController extends Controller {
     {
         $background = null;
         $requests = $request->all();
-        if(!empty($requests['background_id'])){
+        if (!empty($requests['background_id'])) {
             $background = Background::where('id', $requests['background_id'])->first();
-            if(!empty($background)){
+            if (!empty($background)) {
                 $project = Project::where('id', $projectId)->first();
-                if(!empty($project)){
-                    if(!empty($project->background_id)){
+                if (!empty($project)) {
+                    if (!empty($project->background_id)) {
                         $previous_background = Background::where('id', $project->background_id)->first();
-                        if(!empty($previous_background) && $previous_background->type == 'custom'){
-                            if(!empty($previous_background->image) && File::exists(public_path($previous_background->image))){
+                        if (!empty($previous_background) && $previous_background->type == 'custom') {
+                            if (!empty($previous_background->image) && File::exists(public_path($previous_background->image))) {
                                 File::delete(public_path($previous_background->image));
                             }
                             $previous_background->delete();
@@ -81,6 +80,7 @@ class ProjectsController extends Controller {
                 }
             }
         }
+
         return response()->json($background);
     }
 
@@ -108,7 +108,7 @@ class ProjectsController extends Controller {
         $slug = $this->clean($project->title);
         $existingItem = Project::where('slug', $slug)->first();
         if (!empty($existingItem)) {
-            $slug = $slug . '-' . $project->id;
+            $slug = $slug.'-'.$project->id;
         }
         $project->slug = $slug;
         $project->save();
@@ -121,6 +121,7 @@ class ProjectsController extends Controller {
         $assignees = Assignee::whereHas('task', function ($q) use ($project_id) {
             $q->where('project_id', $project_id);
         })->where('user_id', '!=', auth()->id())->groupBy('user_id')->with('user:id,first_name,last_name,photo_path')->get();
+
         return response()->json($assignees);
     }
 
@@ -130,18 +131,21 @@ class ProjectsController extends Controller {
             $q->where('project_id', $project_id);
         })->where('user_id', '!=', auth()->id())->groupBy('user_id')->with('user:id,first_name,last_name,photo_path')->get();
         $labels = Label::where('project_id', $project_id)->orderBy('name')->get();
+
         return response()->json(['assignees' => $assignees, 'labels' => $labels]);
     }
 
     public function all()
     {
         $projects = Project::get();
+
         return response()->json($projects);
     }
 
     public function jsonAll($workspace_id)
     {
         $projects = Project::where('workspace_id', $workspace_id)->with('background')->with('star')->get();
+
         return response()->json($projects);
     }
 
@@ -157,11 +161,12 @@ class ProjectsController extends Controller {
                     'id' => $project->project->id,
                     'title' => $project->project->title,
                     'slug' => $project->project->slug,
-                    'star' => (bool)$project->project->star,
+                    'star' => (bool) $project->project->star,
                     'workspace' => $project->project->workspace->name,
-                    'background' => $project->project->background?$project->project->background->image:null,
+                    'background' => $project->project->background ? $project->project->background->image : null,
                 ];
             });
+
         return response()->json($projects);
     }
 
@@ -177,36 +182,40 @@ class ProjectsController extends Controller {
                     'id' => $project->project->id,
                     'title' => $project->project->title,
                     'slug' => $project->project->slug,
-                    'star' => (bool)$project->project->star,
+                    'star' => (bool) $project->project->star,
                     'workspace' => $project->project->workspace->name,
-                    'background' => $project->project->background?$project->project->background->image:null,
+                    'background' => $project->project->background ? $project->project->background->image : null,
                 ];
             });
+
         return response()->json($projects);
     }
 
-    public function update($id, Request $request){
+    public function update($id, Request $request)
+    {
         $project = Project::whereId($id)->first();
         $requestData = $request->all();
-        foreach ($requestData as $itemKey => $itemValue){
+        foreach ($requestData as $itemKey => $itemValue) {
             $project->{$itemKey} = $itemValue;
         }
 
         $slug = $this->clean($project->title);
         $existingItem = Project::where('id', '!=', $project->id)->where('slug', $slug)->first();
-        if(!empty($existingItem)){
-            $slug = $slug . '-' . $project->id;
+        if (!empty($existingItem)) {
+            $slug = $slug.'-'.$project->id;
         }
         $project->slug = $slug;
 
         $project->save();
+
         return response()->json($project);
     }
 
-    public function noProject(){
+    public function noProject()
+    {
         return Inertia::render('Projects/Na', [
             'title' => 'No Workspace',
-            'notice' => 'You did not assigned any workspace yet. Please contact with admin'
+            'notice' => 'You did not assigned any workspace yet. Please contact with admin',
         ]);
     }
 
@@ -228,17 +237,17 @@ class ProjectsController extends Controller {
                     ->visibleTo();
             }])
             ->first();
-        if(empty($project)){
+        if (empty($project)) {
             return abort(404);
         }
         RecentProject::updateOrCreate(['user_id' => $auth_id, 'project_id' => $project->id], ['opened' => Carbon::now()]);
         $list_index = [];
         $board_lists = BoardList::where('project_id', $project->id)->isOpen()->orderByOrder()->get()->toArray();
         $loopIndex = 0;
-        foreach ($board_lists as &$listItem){
+        foreach ($board_lists as &$listItem) {
             $list_index[$listItem['id']] = $loopIndex;
             $listItem['tasks'] = [];
-            $loopIndex+= 1;
+            $loopIndex += 1;
         }
         unset($listItem);
 
@@ -269,8 +278,8 @@ class ProjectsController extends Controller {
             ->withCount('checklists')
             ->withCount('attachments')->with('assignees')
             ->orderByOrder()->get()->toArray();
-        foreach ($tasks as $task){
-            if(isset($list_index[$task['list_id']])){
+        foreach ($tasks as $task) {
+            if (isset($list_index[$task['list_id']])) {
                 $board_lists[$list_index[$task['list_id']]]['tasks'][] = $task;
             }
         }
@@ -281,7 +290,7 @@ class ProjectsController extends Controller {
         $statusItems = [];
         $summarySegments = [];
         $statistics = [];
-        foreach ($board_lists as $idx => $listItem){
+        foreach ($board_lists as $idx => $listItem) {
             $color = $palette[$idx % count($palette)];
             $listTaskCount = count($listItem['tasks']);
 
@@ -343,10 +352,10 @@ class ProjectsController extends Controller {
         $list_index = [];
         $board_lists = BoardList::where('project_id', $project->id)->isOpen()->orderByOrder()->get()->toArray();
         $loopIndex = 0;
-        foreach ($board_lists as &$listItem){
+        foreach ($board_lists as &$listItem) {
             $list_index[$listItem['id']] = $loopIndex;
             $listItem['tasks'] = [];
-            $loopIndex+= 1;
+            $loopIndex += 1;
         }
         unset($listItem);
 
@@ -365,12 +374,15 @@ class ProjectsController extends Controller {
             ->with('assignees')
             ->orderByOrder()
             ->get()->toArray();
-        foreach ($tasks as $task){
-            if(isset($list_index[$task['list_id']])){
+        foreach ($tasks as $task) {
+            if (isset($list_index[$task['list_id']])) {
                 $board_lists[$list_index[$task['list_id']]]['tasks'][] = $task;
             }
         }
-        $task = Task::visibleTo()->where(function ($q) use ($taskUid) { $q->where('id', $taskUid)->orWhere('slug', $taskUid); })->first();
+        $task = Task::visibleTo()->where(function ($q) use ($taskUid) {
+            $q->where('id', $taskUid)->orWhere('slug', $taskUid);
+        })->first();
+
         return Inertia::render('Projects/View', [
             'title' => 'Projects',
             'filters' => $requests,
@@ -392,10 +404,10 @@ class ProjectsController extends Controller {
         $list_index = [];
         $board_lists = BoardList::where('project_id', $project->id)->isOpen()->orderByOrder()->get()->toArray();
         $loopIndex = 0;
-        foreach ($board_lists as &$listItem){
+        foreach ($board_lists as &$listItem) {
             $list_index[$listItem['id']] = $loopIndex;
             $listItem['tasks'] = [];
-            $loopIndex+= 1;
+            $loopIndex += 1;
         }
         $tasks = Task::filter($requests)
             ->visibleTo()
@@ -413,11 +425,12 @@ class ProjectsController extends Controller {
             ->withCount('attachments')
             ->orderByOrder()
             ->get()->toArray();
-        foreach ($tasks as $task){
-            if(isset($list_index[$task['list_id']])){
+        foreach ($tasks as $task) {
+            if (isset($list_index[$task['list_id']])) {
                 $board_lists[$list_index[$task['list_id']]]['tasks'][] = $task;
             }
         }
+
         return Inertia::render('Projects/Table', [
             'title' => 'Table | '.$project->title,
             'board_lists' => $board_lists,
@@ -425,7 +438,7 @@ class ProjectsController extends Controller {
             'list_index' => $list_index,
             'project' => $project,
             'filters' => $requests,
-            'tasks' => $tasks
+            'tasks' => $tasks,
         ]);
     }
 
@@ -438,10 +451,10 @@ class ProjectsController extends Controller {
         $list_index = [];
         $board_lists = BoardList::where('project_id', $project->id)->isOpen()->orderByOrder()->get()->toArray();
         $loopIndex = 0;
-        foreach ($board_lists as &$listItem){
+        foreach ($board_lists as &$listItem) {
             $list_index[$listItem['id']] = $loopIndex;
             $listItem['tasks'] = [];
-            $loopIndex+= 1;
+            $loopIndex += 1;
         }
         $tasks = Task::filter($requests)
             ->visibleTo()
@@ -453,12 +466,15 @@ class ProjectsController extends Controller {
             ->with('list')
             ->orderByOrder()
             ->get()->toArray();
-        foreach ($tasks as $task){
-            if(isset($list_index[$task['list_id']])){
+        foreach ($tasks as $task) {
+            if (isset($list_index[$task['list_id']])) {
                 $board_lists[$list_index[$task['list_id']]]['tasks'][] = $task;
             }
         }
-        $task = Task::visibleTo()->where(function ($q) use ($taskUid) { $q->where('id', $taskUid)->orWhere('slug', $taskUid); })->first();
+        $task = Task::visibleTo()->where(function ($q) use ($taskUid) {
+            $q->where('id', $taskUid)->orWhere('slug', $taskUid);
+        })->first();
+
         return Inertia::render('Projects/Table', [
             'title' => 'Projects',
             'board_lists' => $board_lists,
@@ -468,7 +484,7 @@ class ProjectsController extends Controller {
             'project' => $project,
             'task' => $task,
             'timer' => Timer::with('task')->mine()->running()->first() ?? null,
-            'tasks' => $tasks
+            'tasks' => $tasks,
         ]);
     }
 
@@ -486,6 +502,7 @@ class ProjectsController extends Controller {
         $due_over = Task::where('project_id', $project->id)->where('due_date', '<', Carbon::now())->count();
         $due_later = Task::where('project_id', $project->id)->where('due_date', '>', Carbon::now()->addDay())->count();
         $due_soon = Task::where('project_id', $project->id)->whereBetween('due_date', [Carbon::now(), Carbon::now()->addDay()])->count();
+
         return Inertia::render('Projects/Dashboard', [
             'title' => 'Dashboard | '.$project->title,
             'per_list' => $per_list,
@@ -493,12 +510,12 @@ class ProjectsController extends Controller {
             'per_assignee' => $per_assignee,
             'per_label' => $per_label,
             'due_data' => [
-                ['due' => ['name' => 'Complete', 'color' => '#22A06B' ], 'total' => $due_done],
-                ['due' => ['name' => 'Due soon', 'color' => '#B38600' ], 'total' => $due_soon],
-                ['due' => ['name' => 'Due later', 'color' => '#E56910' ], 'total' => $due_later],
-                ['due' => ['name' => 'Overdue', 'color' => '#C9372C' ], 'total' => $due_over],
-                ['due' => ['name' => 'No due date', 'color' => '#607d8b' ], 'total' => $no_due],
-            ]
+                ['due' => ['name' => 'Complete', 'color' => '#22A06B'], 'total' => $due_done],
+                ['due' => ['name' => 'Due soon', 'color' => '#B38600'], 'total' => $due_soon],
+                ['due' => ['name' => 'Due later', 'color' => '#E56910'], 'total' => $due_later],
+                ['due' => ['name' => 'Overdue', 'color' => '#C9372C'], 'total' => $due_over],
+                ['due' => ['name' => 'No due date', 'color' => '#607d8b'], 'total' => $no_due],
+            ],
         ]);
     }
 
@@ -511,10 +528,10 @@ class ProjectsController extends Controller {
         $list_index = [];
         $board_lists = BoardList::where('project_id', $project->id)->isOpen()->orderByOrder()->get()->toArray();
         $loopIndex = 0;
-        foreach ($board_lists as &$listItem){
+        foreach ($board_lists as &$listItem) {
             $list_index[$listItem['id']] = $loopIndex;
             $listItem['tasks'] = [];
-            $loopIndex+= 1;
+            $loopIndex += 1;
         }
         $tasks = Task::filter($requests)
             ->visibleTo()
@@ -527,11 +544,12 @@ class ProjectsController extends Controller {
             ->with('list')
             ->orderByOrder()
             ->get()->toArray();
-        foreach ($tasks as $task){
-            if(isset($list_index[$task['list_id']])){
+        foreach ($tasks as $task) {
+            if (isset($list_index[$task['list_id']])) {
                 $board_lists[$list_index[$task['list_id']]]['tasks'][] = $task;
             }
         }
+
         return Inertia::render('Projects/Calendar', [
             'title' => 'Calendar | '.$project->title,
             'board_lists' => $board_lists,
@@ -539,7 +557,7 @@ class ProjectsController extends Controller {
             'list_index' => $list_index,
             'project' => $project,
             'filters' => $requests,
-            'tasks' => $tasks
+            'tasks' => $tasks,
         ]);
     }
 
@@ -549,7 +567,7 @@ class ProjectsController extends Controller {
         $auth_id = auth()->id();
         $workspaceIds = Workspace::accessibleTo()->pluck('id');
         $project = Project::bySlugOrId($uid)->whereIn('workspace_id', $workspaceIds)->with('workspace.member')->with('star')->with('background')->first();
-        
+
         // Get tasks with their relationships for timeline view
         $tasks = Task::filter($requests)
             ->visibleTo()
@@ -585,7 +603,7 @@ class ProjectsController extends Controller {
             'title' => 'Timeline | '.$project->title,
             'project' => $project,
             'filters' => $requests,
-            'tasks' => $tasks
+            'tasks' => $tasks,
         ]);
     }
 
@@ -598,6 +616,7 @@ class ProjectsController extends Controller {
         $timerQuery = Timer::whereHas('task', function ($q) use ($project) {
             $q->where('project_id', $project->id);
         })->filter($requests);
+
         return Inertia::render('Projects/Timer', [
             'title' => 'Time Logs | '.$project->title,
             'project' => $project,
@@ -620,7 +639,7 @@ class ProjectsController extends Controller {
                         'stopped_at' => $log->stopped_at,
                         'created_at' => $log->created_at,
                     ];
-                } ),
+                }),
         ]);
     }
 
@@ -630,33 +649,39 @@ class ProjectsController extends Controller {
         $labels = Label::where('project_id', $project_id)->get();
         $lists = BoardList::withCount('tasks')->get();
         $teamMembers = TeamMember::with('user')->where('workspace_id', $project->workspace_id)->get();
+
         return response()->json(['labels' => $labels, 'lists' => $lists, 'team_members' => $teamMembers]);
     }
 
-    public function workspaceOtherData($workspace_id){
+    public function workspaceOtherData($workspace_id)
+    {
         $labels = Label::get();
         $teamMembers = TeamMember::with('user')->where('workspace_id', $workspace_id)->get();
+
         return response()->json(['labels' => $labels, 'team_members' => $teamMembers]);
     }
 
-    private function clean($string) {
+    private function clean($string)
+    {
         $string = str_replace(' ', '-', $string);
         $string = filter_var($string, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+
         return preg_replace('/-+/', '-', $string);
     }
 
-    public function destroy($id){
+    public function destroy($id)
+    {
         $project = Project::where('id', $id)->first();
         $workspace_id = $project->workspace_id;
-        if(!empty($project)){
+        if (!empty($project)) {
             BoardList::where('project_id', $project->id)->delete();
             RecentProject::where('project_id', $project->id)->delete();
             StarredProject::where('project_id', $project->id)->delete();
             $tasks = Task::where('project_id', $project->id)->get();
-            foreach ($tasks as $task){
+            foreach ($tasks as $task) {
                 $attachments = Attachment::where('task_id', $task->id)->get();
-                foreach ($attachments as $attachment){
-                    if(!empty($attachment->path) && File::exists(public_path($attachment->path))){
+                foreach ($attachments as $attachment) {
+                    if (!empty($attachment->path) && File::exists(public_path($attachment->path))) {
                         File::delete(public_path($attachment->path));
                     }
                     $attachment->delete();
@@ -670,6 +695,7 @@ class ProjectsController extends Controller {
             }
             $project->delete();
         }
+
         return Redirect::route('workspace.view', $workspace_id);
     }
 

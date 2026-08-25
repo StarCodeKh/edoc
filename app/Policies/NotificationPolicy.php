@@ -15,7 +15,6 @@ class NotificationPolicy
         //
     }
 
-
     public function update(User $user, DatabaseNotification $notification)
     {
         return $user->id === $notification->notifiable_id;

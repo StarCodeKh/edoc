@@ -2,18 +2,17 @@
 
 namespace App\Notifications;
 
-use App\Notifications\Concerns\SendsTelegramNotification;
+use App\Models\EmailTemplate;
+use App\Models\NotificationSetting;
 use App\Models\Task;
 use App\Models\User;
+use App\Notifications\Concerns\SendsTelegramNotification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
-use Spatie\SlackAlerts\Facades\SlackAlert;
 use Illuminate\Notifications\Notification;
-use App\Models\EmailTemplate;
-use App\Models\NotificationSetting;
-use Illuminate\Support\HtmlString;
+use Spatie\SlackAlerts\Facades\SlackAlert;
 
 class UserAssignedNotification extends Notification implements ShouldQueue
 {
@@ -48,7 +47,7 @@ class UserAssignedNotification extends Notification implements ShouldQueue
     {
         return [
             'action_user_id' => $this->assignerUser->id,
-            'action_user_name' => $this->assignerUser->first_name . ' ' . $this->assignerUser->last_name,
+            'action_user_name' => $this->assignerUser->first_name.' '.$this->assignerUser->last_name,
             'action_user_photo' => $this->assignerUser->photo_path,
             'task_id' => $this->task->id,
             'task_title' => $this->task->title,
@@ -66,9 +65,9 @@ class UserAssignedNotification extends Notification implements ShouldQueue
         $data = $this->toArray($notifiable);
         $data['created_at'] = now()->toDateTimeString();
         $data['read_at'] = null;
+
         return new BroadcastMessage($data);
     }
-
 
     public function toMail(object $notifiable): MailMessage
     {
@@ -79,15 +78,15 @@ class UserAssignedNotification extends Notification implements ShouldQueue
         $replacements = [
             '{assignee_name}' => trim($notifiable->first_name.' '.($notifiable->last_name ?? '')),
             '{assigner_name}' => trim($this->assignerUser->first_name.' '.$this->assignerUser->last_name),
-            '{task_title}'    => $this->task->title,
+            '{task_title}' => $this->task->title,
             '{project_title}' => $this->task->project->title,
-            '{workspace_name}'=> $this->task->project->workspace->name,
-            '{action_url}'    => $url,
+            '{workspace_name}' => $this->task->project->workspace->name,
+            '{action_url}' => $url,
 
             // extra aliases your HTML might use
-            '{user}'          => trim($notifiable->first_name.' '.($notifiable->last_name ?? '')),
-            '{task_name}'     => $this->task->title,
-            '{task_link}'     => $url,
+            '{user}' => trim($notifiable->first_name.' '.($notifiable->last_name ?? '')),
+            '{task_name}' => $this->task->title,
+            '{task_link}' => $url,
         ];
 
         $subject = $template && filled($template->subject)
@@ -126,8 +125,8 @@ class UserAssignedNotification extends Notification implements ShouldQueue
         $message .= "*Project:* {$this->task->project->title}\n";
         $message .= "*Workspace:* {$this->task->project->workspace->name}\n";
         $message .= "*Assigned by:* {$this->assignerUser->first_name} {$this->assignerUser->last_name}\n";
-        $message .= "*Assigned to:* {$this->assignedUser?->first_name} " . ($this->assignedUser?->last_name ?? '') . "\n";
-        $message .= "_eDoc • " . now()->format('M d, Y g:i A') . "_";
+        $message .= "*Assigned to:* {$this->assignedUser?->first_name} ".($this->assignedUser?->last_name ?? '')."\n";
+        $message .= '_eDoc • '.now()->format('M d, Y g:i A').'_';
 
         SlackAlert::message($message);
     }

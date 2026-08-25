@@ -22,6 +22,7 @@ class WorkspacesInsertSeeder extends Seeder
 
         if (!$owner) {
             $this->command->error('No users exist yet — create/seed at least one user first, then re-run this seeder.');
+
             return;
         }
 
@@ -73,13 +74,13 @@ class WorkspacesInsertSeeder extends Seeder
         $slug = preg_replace('/\s+/u', '-', $slug);
 
         if ($slug === '' || $slug === null) {
-            $slug = 'workspace-' . Str::random(6);
+            $slug = 'workspace-'.Str::random(6);
         }
 
         $base = $slug;
         $i = 2;
         while (Workspace::where('slug', $slug)->exists()) {
-            $slug = $base . '-' . $i;
+            $slug = $base.'-'.$i;
             $i++;
         }
 

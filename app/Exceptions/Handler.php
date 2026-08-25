@@ -40,14 +40,16 @@ class Handler extends ExceptionHandler
         });
     }
 
-    public function render($request, Throwable $e){
+    public function render($request, Throwable $e)
+    {
         // For installer API endpoints, always return JSON
         if ($request->is('install/*') && ($request->expectsJson() || $request->isMethod('post'))) {
             $status = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
+
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage() ?: 'An error occurred during installation',
-                'error' => app()->environment(['local', 'testing']) ? $e->getMessage() : 'Internal server error'
+                'error' => app()->environment(['local', 'testing']) ? $e->getMessage() : 'Internal server error',
             ], $status);
         }
 
@@ -56,11 +58,12 @@ class Handler extends ExceptionHandler
             return Inertia::render('Error', ['status' => $response->status()])
                 ->toResponse($request)
                 ->setStatusCode($response->status());
-        } else if ($response->status() === 419) {
+        } elseif ($response->status() === 419) {
             return back()->with([
                 'message' => 'The page expired, please try again.',
             ]);
         }
+
         return $response;
     }
 }

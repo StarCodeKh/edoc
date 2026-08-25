@@ -2,18 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Routing\Controller;
 use App\Helpers\DatabaseManager;
 use App\Helpers\InstalledFileManager;
+use App\Helpers\MigrationsHelper;
+use Illuminate\Routing\Controller;
+use Illuminate\View\View;
 
 class UpdateController extends Controller
 {
-    use \App\Helpers\MigrationsHelper;
+    use MigrationsHelper;
 
     /**
      * Display the updater welcome page.
      *
-     * @return \Illuminate\View\View
+     * @return View
      */
     public function welcome()
     {
@@ -23,7 +25,7 @@ class UpdateController extends Controller
     /**
      * Display the updater overview page.
      *
-     * @return \Illuminate\View\View
+     * @return View
      */
     public function overview()
     {
@@ -36,7 +38,7 @@ class UpdateController extends Controller
     /**
      * Migrate and seed the database.
      *
-     * @return \Illuminate\View\View
+     * @return View
      */
     public function database()
     {
@@ -44,14 +46,13 @@ class UpdateController extends Controller
         $response = $databaseManager->migrateAndSeed();
 
         return redirect()->route('LaravelUpdater::final')
-                         ->with(['message' => $response]);
+            ->with(['message' => $response]);
     }
 
     /**
      * Update installed file and display finished view.
      *
-     * @param InstalledFileManager $fileManager
-     * @return \Illuminate\View\View
+     * @return View
      */
     public function finish(InstalledFileManager $fileManager)
     {

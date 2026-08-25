@@ -18,10 +18,10 @@ class CreateWorkspacesTable extends Migration
             $table->integer('user_id');
             $table->string('name', 200);
             $table->string('slug', 200)->default(null)->nullable();
-            $table->string('type', )->default(null)->nullable();
-            $table->string('website', )->default(null)->nullable();
+            $table->string('type')->default(null)->nullable();
+            $table->string('website')->default(null)->nullable();
             $table->string('logo', 200)->nullable();
-            $table->text('description', )->default(null)->nullable();
+            $table->text('description')->default(null)->nullable();
             $table->timestamps();
         });
     }

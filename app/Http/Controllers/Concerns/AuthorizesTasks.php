@@ -36,7 +36,7 @@ trait AuthorizesTasks
         $user = auth()->user();
         $check = 'can'.ucfirst($ability);
 
-        if (! $user || ! call_user_func([TaskAbility::class, $check], $user, $task)) {
+        if (!$user || !call_user_func([TaskAbility::class, $check], $user, $task)) {
             abort(403, $this->taskAbilityMessage($ability));
         }
     }
@@ -52,12 +52,12 @@ trait AuthorizesTasks
     protected function taskAbilityMessage(string $ability): string
     {
         return match ($ability) {
-            'move'    => 'You are not allowed to move this document to another board.',
-            'edit'    => 'You are not allowed to change this document.',
-            'delete'  => 'You are not allowed to delete this document.',
-            'attach'  => 'You are not allowed to attach files to this document.',
+            'move' => 'You are not allowed to move this document to another board.',
+            'edit' => 'You are not allowed to change this document.',
+            'delete' => 'You are not allowed to delete this document.',
+            'attach' => 'You are not allowed to attach files to this document.',
             'comment' => 'You are not allowed to comment on this document.',
-            default   => 'You do not have access to this document.',
+            default => 'You do not have access to this document.',
         };
     }
 }

@@ -59,6 +59,6 @@ class BackgroundSeeder extends Seeder
             DB::table('backgrounds')->insert($background);
         }
 
-        $this->command->info("✅ Created " . count($backgrounds) . " gradient backgrounds!");
+        $this->command->info('✅ Created '.count($backgrounds).' gradient backgrounds!');
     }
 }

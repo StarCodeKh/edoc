@@ -8,11 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 class StarredProject extends Model
 {
     use HasFactory;
+
     protected $table = 'starred_projects';
 
     protected $casts = [
         'project_id' => 'integer',
-        'user_id'    => 'integer',
+        'user_id' => 'integer',
     ];
 
     public function project()

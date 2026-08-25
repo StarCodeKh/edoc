@@ -14,7 +14,7 @@ class PriorityFactory extends Factory
     public function definition()
     {
         return [
-            'name' => $this->faker->unique()->randomElement(['Generally', 'Less Urgent','Urgent','Very Urgent']),
+            'name' => $this->faker->unique()->randomElement(['Generally', 'Less Urgent', 'Urgent', 'Very Urgent']),
         ];
     }
 }

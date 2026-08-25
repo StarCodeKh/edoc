@@ -15,7 +15,7 @@ class LabelFactory extends Factory
     {
         return [
             'name' => $this->faker->word,
-            'color' => '#000000'
+            'color' => '#000000',
         ];
     }
 }

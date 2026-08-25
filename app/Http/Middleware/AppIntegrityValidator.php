@@ -48,7 +48,6 @@ class AppIntegrityValidator
         //     return $next($request);
         // }
 
-
         // $licenseServerUrl = config('services.license.server_url');
         // $itemId = config('services.license.item_id');
         // $currentDomain = $request->getHttpHost();
@@ -76,6 +75,7 @@ class AppIntegrityValidator
     {
         try {
             DB::connection()->getPdo();
+
             return true;
         } catch (\Exception $e) {
             return false;

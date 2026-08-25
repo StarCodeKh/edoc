@@ -1,9 +1,9 @@
 <?php
+
 namespace App\Observers;
 
 use App\Events\TaskFieldUpdated; // We will create this event next
 use App\Models\Task;
-use App\Models\BoardList;
 
 class TaskObserver
 {

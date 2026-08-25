@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Events;
 
 use App\Models\Comment;
@@ -10,7 +11,5 @@ class NewCommentAdded
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public function __construct(public Comment $comment)
-    {
-    }
+    public function __construct(public Comment $comment) {}
 }

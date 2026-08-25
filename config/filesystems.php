@@ -44,22 +44,22 @@ return [
 
         'file_uploads' => [
             'driver' => 'local',
-            'root'   => public_path() . '/files',
+            'root' => public_path().'/files',
         ],
 
         'image' => [
             'driver' => 'local',
-            'root'   => public_path() . '/images',
+            'root' => public_path().'/images',
         ],
 
         'public_path' => [
             'driver' => 'local',
-            'root'   => public_path(),
+            'root' => public_path(),
         ],
 
         'json' => [
             'driver' => 'local',
-            'root'   => public_path() . '/json',
+            'root' => public_path().'/json',
         ],
 
         's3' => [

@@ -22,9 +22,9 @@ return [
      */
     'welcome' => [
         'templateTitle' => 'Welcome',
-        'title'   => 'eDoc Installer',
+        'title' => 'eDoc Installer',
         'message' => 'Easy Installation and Setup Wizard.',
-        'next'    => 'Check Requirements',
+        'next' => 'Check Requirements',
     ],
 
     /*
@@ -35,7 +35,7 @@ return [
     'requirements' => [
         'templateTitle' => 'Step 1 | Server Requirements',
         'title' => 'Server Requirements',
-        'next'    => 'Check Permissions',
+        'next' => 'Check Permissions',
     ],
 
     /*
@@ -220,7 +220,7 @@ return [
          *
          */
         'welcome' => [
-            'title'   => 'Welcome To The Updater',
+            'title' => 'Welcome To The Updater',
             'message' => 'Welcome to the update wizard.',
         ],
 
@@ -230,7 +230,7 @@ return [
          *
          */
         'overview' => [
-            'title'   => 'Overview',
+            'title' => 'Overview',
             'message' => 'There is 1 update.|There are :number updates.',
             'install_updates' => 'Install Updates',
         ],

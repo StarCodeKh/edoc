@@ -10,17 +10,21 @@ class TaskLabel extends Model
     use HasFactory;
 
     protected $table = 'task_labels';
+
     public $timestamps = false;
 
     protected $casts = [
-        'task_id'  => 'integer',
+        'task_id' => 'integer',
         'label_id' => 'integer',
     ];
 
-    public function task(){
+    public function task()
+    {
         return $this->belongsTo(Task::class, 'task_id');
     }
-    public function label(){
+
+    public function label()
+    {
         return $this->belongsTo(Label::class, 'label_id');
     }
 }

@@ -4,9 +4,10 @@
         <div class="flex flex-col flex-grow-1 flex-shrink-1 h-full">
             <div class="flex-1 flex flex-col bg-gradient-to-br from-gray-50 to-white overflow-y-auto">
                 <div class="m-4 flex flex-col">
-
                     <!-- Header -->
-                    <div class="rounded-2xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-blue-500 px-6 py-5 shadow-lg">
+                    <div
+                        class="rounded-2xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-blue-500 px-6 py-5 shadow-lg"
+                    >
                         <div class="flex flex-wrap items-center justify-between gap-4">
                             <div class="flex items-center gap-3">
                                 <div class="rounded-xl bg-white/20 p-2.5 backdrop-blur">
@@ -34,14 +35,20 @@
                     <div class="mt-4 rounded-2xl border border-gray-200/70 bg-white p-3 sm:p-4 shadow-sm">
                         <div class="flex flex-wrap items-start lg:items-center gap-x-6 gap-y-4">
                             <!-- Uploader -->
-                            <div class="doc-filter flex flex-col items-start gap-1.5 lg:flex-row lg:items-center lg:gap-2">
-                                <span class="text-xs font-bold uppercase tracking-wide text-gray-500 flex-shrink-0">{{ $t('Uploader') }}</span>
+                            <div
+                                class="doc-filter flex flex-col items-start gap-1.5 lg:flex-row lg:items-center lg:gap-2"
+                            >
+                                <span class="text-xs font-bold uppercase tracking-wide text-gray-500 flex-shrink-0">{{
+                                    $t('Uploader')
+                                }}</span>
                                 <div class="flex flex-wrap items-center gap-1.5">
                                     <button
                                         type="button"
                                         @click="form.uploader = null"
                                         :class="chipClass(!selectedUploaders.length)"
-                                    >{{ $t('Everyone') }}</button>
+                                    >
+                                        {{ $t('Everyone') }}
+                                    </button>
                                     <button
                                         v-for="user in uploaders"
                                         :key="user.id"
@@ -50,15 +57,23 @@
                                         :class="[chipClass(isUploaderSelected(user.id)), 'gap-1.5']"
                                         :title="user.name"
                                     >
-                                        <img :src="user.photo || '/images/user.svg'" :alt="user.name" class="h-4 w-4 rounded-full object-cover" />
+                                        <img
+                                            :src="user.photo || '/images/user.svg'"
+                                            :alt="user.name"
+                                            class="h-4 w-4 rounded-full object-cover"
+                                        />
                                         <span class="max-w-[7rem] truncate">{{ user.name }}</span>
                                     </button>
                                 </div>
                             </div>
 
                             <!-- Document type -->
-                            <div class="doc-filter flex flex-col items-start gap-1.5 lg:flex-row lg:items-center lg:gap-2">
-                                <span class="text-xs font-bold uppercase tracking-wide text-gray-500 flex-shrink-0">{{ $t('Document Type') }}</span>
+                            <div
+                                class="doc-filter flex flex-col items-start gap-1.5 lg:flex-row lg:items-center lg:gap-2"
+                            >
+                                <span class="text-xs font-bold uppercase tracking-wide text-gray-500 flex-shrink-0">{{
+                                    $t('Document Type')
+                                }}</span>
                                 <filter-select
                                     v-model="form.type"
                                     multiple
@@ -74,8 +89,12 @@
                             </div>
 
                             <!-- Period -->
-                            <div class="doc-filter flex flex-col items-start gap-1.5 lg:flex-row lg:items-center lg:gap-2">
-                                <span class="text-xs font-bold uppercase tracking-wide text-gray-500 flex-shrink-0">{{ $t('Period') }}</span>
+                            <div
+                                class="doc-filter flex flex-col items-start gap-1.5 lg:flex-row lg:items-center lg:gap-2"
+                            >
+                                <span class="text-xs font-bold uppercase tracking-wide text-gray-500 flex-shrink-0">{{
+                                    $t('Period')
+                                }}</span>
                                 <div class="flex flex-wrap items-center gap-1.5">
                                     <button
                                         v-for="period in periods"
@@ -83,7 +102,9 @@
                                         type="button"
                                         @click="setPeriod(period.key)"
                                         :class="chipClass(activePeriod === period.key)"
-                                    >{{ $t(period.label) }}</button>
+                                    >
+                                        {{ $t(period.label) }}
+                                    </button>
                                 </div>
                             </div>
 
@@ -94,7 +115,12 @@
                                 <date-picker v-model="toDate" :min-date="form.from" :placeholder="$t('To')" />
                             </div>
 
-                            <button v-if="hasFilters" type="button" @click="reset" class="w-full lg:w-auto lg:ml-auto flex items-center justify-center lg:justify-start gap-1 text-sm font-semibold text-gray-500 hover:text-red-600">
+                            <button
+                                v-if="hasFilters"
+                                type="button"
+                                @click="reset"
+                                class="w-full lg:w-auto lg:ml-auto flex items-center justify-center lg:justify-start gap-1 text-sm font-semibold text-gray-500 hover:text-red-600"
+                            >
                                 <icon name="close" class="h-3.5 w-3.5" />
                                 {{ $t('Clear All') }}
                             </button>
@@ -126,14 +152,19 @@
                                 </span>
 
                                 <span class="doc-row__user">
-                                    <img v-if="doc.user" :src="doc.user.photo || '/images/user.svg'" :alt="doc.user.name" class="doc-row__avatar" />
+                                    <img
+                                        v-if="doc.user"
+                                        :src="doc.user.photo || '/images/user.svg'"
+                                        :alt="doc.user.name"
+                                        class="doc-row__avatar"
+                                    />
                                     <span class="doc-row__user-name">{{ doc.user ? doc.user.name : '—' }}</span>
                                 </span>
 
                                 <span class="doc-row__date">{{ khShortDate(doc.created_at, true) }}</span>
 
                                 <span class="doc-row__status" :class="doc.is_done ? 'is-done' : 'is-open'">
-                                    {{ doc.is_done ? $t('Done') : (doc.status || $t('Active')) }}
+                                    {{ doc.is_done ? $t('Done') : doc.status || $t('Active') }}
                                 </span>
 
                                 <icon name="chevron-right" class="doc-row__chevron" />
@@ -146,7 +177,12 @@
                                 <icon name="book" class="h-8 w-8 text-gray-400" />
                             </div>
                             <p class="font-semibold text-gray-700">{{ $t('No documents found.') }}</p>
-                            <button v-if="hasFilters" type="button" @click="reset" class="text-sm font-semibold text-indigo-600 hover:text-indigo-800">
+                            <button
+                                v-if="hasFilters"
+                                type="button"
+                                @click="reset"
+                                class="text-sm font-semibold text-indigo-600 hover:text-indigo-800"
+                            >
                                 {{ $t('Clear All') }}
                             </button>
                         </div>
@@ -169,7 +205,7 @@
                             <div v-if="detail.code" class="doc-panel__code">{{ detail.code }}</div>
                         </div>
                         <span class="doc-row__status" :class="detail.is_done ? 'is-done' : 'is-open'">
-                            {{ detail.is_done ? $t('Done') : (detail.status || $t('Active')) }}
+                            {{ detail.is_done ? $t('Done') : detail.status || $t('Active') }}
                         </span>
                         <button type="button" class="doc-panel__close" @click="closeDetail" :title="$t('Close')">
                             <icon name="close" class="h-4 w-4" />
@@ -197,7 +233,11 @@
                             <div v-if="detail.user">
                                 <dt>{{ $t('Uploader') }}</dt>
                                 <dd class="flex items-center gap-2">
-                                    <img :src="detail.user.photo || '/images/user.svg'" :alt="detail.user.name" class="h-5 w-5 rounded-full object-cover" />
+                                    <img
+                                        :src="detail.user.photo || '/images/user.svg'"
+                                        :alt="detail.user.name"
+                                        class="h-5 w-5 rounded-full object-cover"
+                                    />
                                     {{ detail.user.name }}
                                 </dd>
                             </div>
@@ -220,7 +260,12 @@
                                 <icon :name="fileIcon(file.ext)" class="h-6 w-6 flex-shrink-0" />
                                 <span class="doc-panel__file-name" :title="file.name">{{ file.name }}</span>
                                 <span class="doc-panel__file-size">{{ fileSize(file.size) }}</span>
-                                <a :href="file.path" :download="file.name" class="doc-panel__file-btn" :title="$t('Download')">
+                                <a
+                                    :href="file.path"
+                                    :download="file.name"
+                                    class="doc-panel__file-btn"
+                                    :title="$t('Download')"
+                                >
                                     <icon name="download" class="h-3.5 w-3.5" />
                                 </a>
                             </li>
@@ -229,10 +274,14 @@
                     </div>
 
                     <div class="doc-panel__foot">
-                        <button type="button" class="doc-btn doc-btn--ghost" @click="closeDetail">{{ $t('Close') }}</button>
+                        <button type="button" class="doc-btn doc-btn--ghost" @click="closeDetail">
+                            {{ $t('Close') }}
+                        </button>
                         <Link
                             v-if="detail.project"
-                            :href="route('projects.board.with.task', [detail.project.slug || detail.project.id, detail.id])"
+                            :href="
+                                route('projects.board.with.task', [detail.project.slug || detail.project.id, detail.id])
+                            "
                             class="doc-btn doc-btn--primary"
                         >
                             <icon name="link_external" class="h-3.5 w-3.5" />
@@ -246,27 +295,47 @@
 </template>
 
 <script>
-import Layout from '@/Shared/Layout.vue'
-import { Head, Link } from '@inertiajs/vue3'
-import Icon from '@/Shared/Icon.vue'
-import Pagination from '@/Shared/Pagination.vue'
-import FilterSelect from '@/Shared/Components/FilterSelect.vue'
-import DatePicker from '@/Shared/Components/DatePicker.vue'
-import pickBy from 'lodash/pickBy'
-import throttle from 'lodash/throttle'
-import moment_timezone from 'moment-timezone'
-import khmerCalendarMixin from '@/Utils/khmerCalendarMixin'
+import Layout from '@/Shared/Layout.vue';
+import { Head, Link } from '@inertiajs/vue3';
+import Icon from '@/Shared/Icon.vue';
+import Pagination from '@/Shared/Pagination.vue';
+import FilterSelect from '@/Shared/Components/FilterSelect.vue';
+import DatePicker from '@/Shared/Components/DatePicker.vue';
+import pickBy from 'lodash/pickBy';
+import throttle from 'lodash/throttle';
+import moment_timezone from 'moment-timezone';
+import khmerCalendarMixin from '@/Utils/khmerCalendarMixin';
 
 const EXTENSION_ICONS = {
     pdf: 'file-pdf',
-    doc: 'file-word', docx: 'file-word', rtf: 'file-word', odt: 'file-word',
-    xls: 'file-excel', xlsx: 'file-excel', csv: 'file-excel', ods: 'file-excel',
-    ppt: 'file-ppt', pptx: 'file-ppt', odp: 'file-ppt',
-    zip: 'file-zip', rar: 'file-zip', '7z': 'file-zip', tar: 'file-zip', gz: 'file-zip',
-    png: 'file-image', jpg: 'file-image', jpeg: 'file-image', gif: 'file-image',
-    webp: 'file-image', svg: 'file-image', bmp: 'file-image', heic: 'file-image',
-    txt: 'file-text', md: 'file-text', log: 'file-text',
-}
+    doc: 'file-word',
+    docx: 'file-word',
+    rtf: 'file-word',
+    odt: 'file-word',
+    xls: 'file-excel',
+    xlsx: 'file-excel',
+    csv: 'file-excel',
+    ods: 'file-excel',
+    ppt: 'file-ppt',
+    pptx: 'file-ppt',
+    odp: 'file-ppt',
+    zip: 'file-zip',
+    rar: 'file-zip',
+    '7z': 'file-zip',
+    tar: 'file-zip',
+    gz: 'file-zip',
+    png: 'file-image',
+    jpg: 'file-image',
+    jpeg: 'file-image',
+    gif: 'file-image',
+    webp: 'file-image',
+    svg: 'file-image',
+    bmp: 'file-image',
+    heic: 'file-image',
+    txt: 'file-text',
+    md: 'file-text',
+    log: 'file-text',
+};
 
 export default {
     metaInfo: { title: 'Documents' },
@@ -303,32 +372,40 @@ export default {
                 from: this.filters.from || null,
                 to: this.filters.to || null,
             },
-        }
+        };
     },
     computed: {
         activePeriod() {
-            return this.form.period || null
+            return this.form.period || null;
         },
         hasFilters() {
-            return !!(this.form.uploader || this.form.type || this.form.period)
+            return !!(this.form.uploader || this.form.type || this.form.period);
         },
         selectedUploaders() {
-            return this.form.uploader ? String(this.form.uploader).split(',').filter(Boolean) : []
+            return this.form.uploader ? String(this.form.uploader).split(',').filter(Boolean) : [];
         },
         selectedTypeCount() {
-            return this.form.type ? String(this.form.type).split(',').filter(Boolean).length : 0
+            return this.form.type ? String(this.form.type).split(',').filter(Boolean).length : 0;
         },
         typeOptions() {
-            return this.types.map((type) => ({ value: String(type.id), label: type.name }))
+            return this.types.map((type) => ({ value: String(type.id), label: type.name }));
         },
         /** DatePicker works in Date objects; the query string wants YYYY-MM-DD. */
         fromDate: {
-            get() { return this.form.from || null },
-            set(value) { this.form.from = value ? this.moment(value).format('YYYY-MM-DD') : null },
+            get() {
+                return this.form.from || null;
+            },
+            set(value) {
+                this.form.from = value ? this.moment(value).format('YYYY-MM-DD') : null;
+            },
         },
         toDate: {
-            get() { return this.form.to || null },
-            set(value) { this.form.to = value ? this.moment(value).format('YYYY-MM-DD') : null },
+            get() {
+                return this.form.to || null;
+            },
+            set(value) {
+                this.form.to = value ? this.moment(value).format('YYYY-MM-DD') : null;
+            },
         },
     },
     watch: {
@@ -336,68 +413,68 @@ export default {
             deep: true,
             handler: throttle(function () {
                 // A custom range with no dates yet would just reload the full list.
-                if (this.form.period === 'custom' && !this.form.from && !this.form.to) return
+                if (this.form.period === 'custom' && !this.form.from && !this.form.to) return;
                 this.$inertia.get(
                     this.route('workspace.view.documents', this.workspace.slug || this.workspace.id),
                     pickBy(this.form),
-                    { preserveState: true, preserveScroll: true, replace: true },
-                )
+                    { preserveState: true, preserveScroll: true, replace: true }
+                );
             }, 300),
         },
     },
     methods: {
         /** Map a file extension onto one of the file icons. */
         fileIcon(ext) {
-            return EXTENSION_ICONS[String(ext || '').toLowerCase()] || 'file-generic'
+            return EXTENSION_ICONS[String(ext || '').toLowerCase()] || 'file-generic';
         },
         /** The row icon follows the document's first attachment. */
         docIcon(doc) {
-            const first = doc.files && doc.files.length ? doc.files[0] : null
-            return first ? this.fileIcon(first.ext) : 'file-generic'
+            const first = doc.files && doc.files.length ? doc.files[0] : null;
+            return first ? this.fileIcon(first.ext) : 'file-generic';
         },
         openDetail(doc) {
-            this.detail = doc
+            this.detail = doc;
         },
         closeDetail() {
-            this.detail = null
+            this.detail = null;
         },
         fileSize(bytes) {
-            const size = Number(bytes) || 0
-            if (size < 1024) return `${this.khNum(size)} B`
-            if (size < 1024 * 1024) return `${this.khNum((size / 1024).toFixed(0))} KB`
-            return `${this.khNum((size / 1024 / 1024).toFixed(1))} MB`
+            const size = Number(bytes) || 0;
+            if (size < 1024) return `${this.khNum(size)} B`;
+            if (size < 1024 * 1024) return `${this.khNum((size / 1024).toFixed(0))} KB`;
+            return `${this.khNum((size / 1024 / 1024).toFixed(1))} MB`;
         },
         isUploaderSelected(id) {
-            return this.selectedUploaders.includes(String(id))
+            return this.selectedUploaders.includes(String(id));
         },
         toggleUploader(id) {
             const next = this.isUploaderSelected(id)
                 ? this.selectedUploaders.filter((v) => v !== String(id))
-                : [...this.selectedUploaders, String(id)]
-            this.form.uploader = next.length ? next.join(',') : null
+                : [...this.selectedUploaders, String(id)];
+            this.form.uploader = next.length ? next.join(',') : null;
         },
         chipClass(active) {
             return [
                 'flex items-center rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors',
                 active ? 'bg-indigo-600 text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200',
-            ]
+            ];
         },
         setPeriod(key) {
-            this.form.period = this.form.period === key ? null : key
+            this.form.period = this.form.period === key ? null : key;
             if (this.form.period !== 'custom') {
-                this.form.from = null
-                this.form.to = null
+                this.form.from = null;
+                this.form.to = null;
             }
         },
         reset() {
-            this.form.uploader = null
-            this.form.type = null
-            this.form.period = null
-            this.form.from = null
-            this.form.to = null
+            this.form.uploader = null;
+            this.form.type = null;
+            this.form.period = null;
+            this.form.from = null;
+            this.form.to = null;
         },
     },
-}
+};
 </script>
 
 <style scoped>
@@ -409,12 +486,21 @@ export default {
     width: 100%;
     padding: 9px 16px;
     text-align: left;
-    transition: background-color .12s ease;
+    transition: background-color 0.12s ease;
 }
-.doc-row:hover { background: rgba(238, 242, 255, .55); }
-.doc-row:hover .doc-row__chevron { color: #6574cd; transform: translateX(2px); }
+.doc-row:hover {
+    background: rgba(238, 242, 255, 0.55);
+}
+.doc-row:hover .doc-row__chevron {
+    color: #6574cd;
+    transform: translateX(2px);
+}
 
-.doc-row__icon { width: 22px; height: 22px; flex-shrink: 0; }
+.doc-row__icon {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+}
 
 .doc-row__code {
     flex-shrink: 0;
@@ -496,15 +582,23 @@ export default {
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-.doc-row__status.is-done { background: #dcfce7; color: #15803d; }
-.doc-row__status.is-open { background: #dbeafe; color: #1d4ed8; }
+.doc-row__status.is-done {
+    background: #dcfce7;
+    color: #15803d;
+}
+.doc-row__status.is-open {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
 
 .doc-row__chevron {
     width: 14px;
     height: 14px;
     flex-shrink: 0;
     color: #d1d5db;
-    transition: color .12s ease, transform .12s ease;
+    transition:
+        color 0.12s ease,
+        transform 0.12s ease;
 }
 
 /* ---- detail panel ---- */
@@ -516,7 +610,7 @@ export default {
     align-items: center;
     justify-content: center;
     padding: 1rem;
-    background: rgba(15, 23, 42, .5);
+    background: rgba(15, 23, 42, 0.5);
     backdrop-filter: blur(2px);
 }
 .doc-panel {
@@ -528,7 +622,7 @@ export default {
     overflow: hidden;
     background: #fff;
     border-radius: 16px;
-    box-shadow: 0 24px 60px rgba(15, 23, 42, .3);
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.3);
 }
 .doc-panel__head {
     display: flex;
@@ -537,7 +631,11 @@ export default {
     padding: 16px 18px;
     border-bottom: 1px solid #eef2f7;
 }
-.doc-panel__title { font-size: 15px; font-weight: 700; color: #0f172a; }
+.doc-panel__title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0f172a;
+}
 .doc-panel__code {
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 11px;
@@ -554,9 +652,15 @@ export default {
     border-radius: 999px;
     color: #94a3b8;
 }
-.doc-panel__close:hover { background: #f1f5f9; color: #475569; }
+.doc-panel__close:hover {
+    background: #f1f5f9;
+    color: #475569;
+}
 
-.doc-panel__body { padding: 16px 18px; overflow-y: auto; }
+.doc-panel__body {
+    padding: 16px 18px;
+    overflow-y: auto;
+}
 .doc-panel__grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -566,18 +670,22 @@ export default {
 .doc-panel__grid dt {
     font-size: 10.5px;
     font-weight: 800;
-    letter-spacing: .06em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     color: #94a3b8;
     margin-bottom: 2px;
 }
-.doc-panel__grid dd { font-size: 13px; color: #1f2937; line-height: 1.5; }
+.doc-panel__grid dd {
+    font-size: 13px;
+    color: #1f2937;
+    line-height: 1.5;
+}
 
 .doc-panel__label {
     margin-bottom: 8px;
     font-size: 10.5px;
     font-weight: 800;
-    letter-spacing: .06em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     color: #94a3b8;
 }
@@ -593,8 +701,12 @@ export default {
     padding: 8px 12px;
     border-bottom: 1px solid #f1f5f9;
 }
-.doc-panel__file:last-child { border-bottom: 0; }
-.doc-panel__file:hover { background: rgba(238, 242, 255, .5); }
+.doc-panel__file:last-child {
+    border-bottom: 0;
+}
+.doc-panel__file:hover {
+    background: rgba(238, 242, 255, 0.5);
+}
 .doc-panel__file-name {
     flex: 1;
     min-width: 0;
@@ -605,7 +717,11 @@ export default {
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-.doc-panel__file-size { flex-shrink: 0; font-size: 11px; color: #9ca3af; }
+.doc-panel__file-size {
+    flex-shrink: 0;
+    font-size: 11px;
+    color: #9ca3af;
+}
 .doc-panel__file-btn {
     display: flex;
     align-items: center;
@@ -616,7 +732,10 @@ export default {
     border-radius: 8px;
     color: #94a3b8;
 }
-.doc-panel__file-btn:hover { background: #e0e7ff; color: #4338ca; }
+.doc-panel__file-btn:hover {
+    background: #e0e7ff;
+    color: #4338ca;
+}
 
 .doc-panel__empty {
     padding: 1.5rem;
@@ -645,13 +764,30 @@ export default {
     font-size: 13px;
     font-weight: 700;
 }
-.doc-btn--ghost { color: #475569; background: #fff; border: 1px solid #e2e8f0; }
-.doc-btn--ghost:hover { background: #f1f5f9; }
-.doc-btn--primary { color: #fff; background: #6574cd; }
-.doc-btn--primary:hover { background: #5661b3; }
+.doc-btn--ghost {
+    color: #475569;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+}
+.doc-btn--ghost:hover {
+    background: #f1f5f9;
+}
+.doc-btn--primary {
+    color: #fff;
+    background: #6574cd;
+}
+.doc-btn--primary:hover {
+    background: #5661b3;
+}
 
-.doc-fade-enter-active, .doc-fade-leave-active { transition: opacity .15s ease; }
-.doc-fade-enter-from, .doc-fade-leave-to { opacity: 0; }
+.doc-fade-enter-active,
+.doc-fade-leave-active {
+    transition: opacity 0.15s ease;
+}
+.doc-fade-enter-from,
+.doc-fade-leave-to {
+    opacity: 0;
+}
 
 /* ---------------------------------------------------------------------
    Narrow screens
@@ -670,9 +806,16 @@ export default {
         gap: 6px 8px;
         padding: 11px 26px 11px 12px;
     }
-    .doc-row__icon { order: 0; }
-    .doc-row__code { order: 1; }
-    .doc-row__status { order: 2; margin-left: auto; }
+    .doc-row__icon {
+        order: 0;
+    }
+    .doc-row__code {
+        order: 1;
+    }
+    .doc-row__status {
+        order: 2;
+        margin-left: auto;
+    }
     .doc-row__title {
         order: 3;
         flex: 1 1 100%;
@@ -683,7 +826,9 @@ export default {
     }
     /* The board a document belongs to is in the detail panel; on a phone the
        row is better off without it. */
-    .doc-row__project { display: none; }
+    .doc-row__project {
+        display: none;
+    }
     .doc-row__files,
     .doc-row__user,
     .doc-row__date {
@@ -691,8 +836,13 @@ export default {
         width: auto;
         flex: 0 0 auto;
     }
-    .doc-row__user-name { max-width: 7rem; }
-    .doc-row__date { margin-left: auto; text-align: right; }
+    .doc-row__user-name {
+        max-width: 7rem;
+    }
+    .doc-row__date {
+        margin-left: auto;
+        text-align: right;
+    }
     .doc-row__chevron {
         position: absolute;
         top: 50%;

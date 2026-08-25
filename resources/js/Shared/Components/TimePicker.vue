@@ -1,7 +1,7 @@
 <template>
     <div class="custom-time-picker" :class="{ 'is-open': isOpen }">
         <!-- Input Trigger -->
-        <div 
+        <div
             class="time-picker-trigger"
             @click="togglePicker"
             @keydown.enter="togglePicker"
@@ -16,8 +16,8 @@
                 <span class="trigger-text">
                     {{ displayValue || placeholder }}
                 </span>
-                <Icon 
-                    :name="isOpen ? 'chevron-up' : 'chevron-down'" 
+                <Icon
+                    :name="isOpen ? 'chevron-up' : 'chevron-down'"
                     class="w-4 h-4 text-gray-400 transition-transform duration-200"
                 />
             </div>
@@ -25,19 +25,11 @@
 
         <!-- Time Picker Dropdown -->
         <Transition name="time-picker-fade">
-            <div 
-                v-if="isOpen" 
-                class="time-picker-dropdown"
-                @click.stop
-            >
+            <div v-if="isOpen" class="time-picker-dropdown" @click.stop>
                 <!-- Header -->
                 <div class="time-picker-header">
                     <h3 class="time-picker-title">Select Time</h3>
-                    <button 
-                        @click="toggleFormat"
-                        class="format-toggle"
-                        type="button"
-                    >
+                    <button @click="toggleFormat" class="format-toggle" type="button">
                         {{ is24Hour ? '24H' : '12H' }}
                     </button>
                 </div>
@@ -53,10 +45,7 @@
                                     v-for="hour in availableHours"
                                     :key="hour.value"
                                     @click="selectHour(hour.value)"
-                                    :class="[
-                                        'time-option',
-                                        { 'is-selected': hour.value === selectedHour }
-                                    ]"
+                                    :class="['time-option', { 'is-selected': hour.value === selectedHour }]"
                                     type="button"
                                 >
                                     {{ hour.display }}
@@ -74,10 +63,7 @@
                                     v-for="minute in availableMinutes"
                                     :key="minute"
                                     @click="selectMinute(minute)"
-                                    :class="[
-                                        'time-option',
-                                        { 'is-selected': minute === selectedMinute }
-                                    ]"
+                                    :class="['time-option', { 'is-selected': minute === selectedMinute }]"
                                     type="button"
                                 >
                                     {{ minute.toString().padStart(2, '0') }}
@@ -93,20 +79,14 @@
                             <div class="time-scroll-list">
                                 <button
                                     @click="selectPeriod('AM')"
-                                    :class="[
-                                        'time-option',
-                                        { 'is-selected': selectedPeriod === 'AM' }
-                                    ]"
+                                    :class="['time-option', { 'is-selected': selectedPeriod === 'AM' }]"
                                     type="button"
                                 >
                                     AM
                                 </button>
                                 <button
                                     @click="selectPeriod('PM')"
-                                    :class="[
-                                        'time-option',
-                                        { 'is-selected': selectedPeriod === 'PM' }
-                                    ]"
+                                    :class="['time-option', { 'is-selected': selectedPeriod === 'PM' }]"
                                     type="button"
                                 >
                                     PM
@@ -134,20 +114,8 @@
 
                 <!-- Footer -->
                 <div class="time-picker-footer">
-                    <button 
-                        @click="selectCurrentTime"
-                        class="current-time-button"
-                        type="button"
-                    >
-                        Now
-                    </button>
-                    <button 
-                        @click="clearTime"
-                        class="clear-button"
-                        type="button"
-                    >
-                        Clear
-                    </button>
+                    <button @click="selectCurrentTime" class="current-time-button" type="button">Now</button>
+                    <button @click="clearTime" class="clear-button" type="button">Clear</button>
                 </div>
             </div>
         </Transition>
@@ -155,35 +123,35 @@
 </template>
 
 <script>
-import Icon from '@/Shared/Icon.vue'
-import moment from 'moment'
+import Icon from '@/Shared/Icon.vue';
+import moment from 'moment';
 
 export default {
     name: 'TimePicker',
     components: {
-        Icon
+        Icon,
     },
     props: {
         modelValue: {
             type: [Date, String, null],
-            default: null
+            default: null,
         },
         placeholder: {
             type: String,
-            default: 'Select time'
+            default: 'Select time',
         },
         format: {
             type: String,
-            default: 'h:mm A'
+            default: 'h:mm A',
         },
         disabled: {
             type: Boolean,
-            default: false
+            default: false,
         },
         is24Hour: {
             type: Boolean,
-            default: false
-        }
+            default: false,
+        },
     },
     emits: ['update:modelValue', 'change'],
     data() {
@@ -191,39 +159,39 @@ export default {
             isOpen: false,
             selectedHour: 12,
             selectedMinute: 0,
-            selectedPeriod: 'AM'
-        }
+            selectedPeriod: 'AM',
+        };
     },
     computed: {
         displayValue() {
-            if (!this.modelValue) return ''
-            return moment(this.modelValue).format(this.format)
+            if (!this.modelValue) return '';
+            return moment(this.modelValue).format(this.format);
         },
         availableHours() {
-            const hours = []
+            const hours = [];
             if (this.is24Hour) {
                 for (let i = 0; i < 24; i++) {
                     hours.push({
                         value: i,
-                        display: i.toString().padStart(2, '0')
-                    })
+                        display: i.toString().padStart(2, '0'),
+                    });
                 }
             } else {
                 for (let i = 1; i <= 12; i++) {
                     hours.push({
                         value: i,
-                        display: i.toString()
-                    })
+                        display: i.toString(),
+                    });
                 }
             }
-            return hours
+            return hours;
         },
         availableMinutes() {
-            const minutes = []
+            const minutes = [];
             for (let i = 0; i < 60; i += 5) {
-                minutes.push(i)
+                minutes.push(i);
             }
-            return minutes
+            return minutes;
         },
         timePresets() {
             return [
@@ -232,118 +200,118 @@ export default {
                 { label: '1:00 PM', value: { hour: 1, minute: 0, period: 'PM' } },
                 { label: '5:00 PM', value: { hour: 5, minute: 0, period: 'PM' } },
                 { label: '6:00 PM', value: { hour: 6, minute: 0, period: 'PM' } },
-                { label: '9:00 PM', value: { hour: 9, minute: 0, period: 'PM' } }
-            ]
-        }
+                { label: '9:00 PM', value: { hour: 9, minute: 0, period: 'PM' } },
+            ];
+        },
     },
     watch: {
         modelValue: {
             immediate: true,
             handler(newValue) {
                 if (newValue) {
-                    const momentTime = moment(newValue)
-                    this.selectedHour = momentTime.hour()
-                    this.selectedMinute = momentTime.minute()
-                    this.selectedPeriod = momentTime.format('A')
+                    const momentTime = moment(newValue);
+                    this.selectedHour = momentTime.hour();
+                    this.selectedMinute = momentTime.minute();
+                    this.selectedPeriod = momentTime.format('A');
                 } else {
-                    this.selectedHour = this.is24Hour ? 0 : 12
-                    this.selectedMinute = 0
-                    this.selectedPeriod = 'AM'
+                    this.selectedHour = this.is24Hour ? 0 : 12;
+                    this.selectedMinute = 0;
+                    this.selectedPeriod = 'AM';
                 }
-            }
-        }
+            },
+        },
     },
     mounted() {
-        document.addEventListener('click', this.handleClickOutside)
-        document.addEventListener('keydown', this.handleKeydown)
+        document.addEventListener('click', this.handleClickOutside);
+        document.addEventListener('keydown', this.handleKeydown);
     },
     beforeUnmount() {
-        document.removeEventListener('click', this.handleClickOutside)
-        document.removeEventListener('keydown', this.handleKeydown)
+        document.removeEventListener('click', this.handleClickOutside);
+        document.removeEventListener('keydown', this.handleKeydown);
     },
     methods: {
         togglePicker() {
-            if (this.disabled) return
-            this.isOpen = !this.isOpen
+            if (this.disabled) return;
+            this.isOpen = !this.isOpen;
         },
-        
+
         toggleFormat() {
-            this.$emit('update:is24Hour', !this.is24Hour)
+            this.$emit('update:is24Hour', !this.is24Hour);
         },
-        
+
         selectHour(hour) {
-            this.selectedHour = hour
-            this.emitTime()
+            this.selectedHour = hour;
+            this.emitTime();
         },
-        
+
         selectMinute(minute) {
-            this.selectedMinute = minute
-            this.emitTime()
+            this.selectedMinute = minute;
+            this.emitTime();
         },
-        
+
         selectPeriod(period) {
-            this.selectedPeriod = period
-            this.emitTime()
+            this.selectedPeriod = period;
+            this.emitTime();
         },
-        
+
         selectPreset(preset) {
-            this.selectedHour = preset.value.hour
-            this.selectedMinute = preset.value.minute
-            this.selectedPeriod = preset.value.period
-            this.emitTime()
+            this.selectedHour = preset.value.hour;
+            this.selectedMinute = preset.value.minute;
+            this.selectedPeriod = preset.value.period;
+            this.emitTime();
         },
-        
+
         selectCurrentTime() {
-            const now = moment()
-            this.selectedHour = now.hour()
-            this.selectedMinute = now.minute()
-            this.selectedPeriod = now.format('A')
-            this.emitTime()
+            const now = moment();
+            this.selectedHour = now.hour();
+            this.selectedMinute = now.minute();
+            this.selectedPeriod = now.format('A');
+            this.emitTime();
         },
-        
+
         clearTime() {
-            this.selectedHour = this.is24Hour ? 0 : 12
-            this.selectedMinute = 0
-            this.selectedPeriod = 'AM'
-            this.$emit('update:modelValue', null)
-            this.$emit('change', null)
-            this.isOpen = false
+            this.selectedHour = this.is24Hour ? 0 : 12;
+            this.selectedMinute = 0;
+            this.selectedPeriod = 'AM';
+            this.$emit('update:modelValue', null);
+            this.$emit('change', null);
+            this.isOpen = false;
         },
-        
+
         emitTime() {
-            let hour = this.selectedHour
-            
+            let hour = this.selectedHour;
+
             // Convert 12-hour to 24-hour format
             if (!this.is24Hour) {
                 if (this.selectedPeriod === 'AM' && hour === 12) {
-                    hour = 0
+                    hour = 0;
                 } else if (this.selectedPeriod === 'PM' && hour !== 12) {
-                    hour += 12
+                    hour += 12;
                 }
             }
-            
-            const time = moment().hour(hour).minute(this.selectedMinute).second(0).millisecond(0)
-            this.$emit('update:modelValue', time.toDate())
-            this.$emit('change', time.toDate())
+
+            const time = moment().hour(hour).minute(this.selectedMinute).second(0).millisecond(0);
+            this.$emit('update:modelValue', time.toDate());
+            this.$emit('change', time.toDate());
         },
-        
+
         handleClickOutside(event) {
             if (!this.$el.contains(event.target)) {
-                this.isOpen = false
+                this.isOpen = false;
             }
         },
-        
+
         handleKeydown(event) {
-            if (!this.isOpen) return
-            
+            if (!this.isOpen) return;
+
             switch (event.key) {
                 case 'Escape':
-                    this.isOpen = false
-                    break
+                    this.isOpen = false;
+                    break;
             }
-        }
-    }
-}
+        },
+    },
+};
 </script>
 
 <style scoped>
@@ -398,7 +366,9 @@ export default {
     background: white;
     border: 1px solid #e5e7eb;
     border-radius: 0.5rem;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    box-shadow:
+        0 10px 25px -5px rgba(0, 0, 0, 0.1),
+        0 10px 10px -5px rgba(0, 0, 0, 0.04);
     z-index: 9999;
     margin-top: 0.25rem;
     min-width: 320px;
@@ -594,14 +564,13 @@ export default {
         right: -1rem;
         min-width: auto;
     }
-    
+
     .time-selection {
         gap: 0.5rem;
     }
-    
+
     .presets-grid {
         grid-template-columns: repeat(2, 1fr);
     }
 }
 </style>
-

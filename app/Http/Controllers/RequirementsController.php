@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Helpers\RequirementsChecker;
 use Illuminate\Routing\Controller;
+use Illuminate\View\View;
 
 class RequirementsController extends Controller
 {
@@ -12,9 +13,6 @@ class RequirementsController extends Controller
      */
     protected $requirements;
 
-    /**
-     * @param RequirementsChecker $checker
-     */
     public function __construct(RequirementsChecker $checker)
     {
         $this->requirements = $checker;
@@ -23,7 +21,7 @@ class RequirementsController extends Controller
     /**
      * Display the requirements page.
      *
-     * @return \Illuminate\View\View
+     * @return View
      */
     public function requirements()
     {

@@ -1,7 +1,7 @@
 <template>
     <div class="custom-datetime-picker" :class="{ 'is-open': isOpen }">
         <!-- Input Trigger -->
-        <div 
+        <div
             class="datetime-picker-trigger"
             @click="togglePicker"
             @keydown.enter="togglePicker"
@@ -16,8 +16,8 @@
                 <span class="trigger-text">
                     {{ displayValue || placeholder }}
                 </span>
-                <Icon 
-                    :name="isOpen ? 'chevron-up' : 'chevron-down'" 
+                <Icon
+                    :name="isOpen ? 'chevron-up' : 'chevron-down'"
                     class="w-4 h-4 text-gray-400 transition-transform duration-200"
                 />
             </div>
@@ -25,8 +25,8 @@
 
         <!-- DateTime Picker Dropdown -->
         <Transition name="datetime-picker-fade">
-            <div 
-                v-if="isOpen" 
+            <div
+                v-if="isOpen"
                 :class="['datetime-picker-dropdown', { 'modal-positioning': isInModal }]"
                 :style="dropdownStyle"
                 @click.stop
@@ -35,18 +35,10 @@
                 <div class="datetime-picker-header">
                     <h3 class="datetime-picker-title">Select Date & Time</h3>
                     <div class="header-actions">
-                        <button 
-                            @click="toggleFormat"
-                            class="format-toggle"
-                            type="button"
-                        >
+                        <button @click="toggleFormat" class="format-toggle" type="button">
                             {{ is24HourFormat ? '24H' : '12H' }}
                         </button>
-                        <button 
-                            @click="toggleMode"
-                            class="mode-toggle"
-                            type="button"
-                        >
+                        <button @click="toggleMode" class="mode-toggle" type="button">
                             {{ currentMode === 'date' ? 'Time' : 'Date' }}
                         </button>
                     </div>
@@ -76,31 +68,17 @@
                 <div v-if="currentMode === 'date'" class="date-section">
                     <!-- Month/Year Navigation -->
                     <div class="date-navigation">
-                        <button 
-                            @click="previousMonth"
-                            class="nav-button"
-                            type="button"
-                            aria-label="Previous month"
-                        >
+                        <button @click="previousMonth" class="nav-button" type="button" aria-label="Previous month">
                             <Icon name="chevron-left" class="w-4 h-4" />
                         </button>
-                        
+
                         <div class="month-year-display">
-                            <button 
-                                @click="showYearPicker = !showYearPicker"
-                                class="month-year-button"
-                                type="button"
-                            >
+                            <button @click="showYearPicker = !showYearPicker" class="month-year-button" type="button">
                                 {{ currentMonthYear }}
                             </button>
                         </div>
-                        
-                        <button 
-                            @click="nextMonth"
-                            class="nav-button"
-                            type="button"
-                            aria-label="Next month"
-                        >
+
+                        <button @click="nextMonth" class="nav-button" type="button" aria-label="Next month">
                             <Icon name="chevron-right" class="w-4 h-4" />
                         </button>
                     </div>
@@ -124,11 +102,7 @@
                     <div v-else class="calendar-grid">
                         <!-- Day Headers -->
                         <div class="day-headers">
-                            <div 
-                                v-for="day in dayHeaders" 
-                                :key="day" 
-                                class="day-header"
-                            >
+                            <div v-for="day in dayHeaders" :key="day" class="day-header">
                                 {{ day }}
                             </div>
                         </div>
@@ -145,8 +119,8 @@
                                         'is-today': day.isToday,
                                         'is-selected': day.isSelected,
                                         'is-other-month': day.isOtherMonth,
-                                        'is-disabled': day.isDisabled
-                                    }
+                                        'is-disabled': day.isDisabled,
+                                    },
                                 ]"
                                 :disabled="day.isDisabled"
                                 type="button"
@@ -169,10 +143,7 @@
                                         v-for="hour in availableHours"
                                         :key="hour.value"
                                         @click="selectHour(hour.value)"
-                                        :class="[
-                                            'time-option',
-                                            { 'is-selected': hour.value === selectedHour }
-                                        ]"
+                                        :class="['time-option', { 'is-selected': hour.value === selectedHour }]"
                                         type="button"
                                     >
                                         {{ hour.display }}
@@ -190,10 +161,7 @@
                                         v-for="minute in availableMinutes"
                                         :key="minute"
                                         @click="selectMinute(minute)"
-                                        :class="[
-                                            'time-option',
-                                            { 'is-selected': minute === selectedMinute }
-                                        ]"
+                                        :class="['time-option', { 'is-selected': minute === selectedMinute }]"
                                         type="button"
                                     >
                                         {{ minute.toString().padStart(2, '0') }}
@@ -209,20 +177,14 @@
                                 <div class="time-scroll-list">
                                     <button
                                         @click="selectPeriod('AM')"
-                                        :class="[
-                                            'time-option',
-                                            { 'is-selected': selectedPeriod === 'AM' }
-                                        ]"
+                                        :class="['time-option', { 'is-selected': selectedPeriod === 'AM' }]"
                                         type="button"
                                     >
                                         AM
                                     </button>
                                     <button
                                         @click="selectPeriod('PM')"
-                                        :class="[
-                                            'time-option',
-                                            { 'is-selected': selectedPeriod === 'PM' }
-                                        ]"
+                                        :class="['time-option', { 'is-selected': selectedPeriod === 'PM' }]"
                                         type="button"
                                     >
                                         PM
@@ -251,27 +213,9 @@
 
                 <!-- Footer -->
                 <div class="datetime-picker-footer">
-                    <button 
-                        @click="selectNow"
-                        class="now-button"
-                        type="button"
-                    >
-                        Now
-                    </button>
-                    <button 
-                        @click="clearDateTime"
-                        class="clear-button"
-                        type="button"
-                    >
-                        Clear
-                    </button>
-                    <button 
-                        @click="confirmSelection"
-                        class="confirm-button"
-                        type="button"
-                    >
-                        Done
-                    </button>
+                    <button @click="selectNow" class="now-button" type="button">Now</button>
+                    <button @click="clearDateTime" class="clear-button" type="button">Clear</button>
+                    <button @click="confirmSelection" class="confirm-button" type="button">Done</button>
                 </div>
             </div>
         </Transition>
@@ -279,47 +223,47 @@
 </template>
 
 <script>
-import Icon from '@/Shared/Icon.vue'
-import moment from 'moment'
+import Icon from '@/Shared/Icon.vue';
+import moment from 'moment';
 
 export default {
     name: 'DateTimePicker',
     components: {
-        Icon
+        Icon,
     },
     props: {
         modelValue: {
             type: [Date, String, null],
-            default: null
+            default: null,
         },
         placeholder: {
             type: String,
-            default: 'Select date & time'
+            default: 'Select date & time',
         },
         format: {
             type: String,
-            default: 'MMM D, YYYY h:mm A'
+            default: 'MMM D, YYYY h:mm A',
         },
         disabled: {
             type: Boolean,
-            default: false
+            default: false,
         },
         is24Hour: {
             type: Boolean,
-            default: false
+            default: false,
         },
         minDate: {
             type: [Date, String, null],
-            default: null
+            default: null,
         },
         maxDate: {
             type: [Date, String, null],
-            default: null
+            default: null,
         },
         disabledDates: {
             type: Array,
-            default: () => []
-        }
+            default: () => [],
+        },
     },
     emits: ['update:modelValue', 'change', 'update:is24Hour'],
     data() {
@@ -332,50 +276,50 @@ export default {
             selectedHour: 12,
             selectedMinute: 0,
             selectedPeriod: 'AM',
-            localIs24Hour: false
-        }
+            localIs24Hour: false,
+        };
     },
     computed: {
         displayValue() {
-            if (!this.modelValue) return ''
-            return moment(this.modelValue).format(this.format)
+            if (!this.modelValue) return '';
+            return moment(this.modelValue).format(this.format);
         },
         is24HourFormat() {
-            return this.is24Hour !== undefined ? this.is24Hour : this.localIs24Hour
+            return this.is24Hour !== undefined ? this.is24Hour : this.localIs24Hour;
         },
         currentMonthYear() {
-            return this.currentDate.format('MMMM YYYY')
+            return this.currentDate.format('MMMM YYYY');
         },
         currentYear() {
-            return this.currentDate.year()
+            return this.currentDate.year();
         },
         yearRange() {
-            const currentYear = this.currentDate.year()
-            const years = []
+            const currentYear = this.currentDate.year();
+            const years = [];
             for (let i = currentYear - 10; i <= currentYear + 10; i++) {
-                years.push(i)
+                years.push(i);
             }
-            return years
+            return years;
         },
         dayHeaders() {
-            return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+            return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         },
         calendarDays() {
-            const startOfMonth = this.currentDate.clone().startOf('month')
-            const endOfMonth = this.currentDate.clone().endOf('month')
-            const startOfCalendar = startOfMonth.clone().startOf('week')
-            const endOfCalendar = endOfMonth.clone().endOf('week')
-            
-            const days = []
-            const current = startOfCalendar.clone()
-            const today = moment()
-            
+            const startOfMonth = this.currentDate.clone().startOf('month');
+            const endOfMonth = this.currentDate.clone().endOf('month');
+            const startOfCalendar = startOfMonth.clone().startOf('week');
+            const endOfCalendar = endOfMonth.clone().endOf('week');
+
+            const days = [];
+            const current = startOfCalendar.clone();
+            const today = moment();
+
             while (current.isSameOrBefore(endOfCalendar)) {
-                const isToday = current.isSame(today, 'day')
-                const isSelected = this.selectedDate && current.isSame(this.selectedDate, 'day')
-                const isOtherMonth = !current.isSame(this.currentDate, 'month')
-                const isDisabled = this.isDateDisabled(current)
-                
+                const isToday = current.isSame(today, 'day');
+                const isSelected = this.selectedDate && current.isSame(this.selectedDate, 'day');
+                const isOtherMonth = !current.isSame(this.currentDate, 'month');
+                const isDisabled = this.isDateDisabled(current);
+
                 days.push({
                     date: current.date(),
                     month: current.month(),
@@ -384,39 +328,39 @@ export default {
                     isToday,
                     isSelected,
                     isOtherMonth,
-                    isDisabled
-                })
-                
-                current.add(1, 'day')
+                    isDisabled,
+                });
+
+                current.add(1, 'day');
             }
-            
-            return days
+
+            return days;
         },
         availableHours() {
-            const hours = []
+            const hours = [];
             if (this.is24HourFormat) {
                 for (let i = 0; i < 24; i++) {
                     hours.push({
                         value: i,
-                        display: i.toString().padStart(2, '0')
-                    })
+                        display: i.toString().padStart(2, '0'),
+                    });
                 }
             } else {
                 for (let i = 1; i <= 12; i++) {
                     hours.push({
                         value: i,
-                        display: i.toString()
-                    })
+                        display: i.toString(),
+                    });
                 }
             }
-            return hours
+            return hours;
         },
         availableMinutes() {
-            const minutes = []
+            const minutes = [];
             for (let i = 0; i < 60; i += 5) {
-                minutes.push(i)
+                minutes.push(i);
             }
-            return minutes
+            return minutes;
         },
         timePresets() {
             return [
@@ -425,261 +369,259 @@ export default {
                 { label: '1:00 PM', value: { hour: 1, minute: 0, period: 'PM' } },
                 { label: '5:00 PM', value: { hour: 5, minute: 0, period: 'PM' } },
                 { label: '6:00 PM', value: { hour: 6, minute: 0, period: 'PM' } },
-                { label: '9:00 PM', value: { hour: 9, minute: 0, period: 'PM' } }
-            ]
+                { label: '9:00 PM', value: { hour: 9, minute: 0, period: 'PM' } },
+            ];
         },
         isInModal() {
-            return this.$el && this.$el.closest('.fixed.inset-0')
+            return this.$el && this.$el.closest('.fixed.inset-0');
         },
         dropdownStyle() {
-            if (!this.isInModal || !this.isOpen) return {}
-            
-            const rect = this.$el.getBoundingClientRect()
-            const viewportHeight = window.innerHeight
-            const dropdownHeight = 500 // Approximate dropdown height
-            
+            if (!this.isInModal || !this.isOpen) return {};
+
+            const rect = this.$el.getBoundingClientRect();
+            const viewportHeight = window.innerHeight;
+            const dropdownHeight = 500; // Approximate dropdown height
+
             // Check if dropdown would go off screen
-            const spaceBelow = viewportHeight - rect.bottom
-            const spaceAbove = rect.top
-            
-            let top = rect.bottom + 4
-            let left = rect.left
-            let right = 'auto'
-            let width = rect.width
-            
+            const spaceBelow = viewportHeight - rect.bottom;
+            const spaceAbove = rect.top;
+
+            let top = rect.bottom + 4;
+            let left = rect.left;
+            let right = 'auto';
+            let width = rect.width;
+
             // If not enough space below, position above
             if (spaceBelow < dropdownHeight && spaceAbove > dropdownHeight) {
-                top = rect.top - dropdownHeight - 4
+                top = rect.top - dropdownHeight - 4;
             }
-            
+
             // Ensure dropdown stays within viewport
             if (left + width > window.innerWidth) {
-                left = window.innerWidth - width - 16
+                left = window.innerWidth - width - 16;
             }
             if (left < 16) {
-                left = 16
+                left = 16;
             }
-            
+
             return {
                 position: 'fixed',
                 top: `${top}px`,
                 left: `${left}px`,
                 right: 'auto',
                 width: `${width}px`,
-                zIndex: 10000
-            }
-        }
+                zIndex: 10000,
+            };
+        },
     },
     watch: {
         is24Hour: {
             immediate: true,
             handler(newValue) {
                 if (newValue !== undefined) {
-                    this.localIs24Hour = newValue
+                    this.localIs24Hour = newValue;
                 }
-            }
+            },
         },
         modelValue: {
             immediate: true,
             handler(newValue) {
                 if (newValue) {
-                    const momentTime = moment(newValue)
-                    this.selectedDate = momentTime.toDate()
-                    this.selectedHour = momentTime.hour()
-                    this.selectedMinute = momentTime.minute()
-                    this.selectedPeriod = momentTime.format('A')
+                    const momentTime = moment(newValue);
+                    this.selectedDate = momentTime.toDate();
+                    this.selectedHour = momentTime.hour();
+                    this.selectedMinute = momentTime.minute();
+                    this.selectedPeriod = momentTime.format('A');
                 } else {
-                    this.selectedDate = null
-                    this.selectedHour = this.is24HourFormat ? 0 : 12
-                    this.selectedMinute = 0
-                    this.selectedPeriod = 'AM'
+                    this.selectedDate = null;
+                    this.selectedHour = this.is24HourFormat ? 0 : 12;
+                    this.selectedMinute = 0;
+                    this.selectedPeriod = 'AM';
                 }
-            }
-        }
+            },
+        },
     },
     mounted() {
-        document.addEventListener('click', this.handleClickOutside)
-        document.addEventListener('keydown', this.handleKeydown)
-        window.addEventListener('resize', this.updatePosition)
-        window.addEventListener('scroll', this.updatePosition, true)
+        document.addEventListener('click', this.handleClickOutside);
+        document.addEventListener('keydown', this.handleKeydown);
+        window.addEventListener('resize', this.updatePosition);
+        window.addEventListener('scroll', this.updatePosition, true);
     },
     beforeUnmount() {
-        document.removeEventListener('click', this.handleClickOutside)
-        document.removeEventListener('keydown', this.handleKeydown)
-        window.removeEventListener('resize', this.updatePosition)
-        window.removeEventListener('scroll', this.updatePosition, true)
+        document.removeEventListener('click', this.handleClickOutside);
+        document.removeEventListener('keydown', this.handleKeydown);
+        window.removeEventListener('resize', this.updatePosition);
+        window.removeEventListener('scroll', this.updatePosition, true);
     },
     methods: {
         togglePicker() {
-            if (this.disabled) return
-            this.isOpen = !this.isOpen
-            this.showYearPicker = false
+            if (this.disabled) return;
+            this.isOpen = !this.isOpen;
+            this.showYearPicker = false;
         },
-        
+
         toggleFormat() {
-            this.localIs24Hour = !this.localIs24Hour
+            this.localIs24Hour = !this.localIs24Hour;
             // Reset hour selection when switching formats
             if (this.localIs24Hour) {
-                this.selectedHour = 0
+                this.selectedHour = 0;
             } else {
-                this.selectedHour = 12
+                this.selectedHour = 12;
             }
-            this.selectedPeriod = 'AM'
-            
+            this.selectedPeriod = 'AM';
+
             // Emit the format change to parent
-            this.$emit('update:is24Hour', this.localIs24Hour)
+            this.$emit('update:is24Hour', this.localIs24Hour);
         },
-        
+
         toggleMode() {
-            this.currentMode = this.currentMode === 'date' ? 'time' : 'date'
+            this.currentMode = this.currentMode === 'date' ? 'time' : 'date';
         },
-        
+
         setMode(mode) {
-            this.currentMode = mode
+            this.currentMode = mode;
         },
-        
+
         previousMonth() {
-            this.currentDate = this.currentDate.clone().subtract(1, 'month')
+            this.currentDate = this.currentDate.clone().subtract(1, 'month');
             this.$nextTick(() => {
                 // Force reactivity update
-            })
+            });
         },
-        
+
         nextMonth() {
-            this.currentDate = this.currentDate.clone().add(1, 'month')
+            this.currentDate = this.currentDate.clone().add(1, 'month');
             this.$nextTick(() => {
                 // Force reactivity update
-            })
+            });
         },
-        
+
         selectYear(year) {
-            this.currentDate = this.currentDate.clone().year(year)
-            this.showYearPicker = false
+            this.currentDate = this.currentDate.clone().year(year);
+            this.showYearPicker = false;
         },
-        
+
         selectDate(day) {
-            if (day.isDisabled) return
-            
-            this.selectedDate = day.moment.toDate()
-            this.emitDateTime()
+            if (day.isDisabled) return;
+
+            this.selectedDate = day.moment.toDate();
+            this.emitDateTime();
         },
-        
+
         selectHour(hour) {
-            this.selectedHour = hour
-            this.emitDateTime()
+            this.selectedHour = hour;
+            this.emitDateTime();
         },
-        
+
         selectMinute(minute) {
-            this.selectedMinute = minute
-            this.emitDateTime()
+            this.selectedMinute = minute;
+            this.emitDateTime();
         },
-        
+
         selectPeriod(period) {
-            this.selectedPeriod = period
-            this.emitDateTime()
+            this.selectedPeriod = period;
+            this.emitDateTime();
         },
-        
+
         selectPreset(preset) {
-            this.selectedHour = preset.value.hour
-            this.selectedMinute = preset.value.minute
-            this.selectedPeriod = preset.value.period
-            this.emitDateTime()
+            this.selectedHour = preset.value.hour;
+            this.selectedMinute = preset.value.minute;
+            this.selectedPeriod = preset.value.period;
+            this.emitDateTime();
         },
-        
+
         selectNow() {
-            const now = moment()
-            this.selectedDate = now.toDate()
-            this.selectedHour = now.hour()
-            this.selectedMinute = now.minute()
-            this.selectedPeriod = now.format('A')
-            this.emitDateTime()
+            const now = moment();
+            this.selectedDate = now.toDate();
+            this.selectedHour = now.hour();
+            this.selectedMinute = now.minute();
+            this.selectedPeriod = now.format('A');
+            this.emitDateTime();
         },
-        
+
         clearDateTime() {
-            this.selectedDate = null
-            this.selectedHour = this.is24HourFormat ? 0 : 12
-            this.selectedMinute = 0
-            this.selectedPeriod = 'AM'
-            this.$emit('update:modelValue', null)
-            this.$emit('change', null)
-            this.isOpen = false
+            this.selectedDate = null;
+            this.selectedHour = this.is24HourFormat ? 0 : 12;
+            this.selectedMinute = 0;
+            this.selectedPeriod = 'AM';
+            this.$emit('update:modelValue', null);
+            this.$emit('change', null);
+            this.isOpen = false;
         },
-        
+
         confirmSelection() {
-            this.isOpen = false
+            this.isOpen = false;
         },
-        
+
         emitDateTime() {
-            if (!this.selectedDate) return
-            
-            let hour = this.selectedHour
-            
+            if (!this.selectedDate) return;
+
+            let hour = this.selectedHour;
+
             // Convert 12-hour to 24-hour format
             if (!this.is24HourFormat) {
                 if (this.selectedPeriod === 'AM' && hour === 12) {
-                    hour = 0
+                    hour = 0;
                 } else if (this.selectedPeriod === 'PM' && hour !== 12) {
-                    hour += 12
+                    hour += 12;
                 }
             }
-            
+
             const dateTime = moment(this.selectedDate)
                 .hour(hour)
                 .minute(this.selectedMinute)
                 .second(0)
                 .millisecond(0)
-                .toDate()
-            
-            this.$emit('update:modelValue', dateTime)
-            this.$emit('change', dateTime)
+                .toDate();
+
+            this.$emit('update:modelValue', dateTime);
+            this.$emit('change', dateTime);
         },
-        
+
         isDateDisabled(date) {
-            if (this.minDate && date.isBefore(this.minDate, 'day')) return true
-            if (this.maxDate && date.isAfter(this.maxDate, 'day')) return true
-            
-            return this.disabledDates.some(disabledDate => 
-                date.isSame(moment(disabledDate), 'day')
-            )
+            if (this.minDate && date.isBefore(this.minDate, 'day')) return true;
+            if (this.maxDate && date.isAfter(this.maxDate, 'day')) return true;
+
+            return this.disabledDates.some((disabledDate) => date.isSame(moment(disabledDate), 'day'));
         },
-        
+
         handleClickOutside(event) {
             if (!this.$el.contains(event.target)) {
-                this.isOpen = false
-                this.showYearPicker = false
+                this.isOpen = false;
+                this.showYearPicker = false;
             }
         },
-        
+
         handleKeydown(event) {
-            if (!this.isOpen) return
-            
+            if (!this.isOpen) return;
+
             switch (event.key) {
                 case 'Escape':
-                    this.isOpen = false
-                    this.showYearPicker = false
-                    break
+                    this.isOpen = false;
+                    this.showYearPicker = false;
+                    break;
                 case 'ArrowLeft':
                     if (this.currentMode === 'date') {
-                        event.preventDefault()
-                        this.previousMonth()
+                        event.preventDefault();
+                        this.previousMonth();
                     }
-                    break
+                    break;
                 case 'ArrowRight':
                     if (this.currentMode === 'date') {
-                        event.preventDefault()
-                        this.nextMonth()
+                        event.preventDefault();
+                        this.nextMonth();
                     }
-                    break
+                    break;
             }
         },
-        
+
         updatePosition() {
             if (this.isInModal && this.isOpen) {
-                this.$forceUpdate()
+                this.$forceUpdate();
             }
-        }
-    }
-}
+        },
+    },
+};
 </script>
 
 <style scoped>
@@ -734,7 +676,9 @@ export default {
     background: white;
     border: 1px solid #e5e7eb;
     border-radius: 0.5rem;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    box-shadow:
+        0 10px 25px -5px rgba(0, 0, 0, 0.1),
+        0 10px 10px -5px rgba(0, 0, 0, 0.04);
     z-index: 9999;
     margin-top: 0.25rem;
     min-width: 400px;
@@ -1140,20 +1084,20 @@ export default {
         right: -1rem;
         min-width: auto;
     }
-    
+
     .time-selection {
         gap: 0.5rem;
     }
-    
+
     .presets-grid {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .calendar-day {
         width: 2.5rem;
         height: 2.5rem;
     }
-    
+
     .year-grid {
         grid-template-columns: repeat(3, 1fr);
     }

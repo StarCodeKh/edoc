@@ -10,25 +10,27 @@ use Inertia\Inertia;
 
 class WorkspaceTypesController extends Controller
 {
-
-    public function __construct(){
+    public function __construct()
+    {
         $this->middleware(RedirectIfNotAdmin::class);
     }
 
-    public function create(){
-        return Inertia::render('WorkspaceTypes/Create',[
-            'title' => 'Create a new workspace type'
+    public function create()
+    {
+        return Inertia::render('WorkspaceTypes/Create', [
+            'title' => 'Create a new workspace type',
         ]);
     }
 
     public function jsonGet()
     {
         $types = WorkspaceType::get()->toArray();
+
         return response()->json(['types' => $types]);
     }
 
-
-    public function index(Request $request){
+    public function index(Request $request)
+    {
         return Inertia::render('WorkspaceTypes/Index', [
             'title' => 'Workspace Type',
             'filters' => $request->all(['search']),
@@ -43,16 +45,19 @@ class WorkspaceTypesController extends Controller
         ]);
     }
 
-    public function store(Request $request){
+    public function store(Request $request)
+    {
         $userRequest = $request->validate([
             'name' => ['required', 'max:50'],
         ]);
 
         WorkspaceType::create($userRequest);
+
         return Redirect::route('workspace_types.index')->with('success', 'Workspace type created.');
     }
 
-    public function update(WorkspaceType $workspaceType, Request $request) {
+    public function update(WorkspaceType $workspaceType, Request $request)
+    {
         if (config('app.demo')) {
             return Redirect::back()->with('error', 'Updating workspace type is not allowed for the live demo.');
         }
@@ -62,26 +67,30 @@ class WorkspaceTypesController extends Controller
         ]);
 
         $workspaceType->update(['name' => $userRequest['name']]);
+
         return Redirect::route('workspace_types.index')->with('success', 'Workspace type updated.');
     }
 
-    public function edit(WorkspaceType $workspaceType) {
+    public function edit(WorkspaceType $workspaceType)
+    {
         return Inertia::render('WorkspaceTypes/Edit', [
             'title' => $workspaceType->name,
             'workspace_type' => [
                 'id' => $workspaceType->id,
-                'name' => $workspaceType->name
+                'name' => $workspaceType->name,
             ],
         ]);
     }
 
-    public function destroy(WorkspaceType $workspaceType) {
+    public function destroy(WorkspaceType $workspaceType)
+    {
 
         if (config('app.demo')) {
             return Redirect::back()->with('error', 'Deleting workspace type is not allowed for the live demo.');
         }
 
         $workspaceType->delete();
+
         return Redirect::route('workspace_types.index')->with('success', 'Workspace type deleted!');
     }
 }

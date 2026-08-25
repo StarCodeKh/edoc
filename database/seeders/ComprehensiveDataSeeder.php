@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Artisan;
 
 class ComprehensiveDataSeeder extends Seeder
 {
@@ -19,6 +18,7 @@ class ComprehensiveDataSeeder extends Seeder
     public function preserveUsers($preserve = true)
     {
         $this->preserveUsers = $preserve;
+
         return $this;
     }
 
@@ -69,7 +69,7 @@ class ComprehensiveDataSeeder extends Seeder
 
         } catch (\Exception $e) {
             DB::statement('SET FOREIGN_KEY_CHECKS=1;');
-            $this->command->error('❌ Seeding failed: ' . $e->getMessage());
+            $this->command->error('❌ Seeding failed: '.$e->getMessage());
             throw $e;
         }
     }
@@ -80,13 +80,13 @@ class ComprehensiveDataSeeder extends Seeder
 
         // Check if basic seeders need to run
         $coreSeederClasses = [
-//            'BackgroundSeeder',
-//            'EmailTemplateSeeder',
-//            'LanguageSeeder',
-//            'RoleSeeder',
-//            'SettingSeeder',
+            //            'BackgroundSeeder',
+            //            'EmailTemplateSeeder',
+            //            'LanguageSeeder',
+            //            'RoleSeeder',
+            //            'SettingSeeder',
             'WorkspaceTypeSeeder',
-//            'NotificationSettingSeeder',
+            //            'NotificationSettingSeeder',
         ];
 
         foreach ($coreSeederClasses as $seederClass) {
@@ -121,12 +121,12 @@ class ComprehensiveDataSeeder extends Seeder
     private function truncateTables()
     {
         // Safety check for production
-//        if (app()->environment('production')) {
-//            if (!$this->command->confirm('⚠️  You are about to truncate all data in PRODUCTION. Are you sure?')) {
-//                $this->command->info('❌ Truncation cancelled.');
-//                return;
-//            }
-//        }
+        //        if (app()->environment('production')) {
+        //            if (!$this->command->confirm('⚠️  You are about to truncate all data in PRODUCTION. Are you sure?')) {
+        //                $this->command->info('❌ Truncation cancelled.');
+        //                return;
+        //            }
+        //        }
 
         $this->command->info('🧹 Truncating tables before seeding...');
 
@@ -152,13 +152,13 @@ class ComprehensiveDataSeeder extends Seeder
             // Core system tables (can be truncated safely)
             'user_settings',
             'notifications',
-//            'notification_settings',
-//            'settings',
-//            'email_templates',
-//            'languages',
-//            'roles',
+            //            'notification_settings',
+            //            'settings',
+            //            'email_templates',
+            //            'languages',
+            //            'roles',
             'workspace_types',
-//            'backgrounds',
+            //            'backgrounds',
         ];
 
         // Handle users table separately
@@ -176,12 +176,12 @@ class ComprehensiveDataSeeder extends Seeder
                     $this->command->line("  ✓ Truncated: {$table}");
                 }
             } catch (\Exception $e) {
-                $this->command->warn("  ⚠ Could not truncate {$table}: " . $e->getMessage());
+                $this->command->warn("  ⚠ Could not truncate {$table}: ".$e->getMessage());
             }
         }
 
         if ($this->preserveUsers) {
-            $this->command->info("  ℹ️  Preserved existing users");
+            $this->command->info('  ℹ️  Preserved existing users');
         }
 
         $this->command->info("🗑️  Truncated {$truncatedCount} tables successfully");
@@ -200,7 +200,7 @@ class ComprehensiveDataSeeder extends Seeder
             'checklists', 'attachments', 'repeats', 'watchers', 'tasks',
             'board_lists', 'labels', 'projects', 'team_members', 'workspaces',
             'user_settings', 'notifications', 'notification_settings', 'settings',
-            'email_templates', 'languages', 'roles', 'workspace_types', 'backgrounds'
+            'email_templates', 'languages', 'roles', 'workspace_types', 'backgrounds',
         ];
 
         if (!$this->preserveUsers) {

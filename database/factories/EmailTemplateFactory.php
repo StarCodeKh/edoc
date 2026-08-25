@@ -14,9 +14,10 @@ class EmailTemplateFactory extends Factory
     public function definition()
     {
         $name = $this->faker->name;
+
         return [
             'name' => $name,
-            'slug' => strtolower(str_replace(' ','_',$name)),
+            'slug' => strtolower(str_replace(' ', '_', $name)),
             'details' => $this->faker->text,
             'html' => $this->faker->randomHtml,
             //

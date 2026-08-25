@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Helpers\PermissionsChecker;
 use Illuminate\Routing\Controller;
+use Illuminate\View\View;
 
 class PermissionsController extends Controller
 {
@@ -12,9 +13,6 @@ class PermissionsController extends Controller
      */
     protected $permissions;
 
-    /**
-     * @param PermissionsChecker $checker
-     */
     public function __construct(PermissionsChecker $checker)
     {
         $this->permissions = $checker;
@@ -23,7 +21,7 @@ class PermissionsController extends Controller
     /**
      * Display the permissions check page.
      *
-     * @return \Illuminate\View\View
+     * @return View
      */
     public function permissions()
     {

@@ -54,7 +54,7 @@ class TaskAbility
         }
 
         // Their own document, still in the board it was created in.
-        return self::isOwner($user, $task) && ! $task->hasLeftOriginList();
+        return self::isOwner($user, $task) && !$task->hasLeftOriginList();
     }
 
     /** Moving between boards is an edit, kept separate so it can diverge later. */
@@ -87,11 +87,11 @@ class TaskAbility
     public static function summary(User $user, Task $task): array
     {
         return [
-            'view'    => self::canView($user, $task),
-            'edit'    => self::canEdit($user, $task),
-            'move'    => self::canMove($user, $task),
-            'delete'  => self::canDelete($user, $task),
-            'attach'  => self::canAttach($user, $task),
+            'view' => self::canView($user, $task),
+            'edit' => self::canEdit($user, $task),
+            'move' => self::canMove($user, $task),
+            'delete' => self::canDelete($user, $task),
+            'attach' => self::canAttach($user, $task),
             'comment' => self::canComment($user, $task),
         ];
     }

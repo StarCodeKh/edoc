@@ -36,6 +36,7 @@ class PruneOldNotifications extends Command
             ->delete();
 
         $this->info("Done. Pruned {$count} notifications.");
+
         return 0;
     }
 }

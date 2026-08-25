@@ -3,16 +3,16 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Redirect;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
 class canInstall
 {
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
-     * @return \Illuminate\Http\RedirectResponse|mixed
+     * @param  Request  $request
+     * @return RedirectResponse|mixed
      */
     public function handle($request, Closure $next)
     {

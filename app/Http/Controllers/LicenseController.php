@@ -12,14 +12,12 @@ use Inertia\Inertia;
 
 class LicenseController extends Controller
 {
-
     public function showActivationForm()
     {
         return Inertia::render('License/Activate', [
-            'message' => session('license_error')
+            'message' => session('license_error'),
         ]);
     }
-
 
     public function activate(Request $request)
     {
@@ -29,14 +27,15 @@ class LicenseController extends Controller
         $itemId = config('services.license.item_id');
         $currentDomain = $request->getHttpHost();
 
-        $response = Http::post($licenseServerUrl . '/api/activate', [
+        $response = Http::post($licenseServerUrl.'/api/activate', [
             'purchase_code' => $request->purchase_code,
-            'domain'        => $currentDomain,
-            'item_id'       => $itemId,
+            'domain' => $currentDomain,
+            'item_id' => $itemId,
         ]);
 
         if ($response->failed()) {
             $errorMessage = $response->json('message', 'An unknown error occurred.');
+
             return Redirect::route('license.show')->with('license_error', $errorMessage);
         }
 
@@ -64,10 +63,10 @@ class LicenseController extends Controller
         }
 
         return Inertia::render('License/Settings', [
-            'title'           => 'License Settings',
+            'title' => 'License Settings',
             'activatedDomain' => $activatedDomain,
-            'licenseKey'      => $licenseKey,
-            'error'           => session('error'),
+            'licenseKey' => $licenseKey,
+            'error' => session('error'),
         ]);
     }
 
@@ -87,14 +86,15 @@ class LicenseController extends Controller
         $licenseServerUrl = config('services.license.server_url');
         $itemId = config('services.license.item_id');
 
-        $response = Http::post($licenseServerUrl . '/api/deactivate', [
+        $response = Http::post($licenseServerUrl.'/api/deactivate', [
             'purchase_code' => $licenseKey,
-            'domain'        => $domain,
-            'item_id'       => $itemId,
+            'domain' => $domain,
+            'item_id' => $itemId,
         ]);
 
         if ($response->failed()) {
             $errorMessage = $response->json('message', 'Deactivation failed from server.');
+
             return Redirect::route('license.settings')->with('error', $errorMessage);
         }
 

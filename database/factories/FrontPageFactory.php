@@ -14,13 +14,14 @@ class FrontPageFactory extends Factory
     public function definition()
     {
         $title = $this->faker->word;
+
         return [
             'title' => $title,
-            'slug' => strtolower(str_replace(' ','_',$title)),
+            'slug' => strtolower(str_replace(' ', '_', $title)),
             'is_active' => 1,
             'html' => [
                 'title' => $this->faker->sentence,
-                'content' => $this->faker->sentence(10)
+                'content' => $this->faker->sentence(10),
             ],
         ];
     }

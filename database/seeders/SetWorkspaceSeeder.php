@@ -27,14 +27,14 @@ class SetWorkspaceSeeder extends Seeder
         $project = Project::factory()->create(['title' => 'Project Management', 'slug' => $this->clean('Project Management'),
             'user_id' => $user->id, 'background_id' => $backgrounds->random()->id, 'workspace_id' => $workspace->id]);
 
-
     }
 
-
-    private function clean($string) {
+    private function clean($string)
+    {
         $string = str_replace(' ', '-', $string);
-        $string = preg_match("/[a-z]/i", $string)?$string:'untitled';
+        $string = preg_match('/[a-z]/i', $string) ? $string : 'untitled';
         $string = preg_replace('/[^A-Za-z0-9\-]/', '', $string);
+
         return preg_replace('/-+/', '-', $string);
     }
 }

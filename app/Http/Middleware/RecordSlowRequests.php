@@ -18,7 +18,7 @@ class RecordSlowRequests
 {
     public function handle(Request $request, Closure $next)
     {
-        if (! config('performance.enabled', true)) {
+        if (!config('performance.enabled', true)) {
             return $next($request);
         }
 

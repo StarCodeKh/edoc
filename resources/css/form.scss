@@ -1,5 +1,5 @@
 .form-label {
-  @apply mb-2 block select-none;
+    @apply mb-2 block select-none;
     font-size: 15px;
     font-weight: bold;
 }
@@ -7,53 +7,54 @@
 .form-input,
 .form-textarea,
 .form-select {
-  @apply leading-normal block w-full border bg-white font-sans rounded text-left appearance-none relative focus:border-indigo-400 focus:ring;
+    @apply leading-normal block w-full border bg-white font-sans rounded text-left appearance-none relative focus:border-indigo-400 focus:ring;
     padding: 3px 10px;
     font-size: 15px;
     height: 2.3rem;
 
-  &::placeholder {
-    @apply text-gray-500 opacity-100;
-  }
+    &::placeholder {
+        @apply text-gray-500 opacity-100;
+    }
 }
 
-.form-textarea{
+.form-textarea {
     height: inherit;
 }
 
 /* iOS zooms the page in whenever a focused field is under 16px. Bump the
    shared controls on small screens so tapping a field doesn't jolt the layout. */
 @media (max-width: 640px) {
-  .form-input,
-  .form-textarea,
-  .form-select {
-    font-size: 16px;
-    height: 2.6rem;
-  }
+    .form-input,
+    .form-textarea,
+    .form-select {
+        font-size: 16px;
+        height: 2.6rem;
+    }
 
-  .form-textarea {
-    height: inherit;
-  }
+    .form-textarea {
+        height: inherit;
+    }
 }
 
 .form-select {
-  @apply pr-6;
+    @apply pr-6;
 
-  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAQCAYAAAAMJL+VAAAABGdBTUEAALGPC/xhBQAAAQtJREFUOBG1lEEOgjAQRalbGj2OG9caOACn4ALGtfEuHACiazceR1PWOH/CNA3aMiTaBDpt/7zPdBKy7M/DCL9pGkvxxVp7KsvyJftL5rZt1865M+Ucq6pyyF3hNcI7Cuu+728QYn/JQA5yKaempxuZmQngOwEaYx55nu+1lQh8GIatMGi+01NwBcEmhxBqK4nAPZJ78K0KKFAJmR3oPp8+Iwgob0Oa6+TLoeCvRx+mTUYf/FVBGTPRwDkfLxnaSrRwcH0FWhNOmrkWYbE2XEicqgSa1J0LQ+aPCuQgZiLnwewbGuz5MGoAhcIkCQcjaTBjMgtXGURMVHC1wcQEy0J+Zlj8bKAnY1/UzDe2dbAVqfXn6wAAAABJRU5ErkJggg==');
-  background-size: 0.7rem;
-  background-repeat: no-repeat;
-  background-position: right 0.7rem center;
+    background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAQCAYAAAAMJL+VAAAABGdBTUEAALGPC/xhBQAAAQtJREFUOBG1lEEOgjAQRalbGj2OG9caOACn4ALGtfEuHACiazceR1PWOH/CNA3aMiTaBDpt/7zPdBKy7M/DCL9pGkvxxVp7KsvyJftL5rZt1865M+Ucq6pyyF3hNcI7Cuu+728QYn/JQA5yKaempxuZmQngOwEaYx55nu+1lQh8GIatMGi+01NwBcEmhxBqK4nAPZJ78K0KKFAJmR3oPp8+Iwgob0Oa6+TLoeCvRx+mTUYf/FVBGTPRwDkfLxnaSrRwcH0FWhNOmrkWYbE2XEicqgSa1J0LQ+aPCuQgZiLnwewbGuz5MGoAhcIkCQcjaTBjMgtXGURMVHC1wcQEy0J+Zlj8bKAnY1/UzDe2dbAVqfXn6wAAAABJRU5ErkJggg==");
+    background-size: 0.7rem;
+    background-repeat: no-repeat;
+    background-position: right 0.7rem center;
 
-  &::-ms-expand {
-    @apply opacity-0;
-  }
+    &::-ms-expand {
+        @apply opacity-0;
+    }
 }
 
-.ticket-filters{
-    .search{
+.ticket-filters {
+    .search {
         max-width: 35rem;
     }
-    select.form-select, input{
+    select.form-select,
+    input {
         height: 44px;
     }
 }
@@ -61,72 +62,71 @@
 .form-input.error,
 .form-textarea.error,
 .form-select.error {
-  @apply border-red-500 focus:ring focus:ring-red-200;
+    @apply border-red-500 focus:ring focus:ring-red-200;
 }
 
 .form-error {
-  @apply text-red-700 mt-2 text-sm;
+    @apply text-red-700 mt-2 text-sm;
 }
 
 /* Dark theme for the shared form controls. Keyed to the `.dark` class so it
    follows the in-app theme toggle, and specific enough (two classes) to beat
    the blanket `body .dark input` rule in dark_screen.scss. */
 .dark {
-  .form-label {
-    color: #cbd5e1;
-  }
-
-  .form-input,
-  .form-textarea,
-  .form-select {
-    background-color: #0f172a;
-    border-color: #475569;
-    color: #e2e8f0;
-
-    &::placeholder {
-      color: #64748b;
-      opacity: 1;
+    .form-label {
+        color: #cbd5e1;
     }
 
-    &:focus {
-      border-color: #6366f1;
+    .form-input,
+    .form-textarea,
+    .form-select {
+        background-color: #0f172a;
+        border-color: #475569;
+        color: #e2e8f0;
+
+        &::placeholder {
+            color: #64748b;
+            opacity: 1;
+        }
+
+        &:focus {
+            border-color: #6366f1;
+        }
     }
-  }
 
-  /* The default caret is a dark PNG - invisible on a dark field. */
-  .form-select {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 8l5 5 5-5'/%3E%3C/svg%3E");
-    background-size: 0.9rem;
-  }
+    /* The default caret is a dark PNG - invisible on a dark field. */
+    .form-select {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 8l5 5 5-5'/%3E%3C/svg%3E");
+        background-size: 0.9rem;
+    }
 
-  .form-input.error,
-  .form-textarea.error,
-  .form-select.error {
-    border-color: #ef4444;
-  }
+    .form-input.error,
+    .form-textarea.error,
+    .form-select.error {
+        border-color: #ef4444;
+    }
 
-  .form-error {
-    color: #f87171;
-  }
+    .form-error {
+        color: #f87171;
+    }
 }
 
-
-.form-select{
-    &:focus{
+.form-select {
+    &:focus {
         border-color: #9b4dca;
         outline: 0;
     }
 }
 
-.sel__filter{
+.sel__filter {
     position: relative;
-    .i__filter__list{
+    .i__filter__list {
         position: absolute;
         width: calc(100% - 1.5rem);
         left: 0;
         z-index: 9999;
         background: #fff;
-        ul{
+        ul {
             display: flex;
             flex-flow: column;
             border-top: 1px solid lightgray;
@@ -145,39 +145,41 @@
     }
 }
 
-.dark{
-    #ticketSubmit{
+.dark {
+    #ticketSubmit {
         form.card {
             background-color: #192132;
             border: 1px solid #374558;
         }
-        .form-input, .form-textarea, .form-select{
+        .form-input,
+        .form-textarea,
+        .form-select {
             background-color: #192132;
             border-color: #e2e8f0;
         }
-        .border-gray-100{
+        .border-gray-100 {
             border-color: #374558;
         }
     }
-    .sel__filter{
-        .i__filter__list{
+    .sel__filter {
+        .i__filter__list {
             background: #192132;
         }
     }
 }
-.grid{
-    .list-none{
-        svg{
+.grid {
+    .list-none {
+        svg {
             fill: #94a3b8;
         }
     }
 }
-.tab-head{
-    ul{
-        li{
-            div{
+.tab-head {
+    ul {
+        li {
+            div {
                 cursor: pointer;
-                &.active{
+                &.active {
                     border-color: #1c64f2;
                     color: #1c64f2;
                 }
@@ -185,25 +187,29 @@
         }
     }
 }
-.tab-content{
-    .t-content{
+.tab-content {
+    .t-content {
         display: none;
-        &.active{
+        &.active {
             display: block;
         }
     }
 }
-.p-nat{
-    a{
-        &:hover, &:focus, &.active{
+.p-nat {
+    a {
+        &:hover,
+        &:focus,
+        &.active {
             background-color: #fff;
         }
     }
 }
-.dark{
-    .p-nat{
-        a{
-            &:hover, &:focus, &.active{
+.dark {
+    .p-nat {
+        a {
+            &:hover,
+            &:focus,
+            &.active {
                 background-color: #1d1e26;
             }
         }

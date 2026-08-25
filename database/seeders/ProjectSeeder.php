@@ -2,14 +2,13 @@
 
 namespace Database\Seeders;
 
-use App\Models\Project;
-use App\Models\Workspace;
 use App\Models\BoardList;
 use App\Models\Label;
-use App\Models\Background;
+use App\Models\Project;
+use App\Models\Workspace;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class ProjectSeeder extends Seeder
 {
@@ -27,6 +26,7 @@ class ProjectSeeder extends Seeder
 
         if ($workspaces->count() === 0) {
             $this->command->error('❌ No workspaces found. Please run WorkspaceSeeder first.');
+
             return;
         }
 
@@ -87,7 +87,7 @@ class ProjectSeeder extends Seeder
                 'Adobe Express Redesign',
                 'After Effects Plugin Development',
                 'Creative SDK Documentation',
-                'Cloud Storage Migration'
+                'Cloud Storage Migration',
             ],
             'Amazon Web Services' => [
                 'EC2 Instance Optimization',
@@ -97,7 +97,7 @@ class ProjectSeeder extends Seeder
                 'RDS Database Scaling',
                 'API Gateway Integration',
                 'CloudWatch Monitoring',
-                'Security Compliance Audit'
+                'Security Compliance Audit',
             ],
             'Google Chrome Team' => [
                 'Chrome 120 Performance Update',
@@ -107,7 +107,7 @@ class ProjectSeeder extends Seeder
                 'Security Vulnerability Fixes',
                 'Memory Usage Optimization',
                 'Cross-Platform Sync',
-                'Developer Tools Update'
+                'Developer Tools Update',
             ],
             'Figma Design Platform' => [
                 'Real-time Collaboration Enhancement',
@@ -117,7 +117,7 @@ class ProjectSeeder extends Seeder
                 'Plugin Marketplace',
                 'Version Control System',
                 'Team Management Dashboard',
-                'Accessibility Improvements'
+                'Accessibility Improvements',
             ],
             'Microsoft Windows' => [
                 'Windows 11 Feature Update',
@@ -127,8 +127,8 @@ class ProjectSeeder extends Seeder
                 'Developer Tools Integration',
                 'Cloud Services Integration',
                 'User Interface Redesign',
-                'Compatibility Testing'
-            ]
+                'Compatibility Testing',
+            ],
         ];
 
         // Get workspace-specific projects or fallback to general
@@ -140,12 +140,12 @@ class ProjectSeeder extends Seeder
             'User Experience Improvement',
             'API Development',
             'Documentation Update',
-            'Testing & QA'
+            'Testing & QA',
         ];
 
         $prefixes = ['Q1 2024', 'Q2 2024', 'Phase 1', 'Phase 2', 'Beta', 'V2', 'Next Gen', 'Spring', 'Summer', 'Fall'];
 
-        $title = fake()->randomElement($prefixes) . ' ' . fake()->randomElement($workspaceProjects);
+        $title = fake()->randomElement($prefixes).' '.fake()->randomElement($workspaceProjects);
 
         // Get a random team member, fallback to workspace owner
         $userId = $workspace->user_id; // Default to workspace owner

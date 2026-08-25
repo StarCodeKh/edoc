@@ -1,26 +1,24 @@
 <?php
+
 namespace App\Notifications;
 
-use App\Notifications\Concerns\SendsTelegramNotification;
 use App\Models\Comment;
+use App\Models\EmailTemplate;
+use App\Models\NotificationSetting;
+use App\Notifications\Concerns\SendsTelegramNotification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
-use Spatie\SlackAlerts\Facades\SlackAlert;
 use Illuminate\Notifications\Notification;
-use App\Models\EmailTemplate;
-use App\Models\NotificationSetting;
-use Illuminate\Support\Facades\Log;
+use Spatie\SlackAlerts\Facades\SlackAlert;
 
 class NewCommentNotification extends Notification implements ShouldQueue
 {
     use Queueable;
     use SendsTelegramNotification;
 
-    public function __construct(public Comment $comment, public bool $emailIsActive)
-    {
-    }
+    public function __construct(public Comment $comment, public bool $emailIsActive) {}
 
     public function via(object $notifiable): array
     {
@@ -39,7 +37,7 @@ class NewCommentNotification extends Notification implements ShouldQueue
     {
         return [
             'action_user_id' => $this->comment->user->id,
-            'action_user_name' => $this->comment->user->first_name . ' ' . $this->comment->user->last_name,
+            'action_user_name' => $this->comment->user->first_name.' '.$this->comment->user->last_name,
             'project_id' => $this->comment->task->project_id,
             'project_name' => $this->comment->task->project->title,
             'task_id' => $this->comment->task_id,
@@ -56,6 +54,7 @@ class NewCommentNotification extends Notification implements ShouldQueue
         $data = $this->toArray($notifiable);
         $data['created_at'] = now()->toDateTimeString();
         $data['read_at'] = null;
+
         return new BroadcastMessage($data);
     }
 
@@ -66,16 +65,16 @@ class NewCommentNotification extends Notification implements ShouldQueue
         $template = EmailTemplate::where('slug', 'new_comment')->first();
 
         $replacements = [
-            '{user}'          => trim($notifiable->first_name.' '.($notifiable->last_name ?? '')),
-            '{task_name}'     => $this->comment->task->title,
-            '{project_name}'  => $this->comment->task->project->title,
-            '{comment}'       => $this->comment->details,
-            '{task_link}'     => $url,
-            '{task_url}'      => $url,
+            '{user}' => trim($notifiable->first_name.' '.($notifiable->last_name ?? '')),
+            '{task_name}' => $this->comment->task->title,
+            '{project_name}' => $this->comment->task->project->title,
+            '{comment}' => $this->comment->details,
+            '{task_link}' => $url,
+            '{task_url}' => $url,
             // Common aliases your templates might use
-            '{task_title}'    => $this->comment->task->title,
+            '{task_title}' => $this->comment->task->title,
             '{project_title}' => $this->comment->task->project->title,
-            '{action_url}'    => $url,
+            '{action_url}' => $url,
         ];
 
         $subject = $template && filled($template->subject)
@@ -109,7 +108,7 @@ class NewCommentNotification extends Notification implements ShouldQueue
         }
 
         $url = route('projects.board.with.task', [$this->comment->task->project_id, $this->comment->task_id]);
-        $commentPreview = substr(strip_tags($this->comment->details), 0, 200) . (strlen(strip_tags($this->comment->details)) > 200 ? '...' : '');
+        $commentPreview = substr(strip_tags($this->comment->details), 0, 200).(strlen(strip_tags($this->comment->details)) > 200 ? '...' : '');
 
         $message = "💬 *New Comment Added*\n";
         $message .= "*Task:* <{$url}|{$this->comment->task->title}>\n";
@@ -117,7 +116,7 @@ class NewCommentNotification extends Notification implements ShouldQueue
         $message .= "*Workspace:* {$this->comment->task->project->workspace->name}\n";
         $message .= "*Comment by:* {$this->comment->user->first_name} {$this->comment->user->last_name}\n";
         $message .= "*Comment:* {$commentPreview}\n";
-        $message .= "_eDoc • " . now()->format('M d, Y g:i A') . "_";
+        $message .= '_eDoc • '.now()->format('M d, Y g:i A').'_';
 
         SlackAlert::message($message);
     }

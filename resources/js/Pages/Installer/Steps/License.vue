@@ -1,12 +1,12 @@
 <template>
     <div class="animate-fade-in-up">
         <div class="text-center mb-8">
-            <div class="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <div
+                class="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-6"
+            >
                 <Shield class="w-10 h-10 text-white" />
             </div>
-            <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-4">
-                License Verification
-            </h2>
+            <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-4">License Verification</h2>
             <p class="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
                 Please enter your CodeCanyon purchase code to verify your license and continue with the installation.
             </p>
@@ -27,7 +27,10 @@
                                 type="text"
                                 placeholder="Enter your CodeCanyon purchase code"
                                 class="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 transition-all duration-200"
-                                :class="{ 'border-red-500 dark:border-red-400 focus:ring-red-500 focus:border-red-500': errors.purchaseCode }"
+                                :class="{
+                                    'border-red-500 dark:border-red-400 focus:ring-red-500 focus:border-red-500':
+                                        errors.purchaseCode,
+                                }"
                                 @input="clearErrors"
                             />
                             <div v-if="verificationStatus === 'verifying'" class="absolute right-3 top-3">
@@ -49,11 +52,16 @@
                     </div>
 
                     <!-- Verification Status -->
-                    <div v-if="verificationStatus === 'verified'" class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                    <div
+                        v-if="verificationStatus === 'verified'"
+                        class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4"
+                    >
                         <div class="flex items-center">
                             <Check class="w-5 h-5 text-green-600 dark:text-green-400 mr-3" />
                             <div>
-                                <h4 class="text-sm font-medium text-green-800 dark:text-green-200">License Verified Successfully</h4>
+                                <h4 class="text-sm font-medium text-green-800 dark:text-green-200">
+                                    License Verified Successfully
+                                </h4>
                                 <p class="text-sm text-green-700 dark:text-green-300 mt-1">
                                     Your purchase code is valid and you can proceed with the installation.
                                 </p>
@@ -61,11 +69,16 @@
                         </div>
                     </div>
 
-                    <div v-else-if="verificationStatus === 'failed'" class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                    <div
+                        v-else-if="verificationStatus === 'failed'"
+                        class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4"
+                    >
                         <div class="flex items-center">
                             <X class="w-5 h-5 text-red-600 dark:text-red-400 mr-3" />
                             <div>
-                                <h4 class="text-sm font-medium text-red-800 dark:text-red-200">License Verification Failed</h4>
+                                <h4 class="text-sm font-medium text-red-800 dark:text-red-200">
+                                    License Verification Failed
+                                </h4>
                                 <p class="text-sm text-red-700 dark:text-red-300 mt-1">
                                     {{ verificationError || 'Please check your purchase code and try again.' }}
                                 </p>
@@ -80,7 +93,9 @@
                 <div class="flex items-start">
                     <Info class="w-5 h-5 text-blue-600 dark:text-blue-400 mr-3 mt-0.5" />
                     <div>
-                        <h4 class="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">Need Help Finding Your Purchase Code?</h4>
+                        <h4 class="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">
+                            Need Help Finding Your Purchase Code?
+                        </h4>
                         <ul class="text-sm text-blue-700 dark:text-blue-300 space-y-1">
                             <li>• Log in to your CodeCanyon account</li>
                             <li>• Go to "Downloads" section</li>
@@ -118,11 +133,11 @@
                     @click="verifyLicense"
                     :disabled="!form.purchaseCode || verificationStatus === 'verifying'"
                     :class="[
-            'px-6 py-3 rounded-lg font-medium transition-all duration-200',
-            form.purchaseCode && verificationStatus !== 'verifying'
-              ? 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'
-              : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed'
-          ]"
+                        'px-6 py-3 rounded-lg font-medium transition-all duration-200',
+                        form.purchaseCode && verificationStatus !== 'verifying'
+                            ? 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed',
+                    ]"
                 >
                     <Shield class="w-4 h-4 mr-2 inline" />
                     {{ verificationStatus === 'verifying' ? 'Verifying...' : 'Verify License' }}
@@ -141,11 +156,11 @@
                 <button
                     @click="$emit('next')"
                     :class="[
-            'px-8 py-3 rounded-lg font-semibold transition-all duration-200 transform',
-            verificationStatus === 'verified'
-              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white hover:scale-105 shadow-lg hover:shadow-xl'
-              : 'bg-slate-300 dark:bg-slate-600 text-slate-500 dark:text-slate-400 cursor-not-allowed'
-          ]"
+                        'px-8 py-3 rounded-lg font-semibold transition-all duration-200 transform',
+                        verificationStatus === 'verified'
+                            ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white hover:scale-105 shadow-lg hover:shadow-xl'
+                            : 'bg-slate-300 dark:bg-slate-600 text-slate-500 dark:text-slate-400 cursor-not-allowed',
+                    ]"
                 >
                     Continue
                     <ArrowRight class="w-4 h-4 ml-2 inline" />
@@ -156,9 +171,9 @@
 </template>
 
 <script>
-import { ref, reactive, watch } from 'vue'
-import { Shield, Check, X, Info, ArrowLeft, ArrowRight } from 'lucide-vue-next'
-import { installerApiRequest, handleApiResponse } from '../../../Utils/InstallerApi.js'
+import { ref, reactive, watch } from 'vue';
+import { Shield, Check, X, Info, ArrowLeft, ArrowRight } from 'lucide-vue-next';
+import { installerApiRequest, handleApiResponse } from '../../../Utils/InstallerApi.js';
 
 export default {
     name: 'InstallerLicense',
@@ -168,69 +183,72 @@ export default {
         X,
         Info,
         ArrowLeft,
-        ArrowRight
+        ArrowRight,
     },
     props: {
         form: {
             type: Object,
-            required: true
-        }
+            required: true,
+        },
     },
     emits: ['next', 'back', 'update:form'],
     setup(props, { emit }) {
-        const verificationStatus = ref('') // '', 'verifying', 'verified', 'failed'
-        const verificationError = ref('')
-        const errors = reactive({})
+        const verificationStatus = ref(''); // '', 'verifying', 'verified', 'failed'
+        const verificationError = ref('');
+        const errors = reactive({});
 
         const clearErrors = () => {
-            Object.keys(errors).forEach(key => delete errors[key])
-            verificationError.value = ''
-        }
+            Object.keys(errors).forEach((key) => delete errors[key]);
+            verificationError.value = '';
+        };
 
         const verifyLicense = async () => {
             if (!props.form.purchaseCode) {
-                errors.purchaseCode = 'Purchase code is required'
-                return
+                errors.purchaseCode = 'Purchase code is required';
+                return;
             }
 
-            verificationStatus.value = 'verifying'
-            clearErrors()
+            verificationStatus.value = 'verifying';
+            clearErrors();
 
             try {
                 const response = await installerApiRequest('/install/verify-license', {
                     body: JSON.stringify({
-                        purchase_code: props.form.purchaseCode
-                    })
-                })
+                        purchase_code: props.form.purchaseCode,
+                    }),
+                });
 
-                const data = await handleApiResponse(response)
+                const data = await handleApiResponse(response);
 
                 if (data.success) {
-                    verificationStatus.value = 'verified'
-                    emit('update:form', { ...props.form, verified: true })
+                    verificationStatus.value = 'verified';
+                    emit('update:form', { ...props.form, verified: true });
                 } else {
-                    verificationStatus.value = 'failed'
-                    verificationError.value = data.message || 'Invalid purchase code'
+                    verificationStatus.value = 'failed';
+                    verificationError.value = data.message || 'Invalid purchase code';
                 }
             } catch (error) {
-                verificationStatus.value = 'failed'
-                verificationError.value = 'Network error. Please try again.'
-                console.error('License verification error:', error)
+                verificationStatus.value = 'failed';
+                verificationError.value = 'Network error. Please try again.';
+                console.error('License verification error:', error);
             }
-        }
+        };
 
         // Watch for form changes
-        watch(() => props.form.purchaseCode, (newValue) => {
-            emit('update:form', { ...props.form, purchaseCode: newValue })
-        })
+        watch(
+            () => props.form.purchaseCode,
+            (newValue) => {
+                emit('update:form', { ...props.form, purchaseCode: newValue });
+            }
+        );
 
         return {
             verificationStatus,
             verificationError,
             errors,
             clearErrors,
-            verifyLicense
-        }
-    }
-}
+            verifyLicense,
+        };
+    },
+};
 </script>

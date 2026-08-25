@@ -13,7 +13,9 @@ class CreateEmailTemplatesTable extends Migration
      */
     public function up()
     {
-        if (Schema::hasTable('email_templates')) { return; }
+        if (Schema::hasTable('email_templates')) {
+            return;
+        }
         Schema::create('email_templates', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name', 50);

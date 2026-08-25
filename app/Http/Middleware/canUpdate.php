@@ -2,17 +2,18 @@
 
 namespace App\Http\Middleware;
 
+use App\Helpers\MigrationsHelper;
 use Closure;
+use Illuminate\Http\Request;
 
 class canUpdate
 {
-    use \App\Helpers\MigrationsHelper;
+    use MigrationsHelper;
 
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
+     * @param  Request  $request
      * @return mixed
      */
     public function handle($request, Closure $next)
@@ -24,7 +25,7 @@ class canUpdate
 
                 // if the application has not been installed,
                 // redirect to the installer
-                if (! $canInstall->alreadyInstalled()) {
+                if (!$canInstall->alreadyInstalled()) {
                     return redirect()->route('LaravelInstaller::welcome');
                 }
 

@@ -1,7 +1,7 @@
 body {
     font-family: "Inter", sans-serif;
 }
-.layout_landing{
+.layout_landing {
     .container {
         width: 100%;
         margin-right: auto;
@@ -39,8 +39,8 @@ body {
         }
     }
 }
-#topnav{
-    .navigation-menu>li>a.btn {
+#topnav {
+    .navigation-menu > li > a.btn {
         min-height: 0;
         margin-top: 17px;
         margin-left: 15px !important;
@@ -60,45 +60,52 @@ body {
         font-size: 14px !important;
         padding: 8px 20px;
         letter-spacing: 0.4px !important;
-        transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-        &:hover,&:focus{
+        transition:
+            color 0.15s ease-in-out,
+            background-color 0.15s ease-in-out,
+            border-color 0.15s ease-in-out,
+            box-shadow 0.15s ease-in-out;
+        &:hover,
+        &:focus {
             background-color: #0f172a !important;
             color: #ffffff !important;
         }
-        @apply rtl:mr-5
+        @apply rtl:mr-5;
     }
-    .logo{
+    .logo {
         float: left;
         @apply rtl:float-right;
     }
 }
-.bg-blog{
-    background-image: url('/images/blog/bg-blog.jpg');
+.bg-blog {
+    background-image: url("/images/blog/bg-blog.jpg");
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
 }
-.post-details{
+.post-details {
     margin-top: 1rem;
-    p{
+    p {
         margin-bottom: 25px;
     }
 }
-.dark{
-    .form-icon{
-        svg{
+.dark {
+    .form-icon {
+        svg {
             fill: #94a3b8;
         }
     }
 }
-.html{
+.html {
     line-height: 1.5;
-    h1,h2,h3{
+    h1,
+    h2,
+    h3 {
         line-height: 1.4;
         margin-bottom: 0.5em;
         margin-top: 1.6em;
     }
-    ul{
+    ul {
         padding-top: 0.5rem;
         padding-left: 1.5rem;
         li {
@@ -106,11 +113,11 @@ body {
         }
     }
 }
-body{
-    .dark{
-        .dd_container{
+body {
+    .dark {
+        .dd_container {
             background-color: #262932;
-            .bg-white{
+            .bg-white {
                 background-color: #262932;
             }
         }
@@ -125,8 +132,8 @@ body{
 //}
 
 /** Pages **/
-h4{
-    span{
+h4 {
+    span {
         color: #5661b3;
     }
 }
@@ -141,5 +148,5 @@ h4{
 input:checked ~ .toggle__dot {
     transform: translateX(100%);
     left: 5px;
-    background-color:#ffffff;
+    background-color: #ffffff;
 }
