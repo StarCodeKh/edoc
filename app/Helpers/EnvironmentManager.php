@@ -171,7 +171,7 @@ class EnvironmentManager
             'MAIL_PASSWORD='."\n".
             'MAIL_ENCRYPTION=tls'."\n".
             'MAIL_FROM_ADDRESS='."\n".
-            'MAIL_FROM_NAME=ProTask'."\n\n".
+            'MAIL_FROM_NAME=eDoc'."\n\n".
 
             'AWS_ACCESS_KEY_ID='."\n".
             'AWS_SECRET_ACCESS_KEY='."\n".

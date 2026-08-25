@@ -31,7 +31,7 @@
             "contact": {
                 "tag": "Available for freelance projects",
                 "title": "Do you have digital project? <br> Let's talk.",
-                "details": "Start working with ProTask that can provide everything you need to generate awareness, drive traffic, connect."
+                "details": "Start working with eDoc that can provide everything you need to generate awareness, drive traffic, connect."
             },
             "services": [
                 {
@@ -84,11 +84,11 @@
             "sections": [
                 {
                     "image": "/landing/images/dashboard-protask.png",
-                    "title": "Make your working process easier with <span>ProTask</span>",
+                    "title": "Make your working process easier with <span>eDoc</span>",
                     "buttons": [
                         {
                             "link": "/login",
-                            "text": "Login ProTask",
+                            "text": "Login eDoc",
                             "new_tab": "0"
                         },
                         {
@@ -97,13 +97,13 @@
                             "new_tab": "0"
                         }
                     ],
-                    "details": "It's much easier now to create, assign, manage and resolve tickets with ProTask. You just need to host this web application on any hosting server of your choice and use it.",
+                    "details": "It's much easier now to create, assign, manage and resolve tickets with eDoc. You just need to host this web application on any hosting server of your choice and use it.",
                     "enable_ticket_section": ""
                 },
                 {
                     "tagline": "Process",
-                    "title": "ProTask Process",
-                    "details": "An example process about how ProTask work like.\n\n",
+                    "title": "eDoc Process",
+                    "details": "An example process about how eDoc work like.\n\n",
                     "features": [
                         {
                             "icon": "ticket",
@@ -140,7 +140,7 @@
         "is_active": 1,
         "html": {
             "title": "Footer Area",
-            "text": "Start working with ProTask that can provide everything you need to generate awareness, drive traffic, connect.",
+            "text": "Start working with eDoc that can provide everything you need to generate awareness, drive traffic, connect.",
             "copyright": "@ Helpdesk Developed by <a href='https://w3bd.com/'>W3bd</a>."
         }
     }

@@ -76,7 +76,7 @@ import LoadingButton from '@/Shared/LoadingButton.vue'
 
 // Sample values used purely to render the live preview.
 const SAMPLE = {
-    '{app_name}': 'ProTask',
+    '{app_name}': 'eDoc',
     '{sent_at}': 'Aug 23, 2026 3:36 PM',
     '{actor_name}': 'Sok Dara',
     '{assignee_name}': 'Chan Nita',

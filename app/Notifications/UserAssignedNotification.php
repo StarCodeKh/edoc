@@ -127,7 +127,7 @@ class UserAssignedNotification extends Notification implements ShouldQueue
         $message .= "*Workspace:* {$this->task->project->workspace->name}\n";
         $message .= "*Assigned by:* {$this->assignerUser->first_name} {$this->assignerUser->last_name}\n";
         $message .= "*Assigned to:* {$this->assignedUser?->first_name} " . ($this->assignedUser?->last_name ?? '') . "\n";
-        $message .= "_ProTask • " . now()->format('M d, Y g:i A') . "_";
+        $message .= "_eDoc • " . now()->format('M d, Y g:i A') . "_";
 
         SlackAlert::message($message);
     }

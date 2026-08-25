@@ -8,7 +8,7 @@
                 System Requirements Check
             </h2>
             <p class="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-                Before we begin, let's make sure your server meets all the requirements for running ProTask.
+                Before we begin, let's make sure your server meets all the requirements for running eDoc.
             </p>
         </div>
 

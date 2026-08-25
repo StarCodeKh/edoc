@@ -8,7 +8,7 @@ import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 import { i18nVue } from 'laravel-vue-i18n';
 import VueApexCharts from "vue3-apexcharts"
 
-const appName = import.meta.env.VITE_APP_NAME || 'ProTask';
+const appName = import.meta.env.VITE_APP_NAME || 'eDoc';
 
 const clickOutside = {
     beforeMount: (el, binding) => {

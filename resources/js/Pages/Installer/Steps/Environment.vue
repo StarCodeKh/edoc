@@ -31,7 +31,7 @@
               <input
                 v-model="form.appName"
                 type="text"
-                placeholder="ProTask"
+                placeholder="eDoc"
                 class="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 transition-all duration-200"
                 @input="updateForm"
               />
@@ -319,7 +319,7 @@ export default {
   emits: ['next', 'back', 'update:form'],
   setup(props, { emit }) {
     const form = reactive({
-      appName: props.form.appName || 'ProTask',
+      appName: props.form.appName || 'eDoc',
       appUrl: props.form.appUrl || window.location.origin,
       appEnv: props.form.appEnv || 'production',
       appDebug: props.form.appDebug || false,

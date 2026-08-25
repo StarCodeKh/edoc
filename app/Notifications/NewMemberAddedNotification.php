@@ -98,7 +98,7 @@ class NewMemberAddedNotification extends Notification implements ShouldQueue
         $message .= "*Added by:* {$this->teamMember->adder->first_name} {$this->teamMember->adder->last_name}\n";
         $message .= "*New member:* {$this->teamMember->user->first_name} " . ($this->teamMember->user->last_name ?? '') . "\n";
         $message .= "*Email:* {$this->teamMember->user->email}\n";
-        $message .= "_ProTask • " . now()->format('M d, Y g:i A') . "_";
+        $message .= "_eDoc • " . now()->format('M d, Y g:i A') . "_";
 
         SlackAlert::message($message);
     }

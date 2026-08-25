@@ -193,7 +193,7 @@ class ModernInstallerController extends Controller
                     }
                 } else {
                     // Create a basic .env file
-                    $basicEnv = "APP_NAME=ProTask\nAPP_ENV=local\nAPP_KEY=\nAPP_DEBUG=true\nAPP_URL=http://localhost\n\n";
+                    $basicEnv = "APP_NAME=eDoc\nAPP_ENV=local\nAPP_KEY=\nAPP_DEBUG=true\nAPP_URL=http://localhost\n\n";
                     if (file_put_contents($envPath, $basicEnv) === false) {
                         throw new Exception('Failed to create .env file. Please check file permissions.');
                     }

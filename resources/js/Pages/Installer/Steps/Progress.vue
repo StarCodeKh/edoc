@@ -5,10 +5,10 @@
                 <Download class="w-10 h-10 text-white" />
             </div>
             <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-4">
-                Installing ProTask
+                Installing eDoc
             </h2>
             <p class="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-                Please wait while we set up your ProTask system. This may take a few minutes.
+                Please wait while we set up your eDoc system. This may take a few minutes.
             </p>
         </div>
 
@@ -161,7 +161,7 @@
                     <div>
                         <h4 class="text-sm font-medium text-green-800 dark:text-green-200">Installation Complete!</h4>
                         <p class="text-sm text-green-700 dark:text-green-300 mt-1">
-                            Your ProTask system has been successfully installed and configured.
+                            Your eDoc system has been successfully installed and configured.
                         </p>
                     </div>
                 </div>
@@ -334,7 +334,7 @@ export default {
 
         const runInstallation = async () => {
             try {
-                addLog('Starting ProTask installation...', 'info')
+                addLog('Starting eDoc installation...', 'info')
 
                 // Step 1: Environment Setup
                 updateStepStatus('environment', 'running')
@@ -409,7 +409,7 @@ export default {
                     addLog('Installation completed successfully!', 'success')
 
                     installationComplete.value = true
-                    addLog('ProTask is ready to use!', 'success')
+                    addLog('eDoc is ready to use!', 'success')
                     addLog(`Admin user created: ${installData.admin.email}`, 'success')
 
                 } catch (error) {

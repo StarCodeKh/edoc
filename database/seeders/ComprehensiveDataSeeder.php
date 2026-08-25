@@ -29,13 +29,13 @@ class ComprehensiveDataSeeder extends Seeder
      */
     public function run()
     {
-        $this->command->info('🚀 Starting comprehensive ProTask data seeding...');
+        $this->command->info('🚀 Starting comprehensive eDoc data seeding...');
         $startTime = microtime(true);
 
         // Clear caches
         // cache()->flush();
 
-        $this->command->info('📊 Seeding comprehensive ProTask data...');
+        $this->command->info('📊 Seeding comprehensive eDoc data...');
         $this->command->newLine();
 
         // Disable foreign key checks for faster seeding

@@ -8,7 +8,7 @@
         🎉 Installation Complete!
       </h2>
       <p class="text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-        Congratulations! Your ProTask system has been successfully installed and is ready to use.
+        Congratulations! Your eDoc system has been successfully installed and is ready to use.
       </p>
     </div>
 
@@ -24,7 +24,7 @@
           <div class="space-y-3">
             <div class="flex items-center justify-between">
               <span class="text-slate-600 dark:text-slate-400">Application Name:</span>
-              <span class="font-medium text-slate-900 dark:text-white">ProTask</span>
+              <span class="font-medium text-slate-900 dark:text-white">eDoc</span>
             </div>
             <div class="flex items-center justify-between">
               <span class="text-slate-600 dark:text-slate-400">Environment:</span>
@@ -110,7 +110,7 @@
               <li>• Configure ticket categories and priorities</li>
               <li>• Set up email templates</li>
               <li>• Enable real-time notifications</li>
-              <li>• Customize your protask appearance</li>
+              <li>• Customize your edoc appearance</li>
             </ul>
           </div>
         </div>
@@ -162,7 +162,7 @@
     <!-- Footer -->
     <div class="text-center mt-8">
       <p class="text-sm text-slate-500 dark:text-slate-400">
-        Thank you for choosing ProTask! We hope you enjoy using our system.
+        Thank you for choosing eDoc! We hope you enjoy using our system.
       </p>
     </div>
   </div>
@@ -200,7 +200,7 @@ export default {
 
     const viewDocumentation = () => {
       // Open documentation in new tab
-      window.open('https://protask-docs.example.com', '_blank')
+      window.open('https://edoc-docs.example.com', '_blank')
     }
 
     const configureSettings = () => {

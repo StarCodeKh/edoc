@@ -419,7 +419,7 @@
                     <table role="presentation" border="0" cellpadding="0" cellspacing="0">
                         <tr>
                             <td class="content-block">
-                                <span class="apple-link">ProTask - A online ticket support system</span>
+                                <span class="apple-link">eDoc - A online ticket support system</span>
                             </td>
                         </tr>
                         <tr>

@@ -52,7 +52,7 @@ class UserCreatedNotification
                             $template = str_replace($m[0][$i], sprintf($variables[$m[1][$i]], $varname), $template);
                         }
                     }
-                    $messageData = ['html' => $template, 'subject' => 'ProTask - Your account has been created.'];
+                    $messageData = ['html' => $template, 'subject' => 'eDoc - Your account has been created.'];
                     if(config('queue.enable')){
                         Mail::to($user->email)->queue(new SendMailFromHtml($messageData));
                     }else{

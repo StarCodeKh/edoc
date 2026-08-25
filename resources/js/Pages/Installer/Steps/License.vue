@@ -84,7 +84,7 @@
                         <ul class="text-sm text-blue-700 dark:text-blue-300 space-y-1">
                             <li>• Log in to your CodeCanyon account</li>
                             <li>• Go to "Downloads" section</li>
-                            <li>• Find your ProTask purchase</li>
+                            <li>• Find your eDoc purchase</li>
                             <li>• Copy the purchase code from the license details</li>
                         </ul>
                     </div>

@@ -7,7 +7,7 @@ return [
      * Shared translations.
      *
      */
-    'title' => 'ProTask Installer',
+    'title' => 'eDoc Installer',
     'next' => 'Next Step',
     'back' => 'Previous',
     'finish' => 'Install',
@@ -22,7 +22,7 @@ return [
      */
     'welcome' => [
         'templateTitle' => 'Welcome',
-        'title'   => 'ProTask Installer',
+        'title'   => 'eDoc Installer',
         'message' => 'Easy Installation and Setup Wizard.',
         'next'    => 'Check Requirements',
     ],
@@ -182,7 +182,7 @@ return [
      *
      */
     'installed' => [
-        'success_log_message' => 'ProTask Installer successfully INSTALLED on ',
+        'success_log_message' => 'eDoc Installer successfully INSTALLED on ',
     ],
 
     /*
@@ -247,7 +247,7 @@ return [
         ],
 
         'log' => [
-            'success_message' => 'ProTask Installer successfully UPDATED on ',
+            'success_message' => 'eDoc Installer successfully UPDATED on ',
         ],
     ],
 ];

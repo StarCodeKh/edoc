@@ -12,10 +12,10 @@
         <!-- Header -->
         <div class="text-center mb-8">
           <div class="inline-block">
-            <img src="/images/logo.png" alt="ProTask Logo" class="h-16 w-auto mx-auto mb-4" />
+            <img src="/images/logo.png" alt="eDoc Logo" class="h-16 w-auto mx-auto mb-4" />
           </div>
           <h1 class="text-4xl font-bold text-slate-900 dark:text-white mb-2">
-            Welcome to ProTask
+            Welcome to eDoc
           </h1>
           <p class="text-lg text-slate-600 dark:text-slate-400">
             Let's get your task management system up and running in just a few steps
@@ -190,7 +190,7 @@ export default {
         verified: false
       },
       environment: {
-        appName: 'ProTask',
+        appName: 'eDoc',
         appUrl: window.location.origin,
         appEnv: 'production',
         appDebug: false

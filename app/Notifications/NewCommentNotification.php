@@ -117,7 +117,7 @@ class NewCommentNotification extends Notification implements ShouldQueue
         $message .= "*Workspace:* {$this->comment->task->project->workspace->name}\n";
         $message .= "*Comment by:* {$this->comment->user->first_name} {$this->comment->user->last_name}\n";
         $message .= "*Comment:* {$commentPreview}\n";
-        $message .= "_ProTask • " . now()->format('M d, Y g:i A') . "_";
+        $message .= "_eDoc • " . now()->format('M d, Y g:i A') . "_";
 
         SlackAlert::message($message);
     }

@@ -1,8 +1,8 @@
 {
     "name": "laravel/laravel",
     "type": "project",
-    "description": "ProTask - project management system.",
-    "keywords": ["ProTask", "project management", "task management"],
+    "description": "eDoc - project management system.",
+    "keywords": ["eDoc", "project management", "task management"],
     "license": "MIT",
     "require": {
         "php": "^8.2",

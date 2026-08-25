@@ -54,7 +54,7 @@ class EmailTemplateSeeder extends Seeder
             'name' => 'General Mail',
             'slug' => 'custom_mail',
             'details' => 'It will use to send any email general purpose.',
-            'subject' => 'ProTask Notification',
+            'subject' => 'eDoc Notification',
             'language' => 'en',
             'html' => str_replace('/images/logo.png', $logo, $html)
         ]);

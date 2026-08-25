@@ -8,7 +8,7 @@
         Admin Account Setup
       </h2>
       <p class="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-        Create your administrator account to access the ProTask dashboard.
+        Create your administrator account to access the eDoc dashboard.
       </p>
     </div>
 

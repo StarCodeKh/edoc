@@ -1,4 +1,4 @@
-# ProTask
+# eDoc
 
 A Task management system with time tracking feature!
 
@@ -7,13 +7,13 @@ A Task management system with time tracking feature!
 
 ### cPanel installation
 
-- Copy all files under ProTask folder to your server's root or public_html directory
+- Copy all files under eDoc folder to your server's root or public_html directory
 - Just visit your website - and follow the installation process
 
 ### NGinx installation
 
-- Copy ProTask to your server
-- Set document root as per your directory location where you did put that ProTask files.
+- Copy eDoc to your server
+- Set document root as per your directory location where you did put that eDoc files.
 
 
 ### Full Documentation:

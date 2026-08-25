@@ -350,7 +350,7 @@
                                 <tr>
                                     <td>
                                         <p>Hi {name},</p>
-                                        <p>Your ProTask account has been created. The following is the credentials for your account.</p>
+                                        <p>Your eDoc account has been created. The following is the credentials for your account.</p>
                                         <table class="bordered_table">
                                             <tbody>
                                             <tr>
@@ -381,7 +381,7 @@
                                             </tr>
                                             </tbody>
                                         </table>
-                                        <p class="gap-top">Enjoy the features of ProTask.</p>
+                                        <p class="gap-top">Enjoy the features of eDoc.</p>
                                         <p>Thank you!</p>
                                         <p>Best regards, <br/>{sender_name}</p>
                                     </td>
@@ -399,7 +399,7 @@
                     <table role="presentation" border="0" cellpadding="0" cellspacing="0">
                         <tr>
                             <td class="content-block">
-                                <span class="apple-link">ProTask - A online ticket support system</span>
+                                <span class="apple-link">eDoc - A online ticket support system</span>
                             </td>
                         </tr>
                         <tr>

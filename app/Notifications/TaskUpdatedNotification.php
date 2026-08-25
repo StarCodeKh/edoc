@@ -176,7 +176,7 @@ class TaskUpdatedNotification extends Notification implements ShouldQueue
         $message .= "*Workspace:* {$this->task->project->workspace->name}\n";
         $message .= "*Updated by:* {$this->updatingUser->first_name} {$this->updatingUser->last_name}\n";
         $message .= "*Change:* {$changeMessage}\n";
-        $message .= "_ProTask • " . now()->format('M d, Y g:i A') . "_";
+        $message .= "_eDoc • " . now()->format('M d, Y g:i A') . "_";
 
         SlackAlert::message($message);
     }

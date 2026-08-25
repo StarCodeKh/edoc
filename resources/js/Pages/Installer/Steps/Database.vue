@@ -85,7 +85,7 @@
               <input
                 v-model="form.name"
                 type="text"
-                placeholder="protask_db"
+                placeholder="edoc_db"
                 class="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 transition-all duration-200"
                 @input="updateForm"
               />
@@ -190,7 +190,7 @@
           <div>
             <h4 class="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">Database Setup Tips</h4>
             <ul class="text-sm text-blue-700 dark:text-blue-300 space-y-1">
-              <li>• Create a new database for your ProTask installation</li>
+              <li>• Create a new database for your eDoc installation</li>
               <li>• Use a dedicated database user with appropriate permissions</li>
               <li>• Make sure your database server is running and accessible</li>
               <li>• For shared hosting, use the credentials provided by your host</li>
