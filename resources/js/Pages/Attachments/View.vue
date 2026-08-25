@@ -825,12 +825,22 @@
             leaveViewer() {
                 // Clear first, or our own beforeunload guard blocks the exit.
                 this.dirtyPages = {};
-                window.close();
-                setTimeout(() => {
-                    if (!window.closed) {
-                        window.location.href = this.backUrl || '/';
-                    }
-                }, 200);
+
+                // Only a tab we were opened into by script can be closed. When
+                // the viewer was navigated to in place - from the attachment
+                // list or the drawer's sign action - go straight back instead of
+                // waiting out a window.close() the browser will refuse.
+                if (window.opener && !window.opener.closed) {
+                    window.close();
+                    setTimeout(() => {
+                        if (!window.closed) {
+                            window.location.href = this.backUrl || '/';
+                        }
+                    }, 200);
+                    return;
+                }
+
+                window.location.href = this.backUrl || '/';
             },
 
             warnBeforeUnload(e) {

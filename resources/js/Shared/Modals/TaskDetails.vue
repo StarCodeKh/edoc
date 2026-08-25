@@ -324,7 +324,10 @@
                                                     </a>
 
                                                     <!-- Opens the full-page viewer / annotator in its own tab -->
-                                                    <a class="cover dark:text-gray-300 flex items-center gap-1 cursor-pointer" :href="route('task.attachment.view', { taskUid: task.id, attachmentId: attachment.id })" target="_blank">
+                                                    <!-- Same tab on purpose: this panel gives way to the viewer,
+                                                         and closing the viewer (or approving from it) comes back to
+                                                         the board with this document's panel open again. -->
+                                                    <a class="cover dark:text-gray-300 flex items-center gap-1 cursor-pointer" :href="route('task.attachment.view', { taskUid: task.id, attachmentId: attachment.id })">
                                                         <icon name="eye" /> {{ $t('View') }}
                                                     </a>
 
