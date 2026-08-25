@@ -1,11 +1,12 @@
 {
-    "name": "laravel/laravel",
+    "name": "starcodekh/edoc",
     "type": "project",
-    "description": "eDoc - project management system.",
+    "description": "eDoc - document and task management for the Secretariat General.",
     "keywords": [
-        "eDoc",
-        "project management",
-        "task management"
+        "edoc",
+        "document management",
+        "task management",
+        "laravel"
     ],
     "license": "MIT",
     "require": {

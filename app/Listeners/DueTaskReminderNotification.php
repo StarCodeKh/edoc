@@ -2,6 +2,7 @@
 
 namespace App\Listeners;
 
+use App\Edoc;
 use App\Events\DueTaskReminder;
 use Spatie\SlackAlerts\Facades\SlackAlert;
 
@@ -21,7 +22,7 @@ class DueTaskReminderNotification
     public function handle(DueTaskReminder $event): void
     {
         $due_tasks = $event->due_tasks;
-        $slackNotifications = app('App\ProTask')->getSettingsSlackNotifications();
+        $slackNotifications = app(Edoc::class)->getSettingsSlackNotifications();
         if (!empty($due_tasks) && $slackNotifications['due_task_reminder']) {
             foreach ($due_tasks as $due_task) {
                 $link = config('app.url').'/p/board/'.$due_task['project_id'].'/?task='.$due_task['id'];

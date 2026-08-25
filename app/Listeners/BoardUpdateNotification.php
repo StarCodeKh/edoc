@@ -2,6 +2,7 @@
 
 namespace App\Listeners;
 
+use App\Edoc;
 use App\Events\BoardUpdated;
 use App\Mail\SendMailFromHtml;
 use App\Models\EmailTemplate;
@@ -23,8 +24,8 @@ class BoardUpdateNotification
     public function handle(BoardUpdated $event): void
     {
         $board = $event->board;
-        $notifications = app('App\ProTask')->getSettingsEmailNotifications();
-        $slackNotifications = app('App\ProTask')->getSettingsSlackNotifications();
+        $notifications = app(Edoc::class)->getSettingsEmailNotifications();
+        $slackNotifications = app(Edoc::class)->getSettingsSlackNotifications();
         if (!empty($board)) {
             $variables = [
                 'board_name' => $board->title,

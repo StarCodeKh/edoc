@@ -4,10 +4,10 @@ namespace App;
 
 use App\Models\NotificationSetting;
 
-class ProTask
+class Edoc
 {
     /**
-     * The ProTask version.
+     * The application version.
      *
      * @var string
      */

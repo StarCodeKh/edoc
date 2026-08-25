@@ -1,4 +1,5 @@
 {
+    "name": "edoc",
     "private": true,
     "type": "module",
     "scripts": {

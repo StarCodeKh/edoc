@@ -2,6 +2,7 @@
 
 namespace App\Listeners;
 
+use App\Edoc;
 use App\Events\UserCreated;
 use App\Mail\SendMailFromHtml;
 use App\Models\EmailTemplate;
@@ -30,8 +31,8 @@ class UserCreatedNotification
     {
         $data = $event->data;
         $user = User::where('id', $data['id'])->first();
-        $notifications = app('App\ProTask')->getSettingsEmailNotifications();
-        $slackNotifications = app('App\ProTask')->getSettingsSlackNotifications();
+        $notifications = app(Edoc::class)->getSettingsEmailNotifications();
+        $slackNotifications = app(Edoc::class)->getSettingsSlackNotifications();
         if (!empty($user)) {
             $variables = [
                 'name' => $user->first_name,
