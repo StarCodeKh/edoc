@@ -904,7 +904,7 @@
                                         <div class="group mt-2 flex cursor-pointer items-center rounded-md py-1.5">
                                             <DateTimePicker
                                                 v-model="task.entry_date"
-                                                @change="saveTask({entry_date: moment(task.entry_date).format('YYYY-MM-DD HH:mm')})"
+                                                @change="saveTask({entry_date: dateForSave(task.entry_date)})"
                                                 @update:is24Hour="is24HourFormat = $event"
                                                 placeholder="Select Date & Time"
                                                 :is24Hour="is24HourFormat"
@@ -924,7 +924,7 @@
                                             <DateTimePicker
                                                 v-model="task.due_date"
                                                 :disabled="!can.edit"
-                                                @change="saveTask({due_date: moment(task.due_date).format('YYYY-MM-DD HH:mm')})"
+                                                @change="saveTask({due_date: dateForSave(task.due_date)})"
                                                 @update:is24Hour="is24HourFormat = $event"
                                                 placeholder="Select Date & Time"
                                                 :is24Hour="is24HourFormat"
@@ -943,7 +943,7 @@
                                         <div class="group mt-2 flex cursor-pointer items-center rounded-md py-1.5">
                                             <DateTimePicker
                                                 v-model="task.exit_date"
-                                                @change="saveTask({exit_date: moment(task.exit_date).format('YYYY-MM-DD HH:mm')})"
+                                                @change="saveTask({exit_date: dateForSave(task.exit_date)})"
                                                 @update:is24Hour="is24HourFormat = $event"
                                                 placeholder="Select Date & Time"
                                                 :is24Hour="is24HourFormat"
@@ -2013,6 +2013,17 @@
                     this.toastError(this.$t('Failed to delete the task.'));
                 }
             },
+            /**
+             * A cleared date has to reach the server as null: moment() on an empty
+             * value formats to the literal string "Invalid date", which Carbon then
+             * refuses to parse and the save comes back a 500.
+             */
+            dateForSave(value){
+                if (!value) return null;
+                const parsed = this.moment(value);
+                return parsed.isValid() ? parsed.format('YYYY-MM-DD HH:mm') : null;
+            },
+
             saveTask(taskObject){
                 return axios.post(this.route('task.update', this.task.id), taskObject).then((response) => {
                     if(response.data){

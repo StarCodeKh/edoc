@@ -110,6 +110,24 @@ class TaskUpdatedNotification extends Notification implements ShouldQueue
     /**
      * Generate a human-readable message based on the updated field.
      */
+    /**
+     * A date for the notification text. Rows written before dates were sanitised
+     * can hold something Carbon cannot read, and a notification is no place to
+     * throw over it.
+     */
+    private function shortDate($value): string
+    {
+        if (empty($value)) {
+            return 'no date';
+        }
+
+        try {
+            return Carbon::parse($value)->format('M d');
+        } catch (\Throwable $e) {
+            return 'no date';
+        }
+    }
+
     private function generateMessage(): string
     {
         switch ($this->field) {
@@ -120,9 +138,8 @@ class TaskUpdatedNotification extends Notification implements ShouldQueue
                 return 'updated the description for task "' . $this->task->title . '"';
 
             case 'due_date':
-                $old = $this->oldValue ? Carbon::parse($this->oldValue)->format('M d') : 'no date';
-                $new = $this->newValue ? Carbon::parse($this->newValue)->format('M d') : 'no date';
-                return 'changed the due date from ' . $old . ' to ' . $new;
+                return 'changed the due date from ' . $this->shortDate($this->oldValue)
+                    . ' to ' . $this->shortDate($this->newValue);
 
             case 'list_id':
                 $fromTitle = $this->oldValue ? (BoardList::find($this->oldValue)?->title) : null;

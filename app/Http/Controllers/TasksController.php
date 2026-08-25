@@ -19,6 +19,7 @@ use App\Models\TeamMember;
 use App\Models\Timer;
 use App\Models\UserGroup;
 use App\Models\Activity;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -184,9 +185,43 @@ class TasksController extends Controller
         return response()->json($result);
     }
 
+    /**
+     * Date columns on a task. A cleared picker in the browser can post junk for
+     * any of these - moment() formats an empty value as the literal string
+     * "Invalid date" - and that reaches Carbon as a date it cannot read.
+     */
+    private const DATE_FIELDS = ['due_date', 'entry_date', 'exit_date'];
+
+    /**
+     * Turn anything unreadable in a date field into null. Clearing a date is a
+     * normal edit, so it must not end the request with a 500.
+     */
+    private function normalizeDateFields(array $data): array
+    {
+        foreach (self::DATE_FIELDS as $field) {
+            if (! array_key_exists($field, $data)) {
+                continue;
+            }
+
+            $value = $data[$field];
+            if (is_null($value) || (is_string($value) && trim($value) === '')) {
+                $data[$field] = null;
+                continue;
+            }
+
+            try {
+                $data[$field] = Carbon::parse($value)->format('Y-m-d H:i:s');
+            } catch (\Throwable $e) {
+                $data[$field] = null;
+            }
+        }
+
+        return $data;
+    }
+
     public function updateTask($taskId, Request $request)
     {
-        $requestData = $request->all();
+        $requestData = $this->normalizeDateFields($request->all());
 
         // Changing which board a document sits on is the one edit a Normal User
         // loses first, so it is checked as its own ability.
@@ -255,7 +290,7 @@ class TasksController extends Controller
     public function newTask(Request $request)
     {
         $user_id = auth()->id();
-        $requestData = $request->all();
+        $requestData = $this->normalizeDateFields($request->all());
         $requestData['user_id'] = $user_id;
         $task = Task::create($requestData);
 
