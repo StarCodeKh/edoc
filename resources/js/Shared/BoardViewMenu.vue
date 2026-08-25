@@ -1,19 +1,24 @@
 <template>
     <div class="project__view__menu w-full p-2 text-sm flex justify-first items-center">
         <div class="inline-flex w-full flex-wrap items-center">
-            <div class="view__menus flex items-center flex-start gap-1 flex-wrap lg:flex-nowrap">
+            <!-- Title and star stay put; the view tabs are their own strip so a
+                 narrow screen can scroll them sideways instead of stacking them
+                 into three rows. -->
+            <div class="view__head view__menus flex items-center flex-start gap-1 min-w-0">
                 <h2 :title="$t('Click to rename project')" class="text-lg font-bold hover:bg-[#a6c5e229] rounded px-3 mr-1 py-1" contenteditable="true" @keypress="saveListTitle($event, project.id)" @blur="saveListTitle($event, project.id)">{{ project.title }}</h2>
                 <div class="flex p-2 items-center cursor-pointer rounded hover:bg-[#a6c5e229]" @click="starProject($event, project)">
                     <icon v-if="!!project.star" name="star" class="w-5 h-5 fill-yellow-500 text-yellow-500 hover:fill-none hover:scale-125" />
                     <icon v-else name="star" class="w-5 h-5 text-white hover:text-yellow-500 hover:scale-125" />
                 </div>
+            </div>
 
+            <div class="view__tabs view__menus flex items-center flex-start gap-1 flex-wrap lg:flex-nowrap">
                 <Link v-for="(option, option_index) in options" class="flex py-2 px-3 items-center cursor-pointer capitalize rounded" :class="{ 'active': view === option.slug }" :href="route('projects.view.'+option.slug, project.slug || project.id)">
                     <icon :name="icons[option_index]" class="w-4 fill-[#ffffff] h-4 mr-[5px]" />
                     {{ $t(option.name) }}
                 </Link>
             </div>
-            <div class="flex items-center flex-start gap-1 ml-auto view__menus">
+            <div class="view__actions flex items-center flex-start gap-1 ml-auto view__menus">
                 <button v-if="['board', 'table', 'time_logs'].includes(view)" class="flex pl-4 pr-2 items-center __filter cursor-pointer capitalize rounded hover:bg-[#a6c5e229]" @click="$emit('filterToggle');" :class="{'active': findFilters()}"> <icon name="filter" class="w-4 fill-[#ffffff] h-4 mr-[5px]" />
                     <span>{{ $t('Filter') }} </span>
                     <span class="filter_clear" @click="clearFilter($event)">{{ $t('Clear All') }} <icon name="close" class="w-4 h-4" /></span>

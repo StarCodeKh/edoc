@@ -187,15 +187,67 @@ body{
         }
     }
 
-    /* The board toolbar wraps rather than pushing the view sideways. */
+}
+
+/* =====================================================================
+   Project toolbar on a narrow screen
+   ---------------------------------------------------------------------
+       Testing  *                              [filter]  [...]
+       [ board | list | calendar | table | ... ]  <- scrolls sideways
+
+   The view links used to wrap, so five of them turned the toolbar into
+   three stacked rows and pushed the board down the screen.
+   ===================================================================== */
+@media (max-width: 1023px) {
     .project__view__menu {
-        @apply p-2;
-        .view__menus {
-            @apply flex-wrap;
+        padding: 8px;
+
+        .view__head {
+            flex: 1 1 auto;
+            min-width: 0;
+
+            h2 {
+                font-size: 1rem;
+                line-height: 1.4;
+                padding-left: 8px;
+                padding-right: 8px;
+                margin-right: 0;
+                min-width: 0;
+                max-width: 60vw;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
         }
-        h2 {
-            @apply text-base px-2 mr-0;
-            max-width: 100%;
+
+        .view__actions {
+            flex: 0 0 auto;
+        }
+
+        /* One line, scrolled by hand. No visible scrollbar - the strip is
+           obviously swipeable and a bar on top of it only adds noise. */
+        .view__tabs {
+            order: 3;
+            flex: 1 1 100%;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scroll-snap-type: x proximity;
+            overscroll-behavior-x: contain;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            margin-top: 4px;
+            padding-bottom: 2px;
+
+            &::-webkit-scrollbar {
+                display: none;
+            }
+
+            > a {
+                flex-shrink: 0;
+                scroll-snap-align: start;
+                white-space: nowrap;
+            }
         }
     }
 }
