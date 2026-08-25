@@ -455,4 +455,31 @@ export default {
     white-space: nowrap;
 }
 .perf-row__time { width: 6.5rem; flex-shrink: 0; text-align: right; font-size: 11px; color: #9ca3af; }
+
+/* ---------------------------------------------------------------------
+   Narrow screens: the row is a desktop table line, so the path, the meta
+   figures and the timestamp ran off the right edge. It folds into two -
+   how slow and what was called, then the details.
+   --------------------------------------------------------------------- */
+@media (max-width: 767px) {
+    .perf-row {
+        flex-wrap: wrap;
+        gap: 6px 8px;
+        padding: 10px 12px;
+    }
+    .perf-row__ms { order: 0; width: auto; text-align: left; }
+    .perf-row__method { order: 1; width: auto; padding-left: 8px; padding-right: 8px; }
+    .perf-row__path {
+        order: 2;
+        flex: 1 1 100%;
+        white-space: normal;
+        word-break: break-all;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+    .perf-row__meta,
+    .perf-row__user { order: 3; }
+    .perf-row__time { order: 4; margin-left: auto; text-align: right; }
+}
 </style>

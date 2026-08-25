@@ -514,4 +514,48 @@ export default {
 
 .log-fade-enter-active, .log-fade-leave-active { transition: opacity .15s ease; }
 .log-fade-enter-from, .log-fade-leave-to { opacity: 0; }
+
+/* ---------------------------------------------------------------------
+   Narrow screens: level, message, trace and time were fixed columns on
+   one line. Below md the message takes a line of its own and the rest
+   sits under it.
+   --------------------------------------------------------------------- */
+@media (max-width: 767px) {
+    .log-row {
+        position: relative;
+        flex-wrap: wrap;
+        gap: 6px 8px;
+        padding: 11px 24px 11px 12px;
+    }
+    .log-row__level { order: 0; }
+    .log-row__time { order: 1; margin-left: auto; }
+    .log-row__msg {
+        order: 2;
+        flex: 1 1 100%;
+        white-space: normal;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+    }
+    .log-row__trace { order: 3; flex: 1 1 100%; }
+    .log-row__chevron {
+        position: absolute;
+        top: 50%;
+        right: 6px;
+        transform: translateY(-50%);
+    }
+}
+
+/* The detail panel comes up from the bottom, the way a sheet does. */
+@media (max-width: 640px) {
+    .log-backdrop {
+        align-items: flex-end;
+        padding: 0;
+    }
+    .log-panel {
+        max-width: 100%;
+        max-height: 92vh;
+        border-radius: 18px 18px 0 0;
+    }
+}
 </style>

@@ -31,11 +31,11 @@
                     </div>
 
                     <!-- Filters -->
-                    <div class="mt-4 rounded-2xl border border-gray-200/70 bg-white p-4 shadow-sm">
-                        <div class="flex flex-wrap items-center gap-x-6 gap-y-4">
+                    <div class="mt-4 rounded-2xl border border-gray-200/70 bg-white p-3 sm:p-4 shadow-sm">
+                        <div class="flex flex-wrap items-start lg:items-center gap-x-6 gap-y-4">
                             <!-- Uploader -->
-                            <div class="flex items-center gap-2">
-                                <span class="text-xs font-bold uppercase tracking-wide text-gray-500">{{ $t('Uploader') }}</span>
+                            <div class="doc-filter flex flex-col items-start gap-1.5 lg:flex-row lg:items-center lg:gap-2">
+                                <span class="text-xs font-bold uppercase tracking-wide text-gray-500 flex-shrink-0">{{ $t('Uploader') }}</span>
                                 <div class="flex flex-wrap items-center gap-1.5">
                                     <button
                                         type="button"
@@ -57,8 +57,8 @@
                             </div>
 
                             <!-- Document type -->
-                            <div class="flex items-center gap-2">
-                                <span class="text-xs font-bold uppercase tracking-wide text-gray-500">{{ $t('Document Type') }}</span>
+                            <div class="doc-filter flex flex-col items-start gap-1.5 lg:flex-row lg:items-center lg:gap-2">
+                                <span class="text-xs font-bold uppercase tracking-wide text-gray-500 flex-shrink-0">{{ $t('Document Type') }}</span>
                                 <filter-select
                                     v-model="form.type"
                                     multiple
@@ -74,8 +74,8 @@
                             </div>
 
                             <!-- Period -->
-                            <div class="flex items-center gap-2">
-                                <span class="text-xs font-bold uppercase tracking-wide text-gray-500">{{ $t('Period') }}</span>
+                            <div class="doc-filter flex flex-col items-start gap-1.5 lg:flex-row lg:items-center lg:gap-2">
+                                <span class="text-xs font-bold uppercase tracking-wide text-gray-500 flex-shrink-0">{{ $t('Period') }}</span>
                                 <div class="flex flex-wrap items-center gap-1.5">
                                     <button
                                         v-for="period in periods"
@@ -88,13 +88,13 @@
                             </div>
 
                             <!-- Custom range -->
-                            <div v-if="activePeriod === 'custom'" class="flex items-center gap-2">
+                            <div v-if="activePeriod === 'custom'" class="doc-filter flex flex-wrap items-center gap-2">
                                 <date-picker v-model="fromDate" :max-date="form.to" :placeholder="$t('From')" />
                                 <span class="text-gray-400">–</span>
                                 <date-picker v-model="toDate" :min-date="form.from" :placeholder="$t('To')" />
                             </div>
 
-                            <button v-if="hasFilters" type="button" @click="reset" class="ml-auto flex items-center gap-1 text-sm font-semibold text-gray-500 hover:text-red-600">
+                            <button v-if="hasFilters" type="button" @click="reset" class="w-full lg:w-auto lg:ml-auto flex items-center justify-center lg:justify-start gap-1 text-sm font-semibold text-gray-500 hover:text-red-600">
                                 <icon name="close" class="h-3.5 w-3.5" />
                                 {{ $t('Clear All') }}
                             </button>
@@ -652,4 +652,68 @@ export default {
 
 .doc-fade-enter-active, .doc-fade-leave-active { transition: opacity .15s ease; }
 .doc-fade-enter-from, .doc-fade-leave-to { opacity: 0; }
+
+/* ---------------------------------------------------------------------
+   Narrow screens
+   The row is a desktop table line - fixed columns for project, files,
+   uploader, date and status. Below md it folds into two lines: what the
+   document is, then who and when.
+   --------------------------------------------------------------------- */
+@media (max-width: 767px) {
+    .doc-filter {
+        width: 100%;
+    }
+
+    .doc-row {
+        position: relative;
+        flex-wrap: wrap;
+        gap: 6px 8px;
+        padding: 11px 26px 11px 12px;
+    }
+    .doc-row__icon { order: 0; }
+    .doc-row__code { order: 1; }
+    .doc-row__status { order: 2; margin-left: auto; }
+    .doc-row__title {
+        order: 3;
+        flex: 1 1 100%;
+        white-space: normal;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+    /* The board a document belongs to is in the detail panel; on a phone the
+       row is better off without it. */
+    .doc-row__project { display: none; }
+    .doc-row__files,
+    .doc-row__user,
+    .doc-row__date {
+        order: 4;
+        width: auto;
+        flex: 0 0 auto;
+    }
+    .doc-row__user-name { max-width: 7rem; }
+    .doc-row__date { margin-left: auto; text-align: right; }
+    .doc-row__chevron {
+        position: absolute;
+        top: 50%;
+        right: 6px;
+        transform: translateY(-50%);
+    }
+}
+
+/* The detail panel comes up from the bottom, the way a sheet does. */
+@media (max-width: 640px) {
+    .doc-backdrop {
+        align-items: flex-end;
+        padding: 0;
+    }
+    .doc-panel {
+        max-width: 100%;
+        max-height: 92vh;
+        border-radius: 18px 18px 0 0;
+    }
+    .doc-panel__head {
+        padding: 14px 14px 12px;
+    }
+}
 </style>

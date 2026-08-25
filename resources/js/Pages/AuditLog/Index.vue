@@ -39,9 +39,9 @@
 
                     <!-- Filters. Every control is the same height and shares one
                          focus treatment, so the row reads as a single bar. -->
-                    <div class="mt-4 rounded-2xl border border-gray-200/70 bg-white p-4 shadow-sm">
+                    <div class="mt-4 rounded-2xl border border-gray-200/70 bg-white p-3 sm:p-4 shadow-sm">
                         <div class="flex flex-wrap items-end gap-3">
-                            <div class="min-w-[15rem] flex-1">
+                            <div class="w-full sm:min-w-[15rem] sm:flex-1">
                                 <span class="audit-caption">{{ $t('Search') }}</span>
                                 <!-- The icon is positioned against the input, not the
                                      label: the label also contains the caption above,
@@ -57,7 +57,7 @@
                                 </div>
                             </div>
 
-                            <div>
+                            <div class="audit-filter">
                                 <span class="audit-caption">{{ $t('Action') }}</span>
                                 <filter-select
                                     v-model="form.action"
@@ -71,7 +71,7 @@
                                 />
                             </div>
 
-                            <div>
+                            <div class="audit-filter">
                                 <span class="audit-caption">{{ $t('Person') }}</span>
                                 <filter-select
                                     v-model="form.user"
@@ -89,7 +89,7 @@
                                  the native picker ignores the app's styling and
                                  draws its own chrome. Same component the documents
                                  page uses, so both ranges look and behave alike. -->
-                            <div>
+                            <div class="audit-filter">
                                 <span class="audit-caption">{{ $t('Period') }}</span>
                                 <div class="audit-range" :class="{ 'is-set': form.from || form.to }">
                                     <date-picker v-model="fromDate" :max-date="form.to" :placeholder="$t('From')" />
@@ -105,7 +105,7 @@
                                 v-if="hasFilters"
                                 type="button"
                                 @click="reset"
-                                class="audit-clear"
+                                class="audit-clear w-full justify-center sm:w-auto sm:justify-start"
                             >
                                 <icon name="close" class="h-3.5 w-3.5" />
                                 {{ $t('Clear All') }}
@@ -746,4 +746,79 @@ export default {
 
 .audit-fade-enter-active, .audit-fade-leave-active { transition: opacity .15s ease; }
 .audit-fade-enter-from, .audit-fade-leave-to { opacity: 0; }
+
+/* ---------------------------------------------------------------------
+   Narrow screens
+   The row is a desktop table line - fixed columns for who, action, text,
+   code and time - so on a phone the code and the timestamp ran off the
+   right edge. Below md it folds into two lines: who did what, then what
+   it was and when.
+   --------------------------------------------------------------------- */
+@media (min-width: 641px) and (max-width: 767px) {
+    /* Two filters share a line on a small tablet. */
+    .audit-filter {
+        width: calc(50% - 6px);
+    }
+}
+
+@media (max-width: 767px) {
+    .audit-range {
+        width: 100%;
+    }
+    .audit-select {
+        width: 100%;
+    }
+
+    .audit-row {
+        position: relative;
+        flex-wrap: wrap;
+        gap: 6px 8px;
+        padding: 11px 24px 11px 12px;
+    }
+    .audit-row__icon { order: 0; }
+    .audit-row__user {
+        order: 1;
+        width: auto;
+        max-width: 60%;
+    }
+    .audit-row__chip { order: 2; }
+    .audit-row__text {
+        order: 3;
+        flex: 1 1 100%;
+        white-space: normal;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+    .audit-row__code { order: 4; }
+    .audit-row__time {
+        order: 5;
+        width: auto;
+        margin-left: auto;
+    }
+    .audit-row__chevron {
+        position: absolute;
+        top: 50%;
+        right: 6px;
+        transform: translateY(-50%);
+    }
+}
+
+/* The detail panel comes up from the bottom, the way a sheet does. */
+@media (max-width: 640px) {
+    /* One filter per line on a phone. */
+    .audit-filter {
+        width: 100%;
+    }
+
+    .audit-backdrop {
+        align-items: flex-end;
+        padding: 0;
+    }
+    .audit-panel {
+        max-width: 100%;
+        max-height: 92vh;
+        border-radius: 18px 18px 0 0;
+    }
+}
 </style>

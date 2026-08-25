@@ -372,6 +372,21 @@ body.has-drawer-open {
     }
 }
 
+/* --- Anchored popovers -------------------------------------------------
+   Assignee, label and member pickers are 300px boxes placed with an inline
+   left/top from wherever the trigger happens to be. On a phone that puts
+   half of one off the screen, so they span the content instead. */
+@media (max-width: 640px) {
+    [scroll-region] .absolute[class*='w-[300px]'],
+    [scroll-region] .absolute[class*='w-[320px]'],
+    [scroll-region] .absolute[class*='w-[340px]'] {
+        left: 12px !important;
+        right: 12px !important;
+        width: auto !important;
+        max-width: none !important;
+    }
+}
+
 /* --- Wide, fixed-width panels ------------------------------------------ */
 @media (max-width: 767px) {
     /* Anything hard-coded wider than a phone is capped rather than clipped.
