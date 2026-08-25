@@ -2,8 +2,11 @@
     <div class="h-full">
         <Head :title="$t('Audit Log')" />
         <div class="flex flex-col flex-grow-1 flex-shrink-1 h-full">
-            <div class="flex-1 flex flex-col bg-gradient-to-br from-gray-50 to-white overflow-y-auto">
-                <div class="m-4 flex flex-col">
+            <!-- The header and filter bar hold their place; only the log
+                 below them scrolls, so the filters stay reachable however
+                 far down the trail runs. -->
+            <div class="flex h-full flex-col overflow-hidden bg-gradient-to-br from-gray-50 to-white">
+                <div class="flex-shrink-0 px-4 pt-4">
 
                     <!-- Header. This gradient ended on indigo shade 700, which the
                          app's tailwind.config does not define (it replaces the
@@ -110,6 +113,9 @@
                         </div>
                     </div>
 
+                </div>
+
+                <div class="audit-scroll min-h-0 flex-1 overflow-y-auto px-4 pb-4">
                     <!-- Log. One line per entry; the full record is in the panel. -->
                     <div class="mt-4 overflow-hidden rounded-2xl border border-gray-200/70 bg-white shadow-sm">
                         <div v-if="entries.data.length" class="divide-y divide-gray-100">
@@ -506,6 +512,25 @@ export default {
     color: #6b7280;
 }
 .audit-clear:hover { background: #fef2f2; color: #dc2626; }
+
+/* ---- the scrolling half of the page ---- */
+.audit-scroll {
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(100, 116, 139, .35) transparent;
+}
+.audit-scroll::-webkit-scrollbar { width: 8px; }
+.audit-scroll::-webkit-scrollbar-track { background: transparent; }
+.audit-scroll::-webkit-scrollbar-thumb {
+    background: rgba(100, 116, 139, .28);
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background-clip: content-box;
+}
+.audit-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 116, 139, .5);
+    background-clip: content-box;
+}
 
 /* ---- one-line rows ---- */
 .audit-row {

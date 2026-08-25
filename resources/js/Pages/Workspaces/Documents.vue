@@ -101,93 +101,43 @@
                         </div>
                     </div>
 
-                    <!-- List -->
+                    <!-- List. One line per document; the file list, dates, source
+                         and type live in the detail panel, so a document with five
+                         attachments no longer owns half the page. -->
                     <div class="mt-4 overflow-hidden rounded-2xl border border-gray-200/70 bg-white shadow-sm">
                         <div v-if="documents.data.length" class="divide-y divide-gray-100">
-                            <div
+                            <button
                                 v-for="doc in documents.data"
                                 :key="doc.id"
-                                class="group px-5 py-3.5 transition-colors hover:bg-indigo-50/40"
+                                type="button"
+                                class="doc-row"
+                                @click="openDetail(doc)"
                             >
-                                <div class="flex items-center gap-4">
-                                    <!-- Icon reflects the document's own file type -->
-                                    <div class="h-10 w-10 flex-shrink-0">
-                                        <icon :name="docIcon(doc)" class="h-10 w-10" />
-                                    </div>
+                                <icon :name="docIcon(doc)" class="doc-row__icon" />
 
-                                    <div class="min-w-0 flex-1">
-                                        <div class="flex flex-wrap items-center gap-2">
-                                            <span v-if="doc.code" class="rounded-md bg-gray-100 px-1.5 py-0.5 font-mono text-[11px] font-semibold text-gray-600">{{ doc.code }}</span>
-                                            <Link
-                                                :href="doc.project ? route('projects.board.with.task', [doc.project.id, doc.id]) : '#'"
-                                                class="truncate font-semibold text-gray-900 hover:text-indigo-700 hover:underline"
-                                            >{{ doc.title }}</Link>
-                                        </div>
-                                        <div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
-                                            <span v-if="doc.project" class="flex items-center gap-1">
-                                                <icon name="project" class="h-3 w-3" />{{ doc.project.title }}
-                                            </span>
-                                            <span v-if="doc.type" class="rounded bg-violet-100 px-1.5 py-0.5 font-medium text-violet-700">{{ doc.type }}</span>
-                                            <span v-if="doc.source">{{ doc.source }}</span>
-                                            <span class="flex items-center gap-1">
-                                                <icon name="attachment" class="h-3 w-3" />{{ khNum(doc.attachments_count) }}
-                                            </span>
-                                        </div>
-                                    </div>
+                                <span v-if="doc.code" class="doc-row__code">{{ doc.code }}</span>
 
-                                    <div v-if="doc.user" class="hidden items-center gap-2 sm:flex">
-                                        <img :src="doc.user.photo || '/images/user.svg'" :alt="doc.user.name" class="h-7 w-7 rounded-full object-cover ring-2 ring-white" />
-                                        <span class="max-w-[8rem] truncate text-xs font-medium text-gray-600">{{ doc.user.name }}</span>
-                                    </div>
+                                <span class="doc-row__title">{{ doc.title }}</span>
 
-                                    <div class="w-28 flex-shrink-0 text-right">
-                                        <div class="text-xs font-semibold text-gray-700">{{ khShortDate(doc.created_at, true) }}</div>
-                                        <div v-if="khmerCalendarOn" class="khmer-lunar-text text-[11px] text-indigo-500">{{ khDayLabel(doc.created_at) }}</div>
-                                    </div>
+                                <span v-if="doc.project" class="doc-row__project">{{ doc.project.title }}</span>
 
-                                    <span :class="[
-                                        'flex-shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold',
-                                        doc.is_done ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'
-                                    ]">{{ doc.is_done ? $t('Done') : (doc.status || $t('Active')) }}</span>
-                                </div>
+                                <span class="doc-row__files" :title="$t('Attachments')">
+                                    <icon name="attachment" class="h-3 w-3" />{{ khNum(doc.attachments_count) }}
+                                </span>
 
-                                <!-- Attached files. One per line rather than wrapping chips:
-                                     a row with five files used to ragged-wrap into a block
-                                     with every name cut short. -->
-                                <div v-if="doc.files && doc.files.length" class="mt-2.5 pl-14">
-                                    <ul class="divide-y divide-gray-100 overflow-hidden rounded-xl border border-gray-200 bg-white">
-                                        <li
-                                            v-for="file in visibleFiles(doc)"
-                                            :key="file.id"
-                                            class="flex items-center gap-3 px-3 py-2 transition-colors hover:bg-indigo-50/50"
-                                        >
-                                            <icon :name="fileIcon(file.ext)" class="h-6 w-6 flex-shrink-0" />
-                                            <span class="min-w-0 flex-1 truncate text-xs font-medium text-gray-700" :title="file.name">{{ file.name }}</span>
-                                            <span class="flex-shrink-0 text-[11px] text-gray-400">{{ fileSize(file.size) }}</span>
-                                            <a
-                                                :href="file.path"
-                                                :download="file.name"
-                                                class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-indigo-100 hover:text-indigo-600"
-                                                :title="$t('Download')"
-                                            >
-                                                <icon name="download" class="h-3.5 w-3.5" />
-                                            </a>
-                                        </li>
-                                    </ul>
+                                <span class="doc-row__user">
+                                    <img v-if="doc.user" :src="doc.user.photo || '/images/user.svg'" :alt="doc.user.name" class="doc-row__avatar" />
+                                    <span class="doc-row__user-name">{{ doc.user ? doc.user.name : '—' }}</span>
+                                </span>
 
-                                    <button
-                                        v-if="doc.files.length > filePreviewLimit"
-                                        type="button"
-                                        @click="toggleFiles(doc.id)"
-                                        class="mt-1.5 flex items-center gap-1 text-[11px] font-semibold text-indigo-600 hover:text-indigo-700"
-                                    >
-                                        <icon :name="isFilesExpanded(doc.id) ? 'chevron-up' : 'chevron-down'" class="h-3 w-3" />
-                                        {{ isFilesExpanded(doc.id)
-                                            ? $t('Show less')
-                                            : $t('Show all :count files').replace(':count', khNum(doc.files.length)) }}
-                                    </button>
-                                </div>
-                            </div>
+                                <span class="doc-row__date">{{ khShortDate(doc.created_at, true) }}</span>
+
+                                <span class="doc-row__status" :class="doc.is_done ? 'is-done' : 'is-open'">
+                                    {{ doc.is_done ? $t('Done') : (doc.status || $t('Active')) }}
+                                </span>
+
+                                <icon name="chevron-right" class="doc-row__chevron" />
+                            </button>
                         </div>
 
                         <!-- Empty state -->
@@ -196,7 +146,7 @@
                                 <icon name="book" class="h-8 w-8 text-gray-400" />
                             </div>
                             <p class="font-semibold text-gray-700">{{ $t('No documents found.') }}</p>
-                            <button v-if="hasFilters" type="button" @click="reset" class="text-sm font-semibold text-indigo-600 hover:text-indigo-700">
+                            <button v-if="hasFilters" type="button" @click="reset" class="text-sm font-semibold text-indigo-600 hover:text-indigo-800">
                                 {{ $t('Clear All') }}
                             </button>
                         </div>
@@ -206,6 +156,92 @@
                 </div>
             </div>
         </div>
+
+        <!-- One document, in full. Everything here already came down with the
+             list, so opening it costs no round trip. -->
+        <transition name="doc-fade">
+            <div v-if="detail" class="doc-backdrop" @click.self="closeDetail">
+                <div class="doc-panel">
+                    <div class="doc-panel__head">
+                        <icon :name="docIcon(detail)" class="h-9 w-9 flex-shrink-0" />
+                        <div class="min-w-0 flex-1">
+                            <div class="doc-panel__title">{{ detail.title }}</div>
+                            <div v-if="detail.code" class="doc-panel__code">{{ detail.code }}</div>
+                        </div>
+                        <span class="doc-row__status" :class="detail.is_done ? 'is-done' : 'is-open'">
+                            {{ detail.is_done ? $t('Done') : (detail.status || $t('Active')) }}
+                        </span>
+                        <button type="button" class="doc-panel__close" @click="closeDetail" :title="$t('Close')">
+                            <icon name="close" class="h-4 w-4" />
+                        </button>
+                    </div>
+
+                    <div class="doc-panel__body">
+                        <dl class="doc-panel__grid">
+                            <div v-if="detail.project">
+                                <dt>{{ $t('Project') }}</dt>
+                                <dd>{{ detail.project.title }}</dd>
+                            </div>
+                            <div v-if="detail.status">
+                                <dt>{{ $t('Current board') }}</dt>
+                                <dd>{{ detail.status }}</dd>
+                            </div>
+                            <div v-if="detail.type">
+                                <dt>{{ $t('Document type') }}</dt>
+                                <dd>{{ detail.type }}</dd>
+                            </div>
+                            <div v-if="detail.source">
+                                <dt>{{ $t('Document source') }}</dt>
+                                <dd>{{ detail.source }}</dd>
+                            </div>
+                            <div v-if="detail.user">
+                                <dt>{{ $t('Uploader') }}</dt>
+                                <dd class="flex items-center gap-2">
+                                    <img :src="detail.user.photo || '/images/user.svg'" :alt="detail.user.name" class="h-5 w-5 rounded-full object-cover" />
+                                    {{ detail.user.name }}
+                                </dd>
+                            </div>
+                            <div>
+                                <dt>{{ $t('Received') }}</dt>
+                                <dd>{{ khShortDate(detail.created_at, true) }}</dd>
+                            </div>
+                            <div v-if="detail.due_date">
+                                <dt>{{ $t('Due date') }}</dt>
+                                <dd>{{ khShortDate(detail.due_date, true) }}</dd>
+                            </div>
+                        </dl>
+
+                        <div class="doc-panel__label">
+                            {{ $t('Attachments') }} · {{ khNum(detail.attachments_count) }}
+                        </div>
+
+                        <ul v-if="detail.files && detail.files.length" class="doc-panel__files">
+                            <li v-for="file in detail.files" :key="file.id" class="doc-panel__file">
+                                <icon :name="fileIcon(file.ext)" class="h-6 w-6 flex-shrink-0" />
+                                <span class="doc-panel__file-name" :title="file.name">{{ file.name }}</span>
+                                <span class="doc-panel__file-size">{{ fileSize(file.size) }}</span>
+                                <a :href="file.path" :download="file.name" class="doc-panel__file-btn" :title="$t('Download')">
+                                    <icon name="download" class="h-3.5 w-3.5" />
+                                </a>
+                            </li>
+                        </ul>
+                        <p v-else class="doc-panel__empty">{{ $t('This document has no attached file yet.') }}</p>
+                    </div>
+
+                    <div class="doc-panel__foot">
+                        <button type="button" class="doc-btn doc-btn--ghost" @click="closeDetail">{{ $t('Close') }}</button>
+                        <Link
+                            v-if="detail.project"
+                            :href="route('projects.board.with.task', [detail.project.slug || detail.project.id, detail.id])"
+                            class="doc-btn doc-btn--primary"
+                        >
+                            <icon name="link_external" class="h-3.5 w-3.5" />
+                            {{ $t('Open full task') }}
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        </transition>
     </div>
 </template>
 
@@ -257,10 +293,8 @@ export default {
                 { key: 'year', label: 'This year' },
                 { key: 'custom', label: 'Custom' },
             ],
-            // Document ids whose full file list is open; long lists collapse so a
-            // single document cannot push the rest of the page off screen.
-            expandedFiles: [],
-            filePreviewLimit: 1,
+            // The document whose detail panel is open, or null.
+            detail: null,
 
             form: {
                 uploader: this.filters.uploader || null,
@@ -321,17 +355,11 @@ export default {
             const first = doc.files && doc.files.length ? doc.files[0] : null
             return first ? this.fileIcon(first.ext) : 'file-generic'
         },
-        isFilesExpanded(docId) {
-            return this.expandedFiles.includes(docId)
+        openDetail(doc) {
+            this.detail = doc
         },
-        toggleFiles(docId) {
-            this.expandedFiles = this.isFilesExpanded(docId)
-                ? this.expandedFiles.filter((id) => id !== docId)
-                : [...this.expandedFiles, docId]
-        },
-        visibleFiles(doc) {
-            const files = doc.files || []
-            return this.isFilesExpanded(doc.id) ? files : files.slice(0, this.filePreviewLimit)
+        closeDetail() {
+            this.detail = null
         },
         fileSize(bytes) {
             const size = Number(bytes) || 0
@@ -371,3 +399,257 @@ export default {
     },
 }
 </script>
+
+<style scoped>
+/* ---- one-line rows ---- */
+.doc-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 9px 16px;
+    text-align: left;
+    transition: background-color .12s ease;
+}
+.doc-row:hover { background: rgba(238, 242, 255, .55); }
+.doc-row:hover .doc-row__chevron { color: #6574cd; transform: translateX(2px); }
+
+.doc-row__icon { width: 22px; height: 22px; flex-shrink: 0; }
+
+.doc-row__code {
+    flex-shrink: 0;
+    padding: 2px 6px;
+    border-radius: 6px;
+    background: #f1f5f9;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: #475569;
+}
+.doc-row__title {
+    flex: 1;
+    min-width: 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: #111827;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.doc-row__project {
+    width: 8rem;
+    flex-shrink: 0;
+    font-size: 12px;
+    color: #6b7280;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.doc-row__files {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    width: 3rem;
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 600;
+    color: #94a3b8;
+}
+.doc-row__user {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    width: 9rem;
+    flex-shrink: 0;
+    min-width: 0;
+}
+.doc-row__avatar {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    border-radius: 999px;
+    object-fit: cover;
+}
+.doc-row__user-name {
+    font-size: 12px;
+    color: #4b5563;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.doc-row__date {
+    width: 6rem;
+    flex-shrink: 0;
+    text-align: right;
+    font-size: 11px;
+    font-weight: 600;
+    color: #9ca3af;
+}
+.doc-row__status {
+    flex-shrink: 0;
+    max-width: 12rem;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.doc-row__status.is-done { background: #dcfce7; color: #15803d; }
+.doc-row__status.is-open { background: #dbeafe; color: #1d4ed8; }
+
+.doc-row__chevron {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    color: #d1d5db;
+    transition: color .12s ease, transform .12s ease;
+}
+
+/* ---- detail panel ---- */
+.doc-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(15, 23, 42, .5);
+    backdrop-filter: blur(2px);
+}
+.doc-panel {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 36rem;
+    max-height: 88vh;
+    overflow: hidden;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, .3);
+}
+.doc-panel__head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 18px;
+    border-bottom: 1px solid #eef2f7;
+}
+.doc-panel__title { font-size: 15px; font-weight: 700; color: #0f172a; }
+.doc-panel__code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+    font-weight: 600;
+    color: #6574cd;
+}
+.doc-panel__close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    border-radius: 999px;
+    color: #94a3b8;
+}
+.doc-panel__close:hover { background: #f1f5f9; color: #475569; }
+
+.doc-panel__body { padding: 16px 18px; overflow-y: auto; }
+.doc-panel__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 16px;
+    margin-bottom: 16px;
+}
+.doc-panel__grid dt {
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: #94a3b8;
+    margin-bottom: 2px;
+}
+.doc-panel__grid dd { font-size: 13px; color: #1f2937; line-height: 1.5; }
+
+.doc-panel__label {
+    margin-bottom: 8px;
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: #94a3b8;
+}
+.doc-panel__files {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+}
+.doc-panel__file {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-bottom: 1px solid #f1f5f9;
+}
+.doc-panel__file:last-child { border-bottom: 0; }
+.doc-panel__file:hover { background: rgba(238, 242, 255, .5); }
+.doc-panel__file-name {
+    flex: 1;
+    min-width: 0;
+    font-size: 12px;
+    font-weight: 500;
+    color: #374151;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.doc-panel__file-size { flex-shrink: 0; font-size: 11px; color: #9ca3af; }
+.doc-panel__file-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    color: #94a3b8;
+}
+.doc-panel__file-btn:hover { background: #e0e7ff; color: #4338ca; }
+
+.doc-panel__empty {
+    padding: 1.5rem;
+    border: 1px dashed #e5e7eb;
+    border-radius: 12px;
+    text-align: center;
+    font-size: 13px;
+    color: #94a3b8;
+}
+
+.doc-panel__foot {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 12px 18px;
+    border-top: 1px solid #eef2f7;
+    background: #fbfdff;
+}
+.doc-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+}
+.doc-btn--ghost { color: #475569; background: #fff; border: 1px solid #e2e8f0; }
+.doc-btn--ghost:hover { background: #f1f5f9; }
+.doc-btn--primary { color: #fff; background: #6574cd; }
+.doc-btn--primary:hover { background: #5661b3; }
+
+.doc-fade-enter-active, .doc-fade-leave-active { transition: opacity .15s ease; }
+.doc-fade-enter-from, .doc-fade-leave-to { opacity: 0; }
+</style>
