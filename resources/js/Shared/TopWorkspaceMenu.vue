@@ -4,15 +4,15 @@
             <ul role="menu" class="list">
                 <li v-for="(workspace, p_index) in workspaces" class="item group" :key="workspace.id">
                     <div class="content">
-                        <Link class="flex" :href="route('workspace.view', workspace.slug || workspace.id)">
-                            <div class="p-2 flex gap-2 items-center">
+                        <Link class="flex w-full min-w-0" :href="route('workspace.view', workspace.slug || workspace.id)">
+                            <div class="p-2 flex gap-2 items-center w-full min-w-0">
                                 <div v-if="workspace.logo" class="logo has_bg flex justify-center items-center w-9 h-9 rounded-full text-white text-lg" :style="{ 'background-image' : 'url('+ workspace.logo +')' }">
                                 </div>
                                 <div v-else class="logo flex justify-center items-center w-9 h-9 rounded-full bg-indigo-600 text-white text-lg">
                                     {{ workspace.name.charAt(0) }}
                                 </div>
-                                <div class="name flex items-center gap-1.5">
-                                    {{ workspace.name }}
+                                <div class="name flex items-center gap-1.5 min-w-0">
+                                    <span class="truncate" :title="workspace.name">{{ workspace.name }}</span>
                                     <span class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-indigo-600 text-white text-[10px] font-semibold">
                                         {{ workspaceTaskCount(workspace) }}
                                     </span>

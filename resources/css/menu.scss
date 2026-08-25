@@ -20,7 +20,11 @@ body {
     -webkit-box-shadow: 0px 4px 40px rgb(0 0 0 / 7%);
     box-shadow: 0px 4px 40px rgb(0 0 0 / 7%);
     border-bottom: 1px solid #ffffff29;
-    z-index: 8;
+    /* z-index alone was inert here: without a position the bar could not
+       stack, so the panels it opens were painted over by the toolbar and the
+       board underneath. */
+    position: relative;
+    z-index: 30;
     display: flex;
     justify-content: space-between;
 
@@ -64,7 +68,14 @@ body {
                 @apply flex items-center relative cursor-pointer rounded px-3 bg-indigo-600 text-white;
 
                 .m__create {
-                    @apply absolute w-72 left-0 top-8 bg-white text-black rounded-lg shadow;
+                    @apply absolute w-72 left-0 bg-white text-black rounded-xl;
+                    top: calc(100% + 8px);
+                    max-width: calc(100vw - 24px);
+                    background-color: #ffffff;
+                    box-shadow: 0 16px 40px rgba(8, 21, 66, 0.28);
+                    border: 1px solid rgba(15, 23, 42, 0.08);
+                    z-index: 60;
+                    overflow: hidden;
 
                     .m__area {
                         @apply overflow-y-auto py-2;
@@ -95,14 +106,20 @@ body {
     }
 }
 
-.placement-top-right {
-    /* Wide enough for the placeholder to read in full, capped so it never
-       crowds the bell, the theme toggle and the language switcher. */
-    .top-search {
-        width: clamp(240px, 24vw, 420px);
-        flex: 0 1 auto;
-    }
+/* Wide enough for the placeholder to read in full, capped so it never crowds
+   the bell, the theme toggle and the language switcher. The field sits beside
+   the icon cluster rather than inside it, so this is anchored on the bar. */
+.top_bar .top-search {
+    width: clamp(240px, 24vw, 420px);
+    /* Holds its width; the menus on the left give way first. */
+    flex: 0 0 auto;
+}
+.top_bar .placement-top-left {
+    flex: 1 1 auto;
+    min-width: 0;
+}
 
+.placement-top-right {
     .tracker {
         @apply flex ml-1 gap-2 justify-between items-center;
 
@@ -1241,4 +1258,11 @@ nav {
             }
         }
     }
+}
+
+/* The Create panel in dark mode: the dark theme sets its own background with a
+   longer selector, so only the edges need matching here. */
+body .dark .top_bar .top_bar__menu .t__l__wrapper .__creation .m__create {
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
 }

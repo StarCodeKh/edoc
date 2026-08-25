@@ -8,19 +8,10 @@
             width: 150px;
         }
     }
+    /* The top bar's small-screen layout lives in responsive.scss, which owns
+       the two-row arrangement; only the odd spacings are left here. */
     .top_bar{
-        flex-flow: column;
-        gap: 1rem;
-        padding-bottom: 2rem;
-        .placement-top-left{
-            align-items: center;
-            display: flex;
-            flex-flow: column;
-        }
         .placement-top-right{
-            .top-search{
-                width: 100%;
-            }
             .mode-switcher{
                 margin-left: 0.8rem;
                 margin-right: 0.8rem;

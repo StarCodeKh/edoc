@@ -1,5 +1,5 @@
 <template>
-    <div class="fixed top-[52px] w-[260px] left-[30%] z-[200] rounded-[8px] bg-white shadow overflow-hidden create__project" :style="{top: top, left: left}">
+    <div class="fixed top-[52px] w-[260px] left-[30%] z-[200] rounded-[8px] bg-white shadow overflow-hidden create__project create__popover" :style="{top: top, left: left}">
         <div class="flex gap-3 flex-col py-3 px-5" v-if="!loading">
             <div class="flex items-center justify-between gap-1">
                 <div class="flex"></div>

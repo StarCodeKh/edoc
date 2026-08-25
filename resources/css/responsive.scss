@@ -1,0 +1,389 @@
+/* =========================================================================
+   Responsive baseline
+   -------------------------------------------------------------------------
+   Loaded last, so it has the final say. Everything here is a guard that
+   applies to every page: phones and tablets were never designed for, and
+   most screens still carry desktop-only widths. Breakpoints follow Tailwind:
+   640px (phone), 768px (tablet), 1024px (small laptop).
+   ========================================================================= */
+
+/* --- Nothing may push the page sideways ------------------------------- */
+html {
+    max-width: 100%;
+}
+body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+img,
+video,
+canvas {
+    max-width: 100%;
+    height: auto;
+}
+
+/* The page must not scroll behind an open drawer. */
+body.has-drawer-open {
+    overflow: hidden;
+}
+
+/* --- The sidebar becomes a drawer below md ---------------------------- */
+/* Below md only. The utility class on the element says md:hidden, but this
+   file is loaded after Tailwind's utilities, so a display set here would win
+   on a desktop and leave the button showing where it has no job. */
+.app-nav-toggle {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    color: #ffffff;
+    background-color: #a6c5e229;
+    transition: background-color 0.15s ease;
+
+    &:hover,
+    &:focus-visible {
+        background-color: #a6c5e24d;
+        outline: none;
+    }
+}
+
+/* The bar is tinted on a project screen and white everywhere else, so the
+   button follows the same rule the rest of the bar's text does. */
+.layout-app.main .top_bar .app-nav-toggle {
+    color: #0f172a;
+    background-color: rgba(15, 23, 42, 0.06);
+
+    &:hover,
+    &:focus-visible {
+        background-color: rgba(15, 23, 42, 0.12);
+    }
+}
+.layout-app.dark .top_bar .app-nav-toggle {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.app-drawer-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 55;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(2px);
+}
+
+@media (max-width: 767px) {
+    .app-nav-toggle {
+        display: inline-flex;
+    }
+
+    /* Off-canvas until the toggle brings it in. Desktop keeps the sidebar
+       exactly as it was - none of this applies from md up. */
+    .app-sidebar {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 60;
+        width: 84vw;
+        max-width: 320px;
+        transform: translate3d(-100%, 0, 0);
+        transition: transform 0.24s cubic-bezier(0.32, 0.72, 0, 1);
+        box-shadow: 0 24px 60px rgba(8, 21, 66, 0.35);
+        border-radius: 0 18px 18px 0;
+        overscroll-behavior: contain;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+
+        /* Clear of the notch at the top and the home indicator at the bottom. */
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: calc(env(safe-area-inset-bottom) + 12px);
+
+        &.is-open {
+            transform: translate3d(0, 0, 0);
+            display: block;
+        }
+
+        /* The menus size themselves for a fixed desktop column. */
+        .main-menu,
+        .sidebar_wrapper {
+            width: 100%;
+            min-width: 0;
+            max-width: none;
+            height: auto;
+            min-height: 100%;
+            border-right: 0;
+        }
+
+        /* Room for the close button in the top-right corner. */
+        .menu-header,
+        > .p-3:first-child {
+            padding-right: 56px;
+        }
+    }
+
+    /* Sits on the drawer, not in it: the menus are shared with the desktop
+       layout, which has no need for a close control. */
+    .app-drawer-close {
+        position: fixed;
+        top: calc(env(safe-area-inset-top) + 10px);
+        left: min(84vw, 320px);
+        transform: translateX(-52px);
+        z-index: 61;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        color: #0f172a;
+        background: rgba(255, 255, 255, 0.9);
+        box-shadow: 0 4px 14px rgba(8, 21, 66, 0.2);
+        backdrop-filter: blur(6px);
+
+        &:active {
+            transform: translateX(-52px) scale(0.94);
+        }
+    }
+
+    .layout-app.project .app-drawer-close,
+    .layout-app.dark .app-drawer-close {
+        color: #0f172a;
+        background: rgba(255, 255, 255, 0.92);
+    }
+
+    /* The desktop collapse toggle must not hide the drawer as well. */
+    .app-sidebar.__hide.is-open {
+        display: block;
+        transform: translate3d(0, 0, 0);
+    }
+}
+
+/* --- Page frame -------------------------------------------------------- */
+@media (max-width: 1023px) {
+    .sec-cont {
+        padding: 16px 16px 0 16px;
+    }
+}
+@media (max-width: 640px) {
+    .sec-cont {
+        padding: 12px 12px 0 12px;
+    }
+    .card {
+        padding: 16px;
+        border-radius: 12px;
+    }
+}
+
+/* --- Tables scroll inside their card, never widening the page ----------
+   [scroll-region] is the main content area of the shell, so this reaches
+   every page - not only the ones built on .sec-cont. Menus and the task
+   dialog hold no tables, so nothing else is caught by it. */
+@media (max-width: 1023px) {
+    [scroll-region] *:has(> table) {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    [scroll-region] table {
+        min-width: 640px;
+    }
+    [scroll-region] .overflow-x-auto,
+    [scroll-region] .overflow-auto {
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* --- Multi-column grids stack ------------------------------------------
+   Grid classes written without a breakpoint keep their desktop column count
+   all the way down to a phone, which is what leaves dashboards unreadable.
+   Three columns or more collapse; two are left alone, they still read. */
+@media (max-width: 639px) {
+    [scroll-region] [class*='grid-cols-3'],
+    [scroll-region] [class*='grid-cols-4'],
+    [scroll-region] [class*='grid-cols-5'],
+    [scroll-region] [class*='grid-cols-6'],
+    [scroll-region] [class*='grid-cols-12'] {
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+}
+@media (min-width: 640px) and (max-width: 1023px) {
+    [scroll-region] [class*='grid-cols-4'],
+    [scroll-region] [class*='grid-cols-5'],
+    [scroll-region] [class*='grid-cols-6'] {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* --- Forms and controls ------------------------------------------------ */
+@media (max-width: 767px) {
+    /* Anything under 16px makes iOS zoom the whole page on focus. */
+    input:not([type='checkbox']):not([type='radio']),
+    select,
+    textarea {
+        font-size: 16px;
+    }
+
+    /* Reachable with a thumb. */
+    button,
+    .btn,
+    [role='button'] {
+        min-height: 40px;
+    }
+
+    /* Filter/search rows were laid out for a wide screen. */
+    [scroll-region] .justify-between {
+        flex-wrap: wrap;
+    }
+}
+
+/* --- Dialogs fill the screen on a phone -------------------------------- */
+@media (max-width: 640px) {
+    /* The workspace popover is anchored to a point on a desktop toolbar, which
+       lands it off-screen on a phone; it becomes a bottom sheet instead. The
+       full-screen dialogs already centre themselves and are left alone. */
+    .create__popover {
+        position: fixed !important;
+        inset: auto 0 0 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        max-height: 88vh;
+        overflow-y: auto;
+        border-radius: 16px 16px 0 0;
+    }
+}
+
+/* --- Top bar -----------------------------------------------------------
+   Two rows, and only two:
+
+       [=]  logo                       bell  sun  flag  avatar
+       [ search, the full width of the bar                    ]
+
+   Everything used to be stacked in one column, which pushed the search
+   under the icons and left the two overlapping each other. The search is a
+   child of the bar in its own right now, so it can be sent to its own line
+   while the left block and the icon cluster share the first one. */
+@media (max-width: 1023px) {
+    .top_bar {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 8px 12px;
+
+        /* w-full on the element would give the left block the whole row. */
+        .placement-top-left {
+            width: auto;
+            flex: 0 1 auto;
+            min-width: 0;
+
+            /* Selecting .flex here would make Tailwind treat every @apply flex
+               in the project as circular, so the child is matched by tag. */
+            > div {
+                flex-direction: row;
+                align-items: center;
+            }
+        }
+
+        .top_bar__menu {
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px;
+            width: auto;
+        }
+
+        .placement-top-right {
+            width: auto;
+            flex: 0 0 auto;
+            justify-content: flex-end;
+            gap: 6px;
+        }
+
+        /* Its own line, edge to edge. */
+        .top-search {
+            order: 5;
+            flex: 1 1 100%;
+            width: 100%;
+            max-width: 100%;
+        }
+    }
+
+    .site-logo {
+        max-width: 130px;
+    }
+
+    /* The "More" panel hangs off its own button instead of being pinned to a
+       corner of the bar, where it landed on top of the search. */
+    .t__l__wrapper {
+        position: relative;
+
+        .tl_menu_list.mobile {
+            top: calc(100% + 8px) !important;
+            right: auto !important;
+            left: 0 !important;
+            width: min(320px, calc(100vw - 20px));
+            padding: 6px;
+            gap: 2px;
+            border-radius: 12px;
+            background: #1d4ed8;
+            box-shadow: 0 12px 30px rgba(8, 21, 66, 0.35);
+            z-index: 40;
+
+            /* Both rows are one panel, so they are one width. The 160px they
+               used to carry left the second row short of the first. */
+            .t__menu {
+                width: 100%;
+                justify-content: space-between;
+                padding: 10px 12px;
+                border-radius: 8px;
+            }
+
+            /* The list a row opens drops underneath that row and spans the
+               panel, instead of hanging out over the page from a 288px box
+               anchored halfway up the row it belongs to. */
+            .top_project_menu {
+                position: absolute;
+                top: calc(100% + 6px);
+                left: 0;
+                right: auto;
+                /* Wider than the row it hangs from: Khmer labels have no spaces
+                   to break at, so a narrow panel splits them mid-word. */
+                width: min(360px, calc(100vw - 20px));
+                max-height: 60vh;
+                overflow-y: auto;
+                overscroll-behavior: contain;
+                border-radius: 12px;
+                box-shadow: 0 16px 40px rgba(8, 21, 66, 0.35);
+            }
+        }
+    }
+}
+
+@media (max-width: 640px) {
+    .top_bar {
+        padding: 8px 10px;
+
+        /* Create keeps its label; More is icon-and-word already. */
+        .__creation {
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+    }
+
+    .site-logo {
+        max-width: 110px;
+    }
+}
+
+/* --- Wide, fixed-width panels ------------------------------------------ */
+@media (max-width: 767px) {
+    /* Anything hard-coded wider than a phone is capped rather than clipped.
+       Table cells keep their widths - those scroll inside the card. */
+    [scroll-region] [class*='w-[']:not(td):not(th),
+    [scroll-region] [class*='min-w-[']:not(td):not(th) {
+        max-width: 100%;
+    }
+}

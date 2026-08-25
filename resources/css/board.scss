@@ -139,3 +139,81 @@ body{
         }
     }
 }
+
+/* =====================================================================
+   Board on phones and small tablets
+   ---------------------------------------------------------------------
+   The columns were laid out in a row with no scroller of their own, so on
+   a narrow screen they ran off the side of the page. They now scroll
+   sideways inside the board and snap one column at a time, the way every
+   card board does on a phone; each column still scrolls vertically on its
+   own so a long list never stretches the page.
+   ===================================================================== */
+@media (max-width: 767px) {
+    .task_board {
+        gap: 0;
+        overflow: hidden;
+
+        .board_width {
+            @apply px-3 py-3;
+            overflow-x: auto;
+            overflow-y: hidden;
+            /* Proximity, not mandatory: a card being dragged between columns
+               must not be yanked back by the snap. */
+            scroll-snap-type: x proximity;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-x: contain;
+            gap: 12px;
+
+            > .top_list,
+            > .add__new__list {
+                width: 85vw;
+                max-width: 340px;
+                min-width: 0;
+                flex-shrink: 0;
+                scroll-snap-align: start;
+            }
+
+            .top_list {
+                .b__list {
+                    /* The list title and its menu share one line at this width. */
+                    @apply gap-1;
+                }
+                .dragArea {
+                    /* Room to drop a card at the end of a short list. */
+                    padding-bottom: 24px;
+                }
+            }
+        }
+    }
+
+    /* The board toolbar wraps rather than pushing the view sideways. */
+    .project__view__menu {
+        @apply p-2;
+        .view__menus {
+            @apply flex-wrap;
+        }
+        h2 {
+            @apply text-base px-2 mr-0;
+            max-width: 100%;
+        }
+    }
+}
+
+/* The board panel is a side rail on a desktop and a sheet on a phone. */
+@media (max-width: 767px) {
+    .right_menu_enable {
+        margin-right: 0;
+    }
+    .right__menu {
+        width: 100% !important;
+        max-width: 100%;
+        border-radius: 16px 16px 0 0;
+        border-left: 0;
+        top: auto !important;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 82vh !important;
+    }
+}

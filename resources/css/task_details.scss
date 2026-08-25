@@ -342,3 +342,64 @@
         stroke-dashoffset: 0;
     }
 }
+
+/* =====================================================================
+   Task details on a phone
+   ---------------------------------------------------------------------
+   The dialog already stacks its main column and sidebar below 1024px. What
+   was left over on a phone: it still floated as a card inside a scrim, and
+   every anchored popover inside it kept a 300px width against a ~360px
+   screen, so half of each one sat off the edge.
+   ===================================================================== */
+@media (max-width: 640px) {
+    .task__details {
+        @apply p-0;
+
+        .wrapper {
+            @apply mt-0;
+
+            .container {
+                max-width: 100vw;
+
+                .content {
+                    /* A full-screen sheet, not a card with slivers of scrim. */
+                    @apply rounded-none shadow-none;
+                    min-height: 100vh;
+                    border: 0;
+
+                    .m__body {
+                        @apply rounded-none;
+                        border: 0;
+                    }
+
+                    /* Anchored panels span the sheet instead of hanging off it. */
+                    .mv__card,
+                    .datetime-picker-dropdown,
+                    [class*='w-[300px]'] {
+                        left: 12px !important;
+                        right: 12px !important;
+                        width: auto !important;
+                        max-width: none !important;
+                    }
+
+                    /* Title and its actions stop competing for one line. */
+                    .m__body .main .s__1 {
+                        @apply flex-col gap-2;
+                    }
+
+                    /* The close button clears the title text. */
+                    .close_area .wrap .close__b {
+                        @apply p-1.5;
+                    }
+                }
+            }
+        }
+    }
+}
+
+/* Tablet: the sheet stays a dialog, but edge to edge is wasted space. */
+@media (min-width: 641px) and (max-width: 1024px) {
+    .task__details .wrapper .container {
+        max-width: 92vw;
+    }
+}

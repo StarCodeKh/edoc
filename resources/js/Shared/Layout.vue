@@ -8,6 +8,21 @@
                         <div class="placement-top-left w-full">
                             <div class="flex w-full lg:flex-row flex-col">
                                 <div class="flex gap-3 select-none top_bar__menu">
+                                    <!-- Phones and small tablets have no room for a
+                                         permanent sidebar, so it becomes a drawer this
+                                         button pulls open. -->
+                                    <button
+                                        v-if="hasSidebar"
+                                        type="button"
+                                        class="app-nav-toggle md:hidden"
+                                        @click.stop="mobile_nav = !mobile_nav"
+                                        :aria-expanded="mobile_nav ? 'true' : 'false'"
+                                        :aria-label="$t('Menu')"
+                                    >
+                                        <svg viewBox="0 0 24 24" fill="none" class="w-5 h-5" aria-hidden="true">
+                                            <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                        </svg>
+                                    </button>
                                     <Link class="mr-2" href="/">
                                         <logo class="site-logo white" name="white" />
                                         <logo class="site-logo color" />
@@ -55,64 +70,65 @@
                             </div>
                         </div>
 
-                        <div class="placement-top-right gap-3">
-                            <!-- Global search. One positioned wrapper holds the field
-                                 and its results so the panel lines up under the input,
-                                 and the field is wide enough for the placeholder to
-                                 read in full. -->
-                            <div class="top-search relative" v-click-outside="clearSearch">
-                                <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-                                    <svg class="w-4 h-4 text-gray-400 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+                        <!-- Global search. A child of the bar in its own right, not
+                             part of the icon cluster: on a phone that lets it drop to
+                             a full-width line of its own instead of fighting the bell
+                             and the avatar for room. The wrapper is positioned so the
+                             results panel lines up under the field. -->
+                        <div class="top-search relative" v-click-outside="clearSearch">
+                            <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                                <svg class="w-4 h-4 text-gray-400 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+                                </svg>
+                            </div>
+                            <input
+                                ref="globalSearch"
+                                v-model="search_query"
+                                @input="doSearch($event)"
+                                @keydown.esc="clearSearch"
+                                type="search"
+                                id="default-search"
+                                autocomplete="off"
+                                class="top-search__input block w-full h-10 ps-9 pe-14 text-sm rounded-xl border border-transparent bg-white/95 text-gray-900 placeholder-gray-400 shadow-sm transition focus:bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-400/40 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500"
+                                :placeholder="$t('Find tasks or projects')"
+                            />
+                            <kbd class="hidden lg:block absolute end-2.5 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded-md border border-gray-200 bg-gray-50 text-[10px] font-sans font-semibold text-gray-400 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400">
+                                {{ searchShortcutLabel }}
+                            </kbd>
+
+                            <div v-if="search_loading || hasSearchResults || noSearchResults" class="search_result absolute left-0 right-0 top-full mt-2 z-30">
+                                <div v-if="search_loading" class="flex justify-center items-center p-3 rounded-xl bg-white shadow-lg ring-1 ring-black/5 dark:bg-gray-700 dark:ring-white/10">
+                                    <svg aria-hidden="true" class="inline w-4 h-4 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
+                                        <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
                                     </svg>
                                 </div>
-                                <input
-                                    ref="globalSearch"
-                                    v-model="search_query"
-                                    @input="doSearch($event)"
-                                    @keydown.esc="clearSearch"
-                                    type="search"
-                                    id="default-search"
-                                    autocomplete="off"
-                                    class="top-search__input block w-full h-10 ps-9 pe-14 text-sm rounded-xl border border-transparent bg-white/95 text-gray-900 placeholder-gray-400 shadow-sm transition focus:bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-400/40 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500"
-                                    :placeholder="$t('Find tasks or projects')"
-                                />
-                                <kbd class="hidden lg:block absolute end-2.5 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded-md border border-gray-200 bg-gray-50 text-[10px] font-sans font-semibold text-gray-400 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400">
-                                    {{ searchShortcutLabel }}
-                                </kbd>
 
-                                <div v-if="search_loading || hasSearchResults || noSearchResults" class="search_result absolute left-0 right-0 top-full mt-2 z-30">
-                                    <div v-if="search_loading" class="flex justify-center items-center p-3 rounded-xl bg-white shadow-lg ring-1 ring-black/5 dark:bg-gray-700 dark:ring-white/10">
-                                        <svg aria-hidden="true" class="inline w-4 h-4 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
-                                            <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
-                                        </svg>
+                                <div v-else-if="hasSearchResults" class="search__result overflow-hidden rounded-xl bg-white shadow-lg ring-1 ring-black/5 divide-y divide-gray-100 dark:bg-gray-700 dark:ring-white/10 dark:divide-gray-600">
+                                    <div class="sr__projects" v-if="search_result.projects.length">
+                                        <h4 class="sr__title px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-gray-400 dark:text-gray-400">{{ $t('Projects') }}</h4>
+                                        <ul class="pb-2 text-sm text-gray-700 dark:text-gray-200 max-h-56 overflow-y-auto">
+                                            <li v-for="s_i in search_result.projects" :key="'p_' + s_i.id">
+                                                <Link class="block px-3 py-2 truncate hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white" :href="this.route('projects.view.board', s_i.id)" @click="clearSearch">{{ s_i.title }}</Link>
+                                            </li>
+                                        </ul>
                                     </div>
-
-                                    <div v-else-if="hasSearchResults" class="search__result overflow-hidden rounded-xl bg-white shadow-lg ring-1 ring-black/5 divide-y divide-gray-100 dark:bg-gray-700 dark:ring-white/10 dark:divide-gray-600">
-                                        <div class="sr__projects" v-if="search_result.projects.length">
-                                            <h4 class="sr__title px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-gray-400 dark:text-gray-400">{{ $t('Projects') }}</h4>
-                                            <ul class="pb-2 text-sm text-gray-700 dark:text-gray-200 max-h-56 overflow-y-auto">
-                                                <li v-for="s_i in search_result.projects" :key="'p_' + s_i.id">
-                                                    <Link class="block px-3 py-2 truncate hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white" :href="this.route('projects.view.board', s_i.id)" @click="clearSearch">{{ s_i.title }}</Link>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                        <div class="sr__tasks" v-if="search_result.tasks.length">
-                                            <h4 class="sr__title px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-gray-400 dark:text-gray-400">{{ $t('Tasks') }}</h4>
-                                            <ul class="pb-2 text-sm text-gray-700 dark:text-gray-200 max-h-56 overflow-y-auto">
-                                                <li v-for="s_i in search_result.tasks" :key="'t_' + s_i.id">
-                                                    <Link class="block px-3 py-2 truncate hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white" :href="this.route('projects.board.with.task', {projectUid: s_i.project_id, taskUid: s_i.id})" @click="clearSearch">{{ s_i.title }}</Link>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </div>
-
-                                    <div v-else class="px-3 py-4 text-center text-sm rounded-xl bg-white text-gray-500 shadow-lg ring-1 ring-black/5 dark:bg-gray-700 dark:text-gray-300 dark:ring-white/10">
-                                        {{ $t('No results found.') }}
+                                    <div class="sr__tasks" v-if="search_result.tasks.length">
+                                        <h4 class="sr__title px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-gray-400 dark:text-gray-400">{{ $t('Tasks') }}</h4>
+                                        <ul class="pb-2 text-sm text-gray-700 dark:text-gray-200 max-h-56 overflow-y-auto">
+                                            <li v-for="s_i in search_result.tasks" :key="'t_' + s_i.id">
+                                                <Link class="block px-3 py-2 truncate hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white" :href="this.route('projects.board.with.task', {projectUid: s_i.project_id, taskUid: s_i.id})" @click="clearSearch">{{ s_i.title }}</Link>
+                                            </li>
+                                        </ul>
                                     </div>
                                 </div>
+
+                                <div v-else class="px-3 py-4 text-center text-sm rounded-xl bg-white text-gray-500 shadow-lg ring-1 ring-black/5 dark:bg-gray-700 dark:text-gray-300 dark:ring-white/10">
+                                    {{ $t('No results found.') }}
+                                </div>
                             </div>
+                        </div>
+                        <div class="placement-top-right gap-3">
                             <div class="tracker" v-if="this.counter.timer && this.activeTimerString">
                                 <p class="show">
                                     {{ activeTimerString }}
@@ -199,11 +215,28 @@
                     </div>
                 </div>
                 <div class="md:flex md:flex-grow md:overflow-hidden">
-                    <div v-if="!enable_sidebar" class="top-0 left-0 w-4 h-full left__bar" @click="enable_sidebar = true">
+                    <!-- Drawer scrim. Tapping it puts the menu away again. -->
+                    <div v-if="mobile_nav" class="app-drawer-backdrop md:hidden" @click="mobile_nav = false"></div>
+                    <!-- The menus are shared with the desktop layout and carry no
+                         close control of their own, so the drawer brings one. -->
+                    <button
+                        v-if="mobile_nav"
+                        type="button"
+                        class="app-drawer-close md:hidden"
+                        @click="mobile_nav = false"
+                        :aria-label="$t('Close')"
+                    >
+                        <svg viewBox="0 0 24 24" fill="none" class="w-5 h-5" aria-hidden="true">
+                            <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                    <div v-if="!enable_sidebar" class="top-0 left-0 w-4 h-full left__bar hidden md:block" @click="enable_sidebar = true">
                         <div class="w-4 h-4 arr"><icon class="w-4 h-4" name="arrow-right" /></div>
                     </div>
-                    <workspace-menu v-if="$page.props.project || $page.props.workspace" class="sidebar shrink-0 md:w-60 overflow-y-auto" @enableSidebar="enable_sidebar = false" :class="{'__hide':!enable_sidebar}" :style="[$page.props.project && $page.props.project.background?{backgroundColor: $page.props.project.background.side}:{}]" />
-                    <main-menu v-else-if="$page.props.auth.user.role.slug === 'admin'" class="hidden md:block sidebar shrink-0 md:w-60 overflow-y-auto" />
+                    <workspace-menu v-if="$page.props.project || $page.props.workspace" class="sidebar app-sidebar shrink-0 md:w-60 overflow-y-auto" @enableSidebar="enable_sidebar = false" :class="{'__hide':!enable_sidebar, 'is-open': mobile_nav}" :style="[$page.props.project && $page.props.project.background?{backgroundColor: $page.props.project.background.side}:{}]" />
+                    <!-- Was hidden outright below md, which left an admin on a phone
+                         with no navigation at all; it rides in the drawer now. -->
+                    <main-menu v-else-if="$page.props.auth.user.role.slug === 'admin'" class="sidebar app-sidebar shrink-0 md:w-60 overflow-y-auto" :class="{'is-open': mobile_nav}" />
 
                     <div class="md:flex-1 md:overflow-y-auto" scroll-region>
                         <flash-messages />
@@ -266,6 +299,7 @@ export default {
             search_result: { tasks:[], projects: [] },
             search_query: '',
             enable_sidebar: true,
+            mobile_nav: false,
             show__menu__list: false,
             current_mode: 'light',
             modes: ['dark', 'light'],
@@ -279,6 +313,11 @@ export default {
         }
     },
     computed: {
+        /** Is there anything for the drawer button to open on this page? */
+        hasSidebar(){
+            return !!(this.$page.props.project || this.$page.props.workspace)
+                || this.$page.props.auth?.user?.role?.slug === 'admin';
+        },
         hasSearchResults(){
             return !!(this.search_result.projects.length || this.search_result.tasks.length);
         },
@@ -302,6 +341,14 @@ export default {
     },
     // $page.props.counter
     watch: {
+        // Following a link on a phone should leave the drawer behind.
+        '$page.component'() {
+            this.mobile_nav = false;
+        },
+        mobile_nav(open) {
+            if (typeof document === 'undefined') return;
+            document.body.classList.toggle('has-drawer-open', !!open);
+        },
         '$page.props.auth.user.locale': {
             handler(locale) {
                 if (!locale || locale === this.locale) return
@@ -404,6 +451,10 @@ export default {
         },
         /** ⌘K / Ctrl+K puts the cursor in the search box, as everywhere else. */
         focusSearchShortcut(e){
+            if (e.key === 'Escape' && this.mobile_nav) {
+                this.mobile_nav = false;
+                return;
+            }
             if (e.key !== 'k' && e.key !== 'K') return;
             if (!(e.metaKey || e.ctrlKey)) return;
             e.preventDefault();
@@ -442,6 +493,7 @@ export default {
     beforeUnmount() {
         window.removeEventListener('keydown', this.focusSearchShortcut);
         clearTimeout(this.search_timer);
+        if (typeof document !== 'undefined') document.body.classList.remove('has-drawer-open');
     }
 }
 </script>
