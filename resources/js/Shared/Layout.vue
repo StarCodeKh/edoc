@@ -56,37 +56,60 @@
                         </div>
 
                         <div class="placement-top-right gap-3">
-                            <div class="relative">
-                                <div class="absolute inset-y-0 start-0 flex items-center ps-2 pointer-events-none">
-                                    <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                            <!-- Global search. One positioned wrapper holds the field
+                                 and its results so the panel lines up under the input,
+                                 and the field is wide enough for the placeholder to
+                                 read in full. -->
+                            <div class="top-search relative" v-click-outside="clearSearch">
+                                <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                                    <svg class="w-4 h-4 text-gray-400 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
                                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
                                     </svg>
                                 </div>
-                                <input @input="doSearch($event)" @keydown.esc="clearSearch" type="search" id="default-search" class="block w-auto p-2 ps-7 text-sm text-gray-900 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" :placeholder="$t('Find tasks or projects')" required />
-                            </div>
-                            <div class="search_result w-48 absolute top-9 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white">
-                                <div v-if="search_loading" class="bg-white flex justify-center items-center p-2 border border-gray-100 w-full mt-2">
-                                    <svg aria-hidden="true" class="inline w-4 h-4 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
-                                        <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
-                                    </svg>
-                                </div>
-                                <div class="search__result z-10 bg-white divide-y divide-gray-100 rounded-lg shadow dark:bg-gray-700 dark:divide-gray-600" v-if="!search_loading && (search_result.projects.length || search_result.tasks.length)">
-                                    <div class="sr__projects" v-if="search_result.projects.length">
-                                        <h4 class="sr__title px-3 py-2 font-bold border-b">Projects</h4>
-                                        <ul class="py-2 text-sm text-gray-700 dark:text-gray-200 max-h-48 overflow-y-auto">
-                                            <li v-for="(s_i, i) in search_result.projects" class="">
-                                                <Link class="block px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white" :href="this.route('projects.view.board', s_i.id)">{{ s_i.title.length < 20 ? s_i.title : s_i.title.substring(0,20) + "..." }}</Link>
-                                            </li>
-                                        </ul>
+                                <input
+                                    ref="globalSearch"
+                                    v-model="search_query"
+                                    @input="doSearch($event)"
+                                    @keydown.esc="clearSearch"
+                                    type="search"
+                                    id="default-search"
+                                    autocomplete="off"
+                                    class="top-search__input block w-full h-10 ps-9 pe-14 text-sm rounded-xl border border-transparent bg-white/95 text-gray-900 placeholder-gray-400 shadow-sm transition focus:bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-400/40 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500"
+                                    :placeholder="$t('Find tasks or projects')"
+                                />
+                                <kbd class="hidden lg:block absolute end-2.5 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded-md border border-gray-200 bg-gray-50 text-[10px] font-sans font-semibold text-gray-400 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400">
+                                    {{ searchShortcutLabel }}
+                                </kbd>
+
+                                <div v-if="search_loading || hasSearchResults || noSearchResults" class="search_result absolute left-0 right-0 top-full mt-2 z-30">
+                                    <div v-if="search_loading" class="flex justify-center items-center p-3 rounded-xl bg-white shadow-lg ring-1 ring-black/5 dark:bg-gray-700 dark:ring-white/10">
+                                        <svg aria-hidden="true" class="inline w-4 h-4 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
+                                            <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
+                                        </svg>
                                     </div>
-                                    <div class="sr__tasks" v-if="search_result.tasks.length">
-                                        <h4 class="sr__title px-3 py-2 font-bold border-b">Tasks</h4>
-                                        <ul class="py-2 text-sm text-gray-700 dark:text-gray-200 max-h-48 overflow-y-auto">
-                                            <li v-for="(s_i, i) in search_result.tasks" class="">
-                                                <Link class="block px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white" :href="this.route('projects.board.with.task', {projectUid: s_i.project_id, taskUid: s_i.id})">{{ s_i.title.length < 20 ? s_i.title : s_i.title.substring(0,20) + "..." }}</Link>
-                                            </li>
-                                        </ul>
+
+                                    <div v-else-if="hasSearchResults" class="search__result overflow-hidden rounded-xl bg-white shadow-lg ring-1 ring-black/5 divide-y divide-gray-100 dark:bg-gray-700 dark:ring-white/10 dark:divide-gray-600">
+                                        <div class="sr__projects" v-if="search_result.projects.length">
+                                            <h4 class="sr__title px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-gray-400 dark:text-gray-400">{{ $t('Projects') }}</h4>
+                                            <ul class="pb-2 text-sm text-gray-700 dark:text-gray-200 max-h-56 overflow-y-auto">
+                                                <li v-for="s_i in search_result.projects" :key="'p_' + s_i.id">
+                                                    <Link class="block px-3 py-2 truncate hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white" :href="this.route('projects.view.board', s_i.id)" @click="clearSearch">{{ s_i.title }}</Link>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <div class="sr__tasks" v-if="search_result.tasks.length">
+                                            <h4 class="sr__title px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-gray-400 dark:text-gray-400">{{ $t('Tasks') }}</h4>
+                                            <ul class="pb-2 text-sm text-gray-700 dark:text-gray-200 max-h-56 overflow-y-auto">
+                                                <li v-for="s_i in search_result.tasks" :key="'t_' + s_i.id">
+                                                    <Link class="block px-3 py-2 truncate hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white" :href="this.route('projects.board.with.task', {projectUid: s_i.project_id, taskUid: s_i.id})" @click="clearSearch">{{ s_i.title }}</Link>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    <div v-else class="px-3 py-4 text-center text-sm rounded-xl bg-white text-gray-500 shadow-lg ring-1 ring-black/5 dark:bg-gray-700 dark:text-gray-300 dark:ring-white/10">
+                                        {{ $t('No results found.') }}
                                     </div>
                                 </div>
                             </div>
@@ -241,6 +264,7 @@ export default {
             search_timer: null,
             search_loading: false,
             search_result: { tasks:[], projects: [] },
+            search_query: '',
             enable_sidebar: true,
             show__menu__list: false,
             current_mode: 'light',
@@ -255,6 +279,18 @@ export default {
         }
     },
     computed: {
+        hasSearchResults(){
+            return !!(this.search_result.projects.length || this.search_result.tasks.length);
+        },
+        /** Searched, waited, found nothing - say so instead of showing nothing. */
+        noSearchResults(){
+            return !this.search_loading && !this.hasSearchResults && (this.search_query || '').length > 2;
+        },
+        searchShortcutLabel(){
+            if (typeof navigator === 'undefined') return 'Ctrl K';
+            const mac = /Mac|iPhone|iPad/i.test(navigator.platform || navigator.userAgent || '');
+            return mac ? '⌘K' : 'Ctrl K';
+        },
         /** Languages offered by the switcher, shared from the backend. */
         availableLanguages() {
             return this.$page.props.languages || []
@@ -340,25 +376,39 @@ export default {
         doSearch(e){
             const search = e.target.value
             const vm = this
+            vm.search_query = search
             if(search.length > 2){
                 vm.search_loading = true;
                 clearTimeout(vm.search_timer);
+                // A second and a half felt like the search had not heard you.
                 vm.search_timer = setTimeout(function() {
-                    axios.post(this.route('json.task.search', { q:search })).then((response)=>{
+                    axios.post(vm.route('json.task.search', { q:search })).then((response)=>{
                         vm.search_result = response.data;
                         vm.search_loading = false;
+                    }).catch(()=>{
+                        vm.search_loading = false;
                     })
-                }, 1500);
+                }, 300);
             }else{
-                vm.clearSearch()
+                vm.clearSearch(false)
             }
         },
-        clearSearch(){
+        /** Empty the panel. Pass false to leave what was typed in the field. */
+        clearSearch(resetQuery = true){
             const vm = this;
             vm.search_result.projects = [];
             vm.search_result.tasks = [];
             vm.search_loading = false;
+            if (resetQuery === true) vm.search_query = '';
             clearTimeout(vm.search_timer);
+        },
+        /** ⌘K / Ctrl+K puts the cursor in the search box, as everywhere else. */
+        focusSearchShortcut(e){
+            if (e.key !== 'k' && e.key !== 'K') return;
+            if (!(e.metaKey || e.ctrlKey)) return;
+            e.preventDefault();
+            const input = this.$refs.globalSearch;
+            if (input) { input.focus(); input.select(); }
         },
         switchMode(){
             this.current_mode = this.current_mode === 'light' ? 'dark' : 'light'
@@ -385,6 +435,13 @@ export default {
             loadLanguageAsync(this.locale)
         }
 
+    },
+    mounted() {
+        window.addEventListener('keydown', this.focusSearchShortcut);
+    },
+    beforeUnmount() {
+        window.removeEventListener('keydown', this.focusSearchShortcut);
+        clearTimeout(this.search_timer);
     }
 }
 </script>

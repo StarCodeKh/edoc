@@ -96,6 +96,13 @@ body {
 }
 
 .placement-top-right {
+    /* Wide enough for the placeholder to read in full, capped so it never
+       crowds the bell, the theme toggle and the language switcher. */
+    .top-search {
+        width: clamp(240px, 24vw, 420px);
+        flex: 0 1 auto;
+    }
+
     .tracker {
         @apply flex ml-1 gap-2 justify-between items-center;
 

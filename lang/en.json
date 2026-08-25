@@ -416,6 +416,8 @@
     "Project": "Classification/Group/Project",
     "Project Details": "Classification/Group/Project Details",
     "Project name": "Classification/Group/Project name",
+    "Tasks": "Documents/Tasks",
+    "No results found.": "No results found.",
     "Projects": "Classification/Group/Project",
     "Pulled from this workspace's workflow steps. Add or rename steps on the Workflow Roles page.": "Pulled from this workspace's workflow steps. Add or rename steps on the Workflow Roles page.",
     "Queue driver": "Queue driver",

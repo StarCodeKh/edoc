@@ -416,6 +416,8 @@
     "Project": "项目",
     "Project Details": "项目详情",
     "Project name": "项目名称",
+    "Tasks": "文件/任务",
+    "No results found.": "未找到结果。",
     "Projects": "项目",
     "Pulled from this workspace's workflow steps. Add or rename steps on the Workflow Roles page.": "取自此工作区的工作流步骤。请在工作流角色页面添加或重命名步骤。",
     "Queue driver": "队列驱动",
