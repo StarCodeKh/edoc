@@ -22,6 +22,12 @@ canvas {
     height: auto;
 }
 
+/* Generated graphics - barcodes, QR codes, charts - are svg, and an svg with
+   a width attribute overflows just as happily as an image does. */
+svg[width] {
+    max-width: 100%;
+}
+
 /* The page must not scroll behind an open drawer. */
 body.has-drawer-open {
     overflow: hidden;
@@ -309,6 +315,16 @@ body.has-drawer-open {
         max-width: 130px;
     }
 
+    /* Create opens leftwards from its button. It is anchored at left: 0 for
+       the desktop bar, and that button sits near the right edge on a tablet,
+       so the panel ran off the screen. */
+    .__creation .m__create {
+        left: auto !important;
+        right: 0 !important;
+        width: min(320px, calc(100vw - 20px));
+        max-width: calc(100vw - 20px);
+    }
+
     /* The "More" panel hangs off its own button instead of being pinned to a
        corner of the bar, where it landed on top of the search. */
     .t__l__wrapper {
@@ -359,16 +375,55 @@ body.has-drawer-open {
 @media (max-width: 640px) {
     .top_bar {
         padding: 8px 10px;
+        gap: 6px;
 
-        /* Create keeps its label; More is icon-and-word already. */
+        /* Every control on the first line gives up padding so the logo, the
+           two menu buttons and the icon cluster have a chance of sharing it. */
         .__creation {
             padding-left: 10px;
             padding-right: 10px;
+            font-size: 12px;
+        }
+        .top_bar__menu .mobile__menu__top {
+            padding: 6px 10px;
+            font-size: 12px;
+        }
+        .placement-top-right {
+            gap: 2px;
         }
     }
 
     .site-logo {
-        max-width: 110px;
+        max-width: 92px;
+    }
+}
+
+@media (max-width: 640px) {
+    /* On a phone there is no side of the button with 320px to spare, so the
+       panel stops hanging off it and centres on the screen instead, just
+       below the bar. */
+    .__creation .m__create {
+        position: fixed !important;
+        top: calc(env(safe-area-inset-top) + 58px) !important;
+        left: 50% !important;
+        right: auto !important;
+        transform: translateX(-50%);
+        width: min(340px, calc(100vw - 24px)) !important;
+        max-width: calc(100vw - 24px) !important;
+        max-height: calc(100vh - 96px);
+        overflow-y: auto;
+        box-shadow: 0 24px 60px rgba(8, 21, 66, 0.4);
+    }
+}
+
+@media (max-width: 480px) {
+    /* At this width the word does not fit next to everything else; the chevron
+       carries the meaning and the panel says the rest. */
+    .top_bar .top_bar__menu .mobile__menu__top span {
+        display: none;
+    }
+    .top_bar .top_bar__menu .mobile__menu__top {
+        padding: 6px 8px;
     }
 }
 

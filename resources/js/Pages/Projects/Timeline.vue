@@ -6,26 +6,26 @@
 
             <!-- Enhanced Timeline Container -->
             <div class="flex-1 flex flex-col bg-gradient-to-br from-gray-50 to-white">
-                <div v-if="timelineReady" class="flex-1 flex flex-col m-4 bg-white rounded-2xl shadow-xl border border-gray-200/60 overflow-hidden">
+                <div v-if="timelineReady" class="flex-1 flex flex-col m-2 sm:m-4 bg-white rounded-2xl shadow-xl border border-gray-200/60 overflow-hidden">
 
                     <!-- Enhanced Timeline Header -->
                     <div class="timeline-header border-b border-gray-200/60 bg-gradient-to-r from-white via-gray-50/30 to-white">
-                        <div class="px-6 py-5">
+                        <div class="px-3 py-4 sm:px-6 sm:py-5">
                             <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                                 <!-- Navigation Section -->
                                 <div class="flex items-center justify-center lg:justify-start">
                                     <div class="flex items-center bg-white rounded-2xl shadow-sm border border-gray-200/60 p-1">
-                                        <button @click="navigatePeriod(-1)" class="p-3 hover:bg-gray-50 rounded-xl transition-all duration-200 group">
+                                        <button @click="navigatePeriod(-1)" class="p-2 sm:p-3 hover:bg-gray-50 rounded-xl transition-all duration-200 group">
                                             <icon name="arrow-left" class="w-5 h-5 text-gray-600 group-hover:text-indigo-600 transition-colors" />
                                         </button>
-                                        <div class="px-6 text-center min-w-[200px]">
-                                            <h2 class="text-2xl font-bold text-gray-900 tracking-tight">
+                                        <div class="px-3 sm:px-6 text-center min-w-0 sm:min-w-[200px]">
+                                            <h2 class="text-lg sm:text-2xl font-bold text-gray-900 tracking-tight">
                                                 {{ currentPeriodTitle }}
                                             </h2>
                                             <p class="text-sm text-gray-500 mt-0.5 font-medium">{{ currentPeriodSubtitle }}</p>
                                             <p v-if="khPeriodLabel" class="text-xs text-indigo-600 mt-1 font-semibold khmer-lunar-text leading-snug">{{ khPeriodLabel }}</p>
                                         </div>
-                                        <button @click="navigatePeriod(1)" class="p-3 hover:bg-gray-50 rounded-xl transition-all duration-200 group">
+                                        <button @click="navigatePeriod(1)" class="p-2 sm:p-3 hover:bg-gray-50 rounded-xl transition-all duration-200 group">
                                             <icon name="arrow-right" class="w-5 h-5 text-gray-600 group-hover:text-indigo-600 transition-colors" />
                                         </button>
                                     </div>
@@ -82,7 +82,7 @@
                     <div class="timeline-content flex-1 overflow-hidden">
                         <!-- Month View -->
                         <div v-if="currentView === 'month'" class="month-view h-full flex flex-col">
-                            <div class="flex-1 overflow-y-auto p-6">
+                            <div class="flex-1 overflow-y-auto p-3 sm:p-6">
                                 <div class="timeline-container">
                                     <div v-for="month in monthsInView" :key="month.month + '-' + month.year" class="mb-8">
                                         <div class="month-header mb-6">
@@ -95,7 +95,7 @@
                                                 v-for="task in getTasksForMonth(month.month, month.year)"
                                                 :key="task.id"
                                                 :class="[
-                                                    'timeline-event p-4 rounded-xl border-l-4 transition-all duration-300 hover:shadow-lg hover:scale-[1.02] cursor-pointer',
+                                                    'timeline-event p-3 sm:p-4 rounded-xl border-l-4 transition-all duration-300 hover:shadow-lg hover:scale-[1.02] cursor-pointer',
                                                     getTaskColorClass(task)
                                                 ]"
                                                 @click="openTask(task)"
@@ -144,7 +144,7 @@
 
                         <!-- Week View -->
                         <div v-else-if="currentView === 'week'" class="week-view h-full flex flex-col">
-                            <div class="flex-1 overflow-y-auto p-6">
+                            <div class="flex-1 overflow-y-auto p-3 sm:p-6">
                                 <div class="timeline-container">
                                     <div v-for="week in weeksInView" :key="week.start.toISOString()" class="mb-8">
                                         <div class="week-header mb-6">
@@ -159,7 +159,7 @@
                                                 v-for="task in getTasksForWeek(week.start, week.end)"
                                                 :key="task.id"
                                                 :class="[
-                                                    'timeline-event p-4 rounded-xl border-l-4 transition-all duration-300 hover:shadow-lg hover:scale-[1.02] cursor-pointer',
+                                                    'timeline-event p-3 sm:p-4 rounded-xl border-l-4 transition-all duration-300 hover:shadow-lg hover:scale-[1.02] cursor-pointer',
                                                     getTaskColorClass(task)
                                                 ]"
                                                 @click="openTask(task)"
@@ -201,7 +201,7 @@
 
                         <!-- Day View -->
                         <div v-else-if="currentView === 'day'" class="day-view h-full flex flex-col">
-                            <div class="flex-1 overflow-y-auto p-6">
+                            <div class="flex-1 overflow-y-auto p-3 sm:p-6">
                                 <div class="timeline-container">
                                     <div class="day-header mb-6">
                                         <h3 class="text-xl font-bold text-gray-900">{{ formatFullDate(selectedDate) }}</h3>
@@ -214,7 +214,7 @@
                                             v-for="task in getTasksForDay(selectedDate)"
                                             :key="task.id"
                                             :class="[
-                                                'timeline-event p-4 rounded-xl border-l-4 transition-all duration-300 hover:shadow-lg hover:scale-[1.02] cursor-pointer',
+                                                'timeline-event p-3 sm:p-4 rounded-xl border-l-4 transition-all duration-300 hover:shadow-lg hover:scale-[1.02] cursor-pointer',
                                                 getTaskColorClass(task)
                                             ]"
                                             @click="openTask(task)"

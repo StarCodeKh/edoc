@@ -6,26 +6,26 @@
 
             <!-- Enhanced Calendar Container -->
             <div class="flex-1 flex flex-col bg-gradient-to-br from-gray-50 to-white">
-                <div v-if="calendarReady" class="flex-1 flex flex-col m-4 bg-white rounded-2xl shadow-xl border border-gray-200/60 overflow-hidden">
+                <div v-if="calendarReady" class="flex-1 flex flex-col m-2 sm:m-4 bg-white rounded-2xl shadow-xl border border-gray-200/60 overflow-hidden">
 
                     <!-- Enhanced Calendar Header -->
                     <div class="calendar-header border-b border-gray-200/60 bg-gradient-to-r from-white via-gray-50/30 to-white">
-                        <div class="px-6 py-5">
+                        <div class="px-3 py-4 sm:px-6 sm:py-5">
                             <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                                 <!-- Navigation Section -->
                                 <div class="flex items-center justify-center lg:justify-start">
                                     <div class="flex items-center bg-white rounded-2xl shadow-sm border border-gray-200/60 p-1">
-                                        <button @click="navigatePeriod(-1)" class="p-3 hover:bg-gray-50 rounded-xl transition-all duration-200 group">
+                                        <button @click="navigatePeriod(-1)" class="p-2 sm:p-3 hover:bg-gray-50 rounded-xl transition-all duration-200 group">
                                             <icon name="arrow-left" class="w-5 h-5 text-gray-600 group-hover:text-indigo-600 transition-colors" />
                                         </button>
-                                        <div class="px-6 text-center min-w-[200px]">
-                                            <h2 class="text-2xl font-bold text-gray-900 tracking-tight">
+                                        <div class="px-3 sm:px-6 text-center min-w-0 sm:min-w-[200px]">
+                                            <h2 class="text-lg sm:text-2xl font-bold text-gray-900 tracking-tight">
                                                 {{ currentPeriodTitle }}
                                             </h2>
                                             <p class="text-sm text-gray-500 mt-0.5 font-medium">{{ currentPeriodSubtitle }}</p>
                                             <p v-if="khPeriodLabel" class="text-xs text-indigo-600 mt-1 font-semibold khmer-lunar-text leading-snug">{{ khPeriodLabel }}</p>
                                         </div>
-                                        <button @click="navigatePeriod(1)" class="p-3 hover:bg-gray-50 rounded-xl transition-all duration-200 group">
+                                        <button @click="navigatePeriod(1)" class="p-2 sm:p-3 hover:bg-gray-50 rounded-xl transition-all duration-200 group">
                                             <icon name="arrow-right" class="w-5 h-5 text-gray-600 group-hover:text-indigo-600 transition-colors" />
                                         </button>
                                     </div>
@@ -98,7 +98,7 @@
                                     v-for="(day, index) in calendarDays"
                                     :key="index"
                                     :class="[
-                                        'border-r border-b border-gray-200/40 last:border-r-0 p-3 min-h-[140px] relative overflow-hidden transition-all duration-300 group',
+                                        'border-r border-b border-gray-200/40 last:border-r-0 p-1.5 sm:p-3 min-h-[68px] sm:min-h-[140px] relative overflow-hidden transition-all duration-300 group',
                                         day.isCurrentMonth ? 'bg-white hover:bg-gray-50/80' : 'bg-gray-50/60 hover:bg-gray-100/80',
                                         day.isToday ? 'bg-gradient-to-br from-indigo-50 to-blue-50/60 ring-2 ring-indigo-200/60 shadow-inner' : '',
                                         'cursor-pointer'
@@ -106,10 +106,10 @@
                                     @click="selectDate(day.date)"
                                 >
                                     <!-- Day Header -->
-                                    <div class="flex items-center justify-between mb-3" :title="khmerCalendarOn ? khTooltip(day.date) : ''">
-                                        <div class="flex items-center gap-2 min-w-0">
+                                    <div class="flex items-center justify-between mb-1 sm:mb-3 gap-1" :title="khmerCalendarOn ? khTooltip(day.date) : ''">
+                                        <div class="flex items-center gap-1 sm:gap-2 min-w-0">
                                             <div :class="[
-                                                'text-sm font-bold flex items-center justify-center w-8 h-8 rounded-full transition-all duration-200 flex-shrink-0',
+                                                'text-[11px] sm:text-sm font-bold flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full transition-all duration-200 flex-shrink-0',
                                                 day.isCurrentMonth ? 'text-gray-900' : 'text-gray-400',
                                                 day.isToday ? 'bg-indigo-600 text-white shadow-lg ring-2 ring-indigo-200' : 'group-hover:bg-indigo-100 group-hover:text-indigo-600'
                                             ]">
@@ -117,18 +117,18 @@
                                             </div>
                                             <div v-if="khmerCalendarOn" class="min-w-0 leading-tight">
                                                 <div :class="[
-                                                    'text-[11px] font-semibold truncate khmer-lunar-text',
+                                                    'text-[9px] sm:text-[11px] font-semibold truncate khmer-lunar-text',
                                                     khIsSilaDay(day.date) ? 'text-amber-600' : (day.isCurrentMonth ? 'text-indigo-500' : 'text-gray-400')
                                                 ]">
                                                     <span v-if="khIsSilaDay(day.date)" class="mr-0.5" :title="$t('Precept Day')">🧘</span>{{ khDayLabel(day.date) }}
                                                 </div>
-                                                <div v-if="khNote(day.date)" class="text-[10px] font-medium text-gray-400 truncate khmer-lunar-text">
+                                                <div v-if="khNote(day.date)" class="hidden sm:block text-[10px] font-medium text-gray-400 truncate khmer-lunar-text">
                                                     {{ khNote(day.date) }}
                                                 </div>
                                             </div>
                                         </div>
                                         <div v-if="getTasksForDay(day.date).length > 0" class="flex items-center">
-                                            <div class="text-xs font-semibold text-indigo-600 bg-indigo-100 px-2.5 py-1 rounded-full shadow-sm">
+                                            <div class="text-[10px] sm:text-xs font-semibold text-indigo-600 bg-indigo-100 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full shadow-sm">
                                                 {{ khNum(getTasksForDay(day.date).length) }}
                                             </div>
                                         </div>
@@ -139,7 +139,7 @@
                                         v-for="(event, eventIndex) in khEvents(day.date).slice(0, 1)"
                                         :key="`${event.key}-${eventIndex}`"
                                         :class="[
-                                            'mb-2 truncate rounded-lg px-2 py-1 text-[11px] font-semibold khmer-lunar-text',
+                                            'mb-1 sm:mb-2 truncate rounded sm:rounded-lg px-1 sm:px-2 py-0.5 sm:py-1 text-[9px] sm:text-[11px] font-semibold khmer-lunar-text',
                                             event.type === 'national' ? 'bg-rose-100/80 text-rose-700' : 'bg-emerald-100/80 text-emerald-700'
                                         ]"
                                         :title="event.title"
@@ -153,13 +153,13 @@
                                             v-for="(task, taskIndex) in getTasksForDay(day.date).slice(0, 3)"
                                             :key="task.id"
                                             :class="[
-                                                'text-xs p-3 rounded-xl cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-[1.02] border border-white/60 backdrop-blur-sm',
+                                                'text-[9px] sm:text-xs p-1 sm:p-3 rounded-md sm:rounded-xl cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-[1.02] border border-white/60 backdrop-blur-sm',
                                                 getTaskColorClass(task)
                                             ]"
                                             :title="getTaskTooltip(task)"
                                             @click.stop="openTask(task)"
                                         >
-                                            <div class="flex items-center space-x-2">
+                                            <div class="flex items-center space-x-1 sm:space-x-2">
                                                 <div class="flex items-center space-x-1">
                                                     <div v-if="task.is_done" class="w-3 h-3 bg-emerald-500 rounded-full flex-shrink-0 shadow-sm ring-2 ring-emerald-200"></div>
                                                     <div v-else-if="isOverdue(task)" class="w-3 h-3 bg-red-500 rounded-full flex-shrink-0 animate-pulse shadow-sm ring-2 ring-red-200"></div>
@@ -169,7 +169,7 @@
                                                 <span class="truncate font-semibold leading-relaxed">{{ task.title }}</span>
                                             </div>
 
-                                            <div class="flex items-center justify-between mt-2">
+                                            <div class="hidden sm:flex items-center justify-between mt-2">
                                                 <span v-if="task.due_date" class="text-xs font-medium text-gray-600 bg-gray-100 px-2 py-1 rounded-lg">
                                                     {{ khNum(moment(task.due_date).format('HH:mm')) }}
                                                 </span>
@@ -948,7 +948,10 @@ export default {
         display: block;
     }
 
-    .year-view .grid {
+    /* Direct child only: the month cards. `.year-view .grid` also caught the
+       mini calendars inside each card and squashed their seven columns down
+       to two. */
+    .year-view > .grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 1rem;
     }
@@ -984,5 +987,126 @@ button:focus {
 /* Enhanced Transitions */
 * {
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ---------------------------------------------------------------------
+   Phones and small tablets
+   The month grid keeps its seven columns - a calendar that is not seven
+   columns wide stops being a calendar - but the cells and the chips come
+   down to a size that fits. Week and day keep their grid too and scroll
+   sideways; collapsing them to a block stacked every hour on top of the
+   days it belonged to.
+   --------------------------------------------------------------------- */
+@media (max-width: 768px) {
+    .calendar-header {
+        padding: 0.75rem;
+    }
+
+    .month-view .grid-cols-7 > div {
+        min-height: 72px;
+        padding: 6px 4px;
+    }
+    .month-view .task-event,
+    .task-event {
+        padding: 2px 5px;
+        font-size: 10px;
+        line-height: 1.25;
+        border-radius: 6px;
+    }
+
+    .week-view,
+    .day-view {
+        display: flex;
+        flex-direction: column;
+    }
+    .week-view > div,
+    .day-view > div {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-x: contain;
+    }
+    /* The whole week fits: the cells give up padding and the day headers
+       drop to a size that leaves all seven columns on screen, rather than
+       keeping desktop proportions and scrolling five of them off the side. */
+    .week-view .grid-cols-8,
+    .day-view .grid-cols-8 {
+        min-width: 0;
+    }
+    .week-view .grid-cols-8 > div,
+    .day-view .grid-cols-8 > div {
+        padding: 6px 2px;
+    }
+    .week-view .grid-cols-8 .text-sm {
+        font-size: 10px;
+        line-height: 1.25;
+    }
+    .week-view .grid-cols-8 .text-xl {
+        font-size: 13px;
+        margin-top: 4px;
+    }
+    .week-view .grid-cols-8 .w-8 {
+        width: 26px;
+        height: 26px;
+    }
+    /* The per-day task pill has no room at this width; the count is on the
+       day itself in the grid below. */
+    .week-view .grid-cols-8 > div > .bg-indigo-100 {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .year-view > .grid {
+        grid-template-columns: 1fr;
+    }
+    /* The mini calendar keeps its week; the cells just get smaller. */
+    .year-month-card .grid-cols-7 > div {
+        padding: 3px 0;
+        font-size: 10px;
+    }
+}
+
+@media (max-width: 767px) {
+    /* A mini-calendar cell is a square. Today's cell used to keep its desktop
+       padding and its dot, which turned it into a tall pill leaning on the
+       days either side of it. */
+    .year-month-card .grid-cols-7 > div {
+        padding: 0;
+        aspect-ratio: 1 / 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+    }
+    .year-month-card .grid-cols-7 > div .w-1\.5 {
+        width: 4px;
+        height: 4px;
+    }
+    .year-month-card .grid-cols-7 > div .mt-0\.5 {
+        margin-top: 2px;
+    }
+    /* Ring and shadow spilled over the neighbouring days. */
+    .year-month-card .grid-cols-7 > div.ring-2 {
+        --tw-ring-offset-width: 0px;
+    }
+
+    /* Three small figures still read fine side by side on a card. */
+    .year-month-card .grid-cols-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    /* The month grid stops stretching to the viewport: rows take the height
+       their content needs, from a 68px floor, so a week is a thumb-flick
+       rather than a screenful. */
+    .month-view .grid-cols-7[style] {
+        grid-template-rows: repeat(6, minmax(68px, auto)) !important;
+        flex: 0 0 auto;
+    }
+    .month-view {
+        overflow-y: auto;
+    }
 }
 </style>

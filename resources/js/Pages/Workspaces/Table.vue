@@ -638,6 +638,28 @@
             letter-spacing: 0.02em;
             color: #64748b;
             flex-shrink: 0;
+            max-width: 45%;
+        }
+        /* The value side takes what is left and wraps inside it. A long status
+           name used to sit on one line and push the whole card sideways, which
+           is where the horizontal scrollbar came from. */
+        .doc-row > [data-label] > * {
+            min-width: 0;
+            text-align: right;
+        }
+        .doc-row > [data-label] > span,
+        .doc-row > [data-label] > div {
+            white-space: normal;
+            overflow-wrap: anywhere;
+        }
+        /* The barcode scales with the card instead of setting its width. */
+        .doc-barcode {
+            max-width: 100%;
+        }
+        .doc-barcode svg {
+            width: 100%;
+            height: auto;
+            max-width: 100%;
         }
     }
 

@@ -19,7 +19,7 @@
                                             <icon name="arrow-left" class="w-5 h-5 text-gray-600 group-hover:text-indigo-600 transition-colors" />
                                         </button>
                                         <div class="px-8 text-center min-w-[240px]">
-                                            <h2 class="text-2xl font-bold text-gray-900 tracking-tight">
+                                            <h2 class="text-lg sm:text-2xl font-bold text-gray-900 tracking-tight">
                                                 {{ currentPeriodTitle }}
                                             </h2>
                                             <p class="text-sm text-indigo-600 mt-1 font-medium flex items-center justify-center">
@@ -946,6 +946,30 @@ button:hover::before {
     .task-bar {
         box-shadow: none !important;
         border: 1px solid #000 !important;
+    }
+}
+
+/* ---------------------------------------------------------------------
+   Phones and small tablets
+   A 60vw task list left too little of the screen for the bars it labels.
+   The list keeps just enough width to read a name; the chart takes the
+   rest and scrolls sideways as it always has.
+   --------------------------------------------------------------------- */
+@media (max-width: 767px) {
+    .task-list-panel {
+        width: 44vw;
+        min-width: 130px;
+        max-width: 220px;
+    }
+    .task-list-header {
+        padding: 12px;
+    }
+    .task-bar {
+        height: 1.75rem;
+        border-radius: 8px;
+    }
+    .timeline-date-cell {
+        font-size: 10px;
     }
 }
 </style>
