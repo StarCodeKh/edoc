@@ -402,6 +402,7 @@
     import Icon from '@/Shared/Icon.vue'
     import moment from 'moment'
     import axios from 'axios'
+    import { loadLanguageAsync, getActiveLanguage } from 'laravel-vue-i18n'
 
     import { PDFDocument } from 'pdf-lib';
 
@@ -596,6 +597,24 @@
         },
 
         methods: {
+
+            /**
+             * The viewer is a standalone page with no Layout, and Layout is what
+             * loads the signed-in user's language everywhere else. Without this
+             * the whole screen - toolbar, assignee picker, the sign action -
+             * falls back to the 'en' default set in app.js.
+             */
+            applyUserLocale() {
+                const locale = this.$page.props.auth?.user?.locale;
+                if (!locale) return;
+
+                document.documentElement.setAttribute(
+                    'dir', ['sa', 'he', 'ur'].includes(locale) ? 'rtl' : 'ltr'
+                );
+                if (getActiveLanguage() !== locale) {
+                    loadLanguageAsync(locale);
+                }
+            },
 
             async loadTask() {
                 try {
@@ -1601,6 +1620,7 @@
 
         created() {
             this.moment = moment;
+            this.applyUserLocale();
             this.loadTask();
         },
 

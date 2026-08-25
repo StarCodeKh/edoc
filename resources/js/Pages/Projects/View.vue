@@ -2180,7 +2180,7 @@
     }
     .doc-drawer {
         width: 100%;
-        max-width: 400px;
+        max-width: 450px;
         height: 100%;
         background: #ffffff;
         box-shadow: -18px 0 40px -18px rgba(0, 0, 0, 0.35);
