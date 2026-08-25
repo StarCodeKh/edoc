@@ -31,16 +31,6 @@
                         <icon name="archive" />
                         {{ $t('This task is archived.') }}
                     </div>
-                    <div class="close_area">
-                        <div class="wrap">
-                                <span v-if="isPopup" @click="$emit('closeModal', true)" class="close__b">
-                                    <icon class="h-6 w-6 dark:text-gray-300" name="close" />
-                                </span>
-                            <button v-else @click="goToLink(route(view === 'table'?'projects.view.table':'projects.view.board', task.project.slug || task.project.id))" class="close__b">
-                                <icon class="h-6 w-6 dark:text-gray-300" name="close" />
-                            </button>
-                        </div>
-                    </div>
                     <div class="mv__card bg-white dark:bg-gray-800 dark:border-gray-700" v-if="showMoveCard" :class="{'!left-auto right-6 top-23':is_move}">
                         <h4 class="text-center mb-3 font-bold dark:text-white">{{ $t('Move Card') }}</h4>
                         <div class="close__b absolute cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 top-3 right-3 p-1.5 rounded" @click="showMoveCard = false;is_move = false"><icon class=" w-4 h-4 dark:text-gray-300" name="close" /></div>
@@ -75,17 +65,34 @@
 
                     <div class="m__body w-full">
                         <main class="main">
-                            <div class="s__1">
+                            <!-- Dialog header. It holds the top of the dialog while the body
+                                 scrolls under it, so the title, the done box and the close
+                                 button stay reachable however far down you go. -->
+                            <div class="td__head">
                                 <div class="checklist-box">
                                     <input type="checkbox" :disabled="!can.edit" :checked="!!task.is_done" @change="saveTask({is_done: $event.target.checked})" />
                                     <icon name="checklist_box" />
                                 </div>
-                                <div class="t__l">
+                                <div class="td__head__text">
                                     <h2 class="__t" :contenteditable="can.edit" @keyup.enter="saveTitle($event)" @blur="saveTitle($event)">
                                         {{ task.title }}
                                     </h2>
                                     <span class="text-xs dark:text-gray-300">in list <span :class="can.move ? 'cursor-pointer underline dark:text-gray-200' : 'dark:text-gray-200'" @click="can.move && displayMoveCard()">{{ task.list.title }}</span> </span>
+                                </div>
+                                <div class="close_area">
+                                    <div class="wrap">
+                                        <span v-if="isPopup" @click="$emit('closeModal', true)" class="close__b">
+                                            <icon class="h-6 w-6 dark:text-gray-300" name="close" />
+                                        </span>
+                                        <button v-else @click="goToLink(route(view === 'table'?'projects.view.table':'projects.view.board', task.project.slug || task.project.id))" class="close__b">
+                                            <icon class="h-6 w-6 dark:text-gray-300" name="close" />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
 
+                            <div class="s__1">
+                                <div class="t__l">
                                     <div class="flex flex-col mt-5">
                                         <span class="text-xs font-bold mb-1 dark:text-gray-300">{{ $t('Labels') }}</span>
                                         <div class="list_labels flex flex-wrap gap-1">
@@ -295,50 +302,80 @@
 
                                 <div class="pl-8 pt-4">
                                     <div class="flex flex-col gap-2 text-sm">
-                                        <div v-for="(attachment, a_index) in sortedAttachments" :key="attachment.id || a_index" class="__attachment flex gap-3 py-4 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
+                                        <!-- One file, one row: type tile, name, when it
+                                             arrived, then the actions as icon buttons on the
+                                             right. They used to sit on a line of their own
+                                             under the name, which left a tall empty row and
+                                             no clear edge between one file and the next. -->
+                                        <div
+                                            v-for="(attachment, a_index) in sortedAttachments"
+                                            :key="attachment.id || a_index"
+                                            class="__attachment group flex items-center gap-3 p-2.5 rounded-xl border border-gray-200/70 dark:border-gray-700 bg-white/70 dark:bg-gray-800/40 hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-colors"
+                                        >
                                             <div class="preview flex-shrink-0" :aria-label="attachment.name">
-                                                <div v-if="isImage(attachment.name)" class="w-16 h-16 bg-cover bg-center rounded" :style="{'backgroundImage': `url(${attachment.path})`}" :alt="attachment.name" />
-                                                <div v-else class="w-16 h-16 bg-gray-200 dark:bg-gray-600 flex items-center justify-center font-semibold uppercase rounded">
-                                                    {{ attachment.name.split('.').pop() }}
+                                                <div v-if="isImage(attachment.name)" class="w-11 h-11 bg-cover bg-center rounded-lg ring-1 ring-black/5" :style="{'backgroundImage': `url(${attachment.path})`}"></div>
+                                                <!-- A page glyph tinted by type with the real
+                                                     extension across it, so any file - pdf, docx,
+                                                     xlsx, zip - gets its own mark without a
+                                                     bitmap per format. -->
+                                                <div class="relative w-11 h-11 flex items-center justify-center rounded-lg" :class="fileTypeClass(attachment.name)" v-else>
+                                                    <svg viewBox="0 0 24 24" fill="none" class="absolute w-6 h-6 opacity-30" aria-hidden="true">
+                                                        <path d="M6.5 2.75h6.75L18.5 8v13.25H6.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+                                                        <path d="M13.25 2.75V8h5.25" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+                                                    </svg>
+                                                    <span class="relative font-bold uppercase tracking-wide" :class="fileExt(attachment.name).length > 3 ? 'text-[8px]' : 'text-[9.5px]'">
+                                                        {{ fileExt(attachment.name) }}
+                                                    </span>
                                                 </div>
                                             </div>
-                                            <div class="flex flex-col gap-2 w-full">
-                                                <div class="font-bold truncate max-w-full dark:text-gray-200">
-                                                    <a :href="attachment.path" target="_blank" class="block break-words truncate text-ellipsis max-w-[260px] dark:text-blue-400">
-                                                        {{ attachment.name }}
-                                                    </a>
-                                                </div>
-                                                <div class="flex gap-3 dark:text-gray-400">
+
+                                            <div class="flex-1 min-w-0">
+                                                <a :href="attachment.path" target="_blank" class="block truncate font-semibold text-gray-800 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400" :title="attachment.name">
+                                                    {{ attachment.name }}
+                                                </a>
+                                                <div class="flex items-center gap-2 mt-0.5 text-xs text-gray-500 dark:text-gray-400">
                                                     <span :aria-label="moment(attachment.created_at).format('MMMM D, YYYY h:mm A')">
-                                                        {{ moment(attachment.created_at).format('[Added] MMM D, YYYY [at] h:mm A') }}
+                                                        {{ moment(attachment.created_at).format('MMM D, YYYY [·] h:mm A') }}
                                                     </span>
-                                                    -
-                                                    <span v-if="can.attach" class="flex underline cursor-pointer dark:text-gray-300 hover:text-red-500" @click="deleteAttachment(attachment.id)">
-                                                        {{ $t('Delete') }}
-                                                    </span>
+                                                    <template v-if="can.attach">
+                                                        <span class="text-gray-300 dark:text-gray-600">·</span>
+                                                        <button type="button" class="hover:text-red-600 dark:hover:text-red-400" @click="deleteAttachment(attachment.id)">
+                                                            {{ $t('Delete') }}
+                                                        </button>
+                                                    </template>
                                                 </div>
-                                                <div class="flex flex-wrap gap-2 pt-1">
-                                                    <!-- Download -->
-                                                    <a class="cover dark:text-gray-300 flex items-center gap-1 cursor-pointer" :href="attachment.path" :download="attachment.name">
-                                                        <icon name="download" /> {{ $t('Download') }}
-                                                    </a>
+                                            </div>
 
-                                                    <!-- Opens the full-page viewer / annotator in its own tab -->
-                                                    <!-- Same tab on purpose: this panel gives way to the viewer,
-                                                         and closing the viewer (or approving from it) comes back to
-                                                         the board with this document's panel open again. -->
-                                                    <a class="cover dark:text-gray-300 flex items-center gap-1 cursor-pointer" :href="route('task.attachment.view', { taskUid: task.id, attachmentId: attachment.id })">
-                                                        <icon name="eye" /> {{ $t('View') }}
-                                                    </a>
+                                            <div class="flex items-center gap-1 flex-shrink-0">
+                                                <a class="att-btn" :href="attachment.path" :download="attachment.name" :title="$t('Download')" :aria-label="$t('Download')">
+                                                    <icon name="download" class="w-4 h-4" />
+                                                </a>
 
-                                                    <!-- Make/Remove Cover (Images Only) -->
-                                                    <div v-if="isImage(attachment.name) && (!task.cover || task.cover.id !== attachment.id)" class="cover dark:text-gray-300 flex items-center gap-1 cursor-pointer" @click="makeCover(task, attachment)">
-                                                        <icon name="image" /> {{ $t('Make Cover') }}
-                                                    </div>
-                                                    <div v-if="task.cover && task.cover.id === attachment.id" class="cover dark:text-gray-300 flex items-center gap-1 cursor-pointer" @click="removeCover(task)">
-                                                        <icon name="image" /> {{ $t('Remove Cover') }}
-                                                    </div>
-                                                </div>
+                                                <!-- Same tab on purpose: this panel gives way to the viewer,
+                                                     and closing the viewer (or approving from it) comes back to
+                                                     the board with this document's panel open again. -->
+                                                <a class="att-btn" :href="route('task.attachment.view', { taskUid: task.id, attachmentId: attachment.id })" :title="$t('View')" :aria-label="$t('View')">
+                                                    <icon name="eye" class="w-4 h-4" />
+                                                </a>
+
+                                                <button
+                                                    v-if="isImage(attachment.name) && (!task.cover || task.cover.id !== attachment.id)"
+                                                    type="button"
+                                                    class="att-btn"
+                                                    :title="$t('Make Cover')"
+                                                    @click="makeCover(task, attachment)"
+                                                >
+                                                    <icon name="image" class="w-4 h-4" />
+                                                </button>
+                                                <button
+                                                    v-if="task.cover && task.cover.id === attachment.id"
+                                                    type="button"
+                                                    class="att-btn att-btn--active"
+                                                    :title="$t('Remove Cover')"
+                                                    @click="removeCover(task)"
+                                                >
+                                                    <icon name="image" class="w-4 h-4" />
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -1395,6 +1432,24 @@
             },
 
             // --- Helpers ---
+            /** The extension as it goes on the tile: up to four characters. */
+            fileExt(filename) {
+                const name = filename || '';
+                if (!name.includes('.')) return 'FILE';
+                return name.split('.').pop().slice(0, 4);
+            },
+
+            /** Tile colour by file type, so a list of files is scannable. */
+            fileTypeClass(filename) {
+                const ext = (filename || '').split('.').pop().toLowerCase();
+                if (ext === 'pdf') return 'bg-red-50 text-red-600 dark:bg-red-500/15 dark:text-red-300';
+                if (['doc', 'docx', 'rtf', 'odt'].includes(ext)) return 'bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-blue-300';
+                if (['xls', 'xlsx', 'csv'].includes(ext)) return 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300';
+                if (['ppt', 'pptx'].includes(ext)) return 'bg-orange-50 text-orange-600 dark:bg-orange-500/15 dark:text-orange-300';
+                if (['zip', 'rar', '7z', 'tar', 'gz'].includes(ext)) return 'bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300';
+                return 'bg-gray-100 text-gray-500 dark:bg-gray-600 dark:text-gray-200';
+            },
+
             isImage(filename) {
                 if (!filename) return false;
                 const ext = filename.split('.').pop().toLowerCase();
