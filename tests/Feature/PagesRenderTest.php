@@ -92,6 +92,25 @@ class PagesRenderTest extends TestCase
             ->assertInertia(fn (AssertableInertia $page) => $page->component($component));
     }
 
+    public static function settingsPages(): array
+    {
+        return [
+            'global' => ['settings/global', 'Settings/Index'],
+            'smtp' => ['settings/smtp', 'Settings/Smtp'],
+            'notifications' => ['settings/notifications', 'Settings/NotificationSettings'],
+            'pre-made boards' => ['settings/pre-made-boards', 'Settings/PreMadeList'],
+            'workflow roles' => ['settings/workflow-roles', 'Settings/WorkflowRoles'],
+        ];
+    }
+
+    /** @dataProvider settingsPages */
+    public function test_settings_pages_render(string $path, string $component): void
+    {
+        $this->get('/'.$path)
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page->component($component));
+    }
+
     public function test_login_page_renders_for_a_guest(): void
     {
         auth()->logout();

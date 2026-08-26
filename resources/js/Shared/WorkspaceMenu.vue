@@ -37,7 +37,7 @@
                 </Link>
             </li>
 
-            <li v-if="workspace.member.role === 'admin'">
+            <li v-if="workspace.member?.role === 'admin'">
                 <Link
                     :href="route('workspace.view.board', workspace.slug || workspace.id)"
                     class="flex items-center px-3 py-2 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 group"
@@ -101,7 +101,7 @@
                 </Link>
             </li>
 
-            <li class="relative" v-if="workspace.member.role === 'admin'">
+            <li class="relative" v-if="workspace.member?.role === 'admin'">
                 <Link
                     class="flex items-center px-3 p-2 group workspace_members"
                     :href="route('workspace.members', workspace.id)"
@@ -110,7 +110,7 @@
                     <icon class="w-4 h-4" name="user" />
                     <span class="flex-1 ml-3 whitespace-nowrap">{{ $t('Team Members') }}</span>
                     <button
-                        v-if="workspace.member.role === 'admin'"
+                        v-if="workspace.member?.role === 'admin'"
                         @click="
                             $event.preventDefault();
                             invite_workspace = true;
@@ -189,7 +189,7 @@
                     <icon class="w-4 h-4" name="project" />
                 </Link>
                 <div
-                    v-if="workspace.member.role === 'admin'"
+                    v-if="workspace.member?.role === 'admin'"
                     @click="visible.project_create = true"
                     class="flex w-7 h-7 cursor-pointer rounded justify-center items-center add__plus"
                 >

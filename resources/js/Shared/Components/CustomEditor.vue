@@ -50,14 +50,14 @@
             <div class="toolbar-group">
                 <!-- Headers -->
                 <select @change="formatBlock($event)" class="toolbar-select" title="Heading">
-                    <option value="">Normal</option>
+                    <option value="">{{ $t('Normal') }}</option>
                     <option value="h1">Heading 1</option>
                     <option value="h2">Heading 2</option>
                     <option value="h3">Heading 3</option>
                     <option value="h4">Heading 4</option>
                     <option value="h5">Heading 5</option>
                     <option value="h6">Heading 6</option>
-                    <option value="p">Paragraph</option>
+                    <option value="p">{{ $t('Paragraph') }}</option>
                 </select>
             </div>
 
@@ -228,7 +228,7 @@
             <div class="status-right">
                 <span v-if="isAutoSaving" class="auto-save-status">
                     <Icon name="spinner" class="w-3 h-3 animate-spin" />
-                    <span>Saving...</span>
+                    <span>{{ $t('Saving...') }}</span>
                 </span>
                 <span v-else-if="lastSaved" class="last-saved" :title="`Last saved: ${lastSaved}`">
                     <Icon name="check-circle" class="w-3 h-3" />
@@ -236,7 +236,7 @@
                 </span>
                 <span v-else class="status-ready">
                     <Icon name="edit" class="w-3 h-3" />
-                    <span>Ready</span>
+                    <span>{{ $t('Ready') }}</span>
                 </span>
             </div>
         </div>
@@ -267,7 +267,7 @@
         <div v-if="showMentionDropdown" class="custom-editor__mentions">
             <div class="mentions-list">
                 <div class="mentions-header">
-                    <span class="mentions-title">Mention someone</span>
+                    <span class="mentions-title">{{ $t('Mention someone') }}</span>
                     <span class="mentions-count"
                         >{{ filteredUsers.length }} user{{ filteredUsers.length !== 1 ? 's' : '' }}</span
                     >
@@ -298,7 +298,7 @@
                 </div>
                 <div v-if="filteredUsers.length === 0" class="mentions-empty">
                     <Icon name="user" class="w-5 h-5" />
-                    <span>No users found</span>
+                    <span>{{ $t('No users found') }}</span>
                 </div>
             </div>
         </div>
@@ -306,7 +306,7 @@
         <!-- Emoji Picker -->
         <div v-if="showEmojiPicker" class="emoji-picker" :style="emojiPickerStyle" @click.stop>
             <div class="emoji-picker__header">
-                <span>Choose an emoji</span>
+                <span>{{ $t('Choose an emoji') }}</span>
                 <button @click="showEmojiPicker = false" class="emoji-picker__close">
                     <Icon name="times" class="w-4 h-4" />
                 </button>
@@ -330,7 +330,7 @@
             }"
         >
             <div class="image-controls__header">
-                <span>Image Options</span>
+                <span>{{ $t('Image Options') }}</span>
                 <button @click="closeImageControls" class="image-controls__close">
                     <Icon name="times" class="w-4 h-4" />
                 </button>
@@ -372,27 +372,23 @@
         <!-- Export Menu -->
         <div v-if="showExportMenu" class="export-menu">
             <div class="export-menu__header">
-                <span>Export Content</span>
+                <span>{{ $t('Export Content') }}</span>
                 <button @click="showExportMenu = false" class="export-menu__close">
                     <Icon name="times" class="w-4 h-4" />
                 </button>
             </div>
             <div class="export-menu__content">
                 <button @click="exportContent('html')" class="export-btn">
-                    <Icon name="code" class="w-4 h-4" />
-                    Export as HTML
+                    <Icon name="code" class="w-4 h-4" />{{ $t('Export as HTML') }}
                 </button>
                 <button @click="exportContent('markdown')" class="export-btn">
-                    <Icon name="file-text" class="w-4 h-4" />
-                    Export as Markdown
+                    <Icon name="file-text" class="w-4 h-4" />{{ $t('Export as Markdown') }}
                 </button>
                 <button @click="exportContent('text')" class="export-btn">
-                    <Icon name="file" class="w-4 h-4" />
-                    Export as Plain Text
+                    <Icon name="file" class="w-4 h-4" />{{ $t('Export as Plain Text') }}
                 </button>
                 <button @click="exportContent('pdf')" class="export-btn">
-                    <Icon name="file-pdf" class="w-4 h-4" />
-                    Export as PDF
+                    <Icon name="file-pdf" class="w-4 h-4" />{{ $t('Export as PDF') }}
                 </button>
             </div>
         </div>
@@ -401,78 +397,78 @@
         <div v-if="showKeyboardShortcuts" class="keyboard-shortcuts-overlay" @click="showKeyboardShortcuts = false">
             <div class="keyboard-shortcuts-modal" @click.stop>
                 <div class="keyboard-shortcuts__header">
-                    <h3>Keyboard Shortcuts</h3>
+                    <h3>{{ $t('Keyboard Shortcuts') }}</h3>
                     <button @click="showKeyboardShortcuts = false" class="keyboard-shortcuts__close">
                         <Icon name="times" class="w-4 h-4" />
                     </button>
                 </div>
                 <div class="keyboard-shortcuts__content">
                     <div class="shortcut-section">
-                        <h4>Text Formatting</h4>
+                        <h4>{{ $t('Text Formatting') }}</h4>
                         <div class="shortcut-item">
                             <kbd>Ctrl + B</kbd>
-                            <span>Bold</span>
+                            <span>{{ $t('Bold') }}</span>
                         </div>
                         <div class="shortcut-item">
                             <kbd>Ctrl + I</kbd>
-                            <span>Italic</span>
+                            <span>{{ $t('Italic') }}</span>
                         </div>
                         <div class="shortcut-item">
                             <kbd>Ctrl + U</kbd>
-                            <span>Underline</span>
+                            <span>{{ $t('Underline') }}</span>
                         </div>
                     </div>
                     <div class="shortcut-section">
-                        <h4>Alignment</h4>
+                        <h4>{{ $t('Alignment') }}</h4>
                         <div class="shortcut-item">
                             <kbd>Ctrl + Shift + L</kbd>
-                            <span>Align Left</span>
+                            <span>{{ $t('Align Left') }}</span>
                         </div>
                         <div class="shortcut-item">
                             <kbd>Ctrl + Shift + E</kbd>
-                            <span>Align Center</span>
+                            <span>{{ $t('Align Center') }}</span>
                         </div>
                         <div class="shortcut-item">
                             <kbd>Ctrl + Shift + R</kbd>
-                            <span>Align Right</span>
+                            <span>{{ $t('Align Right') }}</span>
                         </div>
                         <div class="shortcut-item">
                             <kbd>Ctrl + Shift + J</kbd>
-                            <span>Justify</span>
+                            <span>{{ $t('Justify') }}</span>
                         </div>
                     </div>
                     <div class="shortcut-section">
                         <h4>Lists & Content</h4>
                         <div class="shortcut-item">
                             <kbd>Ctrl + Shift + 8</kbd>
-                            <span>Bullet List</span>
+                            <span>{{ $t('Bullet List') }}</span>
                         </div>
                         <div class="shortcut-item">
                             <kbd>Ctrl + Shift + 7</kbd>
-                            <span>Numbered List</span>
+                            <span>{{ $t('Numbered List') }}</span>
                         </div>
                         <div class="shortcut-item">
                             <kbd>Ctrl + K</kbd>
-                            <span>Insert Link</span>
+                            <span>{{ $t('Insert Link') }}</span>
                         </div>
                         <div class="shortcut-item">
                             <kbd>Ctrl + Shift + I</kbd>
-                            <span>Insert Image</span>
+                            <span>{{ $t('Insert Image') }}</span>
                         </div>
                     </div>
                     <div class="shortcut-section">
-                        <h4>Actions</h4>
+                        <h4>{{ $t('Actions') }}</h4>
                         <div class="shortcut-item">
                             <kbd>Ctrl + Z</kbd>
-                            <span>Undo</span>
+                            <span>{{ $t('Undo') }}</span>
                         </div>
                         <div class="shortcut-item">
                             <kbd>Ctrl + Y</kbd>
-                            <span>Redo</span>
+                            <span>{{ $t('Redo') }}</span>
                         </div>
                         <div class="shortcut-item">
                             <kbd>Ctrl + ?</kbd>
-                            <span>Show Shortcuts</span>
+                            <span>{{ $t('Show Shortcuts') }}</span>
                         </div>
                     </div>
                 </div>

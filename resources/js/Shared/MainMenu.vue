@@ -38,7 +38,9 @@
                             </div>
                             <div class="menu-text">
                                 <div class="menu-name">{{ $t(menu_item.name) }}</div>
-                                <div class="menu-description">{{ getMenuDescription(menu_item.name) }}</div>
+                                <div v-if="getMenuDescription(menu_item.name)" class="menu-description">
+                                    {{ $t(getMenuDescription(menu_item.name)) }}
+                                </div>
                             </div>
                             <div class="menu-arrow" v-if="menu_item.submenu">
                                 <icon
@@ -57,7 +59,9 @@
                             </div>
                             <div class="menu-text">
                                 <div class="menu-name">{{ $t(menu_item.name) }}</div>
-                                <div class="menu-description">{{ getMenuDescription(menu_item.name) }}</div>
+                                <div v-if="getMenuDescription(menu_item.name)" class="menu-description">
+                                    {{ $t(getMenuDescription(menu_item.name)) }}
+                                </div>
                             </div>
                             <div class="menu-arrow">
                                 <icon
@@ -269,11 +273,14 @@ export default {
                 Languages: 'Multi-language support',
                 'Email Templates': 'Custom email designs',
                 'SMTP Mail': 'Email server configuration',
+                'Notification Settings': 'Email, Slack and Telegram alerts',
                 'Latest Update': 'System updates and patches',
                 'Error Log': 'Application errors and warnings',
                 Performance: 'Server health and slow pages',
             };
-            return descriptions[menuName];
+            // Never undefined: the template hands this straight to $t(), which
+            // calls .replace() on it.
+            return descriptions[menuName] ?? '';
         },
     },
     created() {

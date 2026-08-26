@@ -54,9 +54,11 @@
                                             <icon name="clock" class="w-6 h-6 text-white" />
                                         </div>
                                         <div>
-                                            <h2 class="text-3xl font-bold text-gray-900 tracking-tight">Time Logs</h2>
+                                            <h2 class="text-3xl font-bold text-gray-900 tracking-tight">
+                                                {{ $t('Time Logs') }}
+                                            </h2>
                                             <p class="text-sm text-gray-500 mt-1 font-medium">
-                                                Track and manage time spent on tasks
+                                                {{ $t('Track and manage time spent on tasks') }}
                                             </p>
                                         </div>
                                     </div>
@@ -74,7 +76,7 @@
                                                 </div>
                                                 <div>
                                                     <p class="text-xs opacity-90 font-medium uppercase tracking-wide">
-                                                        Total Duration
+                                                        {{ $t('Total Duration') }}
                                                     </p>
                                                     <p class="text-lg font-bold">
                                                         {{ formatDuration(total_duration, 'minutes') }}
@@ -93,7 +95,7 @@
                                                 </div>
                                                 <div>
                                                     <p class="text-xs opacity-90 font-medium uppercase tracking-wide">
-                                                        Total Logs
+                                                        {{ $t('Total Logs') }}
                                                     </p>
                                                     <p class="text-lg font-bold">
                                                         {{ time_logs.total || time_logs.data.length }}
@@ -122,16 +124,14 @@
                                             @click="open_filter = !open_filter"
                                             class="flex items-center px-4 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 bg-white hover:bg-gray-50 rounded-xl border border-gray-200/60 transition-all duration-200 shadow-sm hover:shadow-md"
                                         >
-                                            <icon name="filter" class="w-4 h-4 mr-2" />
-                                            Filter
+                                            <icon name="filter" class="w-4 h-4 mr-2" />{{ $t('Filter') }}
                                         </button>
 
                                         <!-- Export Button -->
                                         <button
                                             class="flex items-center px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
                                         >
-                                            <icon name="download" class="w-4 h-4 mr-2" />
-                                            Export
+                                            <icon name="download" class="w-4 h-4 mr-2" />{{ $t('Export') }}
                                         </button>
                                     </div>
                                 </div>
@@ -151,8 +151,10 @@
                                     <div class="p-1.5 bg-indigo-100 rounded-lg mr-3">
                                         <icon name="info" class="w-3 h-3 text-indigo-600" />
                                     </div>
-                                    <span class="hidden sm:inline">Scroll horizontally to view all columns</span>
-                                    <span class="sm:hidden">Swipe to view all columns</span>
+                                    <span class="hidden sm:inline">{{
+                                        $t('Scroll horizontally to view all columns')
+                                    }}</span>
+                                    <span class="sm:hidden">{{ $t('Swipe to view all columns') }}</span>
                                 </div>
                                 <div class="flex items-center space-x-2">
                                     <button
@@ -210,8 +212,8 @@
                                                             class="w-3 h-3 sm:w-4 sm:h-4 text-indigo-600 flex-shrink-0"
                                                         />
                                                     </div>
-                                                    <span class="hidden sm:inline font-semibold">Task</span>
-                                                    <span class="sm:hidden font-semibold">Task</span>
+                                                    <span class="hidden sm:inline font-semibold">{{ $t('Task') }}</span>
+                                                    <span class="sm:hidden font-semibold">{{ $t('Task') }}</span>
                                                 </div>
                                             </th>
 
@@ -228,8 +230,10 @@
                                                             class="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 flex-shrink-0"
                                                         />
                                                     </div>
-                                                    <span class="hidden sm:inline font-semibold">Member</span>
-                                                    <span class="sm:hidden font-semibold">User</span>
+                                                    <span class="hidden sm:inline font-semibold">{{
+                                                        $t('Member')
+                                                    }}</span>
+                                                    <span class="sm:hidden font-semibold">{{ $t('User') }}</span>
                                                 </div>
                                             </th>
 
@@ -246,8 +250,10 @@
                                                             class="w-3 h-3 sm:w-4 sm:h-4 text-green-600 flex-shrink-0"
                                                         />
                                                     </div>
-                                                    <span class="hidden sm:inline font-semibold">Started</span>
-                                                    <span class="sm:hidden font-semibold">Start</span>
+                                                    <span class="hidden sm:inline font-semibold">{{
+                                                        $t('Started')
+                                                    }}</span>
+                                                    <span class="sm:hidden font-semibold">{{ $t('Start') }}</span>
                                                 </div>
                                             </th>
 
@@ -264,7 +270,9 @@
                                                             class="w-3 h-3 sm:w-4 sm:h-4 text-red-600 flex-shrink-0"
                                                         />
                                                     </div>
-                                                    <span class="hidden sm:inline font-semibold">Stopped</span>
+                                                    <span class="hidden sm:inline font-semibold">{{
+                                                        $t('Stopped')
+                                                    }}</span>
                                                     <span class="sm:hidden font-semibold">End</span>
                                                 </div>
                                             </th>
@@ -282,8 +290,10 @@
                                                             class="w-3 h-3 sm:w-4 sm:h-4 text-purple-600 flex-shrink-0"
                                                         />
                                                     </div>
-                                                    <span class="hidden sm:inline font-semibold">Duration</span>
-                                                    <span class="sm:hidden font-semibold">Time</span>
+                                                    <span class="hidden sm:inline font-semibold">{{
+                                                        $t('Duration')
+                                                    }}</span>
+                                                    <span class="sm:hidden font-semibold">{{ $t('Time') }}</span>
                                                 </div>
                                             </th>
 
@@ -300,8 +310,8 @@
                                                             class="w-3 h-3 sm:w-4 sm:h-4 text-yellow-600 flex-shrink-0"
                                                         />
                                                     </div>
-                                                    <span class="hidden sm:inline font-semibold">Memo</span>
-                                                    <span class="sm:hidden font-semibold">Note</span>
+                                                    <span class="hidden sm:inline font-semibold">{{ $t('Memo') }}</span>
+                                                    <span class="sm:hidden font-semibold">{{ $t('Note') }}</span>
                                                 </div>
                                             </th>
                                         </tr>
@@ -431,7 +441,7 @@
                                                 <div class="flex flex-col items-center">
                                                     <icon name="clock" class="w-12 h-12 text-gray-400 mb-4" />
                                                     <h3 class="text-lg font-medium text-gray-900 mb-2">
-                                                        No time logs found
+                                                        {{ $t('No time logs found') }}
                                                     </h3>
                                                     <p class="text-gray-500">
                                                         Start tracking time on your tasks to see logs here.
@@ -498,13 +508,17 @@
                                     <!-- Time Info -->
                                     <div class="grid grid-cols-2 gap-4 mb-3">
                                         <div>
-                                            <p class="text-xs text-gray-500 uppercase tracking-wide">Started</p>
+                                            <p class="text-xs text-gray-500 uppercase tracking-wide">
+                                                {{ $t('Started') }}
+                                            </p>
                                             <p class="text-sm font-medium text-gray-900">
                                                 {{ moment(log.started_at).format('MMM D, h:mm a') }}
                                             </p>
                                         </div>
                                         <div>
-                                            <p class="text-xs text-gray-500 uppercase tracking-wide">Stopped</p>
+                                            <p class="text-xs text-gray-500 uppercase tracking-wide">
+                                                {{ $t('Stopped') }}
+                                            </p>
                                             <p class="text-sm font-medium text-gray-900">
                                                 {{ moment(log.stopped_at).format('MMM D, h:mm a') }}
                                             </p>
@@ -513,7 +527,9 @@
 
                                     <!-- Memo -->
                                     <div v-if="log.title" class="border-t border-gray-100 pt-3">
-                                        <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">Memo</p>
+                                        <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">
+                                            {{ $t('Memo') }}
+                                        </p>
                                         <p class="text-sm text-gray-900">{{ log.title }}</p>
                                     </div>
                                 </div>
@@ -521,7 +537,9 @@
                                 <!-- Mobile Empty State -->
                                 <div v-if="time_logs.data.length === 0" class="text-center py-12">
                                     <icon name="clock" class="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                                    <h3 class="text-lg font-medium text-gray-900 mb-2">No time logs found</h3>
+                                    <h3 class="text-lg font-medium text-gray-900 mb-2">
+                                        {{ $t('No time logs found') }}
+                                    </h3>
                                     <p class="text-gray-500">Start tracking time on your tasks to see logs here.</p>
                                 </div>
                             </div>

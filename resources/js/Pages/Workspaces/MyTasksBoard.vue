@@ -50,7 +50,7 @@
                         </div>
                         <icon class="__t_l_r" name="user" />
                     </div>
-                    <span class="sr-only">Loading...</span>
+                    <span class="sr-only">{{ $t('Loading...') }}</span>
                 </div>
                 <div role="status" class="l__b">
                     <div class="__img"><icon name="pulse_image" class="__i" /></div>
@@ -62,7 +62,7 @@
                         </div>
                         <icon class="__t_l_r" name="user" />
                     </div>
-                    <span class="sr-only">Loading...</span>
+                    <span class="sr-only">{{ $t('Loading...') }}</span>
                 </div>
                 <div role="status" class="l__b">
                     <div class="__img"><icon name="pulse_image" class="__i" /></div>
@@ -74,7 +74,7 @@
                         </div>
                         <icon class="__t_l_r" name="user" />
                     </div>
-                    <span class="sr-only">Loading...</span>
+                    <span class="sr-only">{{ $t('Loading...') }}</span>
                 </div>
                 <div role="status" class="l__b">
                     <div class="__img"><icon name="pulse_image" class="__i" /></div>
@@ -86,7 +86,7 @@
                         </div>
                         <icon class="__t_l_r" name="user" />
                     </div>
-                    <span class="sr-only">Loading...</span>
+                    <span class="sr-only">{{ $t('Loading...') }}</span>
                 </div>
                 <div role="status" class="l__b">
                     <div class="__img"><icon name="pulse_image" class="__i" /></div>
@@ -98,7 +98,7 @@
                         </div>
                         <icon class="__t_l_r" name="user" />
                     </div>
-                    <span class="sr-only">Loading...</span>
+                    <span class="sr-only">{{ $t('Loading...') }}</span>
                 </div>
             </div>
             <div v-else class="board_width" :class="{ v_label: showLabelName }">

@@ -65,7 +65,7 @@
                                 <div class="i__2" />
                             </div>
                         </div>
-                        <span class="sr-only">Loading...</span>
+                        <span class="sr-only">{{ $t('Loading...') }}</span>
                     </div>
                 </div>
                 <div
