@@ -493,16 +493,29 @@ class ProjectsController extends Controller
         $auth_id = auth()->id();
         $workspaceIds = Workspace::accessibleTo()->pluck('id');
         $project = Project::bySlugOrId($uid)->whereIn('workspace_id', $workspaceIds)->with('workspace.member')->with('star')->with('background')->first();
-        $taskIds = Task::where('project_id', $project->id)->pluck('id')->toArray();
-        $per_list = Task::select('list_id', DB::raw('count(*) as total'))->where('project_id', $project->id)->groupBy('list_id')->whereHas('list')->with('list')->get()->toArray();
+        $user = auth()->user();
+
+        // The same documents the board shows, counted the same way: archived
+        // ones and ones whose column is gone are not on the board, and a Normal
+        // User may only count what they are allowed to open. Without this the
+        // report reads 7 while the sidebar badge - which has always applied
+        // these rules - reads 0.
+        $counted = fn () => Task::where('project_id', $project->id)
+            ->isOpen()
+            ->whereHas('list')
+            ->visibleTo($user);
+
+        $taskIds = $counted()->pluck('id')->toArray();
+        $per_list = $counted()->select('list_id', DB::raw('count(*) as total'))->groupBy('list_id')->with('list')->get()->toArray();
         $per_assignee = Assignee::select('user_id', DB::raw('count(*) as total'))->whereIn('task_id', $taskIds)->groupBy('user_id')->with('user')->get()->toArray();
         $per_label = TaskLabel::select('label_id', DB::raw('count(*) as total'))->whereIn('task_id', $taskIds)->groupBy('label_id')->with('label')->get()->toArray();
+
         // One document lands in exactly one bucket. They used to overlap - a
         // finished document with a past due date was counted as both complete
         // and overdue - which no part-to-whole reading of these numbers can
         // survive.
-        $open = fn () => Task::where('project_id', $project->id)->where('is_done', 0);
-        $due_done = Task::where('project_id', $project->id)->where('is_done', 1)->count();
+        $open = fn () => $counted()->where('is_done', 0);
+        $due_done = $counted()->where('is_done', 1)->count();
         $no_due = $open()->whereNull('due_date')->count();
         $due_over = $open()->whereNotNull('due_date')->where('due_date', '<', Carbon::now())->count();
         $due_soon = $open()->whereBetween('due_date', [Carbon::now(), Carbon::now()->addDay()])->count();

@@ -244,7 +244,7 @@
                         <span
                             class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 mr-1 rounded-full bg-indigo-600 text-white text-[10px] font-semibold flex-shrink-0"
                         >
-                            {{ project.tasks_count ?? 0 }}
+                            {{ taskCount(project) }}
                         </span>
                         <button
                             class="flex w-7 items-center justify-center flex-shrink-0"
@@ -272,7 +272,7 @@
 
 <script>
 import Icon from '@/Shared/Icon.vue';
-import { Link } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 import CreateProject from '@/Shared/Modals/CreateProject.vue';
 import InviteWorkspaceMember from './Modals/InviteWorkspaceMember.vue';
 import axios from 'axios';
@@ -291,6 +291,10 @@ export default {
     data() {
         return {
             projects: [],
+            // Counts live beside the list rather than on it: they arrive from
+            // their own endpoint, and a project list refreshed without them
+            // used to blank every badge.
+            task_counts: {},
             favorites: [],
             workspace: null,
             loading: true,
@@ -439,7 +443,7 @@ export default {
             });
         },
         getProjects() {
-            axios.get(this.route('json.projects.all', this.workspace.id)).then((response) => {
+            return axios.get(this.route('json.projects.all', this.workspace.id)).then((response) => {
                 if (response.data) {
                     this.projects = response.data;
                 }
@@ -471,33 +475,62 @@ export default {
         },
 
         getProjectTaskCounts() {
-            axios.get(this.route('json.workspace.projects.count', this.workspace.id)).then((response) => {
-                if (response.data) {
-                    response.data.forEach((item) => {
-                        const project = this.projects.find((p) => Number(p.id) === Number(item.id));
-                        if (project) {
-                            project.tasks_count = item.tasks_count;
-                        }
-                    });
-                }
+            return axios.get(this.route('json.workspace.projects.count', this.workspace.id)).then((response) => {
+                if (!response.data) return;
+
+                const counts = {};
+                response.data.forEach((item) => {
+                    counts[Number(item.id)] = Number(item.tasks_count) || 0;
+                });
+                this.task_counts = counts;
             });
+        },
+
+        loadWorkspace() {
+            this.workspace = this.$page.props.project ? this.$page.props.project.workspace : this.$page.props.workspace;
+            if (!this.workspace) return;
+
+            this.reload();
+        },
+
+        reload() {
+            this.getProjects();
+            this.getStarredProjects();
+            this.refreshCounts();
+        },
+
+        taskCount(project) {
+            return this.task_counts[Number(project.id)] ?? 0;
+        },
+
+        /** Cheap half of the refresh: the numbers, not the lists. */
+        refreshCounts() {
+            this.getMyTasksCount();
+            this.getAssignedTasksCount();
+            this.getProjectTaskCounts();
         },
     },
     created() {
-        this.workspace = this.$page.props.project ? this.$page.props.project.workspace : this.$page.props.workspace;
-        this.getProjects();
-        this.getStarredProjects();
-        this.getMyTasksCount();
-        this.getAssignedTasksCount();
-        this.getProjectTaskCounts();
+        this.loadWorkspace();
     },
     mounted() {
-        window.addEventListener('workspace-task-counts-changed', this.getProjects);
-        window.addEventListener('workspace-task-counts-changed', this.getMyTasksCount);
+        window.addEventListener('workspace-task-counts-changed', this.reload);
+
+        // The sidebar outlives the page, so without this the badges keep
+        // whatever they were when it first mounted.
+        this.stopNavigateListener = router.on('navigate', () => {
+            const current = this.$page.props.project ? this.$page.props.project.workspace : this.$page.props.workspace;
+
+            if (current && (!this.workspace || Number(current.id) !== Number(this.workspace.id))) {
+                this.loadWorkspace();
+            } else {
+                this.refreshCounts();
+            }
+        });
     },
     beforeUnmount() {
-        window.removeEventListener('workspace-task-counts-changed', this.getProjects);
-        window.removeEventListener('workspace-task-counts-changed', this.getMyTasksCount);
+        window.removeEventListener('workspace-task-counts-changed', this.reload);
+        if (this.stopNavigateListener) this.stopNavigateListener();
     },
 };
 </script>
