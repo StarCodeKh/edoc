@@ -230,11 +230,11 @@
                     @click="edit_workspace_option = false"
                 >
                     <div
-                        class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden animate-slideUp"
+                        class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] flex flex-col overflow-hidden animate-slideUp"
                         @click.stop
                     >
                         <div
-                            class="sticky top-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 text-white px-8 py-6"
+                            class="shrink-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 text-white px-8 py-6"
                         >
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-3">
@@ -251,7 +251,9 @@
                                 </button>
                             </div>
                         </div>
-                        <div class="p-8 space-y-6 bg-gradient-to-br from-white to-gray-50">
+                        <!-- The form scrolls; the buttons below do not, so they
+                             cannot end up past the bottom of a short window. -->
+                        <div class="flex-1 overflow-y-auto p-8 space-y-6 bg-gradient-to-br from-white to-gray-50">
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
                                     {{ $t('Workspace name') }} <span class="text-red-500">*</span>
@@ -317,24 +319,25 @@
                                     placeholder="Describe your workspace..."
                                 ></textarea>
                             </div>
-                            <div class="flex gap-4 pt-6 border-t border-gray-200">
-                                <button
-                                    class="flex-1 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-600 text-white font-semibold py-4 rounded-xl transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    :disabled="!form.name"
-                                    @click="updateWorkspace()"
-                                >
-                                    <span class="flex items-center justify-center gap-2">
-                                        <icon name="save" class="w-5 h-5 fill-white" />
-                                        {{ $t('Update Workspace') }}
-                                    </span>
-                                </button>
-                                <button
-                                    class="px-8 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-4 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg"
-                                    @click="edit_workspace_option = false"
-                                >
-                                    {{ $t('Cancel') }}
-                                </button>
-                            </div>
+                        </div>
+
+                        <div class="shrink-0 flex gap-4 border-t border-gray-200 bg-white px-8 py-5">
+                            <button
+                                class="flex-1 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-600 text-white font-semibold py-4 rounded-xl transition-all duration-300 shadow-xl hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed"
+                                :disabled="!form.name"
+                                @click="updateWorkspace()"
+                            >
+                                <span class="flex items-center justify-center gap-2">
+                                    <icon name="save" class="w-5 h-5 fill-white" />
+                                    {{ $t('Update Workspace') }}
+                                </span>
+                            </button>
+                            <button
+                                class="px-8 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-4 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg"
+                                @click="edit_workspace_option = false"
+                            >
+                                {{ $t('Cancel') }}
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -914,7 +917,15 @@ export default {
             this.$inertia.reload({ preserveState: true, preserveScroll: true });
         },
         updateWorkspace() {
-            this.form.post(this.route('workspace.update', this.workspace.id));
+            // The redirect lands on this same page component, so Inertia keeps
+            // the instance - and with it the open dialog - unless it is closed
+            // here. The flash message the controller sets is what confirms it.
+            this.form.post(this.route('workspace.update', this.workspace.id), {
+                preserveScroll: true,
+                onSuccess: () => {
+                    this.edit_workspace_option = false;
+                },
+            });
         },
         saveProject(e, project) {
             project.star = !project.star;

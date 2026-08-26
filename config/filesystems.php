@@ -42,14 +42,22 @@ return [
             'visibility' => 'public',
         ],
 
+        /*
+         * Both of these are served straight off disk by the web server, so the
+         * directories have to be traversable by it. Without `visibility`,
+         * Flysystem creates every new directory 0700 - readable only by the PHP
+         * user - and nginx answers a perfectly good PDF with 403 Forbidden.
+         */
         'file_uploads' => [
             'driver' => 'local',
             'root' => public_path().'/files',
+            'visibility' => 'public',
         ],
 
         'image' => [
             'driver' => 'local',
             'root' => public_path().'/images',
+            'visibility' => 'public',
         ],
 
         'public_path' => [

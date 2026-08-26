@@ -68,6 +68,21 @@ for d in storage bootstrap/cache; do
     [ -w "$d" ] && pass "$d writable" || fail "$d not writable by the web user"
 done
 
+# Uploads are served straight off disk by nginx, which needs to traverse every
+# directory on the way. A 0700 directory here is answered as 403 Forbidden, not
+# 404, and looks like a broken PDF rather than a permission problem.
+for d in public/files public/images; do
+    [ -d "$d" ] || continue
+    CLOSED=$(find "$d" -type d ! -perm -o+rx 2>/dev/null | head -3)
+    if [ -n "$CLOSED" ]; then
+        fail "$d has directories the web server cannot traverse (nginx will answer 403):"
+        echo "$CLOSED" | sed 's/^/       /'
+        echo "       fix: sudo chmod -R u=rwX,go=rX $d"
+    else
+        pass "$d readable by the web server"
+    fi
+done
+
 echo "── Caches ──"
 # A compiled view from before an Inertia upgrade is what turns every page blank.
 [ -d storage/framework/views ] && pass "view cache dir present ($(ls storage/framework/views/*.php 2>/dev/null | wc -l | tr -d ' ') compiled)"

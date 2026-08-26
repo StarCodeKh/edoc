@@ -297,7 +297,8 @@ class WorkSpacesController extends Controller
 
         $workspace->save();
 
-        return Redirect::route('workspace.view', ['uid' => $workspace->slug]);
+        return Redirect::route('workspace.view', ['uid' => $workspace->slug])
+            ->with('success', __('Workspace updated.'));
     }
 
     public function jsonAddMember(Request $request)

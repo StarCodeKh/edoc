@@ -143,7 +143,19 @@ cd /var/www/html/edoc
 sudo chown -R www-data:www-data storage bootstrap/cache public/files public/images
 sudo find storage bootstrap/cache -type d -exec chmod 775 {} \;
 sudo find storage bootstrap/cache -type f -exec chmod 664 {} \;
+
+# Uploads are served off disk by nginx, so it must be able to walk into every
+# directory under them.
+sudo chmod -R u=rwX,go=rX public/files public/images
 ```
+
+**Why that last line matters.** An upload creates its directory through
+Flysystem, which - unless the disk says `'visibility' => 'public'` - makes it
+**0700**: readable by PHP and nobody else. nginx then answers a perfectly good
+PDF with **403 Forbidden**. The disk config now sets `visibility` (see
+`config/filesystems.php`), so directories created from here on are 0755; the
+command above is the one-time repair for directories that already exist.
+`bash scripts/check-server.sh` reports any that are still closed.
 
 ---
 
@@ -387,6 +399,7 @@ Known-good commits:
 | **Blank page, scripts 404 to `localhost:5173`** | A stale `public/hot` from a dev server | `rm public/hot` |
 | **"Unable to locate file in Vite manifest"** | `public/build` missing | `npm run build` |
 | **Site stuck on the maintenance page** | `artisan down` never got its `up` | `php artisan up`, or delete `storage/framework/down` |
+| **403 Forbidden from nginx on an attachment** (the PDF viewer reports "HTTP 403 while downloading the PDF") | The upload's directory is 0700 — created before `visibility` was set on the disk — so nginx cannot traverse it | `namei -l public/files/tasks/<file>.pdf` shows where it stops, then `sudo chmod -R u=rwX,go=rX public/files` — see §3 |
 
 Logs, in the order worth reading:
 
