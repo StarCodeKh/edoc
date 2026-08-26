@@ -132,12 +132,22 @@
                 </button>
             </div>
 
+            <!-- Column names, wide screens only. Below lg each row folds into a
+                 stacked card where every field carries its own label. -->
+            <div class="wr-row wr-head px-4 sm:px-6 lg:px-8 py-2">
+                <span>#</span>
+                <span>{{ $t('Step name') }}</span>
+                <span>{{ $t('Workspace') }}</span>
+                <span>{{ $t('Role') }}</span>
+                <span>{{ $t('SLA hrs') }}</span>
+                <span>{{ $t('Signature') }}</span>
+                <span>{{ $t('Terminal') }}</span>
+                <span></span>
+                <span></span>
+            </div>
+
             <div class="divide-y divide-gray-100 dark:divide-gray-700">
-                <div
-                    v-for="role in groupedRoles[type]"
-                    :key="role.id"
-                    class="grid grid-cols-2 items-center gap-2 px-4 sm:px-6 lg:px-8 py-3 lg:flex lg:flex-wrap"
-                >
+                <div v-for="role in groupedRoles[type]" :key="role.id" class="wr-row px-4 sm:px-6 lg:px-8 py-3">
                     <span
                         class="col-span-2 lg:col-span-1 w-auto lg:w-6 text-xs font-semibold text-gray-400 dark:text-gray-500 flex-shrink-0"
                     >
@@ -147,23 +157,26 @@
                     <input
                         v-model="role.list_title"
                         type="text"
-                        class="col-span-2 w-full min-w-0 lg:w-auto lg:flex-1 lg:min-w-[180px] bg-gray-50 dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        class="col-span-2 w-full min-w-0 bg-gray-50 dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         :placeholder="$t('Step name')"
                     />
 
-                    <select
+                    <filter-select
                         v-model="role.workspace_id"
-                        class="col-span-2 w-full lg:w-40 bg-gray-50 dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        :options="workspaceOptions"
+                        :placeholder="$t('No workspace')"
+                        :search-placeholder="$t('Search') + '…'"
+                        :empty-label="$t('No matches')"
+                        :show-all="false"
                         :title="$t('Workspace this step belongs to')"
-                    >
-                        <option :value="null">{{ $t('No workspace') }}</option>
-                        <option v-for="ws in workspaces" :key="ws.id" :value="ws.id">{{ ws.name }}</option>
-                    </select>
+                        icon="briefcase"
+                        class="col-span-2 w-full filter-select--block"
+                    />
 
                     <input
                         v-model="role.responsible_role"
                         type="text"
-                        class="w-full lg:w-24 bg-gray-50 dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        class="w-full min-w-0 bg-gray-50 dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         :placeholder="$t('Role')"
                     />
 
@@ -171,7 +184,7 @@
                         v-model.number="role.sla_hours"
                         type="number"
                         min="0"
-                        class="w-full lg:w-20 bg-gray-50 dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        class="w-full min-w-0 bg-gray-50 dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         :placeholder="$t('SLA hrs')"
                     />
 
@@ -227,28 +240,31 @@
 
             <!-- Add new step -->
             <div
-                class="grid grid-cols-2 items-center gap-2 px-4 sm:px-6 lg:px-8 py-4 bg-gray-50 dark:bg-gray-900/30 border-t border-gray-100 dark:border-gray-700 lg:flex lg:flex-wrap"
+                class="wr-row px-4 sm:px-6 lg:px-8 py-4 bg-gray-50 dark:bg-gray-900/30 border-t border-gray-100 dark:border-gray-700"
             >
                 <input
                     v-model="newRoleForms[type].list_title"
                     type="text"
                     @keyup.enter="addRole(type)"
-                    class="col-span-2 w-full min-w-0 lg:w-auto lg:flex-1 lg:min-w-[180px] bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    class="col-span-2 w-full min-w-0 bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     :placeholder="$t('e.g. Verify draft')"
                 />
-                <select
+                <filter-select
                     v-model="newRoleForms[type].workspace_id"
-                    class="col-span-2 w-full lg:w-40 bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    :options="workspaceOptions"
+                    :placeholder="$t('No workspace')"
+                    :search-placeholder="$t('Search') + '…'"
+                    :empty-label="$t('No matches')"
+                    :show-all="false"
                     :title="$t('Workspace this step belongs to')"
-                >
-                    <option :value="null">{{ $t('No workspace') }}</option>
-                    <option v-for="ws in workspaces" :key="ws.id" :value="ws.id">{{ ws.name }}</option>
-                </select>
+                    icon="briefcase"
+                    class="col-span-2 w-full filter-select--block"
+                />
                 <input
                     v-model="newRoleForms[type].responsible_role"
                     type="text"
                     @keyup.enter="addRole(type)"
-                    class="w-full lg:w-24 bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    class="w-full min-w-0 bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     :placeholder="$t('Role')"
                 />
                 <input
@@ -256,7 +272,7 @@
                     type="number"
                     min="0"
                     @keyup.enter="addRole(type)"
-                    class="w-full lg:w-20 bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    class="w-full min-w-0 bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     :placeholder="$t('SLA hrs')"
                 />
                 <label class="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300 flex-shrink-0 py-1">
@@ -340,11 +356,12 @@
 <script>
 import { Head } from '@inertiajs/vue3';
 import Icon from '@/Shared/Icon.vue';
+import FilterSelect from '@/Shared/Components/FilterSelect.vue';
 import Layout from '@/Shared/Layout.vue';
 import axios from 'axios';
 
 export default {
-    components: { Icon, Head },
+    components: { FilterSelect, Icon, Head },
     layout: Layout,
     props: {
         title: String,
@@ -411,6 +428,15 @@ export default {
         },
     },
     computed: {
+        /** FilterSelect takes [{ value, label }]. A null row keeps "no workspace"
+            available, which the old <select> had as its first option. */
+        workspaceOptions() {
+            return [
+                { value: null, label: this.$t('No workspace') },
+                ...(this.workspaces || []).map((ws) => ({ value: ws.id, label: ws.name })),
+            ];
+        },
+
         allWorkflowTypes() {
             const fromProp = this.workflow_types || [];
             const fromRoles = this.localRoles.map((r) => r.workflow_type).filter(Boolean);
@@ -653,6 +679,37 @@ export default {
 </script>
 
 <style scoped>
+/* One grid for the header, every step row and the add-step row, so the columns
+   line up down the page. Below lg the row folds into the two-column card the
+   phone layout already used, and the header is hidden. */
+.wr-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: center;
+    gap: 0.5rem;
+}
+.wr-head {
+    display: none;
+}
+@media (min-width: 1024px) {
+    .wr-row {
+        grid-template-columns: 2.5rem minmax(180px, 1fr) 11.5rem 6.5rem 5rem auto auto auto auto;
+    }
+    /* the col-span-* the stacked layout needs must not survive up here */
+    .wr-row > * {
+        grid-column: auto !important;
+    }
+    .wr-head {
+        display: grid;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        color: #94a3b8;
+        border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+    }
+}
+
 .workflow-tab {
     background: rgba(100, 116, 139, 0.08);
     border-width: 1px;

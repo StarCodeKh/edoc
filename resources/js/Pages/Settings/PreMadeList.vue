@@ -67,55 +67,20 @@
             </div>
 
             <div class="px-8 py-6">
-                <div class="relative max-w-sm">
-                    <div
-                        class="flex items-center gap-2 pl-2 pr-8 border rounded-lg bg-gray-50 dark:bg-gray-700 transition-shadow"
-                        :class="
-                            loadingWorkspaces
-                                ? 'border-gray-200 dark:border-gray-700'
-                                : 'border-gray-300 dark:border-gray-600 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent'
-                        "
-                    >
-                        <span
-                            v-if="selectedWorkspace"
-                            class="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-indigo-600 text-white text-[11px] font-semibold"
-                        >
-                            {{ (selectedWorkspace.name || '?').charAt(0).toUpperCase() }}
-                        </span>
-                        <span
-                            v-else
-                            class="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-gray-300 dark:bg-gray-600 text-white"
-                        >
-                            <Icon name="briefcase" class="w-3 h-3" />
-                        </span>
-                        <select
-                            v-model="selectedWorkspaceId"
-                            :disabled="loadingWorkspaces"
-                            class="flex-1 min-w-[200px] appearance-none bg-transparent text-sm py-2.5 text-gray-900 dark:text-white focus:outline-none disabled:opacity-60"
-                        >
-                            <option :value="null">{{ $t('Select a workspace...') }}</option>
-                            <option
-                                v-for="ws in workspaceList"
-                                :key="ws.id"
-                                :value="ws.id"
-                                :title="
-                                    (ws.boards || []).length
-                                        ? (ws.boards || []).map((b) => b.name).join(', ')
-                                        : $t('No boards yet')
-                                "
-                            >
-                                {{ ws.name || ws.title || 'Workspace #' + ws.id }}
-                            </option>
-                        </select>
-                    </div>
-                    <div
-                        v-if="loadingWorkspaces"
-                        class="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full border-2 border-gray-300 border-t-blue-600 animate-spin"
-                    ></div>
-                    <Icon
-                        v-else
-                        class="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 dark:text-gray-500"
-                        name="arrow-down"
+                <!-- The OS draws a native select's popup itself: no styling, no
+                     search, and on a long workspace list no way to find anything.
+                     FilterSelect is the same control the documents and audit-log
+                     filters use, so the app has one dropdown everywhere. -->
+                <div class="max-w-sm">
+                    <filter-select
+                        v-model="selectedWorkspaceId"
+                        :options="workspaceOptions"
+                        :placeholder="$t('Select a workspace...')"
+                        :search-placeholder="$t('Search') + '…'"
+                        :empty-label="$t('No matches')"
+                        :disabled="loadingWorkspaces"
+                        :show-all="false"
+                        icon="briefcase"
                     />
                 </div>
 
@@ -205,21 +170,17 @@
                             }}
                         </p>
                         <div class="flex flex-wrap items-center gap-2 max-w-md">
-                            <select
+                            <filter-select
                                 v-model="workflowTypeToAssign"
+                                :options="workflowTypeOptions"
+                                :placeholder="$t('Select a workflow...')"
+                                :search-placeholder="$t('Search') + '…'"
+                                :empty-label="$t('No matches')"
                                 :disabled="loadingWorkflowTypes || !availableWorkflowTypes.length"
-                                class="flex-1 min-w-[180px] bg-gray-50 dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            >
-                                <option :value="null">{{ $t('Select a workflow...') }}</option>
-                                <option
-                                    v-for="wt in availableWorkflowTypes"
-                                    :key="wt.workflow_type"
-                                    :value="wt.workflow_type"
-                                >
-                                    {{ workflowTypeLabel(wt.workflow_type) }} ({{ wt.steps }}
-                                    {{ wt.steps === 1 ? $t('step') : $t('steps') }})
-                                </option>
-                            </select>
+                                :show-all="false"
+                                icon="checklist"
+                                class="flex-1 min-w-[180px]"
+                            />
                             <button
                                 type="button"
                                 :disabled="
@@ -318,10 +279,12 @@ import Layout from '@/Shared/Layout.vue';
 import Pagination from '@/Shared/Pagination.vue';
 import SearchInput from '@/Shared/SearchInput.vue';
 import axios from 'axios';
+import FilterSelect from '@/Shared/Components/FilterSelect.vue';
 
 export default {
     metaInfo: { title: 'Roles' },
     components: {
+        FilterSelect,
         Icon,
         Link,
         Head,
@@ -352,6 +315,27 @@ export default {
         };
     },
     computed: {
+        /** Each workflow with its step count, e.g. "Casino Operator (7 steps)". */
+        workflowTypeOptions() {
+            return (this.availableWorkflowTypes || []).map((wt) => ({
+                value: wt.workflow_type,
+                label:
+                    this.workflowTypeLabel(wt.workflow_type) +
+                    ' (' +
+                    wt.steps +
+                    ' ' +
+                    (wt.steps === 1 ? this.$t('step') : this.$t('steps')) +
+                    ')',
+            }));
+        },
+
+        /** FilterSelect takes [{ value, label }]; boards ride along in the title. */
+        workspaceOptions() {
+            return (this.workspaceList || []).map((ws) => ({
+                value: ws.id,
+                label: ws.name || ws.title || 'Workspace #' + ws.id,
+            }));
+        },
         selectedWorkspace() {
             return this.workspaceList.find((w) => w.id === this.selectedWorkspaceId) || null;
         },
