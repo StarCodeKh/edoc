@@ -252,8 +252,13 @@ export default {
         barWidth(value) {
             return `${Math.max(4, Math.round((value / this.peak) * 100))}%`;
         },
-        confirmClear() {
-            if (!window.confirm(this.$t('Discard the recorded request history?'))) return;
+        async confirmClear() {
+            const ok = await this.$confirm({
+                title: this.$t('Discard the recorded request history?'),
+                message: this.$t('This cannot be undone.'),
+                confirmLabel: this.$t('Delete'),
+            });
+            if (!ok) return;
             this.$inertia.post(this.route('settings.performance.clear'));
         },
     },

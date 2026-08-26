@@ -1262,12 +1262,13 @@ export default {
          * closing it is the natural exit - but a browser is free to refuse
          * window.close(), in which case we walk back to the task instead.
          */
-        closeViewer() {
-            if (
-                this.hasUnsavedAnnotations &&
-                !window.confirm(this.$t('You have notes that were never saved. Leave anyway?'))
-            ) {
-                return;
+        async closeViewer() {
+            if (this.hasUnsavedAnnotations) {
+                const ok = await this.$confirm({
+                    title: this.$t('You have notes that were never saved. Leave anyway?'),
+                    confirmLabel: this.$t('Close'),
+                });
+                if (!ok) return;
             }
             this.leaveViewer();
         },

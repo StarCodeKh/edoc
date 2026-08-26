@@ -77,7 +77,7 @@ export default {
         title: String,
         filters: Object,
     },
-    data() {
+    async data() {
         return {
             form: {
                 search: this.filters.search,
@@ -93,8 +93,14 @@ export default {
         },
     },
     methods: {
-        deleteLanguage(id) {
-            if (confirm('Are you sure you want to delete this language?')) {
+        async deleteLanguage(id) {
+            if (
+                await this.$confirm({
+                    title: this.$t('Are you sure you want to delete this language?'),
+                    confirmLabel: this.$t('Delete'),
+                    tone: 'danger',
+                })
+            ) {
                 this.$inertia.delete(this.route('languages.delete', id));
             }
         },

@@ -117,7 +117,7 @@ export default {
         languages: Object,
     },
     remember: 'form',
-    data() {
+    async data() {
         return {
             new_lang_form: false,
             form: useForm({
@@ -133,8 +133,14 @@ export default {
             });
             this.new_lang_form = true;
         },
-        destroy(value) {
-            if (confirm('Are you sure you want to delete this language data?')) {
+        async destroy(value) {
+            if (
+                await this.$confirm({
+                    title: this.$t('Are you sure you want to delete this language data?'),
+                    confirmLabel: this.$t('Delete'),
+                    tone: 'danger',
+                })
+            ) {
                 this.$inertia.delete(this.route('languages.deleteItem', value), {
                     onSuccess: () => {
                         this.form.reset();

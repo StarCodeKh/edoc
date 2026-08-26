@@ -31,7 +31,7 @@ import TextInput from '@/Shared/TextInput.vue';
 import LoadingButton from '@/Shared/LoadingButton.vue';
 
 export default {
-    metaInfo() {
+    async metaInfo() {
         return { title: this.form.name };
     },
     components: {
@@ -46,7 +46,7 @@ export default {
         workspace_type: Object,
     },
     remember: 'form',
-    data() {
+    async data() {
         return {
             form: useForm({
                 name: this.workspace_type.name,
@@ -57,13 +57,25 @@ export default {
         update() {
             this.form.put(this.route('workspace_types.update', this.workspace_type.id));
         },
-        destroy() {
-            if (confirm('Are you sure you want to delete this workspace type?')) {
+        async destroy() {
+            if (
+                await this.$confirm({
+                    title: this.$t('Are you sure you want to delete this workspace type?'),
+                    confirmLabel: this.$t('Delete'),
+                    tone: 'danger',
+                })
+            ) {
                 this.$inertia.delete(this.route('workspace_types.destroy', this.workspace_type.id));
             }
         },
-        restore() {
-            if (confirm('Are you sure you want to restore this workspace type?')) {
+        async restore() {
+            if (
+                await this.$confirm({
+                    title: this.$t('Are you sure you want to restore this workspace type?'),
+                    confirmLabel: this.$t('Restore'),
+                    tone: 'default',
+                })
+            ) {
                 this.$inertia.put(this.route('workspace_types.restore', this.workspace_type.id));
             }
         },

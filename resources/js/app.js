@@ -7,6 +7,7 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 import { i18nVue } from 'laravel-vue-i18n';
 import VueApexCharts from 'vue3-apexcharts';
+import confirmPlugin from './confirm';
 
 const appName = import.meta.env.VITE_APP_NAME || 'eDoc';
 
@@ -40,6 +41,7 @@ createInertiaApp({
                 },
             })
             .use(VueApexCharts)
+            .use(confirmPlugin)
             .directive('click-outside', clickOutside)
             .mount(el);
     },

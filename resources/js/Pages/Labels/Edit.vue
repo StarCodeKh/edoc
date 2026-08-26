@@ -31,7 +31,7 @@ import TextInput from '@/Shared/TextInput.vue';
 import LoadingButton from '@/Shared/LoadingButton.vue';
 
 export default {
-    metaInfo() {
+    async metaInfo() {
         return { title: this.form.name };
     },
     components: {
@@ -46,7 +46,7 @@ export default {
         label: Object,
     },
     remember: 'form',
-    data() {
+    async data() {
         return {
             form: useForm({
                 name: this.label.name,
@@ -58,13 +58,25 @@ export default {
         update() {
             this.form.put(this.route('labels.update', this.label.id));
         },
-        destroy() {
-            if (confirm('Are you sure you want to delete this label?')) {
+        async destroy() {
+            if (
+                await this.$confirm({
+                    title: this.$t('Are you sure you want to delete this label?'),
+                    confirmLabel: this.$t('Delete'),
+                    tone: 'danger',
+                })
+            ) {
                 this.$inertia.delete(this.route('labels.destroy', this.label.id));
             }
         },
-        restore() {
-            if (confirm('Are you sure you want to restore this label?')) {
+        async restore() {
+            if (
+                await this.$confirm({
+                    title: this.$t('Are you sure you want to restore this label?'),
+                    confirmLabel: this.$t('Restore'),
+                    tone: 'default',
+                })
+            ) {
                 this.$inertia.put(this.route('labels.restore', this.label.id));
             }
         },

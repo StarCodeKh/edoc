@@ -14,6 +14,7 @@
         ]"
     >
         <div id="dropdown" />
+        <confirm-dialog />
         <div class="md:flex md:flex-col">
             <div class="md:h-screen md:flex md:flex-col">
                 <div class="md:flex md:shrink-0">
@@ -486,6 +487,7 @@
 
 <script>
 import Icon from '../Shared/Icon.vue';
+import ConfirmDialog from '../Shared/ConfirmDialog.vue';
 import Logo from '../Shared/Logo.vue';
 import Dropdown from '../Shared/Dropdown.vue';
 import MainMenu from './MainMenu.vue';
@@ -504,6 +506,7 @@ import { loadLanguageAsync, getActiveLanguage } from 'laravel-vue-i18n';
 
 export default {
     components: {
+        ConfirmDialog,
         WorkspaceMenu,
         TopWorkspaceMenu,
         CreateWorkspace,
@@ -595,6 +598,9 @@ export default {
     },
     // $page.props.counter
     watch: {
+        current_mode() {
+            this.applyThemeClass();
+        },
         // Following a link should leave the drawer and the bar's menus behind.
         '$page.component'() {
             this.mobile_nav = false;
@@ -785,6 +791,16 @@ export default {
             this.current_mode = this.current_mode === 'light' ? 'dark' : 'light';
             localStorage.setItem('current_mode', this.current_mode);
         },
+
+        /**
+         * The theme class also goes on <html>. Panels that render through
+         * <Teleport to="body"> - the confirm dialog, the select panels, the
+         * invite popover - sit outside .layout-app, so a `dark:` utility on
+         * them has no dark ancestor to match and they stayed light in dark mode.
+         */
+        applyThemeClass() {
+            document.documentElement.classList.toggle('dark', this.current_mode === 'dark');
+        },
         async getDuration(task_id) {
             const response = await axios.get(this.route('task.timer.duration', task_id));
             this.counter.duration = response.data;
@@ -796,6 +812,7 @@ export default {
         if (localStorage.getItem('current_mode')) {
             this.current_mode = localStorage.getItem('current_mode');
         }
+        this.applyThemeClass();
 
         if (this.counter.timer && this.counter.timer.started_at && !this.counter.timer.stopped_at) {
             this.getDuration(this.counter.timer.task_id);

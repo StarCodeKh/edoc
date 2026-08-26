@@ -286,8 +286,12 @@ export default {
                 }, 1500);
             });
         },
-        confirmClear() {
-            if (!window.confirm(this.$t('Empty this log file? Its entries cannot be recovered.'))) return;
+        async confirmClear() {
+            const ok = await this.$confirm({
+                title: this.$t('Empty this log file? Its entries cannot be recovered.'),
+                confirmLabel: this.$t('Delete'),
+            });
+            if (!ok) return;
             this.clearing = true;
             this.$inertia.post(
                 this.route('settings.error-log.clear'),

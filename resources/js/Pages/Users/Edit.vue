@@ -116,7 +116,7 @@ export default {
         title: String,
     },
     remember: 'form',
-    data() {
+    async data() {
         return {
             form: useForm({
                 _method: 'put',
@@ -134,7 +134,7 @@ export default {
             }),
         };
     },
-    created() {
+    async created() {
         // this.setDefaultValue(this.countries, 'country_id', 'United States')
     },
     methods: {
@@ -149,13 +149,25 @@ export default {
                 onSuccess: () => this.form.reset('password', 'photo'),
             });
         },
-        destroy() {
-            if (confirm('Are you sure you want to delete this user?')) {
+        async destroy() {
+            if (
+                await this.$confirm({
+                    title: this.$t('Are you sure you want to delete this user?'),
+                    confirmLabel: this.$t('Delete'),
+                    tone: 'danger',
+                })
+            ) {
                 this.$inertia.delete(route('users.destroy', this.user.id));
             }
         },
-        restore() {
-            if (confirm('Are you sure you want to restore this user?')) {
+        async restore() {
+            if (
+                await this.$confirm({
+                    title: this.$t('Are you sure you want to restore this user?'),
+                    confirmLabel: this.$t('Restore'),
+                    tone: 'default',
+                })
+            ) {
                 this.$inertia.put(route('users.restore', this.user.id));
             }
         },

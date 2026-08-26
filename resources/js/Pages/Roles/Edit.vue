@@ -74,7 +74,7 @@ import TextInput from '@/Shared/TextInput.vue';
 import LoadingButton from '@/Shared/LoadingButton.vue';
 
 export default {
-    metaInfo() {
+    async metaInfo() {
         return { title: this.form.name };
     },
     components: {
@@ -89,7 +89,7 @@ export default {
         role: Object,
     },
     remember: 'form',
-    data() {
+    async data() {
         return {
             form: useForm({
                 name: this.role.name,
@@ -103,13 +103,25 @@ export default {
         update() {
             this.form.put(this.route('roles.update', this.role.id));
         },
-        destroy() {
-            if (confirm('Are you sure you want to delete this role?')) {
+        async destroy() {
+            if (
+                await this.$confirm({
+                    title: this.$t('Are you sure you want to delete this role?'),
+                    confirmLabel: this.$t('Delete'),
+                    tone: 'danger',
+                })
+            ) {
                 this.$inertia.delete(this.route('roles.destroy', this.role.id));
             }
         },
-        restore() {
-            if (confirm('Are you sure you want to restore this role?')) {
+        async restore() {
+            if (
+                await this.$confirm({
+                    title: this.$t('Are you sure you want to restore this role?'),
+                    confirmLabel: this.$t('Restore'),
+                    tone: 'default',
+                })
+            ) {
                 this.$inertia.put(this.route('roles.restore', this.role.id));
             }
         },
