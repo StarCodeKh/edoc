@@ -86,7 +86,9 @@ const closeAll = () => {
 };
 
 onMounted(() => {
-    if (user.value) {
+    // No broadcaster configured: the bell still fills from the page payload,
+    // it just does not update live.
+    if (user.value && window.Echo) {
         const channel = `App.Models.User.${user.value.id}`;
         window.Echo.private(channel).notification((notification) => {
             notifications.value.unshift(notification);
@@ -101,7 +103,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-    if (user.value) {
+    if (user.value && window.Echo) {
         window.Echo.leave(`App.Models.User.${user.value.id}`);
     }
 });

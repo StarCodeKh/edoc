@@ -1,0 +1,42 @@
+# eDoc WebSocket server - pushes notifications to open browsers as they happen.
+#
+# Reverb is Laravel's own WebSocket server, speaking the Pusher protocol, so the
+# browser keeps using the Pusher client and only the address changes. It runs on
+# 127.0.0.1:8080 and nginx proxies /app and /apps to it over TLS (see
+# docs/DEPLOYMENT.md §7).
+#
+# Install (adjust the paths if the site does not live in /var/www/html/edoc):
+#
+#     sudo cp scripts/edoc-reverb.service /etc/systemd/system/
+#     sudo systemctl daemon-reload
+#     sudo systemctl enable --now edoc-reverb
+#     systemctl status edoc-reverb
+#
+# It needs the queue worker too: a notification is broadcast from a queued job,
+# so nothing reaches this server until edoc-queue picks the job up.
+
+[Unit]
+Description=eDoc Reverb WebSocket server
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/html/edoc
+
+# --host/--port are what the process binds to locally; the address the browser
+# uses is REVERB_HOST/REVERB_PORT in .env, which is nginx's.
+ExecStart=/usr/bin/php /var/www/html/edoc/artisan reverb:start \
+    --host=127.0.0.1 \
+    --port=8080
+
+# Restarting drops every open socket; the browser reconnects on its own.
+Restart=always
+RestartSec=5
+StandardOutput=append:/var/www/html/edoc/storage/logs/reverb.log
+StandardError=append:/var/www/html/edoc/storage/logs/reverb.log
+
+[Install]
+WantedBy=multi-user.target

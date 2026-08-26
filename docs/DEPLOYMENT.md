@@ -72,6 +72,23 @@ server {
         fastcgi_read_timeout 120;
     }
 
+    # Live notifications: Reverb listens on 127.0.0.1:8080 and speaks the
+    # Pusher protocol, whose endpoints are /app (the socket) and /apps (the
+    # server-side publish call). Without the Upgrade headers the handshake
+    # fails and the browser silently falls back to retrying forever.
+    location ~ ^/(app|apps)($|/) {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 3600s;
+        proxy_send_timeout 3600s;
+    }
+
     # Uploads must never execute.
     location ~* ^/files/.*\.(php|phtml|phar)$ { deny all; }
 
@@ -269,7 +286,76 @@ mail, and losing the retries. It is a fallback, not the setup to aim for.
 
 ---
 
-## 7. Rolling back
+## 7. Live notifications (Reverb)
+
+The bell updates as things happen only if something pushes to the browser.
+`BROADCAST_DRIVER=log` — the old setting — pushed nowhere: it wrote
+`Broadcasting [BroadcastNotificationCreated] on channels [private-App.Models.User.4]`
+into `laravel.log` for every notification and stopped there.
+
+Reverb is Laravel's own WebSocket server, running on this machine. It speaks
+the Pusher protocol, so the browser keeps using the Pusher client — only the
+address changes.
+
+**1. Credentials.** Generate a set once and paste them into `.env` (they are
+just shared secrets between this app and its own socket server — any random
+values will do):
+
+```bash
+cd /var/www/html/edoc
+php -r 'printf("REVERB_APP_ID=%d\nREVERB_APP_KEY=%s\nREVERB_APP_SECRET=%s\n", random_int(100000, 999999), bin2hex(random_bytes(16)), bin2hex(random_bytes(16)));'
+```
+
+(`php artisan reverb:install` does the same thing, but it also rewrites
+`config/reverb.php` and the JS config, which this repository already carries.)
+
+Then make sure `.env` reads (the `VITE_*` copies are what the browser build
+bakes in — they must be present *before* `npm run build`):
+
+```
+BROADCAST_DRIVER=reverb
+REVERB_APP_ID=…
+REVERB_APP_KEY=…
+REVERB_APP_SECRET=…
+REVERB_HOST=edoc.cgmc.gov.kh     # what the browser connects to: nginx
+REVERB_PORT=443
+REVERB_SCHEME=https
+REVERB_SERVER_HOST=127.0.0.1     # what the process binds to, behind nginx
+REVERB_SERVER_PORT=8080
+```
+
+**2. The server.**
+
+```bash
+sudo cp scripts/edoc-reverb.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now edoc-reverb
+systemctl status edoc-reverb --no-pager
+```
+
+**3. nginx** proxies `/app` and `/apps` to it — the block is in §2. Reload with
+`nginx -t && systemctl reload nginx`.
+
+**4. Rebuild the front end.** `VITE_REVERB_*` is compiled into the bundle, so
+the browser keeps using the old settings until `npm run build` runs again.
+
+It needs the queue worker (§6) as well: a notification is broadcast from a
+queued job, so nothing reaches Reverb until `edoc-queue` picks that job up.
+
+```bash
+# is it up, and is the browser reaching it?
+systemctl status edoc-reverb --no-pager
+tail -40 storage/logs/reverb.log
+sudo tail -40 /var/log/nginx/edoc-error.log   # 502 here means nginx cannot reach 8080
+```
+
+In the browser console, `window.Echo` must not be `null` — it is when
+`VITE_REVERB_APP_KEY` was empty at build time, which is the app refusing to open
+a socket it cannot authenticate rather than retrying one forever.
+
+---
+
+## 8. Rolling back
 
 A reset restores the code, but **not** a working `vendor/` — reinstall it:
 
@@ -290,7 +376,7 @@ Known-good commits:
 
 ---
 
-## 8. When something breaks
+## 9. When something breaks
 
 | Symptom | Cause | Fix |
 |---|---|---|
@@ -313,7 +399,7 @@ sudo tail -50 /var/log/php8.4-fpm.log
 
 ---
 
-## 9. Health check
+## 10. Health check
 
 Read-only, changes nothing, run it any time:
 
