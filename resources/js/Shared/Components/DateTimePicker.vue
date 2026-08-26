@@ -23,202 +23,211 @@
             </div>
         </div>
 
-        <!-- DateTime Picker Dropdown -->
-        <Transition name="datetime-picker-fade">
-            <div
-                v-if="isOpen"
-                :class="['datetime-picker-dropdown', { 'modal-positioning': isInModal }]"
-                :style="dropdownStyle"
-                @click.stop
-            >
-                <!-- Header -->
-                <div class="datetime-picker-header">
-                    <h3 class="datetime-picker-title">Select Date & Time</h3>
-                    <div class="header-actions">
-                        <button @click="toggleFormat" class="format-toggle" type="button">
-                            {{ is24HourFormat ? '24H' : '12H' }}
-                        </button>
-                        <button @click="toggleMode" class="mode-toggle" type="button">
-                            {{ currentMode === 'date' ? 'Time' : 'Date' }}
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Mode Tabs -->
-                <div class="mode-tabs">
-                    <button
-                        @click="setMode('date')"
-                        :class="['mode-tab', { 'is-active': currentMode === 'date' }]"
-                        type="button"
-                    >
-                        <Icon name="calendar" class="w-4 h-4" />
-                        Date
-                    </button>
-                    <button
-                        @click="setMode('time')"
-                        :class="['mode-tab', { 'is-active': currentMode === 'time' }]"
-                        type="button"
-                    >
-                        <Icon name="clock" class="w-4 h-4" />
-                        Time
-                    </button>
-                </div>
-
-                <!-- Date Picker Section -->
-                <div v-if="currentMode === 'date'" class="date-section">
-                    <!-- Month/Year Navigation -->
-                    <div class="date-navigation">
-                        <button @click="previousMonth" class="nav-button" type="button" aria-label="Previous month">
-                            <Icon name="chevron-left" class="w-4 h-4" />
-                        </button>
-
-                        <div class="month-year-display">
-                            <button @click="showYearPicker = !showYearPicker" class="month-year-button" type="button">
-                                {{ currentMonthYear }}
+        <!-- Teleported to <body>: the panel is position: fixed, but rendered in
+             place it still belongs to this field's stacking context, so the
+             fields below it painted straight over the open calendar. -->
+        <teleport to="body">
+            <Transition name="datetime-picker-fade">
+                <div
+                    v-if="isOpen"
+                    ref="panel"
+                    :class="['datetime-picker-dropdown', { 'modal-positioning': isInModal }]"
+                    :style="dropdownStyle"
+                    @click.stop
+                >
+                    <!-- Header -->
+                    <div class="datetime-picker-header">
+                        <h3 class="datetime-picker-title">Select Date & Time</h3>
+                        <div class="header-actions">
+                            <button @click="toggleFormat" class="format-toggle" type="button">
+                                {{ is24HourFormat ? '24H' : '12H' }}
                             </button>
-                        </div>
-
-                        <button @click="nextMonth" class="nav-button" type="button" aria-label="Next month">
-                            <Icon name="chevron-right" class="w-4 h-4" />
-                        </button>
-                    </div>
-
-                    <!-- Year Picker -->
-                    <div v-if="showYearPicker" class="year-picker">
-                        <div class="year-grid">
-                            <button
-                                v-for="year in yearRange"
-                                :key="year"
-                                @click="selectYear(year)"
-                                :class="['year-button', { 'is-selected': year === currentYear }]"
-                                type="button"
-                            >
-                                {{ year }}
+                            <button @click="toggleMode" class="mode-toggle" type="button">
+                                {{ currentMode === 'date' ? 'Time' : 'Date' }}
                             </button>
                         </div>
                     </div>
 
-                    <!-- Calendar Grid -->
-                    <div v-else class="calendar-grid">
-                        <!-- Day Headers -->
-                        <div class="day-headers">
-                            <div v-for="day in dayHeaders" :key="day" class="day-header">
-                                {{ day }}
+                    <!-- Mode Tabs -->
+                    <div class="mode-tabs">
+                        <button
+                            @click="setMode('date')"
+                            :class="['mode-tab', { 'is-active': currentMode === 'date' }]"
+                            type="button"
+                        >
+                            <Icon name="calendar" class="w-4 h-4" />
+                            Date
+                        </button>
+                        <button
+                            @click="setMode('time')"
+                            :class="['mode-tab', { 'is-active': currentMode === 'time' }]"
+                            type="button"
+                        >
+                            <Icon name="clock" class="w-4 h-4" />
+                            Time
+                        </button>
+                    </div>
+
+                    <!-- Date Picker Section -->
+                    <div v-if="currentMode === 'date'" class="date-section">
+                        <!-- Month/Year Navigation -->
+                        <div class="date-navigation">
+                            <button @click="previousMonth" class="nav-button" type="button" aria-label="Previous month">
+                                <Icon name="chevron-left" class="w-4 h-4" />
+                            </button>
+
+                            <div class="month-year-display">
+                                <button
+                                    @click="showYearPicker = !showYearPicker"
+                                    class="month-year-button"
+                                    type="button"
+                                >
+                                    {{ currentMonthYear }}
+                                </button>
+                            </div>
+
+                            <button @click="nextMonth" class="nav-button" type="button" aria-label="Next month">
+                                <Icon name="chevron-right" class="w-4 h-4" />
+                            </button>
+                        </div>
+
+                        <!-- Year Picker -->
+                        <div v-if="showYearPicker" class="year-picker">
+                            <div class="year-grid">
+                                <button
+                                    v-for="year in yearRange"
+                                    :key="year"
+                                    @click="selectYear(year)"
+                                    :class="['year-button', { 'is-selected': year === currentYear }]"
+                                    type="button"
+                                >
+                                    {{ year }}
+                                </button>
                             </div>
                         </div>
 
-                        <!-- Calendar Days -->
-                        <div class="calendar-days">
-                            <button
-                                v-for="day in calendarDays"
-                                :key="`${day.date}-${day.month}`"
-                                @click="selectDate(day)"
-                                :class="[
-                                    'calendar-day',
-                                    {
-                                        'is-today': day.isToday,
-                                        'is-selected': day.isSelected,
-                                        'is-other-month': day.isOtherMonth,
-                                        'is-disabled': day.isDisabled,
-                                    },
-                                ]"
-                                :disabled="day.isDisabled"
-                                type="button"
-                            >
-                                {{ day.date }}
-                            </button>
+                        <!-- Calendar Grid -->
+                        <div v-else class="calendar-grid">
+                            <!-- Day Headers -->
+                            <div class="day-headers">
+                                <div v-for="day in dayHeaders" :key="day" class="day-header">
+                                    {{ day }}
+                                </div>
+                            </div>
+
+                            <!-- Calendar Days -->
+                            <div class="calendar-days">
+                                <button
+                                    v-for="day in calendarDays"
+                                    :key="`${day.date}-${day.month}`"
+                                    @click="selectDate(day)"
+                                    :class="[
+                                        'calendar-day',
+                                        {
+                                            'is-today': day.isToday,
+                                            'is-selected': day.isSelected,
+                                            'is-other-month': day.isOtherMonth,
+                                            'is-disabled': day.isDisabled,
+                                        },
+                                    ]"
+                                    :disabled="day.isDisabled"
+                                    type="button"
+                                >
+                                    {{ day.date }}
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Time Picker Section -->
-                <div v-if="currentMode === 'time'" class="time-section">
-                    <div class="time-selection">
-                        <!-- Hour Selection -->
-                        <div class="time-column">
-                            <label class="time-label">Hour</label>
-                            <div class="time-scroll-container">
-                                <div class="time-scroll-list">
-                                    <button
-                                        v-for="hour in availableHours"
-                                        :key="hour.value"
-                                        @click="selectHour(hour.value)"
-                                        :class="['time-option', { 'is-selected': hour.value === selectedHour }]"
-                                        type="button"
-                                    >
-                                        {{ hour.display }}
-                                    </button>
+                    <!-- Time Picker Section -->
+                    <div v-if="currentMode === 'time'" class="time-section">
+                        <div class="time-selection">
+                            <!-- Hour Selection -->
+                            <div class="time-column">
+                                <label class="time-label">Hour</label>
+                                <div class="time-scroll-container">
+                                    <div class="time-scroll-list">
+                                        <button
+                                            v-for="hour in availableHours"
+                                            :key="hour.value"
+                                            @click="selectHour(hour.value)"
+                                            :class="['time-option', { 'is-selected': hour.value === selectedHour }]"
+                                            type="button"
+                                        >
+                                            {{ hour.display }}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Minute Selection -->
+                            <div class="time-column">
+                                <label class="time-label">Minute</label>
+                                <div class="time-scroll-container">
+                                    <div class="time-scroll-list">
+                                        <button
+                                            v-for="minute in availableMinutes"
+                                            :key="minute"
+                                            @click="selectMinute(minute)"
+                                            :class="['time-option', { 'is-selected': minute === selectedMinute }]"
+                                            type="button"
+                                        >
+                                            {{ minute.toString().padStart(2, '0') }}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- AM/PM Selection (12-hour format only) -->
+                            <div v-if="!is24HourFormat" class="time-column">
+                                <label class="time-label">Period</label>
+                                <div class="time-scroll-container">
+                                    <div class="time-scroll-list">
+                                        <button
+                                            @click="selectPeriod('AM')"
+                                            :class="['time-option', { 'is-selected': selectedPeriod === 'AM' }]"
+                                            type="button"
+                                        >
+                                            AM
+                                        </button>
+                                        <button
+                                            @click="selectPeriod('PM')"
+                                            :class="['time-option', { 'is-selected': selectedPeriod === 'PM' }]"
+                                            type="button"
+                                        >
+                                            PM
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Minute Selection -->
-                        <div class="time-column">
-                            <label class="time-label">Minute</label>
-                            <div class="time-scroll-container">
-                                <div class="time-scroll-list">
-                                    <button
-                                        v-for="minute in availableMinutes"
-                                        :key="minute"
-                                        @click="selectMinute(minute)"
-                                        :class="['time-option', { 'is-selected': minute === selectedMinute }]"
-                                        type="button"
-                                    >
-                                        {{ minute.toString().padStart(2, '0') }}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- AM/PM Selection (12-hour format only) -->
-                        <div v-if="!is24HourFormat" class="time-column">
-                            <label class="time-label">Period</label>
-                            <div class="time-scroll-container">
-                                <div class="time-scroll-list">
-                                    <button
-                                        @click="selectPeriod('AM')"
-                                        :class="['time-option', { 'is-selected': selectedPeriod === 'AM' }]"
-                                        type="button"
-                                    >
-                                        AM
-                                    </button>
-                                    <button
-                                        @click="selectPeriod('PM')"
-                                        :class="['time-option', { 'is-selected': selectedPeriod === 'PM' }]"
-                                        type="button"
-                                    >
-                                        PM
-                                    </button>
-                                </div>
+                        <!-- Quick Time Presets -->
+                        <div class="time-presets">
+                            <h4 class="presets-title">Quick Select</h4>
+                            <div class="presets-grid">
+                                <button
+                                    v-for="preset in timePresets"
+                                    :key="preset.value"
+                                    @click="selectPreset(preset)"
+                                    class="preset-button"
+                                    type="button"
+                                >
+                                    {{ preset.label }}
+                                </button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Quick Time Presets -->
-                    <div class="time-presets">
-                        <h4 class="presets-title">Quick Select</h4>
-                        <div class="presets-grid">
-                            <button
-                                v-for="preset in timePresets"
-                                :key="preset.value"
-                                @click="selectPreset(preset)"
-                                class="preset-button"
-                                type="button"
-                            >
-                                {{ preset.label }}
-                            </button>
-                        </div>
+                    <!-- Footer -->
+                    <div class="datetime-picker-footer">
+                        <button @click="selectNow" class="now-button" type="button">Now</button>
+                        <button @click="clearDateTime" class="clear-button" type="button">Clear</button>
+                        <button @click="confirmSelection" class="confirm-button" type="button">Done</button>
                     </div>
                 </div>
-
-                <!-- Footer -->
-                <div class="datetime-picker-footer">
-                    <button @click="selectNow" class="now-button" type="button">Now</button>
-                    <button @click="clearDateTime" class="clear-button" type="button">Clear</button>
-                    <button @click="confirmSelection" class="confirm-button" type="button">Done</button>
-                </div>
-            </div>
-        </Transition>
+            </Transition>
+        </teleport>
     </div>
 </template>
 
@@ -376,7 +385,10 @@ export default {
             return this.$el && this.$el.closest('.fixed.inset-0');
         },
         dropdownStyle() {
-            if (!this.isInModal || !this.isOpen) return {};
+            // Every panel is teleported to <body> now, so it always needs real
+            // coordinates - the old CSS fallback (absolute, top: 100%) resolved
+            // against <body> and threw the panel to the foot of the page.
+            if (!this.isOpen) return {};
 
             const rect = this.$el.getBoundingClientRect();
             const viewportHeight = window.innerHeight;
@@ -389,7 +401,12 @@ export default {
             let top = rect.bottom + 4;
             let left = rect.left;
             let right = 'auto';
-            let width = rect.width;
+            // The panel needs room for a 7-column month, so it is usually wider
+            // than the field that opens it - but never wider than the screen.
+            // Clamping on the trigger's width (as this did) let a 400px panel
+            // hang off the side of a narrow column.
+            const comfortable = 360;
+            const width = Math.min(Math.max(rect.width, comfortable), window.innerWidth - 32);
 
             // If not enough space below, position above
             if (spaceBelow < dropdownHeight && spaceAbove > dropdownHeight) {
@@ -586,10 +603,14 @@ export default {
         },
 
         handleClickOutside(event) {
-            if (!this.$el.contains(event.target)) {
-                this.isOpen = false;
-                this.showYearPicker = false;
-            }
+            // The panel is teleported to <body>, so it is no longer inside
+            // $el - without this check every click on a date would close it.
+            const panel = this.$refs.panel;
+            if (this.$el.contains(event.target)) return;
+            if (panel && panel.contains(event.target)) return;
+
+            this.isOpen = false;
+            this.showYearPicker = false;
         },
 
         handleKeydown(event) {
@@ -669,10 +690,8 @@ export default {
 }
 
 .datetime-picker-dropdown {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
+    /* position / top / left / width all come from dropdownStyle. */
+    position: fixed;
     background: white;
     border: 1px solid #e5e7eb;
     border-radius: 0.5rem;
@@ -681,7 +700,10 @@ export default {
         0 10px 10px -5px rgba(0, 0, 0, 0.04);
     z-index: 9999;
     margin-top: 0.25rem;
-    min-width: 400px;
+    /* The inline width from dropdownStyle governs; a floor here would win over
+       it and push the panel off a narrow screen. */
+    min-width: 0;
+    max-width: calc(100vw - 2rem);
     max-height: 500px;
     overflow: hidden;
 }

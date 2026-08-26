@@ -337,8 +337,9 @@ export default {
 .filter-select__panel {
     /* position / left / top / width are set inline from the trigger's box. */
     position: fixed;
-    z-index: 1000;
-    min-width: 11rem;
+    /* Above the task dialog, which sits at 9999. The panel is teleported to
+       <body>, so it has to out-rank whatever it is opened from. */
+    z-index: 10000;
     background: #fff;
     border: 1px solid rgba(15, 23, 42, 0.08);
     border-radius: 12px;

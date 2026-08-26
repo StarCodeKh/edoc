@@ -1752,29 +1752,20 @@
                                     {{ $t('Assign Group') }}
                                 </h2>
 
-                                <div class="flex items-center gap-2 px-2 mt-2">
-                                    <div class="relative flex-1 min-w-0">
-                                        <select
-                                            v-model="selectedGroupId"
-                                            class="w-full appearance-none text-xs pl-3 pr-8 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
-                                        >
-                                            <option :value="null">{{ $t('Select a group...') }}</option>
-                                            <option
-                                                v-for="group in availableUserGroups"
-                                                :key="group.id"
-                                                :value="group.id"
-                                            >
-                                                {{ group.name }}
-                                            </option>
-                                        </select>
-                                        <icon
-                                            class="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 dark:text-gray-500"
-                                            name="arrow-down"
-                                        />
-                                    </div>
+                                <div class="flex flex-col gap-2 px-2 mt-2">
+                                    <filter-select
+                                        v-model="selectedGroupId"
+                                        :options="userGroupOptions"
+                                        :placeholder="$t('Select a group...')"
+                                        :search-placeholder="$t('Search') + '…'"
+                                        :empty-label="$t('No matches')"
+                                        :show-all="false"
+                                        icon="users"
+                                        class="w-full filter-select--block"
+                                    />
                                     <button
                                         type="button"
-                                        class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-800 text-white shadow-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none flex-shrink-0 transition-colors"
+                                        class="w-full justify-center inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-800 text-white shadow-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none flex-shrink-0 transition-colors"
                                         :disabled="!selectedGroupId || assigningGroup"
                                         @click="assignGroupToTask(selectedGroupId)"
                                     >
@@ -2109,6 +2100,7 @@
 
 <script>
 import { Head, Link } from '@inertiajs/vue3';
+import FilterSelect from '@/Shared/Components/FilterSelect.vue';
 import Icon from '@/Shared/Icon.vue';
 import Loader from '@/Shared/Loader.vue';
 import DatePicker from '@/Shared/Components/DatePicker.vue';
@@ -2244,6 +2236,7 @@ export default {
         };
     },
     components: {
+        FilterSelect,
         Icon,
         Loader,
         Link,
@@ -2254,6 +2247,11 @@ export default {
         WatchButton,
     },
     computed: {
+        /** FilterSelect takes [{ value, label }]. */
+        userGroupOptions() {
+            return (this.availableUserGroups || []).map((g) => ({ value: g.id, label: g.name }));
+        },
+
         /**
          * What the signed-in user may do with this document. Mirrors
          * App\Support\TaskAbility, which every endpoint enforces anyway - this
