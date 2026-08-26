@@ -497,11 +497,16 @@ class ProjectsController extends Controller
         $per_list = Task::select('list_id', DB::raw('count(*) as total'))->where('project_id', $project->id)->groupBy('list_id')->whereHas('list')->with('list')->get()->toArray();
         $per_assignee = Assignee::select('user_id', DB::raw('count(*) as total'))->whereIn('task_id', $taskIds)->groupBy('user_id')->with('user')->get()->toArray();
         $per_label = TaskLabel::select('label_id', DB::raw('count(*) as total'))->whereIn('task_id', $taskIds)->groupBy('label_id')->with('label')->get()->toArray();
+        // One document lands in exactly one bucket. They used to overlap - a
+        // finished document with a past due date was counted as both complete
+        // and overdue - which no part-to-whole reading of these numbers can
+        // survive.
+        $open = fn () => Task::where('project_id', $project->id)->where('is_done', 0);
         $due_done = Task::where('project_id', $project->id)->where('is_done', 1)->count();
-        $no_due = Task::where('project_id', $project->id)->whereNull('due_date')->count();
-        $due_over = Task::where('project_id', $project->id)->where('due_date', '<', Carbon::now())->count();
-        $due_later = Task::where('project_id', $project->id)->where('due_date', '>', Carbon::now()->addDay())->count();
-        $due_soon = Task::where('project_id', $project->id)->whereBetween('due_date', [Carbon::now(), Carbon::now()->addDay()])->count();
+        $no_due = $open()->whereNull('due_date')->count();
+        $due_over = $open()->whereNotNull('due_date')->where('due_date', '<', Carbon::now())->count();
+        $due_soon = $open()->whereBetween('due_date', [Carbon::now(), Carbon::now()->addDay()])->count();
+        $due_later = $open()->where('due_date', '>', Carbon::now()->addDay())->count();
 
         return Inertia::render('Projects/Dashboard', [
             'title' => 'Dashboard | '.$project->title,
@@ -509,12 +514,14 @@ class ProjectsController extends Controller
             'project' => $project,
             'per_assignee' => $per_assignee,
             'per_label' => $per_label,
+            // The colour of each bucket is the report page's business, not this
+            // controller's; the key is what it matches on.
             'due_data' => [
-                ['due' => ['name' => 'Complete', 'color' => '#22A06B'], 'total' => $due_done],
-                ['due' => ['name' => 'Due soon', 'color' => '#B38600'], 'total' => $due_soon],
-                ['due' => ['name' => 'Due later', 'color' => '#E56910'], 'total' => $due_later],
-                ['due' => ['name' => 'Overdue', 'color' => '#C9372C'], 'total' => $due_over],
-                ['due' => ['name' => 'No due date', 'color' => '#607d8b'], 'total' => $no_due],
+                ['due' => ['key' => 'complete', 'name' => 'Complete'], 'total' => $due_done],
+                ['due' => ['key' => 'soon', 'name' => 'Due soon'], 'total' => $due_soon],
+                ['due' => ['key' => 'later', 'name' => 'Due later'], 'total' => $due_later],
+                ['due' => ['key' => 'overdue', 'name' => 'Overdue'], 'total' => $due_over],
+                ['due' => ['key' => 'none', 'name' => 'No due date'], 'total' => $no_due],
             ],
         ]);
     }
