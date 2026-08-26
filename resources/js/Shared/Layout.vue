@@ -60,6 +60,7 @@
                                         <div class="tl_menu_list hidden" :class="{ mobile: show__menu__list }">
                                             <div
                                                 class="flex t__menu relative items-center cursor-pointer rounded py-1 px-3 hover:bg-[#a6c5e229]"
+                                                :class="{ 'is-open': visible.menu_recent }"
                                                 v-click-outside="
                                                     () => {
                                                         visible.menu_recent = false;
@@ -77,6 +78,7 @@
                                             </div>
                                             <div
                                                 class="flex t__menu relative items-center cursor-pointer rounded py-1 px-3 hover:bg-[#a6c5e229]"
+                                                :class="{ 'is-open': visible.menu_workspace }"
                                                 v-click-outside="
                                                     () => {
                                                         visible.menu_workspace = false;

@@ -334,41 +334,76 @@ body.has-drawer-open {
             top: calc(100% + 8px) !important;
             right: auto !important;
             left: 0 !important;
-            width: min(320px, calc(100vw - 20px));
+            /* Sized by its longest label rather than by a number: the same
+               panel carries "More"/"Recently Viewed" in English and much
+               longer unbreakable Khmer, and a fixed width fits neither. */
+            width: max-content;
+            min-width: 200px;
+            max-width: calc(100vw - 20px);
             padding: 6px;
             gap: 2px;
-            border-radius: 12px;
-            background: #1d4ed8;
+            border-radius: 14px;
+            background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
+            border: 1px solid rgba(255, 255, 255, 0.14);
             box-shadow: 0 12px 30px rgba(8, 21, 66, 0.35);
             z-index: 40;
+            animation: top-menu-drop 140ms ease-out;
 
-            /* Both rows are one panel, so they are one width. The 160px they
-               used to carry left the second row short of the first. */
+            /* Both rows are one panel, so they are one width. */
             .t__menu {
                 width: 100%;
                 justify-content: space-between;
                 padding: 10px 12px;
-                border-radius: 8px;
+                border-radius: 10px;
+                transition: background-color 120ms ease;
+
+                /* The row's own chevron, not the stars inside the list it
+                   opens. */
+                > svg {
+                    flex: 0 0 auto;
+                    transition: transform 160ms ease;
+                }
+
+                &.is-open {
+                    background-color: rgba(255, 255, 255, 0.18);
+
+                    > svg {
+                        transform: rotate(180deg);
+                    }
+                }
             }
 
-            /* The list a row opens drops underneath that row and spans the
-               panel, instead of hanging out over the page from a 288px box
-               anchored halfway up the row it belongs to. */
+            /* The list a row opens drops underneath the whole panel, instead
+               of hanging out over the page from a 288px box anchored halfway
+               up the row it belongs to. It is at least as wide as the panel
+               and grows to fit its own entries. */
             .top_project_menu {
                 position: absolute;
-                top: calc(100% + 6px);
+                top: calc(100% + 8px);
                 left: 0;
                 right: auto;
-                /* Wider than the row it hangs from: Khmer labels have no spaces
-                   to break at, so a narrow panel splits them mid-word. */
-                width: min(360px, calc(100vw - 20px));
+                min-width: 100%;
+                width: max-content;
+                max-width: calc(100vw - 20px);
                 max-height: 60vh;
                 overflow-y: auto;
                 overscroll-behavior: contain;
-                border-radius: 12px;
+                border-radius: 14px;
                 box-shadow: 0 16px 40px rgba(8, 21, 66, 0.35);
+                animation: top-menu-drop 140ms ease-out;
             }
         }
+    }
+}
+
+@keyframes top-menu-drop {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 

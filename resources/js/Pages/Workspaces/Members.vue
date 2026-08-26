@@ -3,8 +3,11 @@
         <Head :title="$t(title)" />
         <div class="flex workspace__members flex-col task__table h-[calc(100%-52px)] overflow-hidden overflow-y-auto">
             <!-- Enhanced Header -->
+            <!-- Not clipped: the panels the buttons in here open (invite, the
+                 more menu) drop below the header's bottom edge. The decorative
+                 layers below are all inset-0, so nothing needs clipping. -->
             <div
-                class="relative bg-gradient-to-br from-indigo-600 via-purple-600 via-pink-500 to-orange-500 text-white overflow-hidden"
+                class="relative bg-gradient-to-br from-indigo-600 via-purple-600 via-pink-500 to-orange-500 text-white"
             >
                 <!-- Animated Background Pattern -->
                 <div class="absolute inset-0 opacity-10">
@@ -56,12 +59,22 @@
                         <div class="flex items-center gap-3">
                             <button
                                 v-if="workspace.member.role === 'admin'"
-                                @click="invite_workspace = true"
+                                @click="toggleInviteMember($event)"
                                 class="flex gap-2 bg-white/25 hover:bg-white/35 backdrop-blur-md h-11 items-center text-white rounded-xl px-5 transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 font-semibold border border-white/30"
                             >
                                 <icon name="user_plus" class="w-5 h-5 fill-white" />
                                 <span>{{ $t('Invite Members') }}</span>
                             </button>
+
+                            <!-- Placed from the button it was opened from; it
+                                 renders on the body, so it is not clipped by
+                                 the header it sits in. -->
+                            <invite-workspace-member
+                                :workspace="workspace"
+                                :anchor="invite_anchor"
+                                v-if="invite_workspace"
+                                @invite-member="closeInviteMember()"
+                            />
                         </div>
                     </div>
                 </div>
@@ -159,6 +172,13 @@
                                 >
                                     {{ member.name }}
                                 </h3>
+                                <p
+                                    v-if="member.title"
+                                    class="text-sm text-gray-500 mb-2 truncate"
+                                    :title="member.title"
+                                >
+                                    {{ member.title }}
+                                </p>
                                 <div class="flex items-center gap-2">
                                     <span
                                         class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold capitalize"
@@ -241,14 +261,6 @@
                     </div>
                 </div>
             </div>
-
-            <invite-workspace-member
-                :workspace="workspace"
-                v-if="invite_workspace"
-                @invite-member="closeInviteMember()"
-                top="50px"
-                right="0px"
-            />
         </div>
     </div>
 </template>
@@ -291,6 +303,7 @@ export default {
     data() {
         return {
             invite_workspace: false,
+            invite_anchor: null,
             form: {
                 search: '',
             },
@@ -316,9 +329,16 @@ export default {
         reset() {
             this.form = mapValues(this.form, () => null);
         },
+        toggleInviteMember(event) {
+            this.invite_anchor = event.currentTarget;
+            this.invite_workspace = !this.invite_workspace;
+        },
         closeInviteMember() {
             this.invite_workspace = false;
-            this.reset();
+            // Members may have been ticked on or off while the panel was open,
+            // so the grid is refetched - without clearing the search the way
+            // reset() used to.
+            this.$inertia.reload({ only: ['team_members'], preserveState: true, preserveScroll: true });
         },
         deleteMember(member, index) {
             this.team_members.data.splice(index, 1);

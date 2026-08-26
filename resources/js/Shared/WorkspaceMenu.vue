@@ -111,11 +111,9 @@
                     <span class="flex-1 ml-3 whitespace-nowrap">{{ $t('Team Members') }}</span>
                     <button
                         v-if="workspace.member?.role === 'admin'"
-                        @click="
-                            $event.preventDefault();
-                            invite_workspace = true;
-                        "
+                        @click="toggleInviteMember($event)"
                         class="flex w-5 h-5 rounded justify-center items-center add__plus"
+                        :aria-label="$t('Invite Members')"
                     >
                         <icon class="w-4 h-4" name="plus" />
                     </button>
@@ -203,12 +201,14 @@
             top="30%"
             left="240px"
         />
+        <!-- Opens beside the row rather than under it: the sidebar is a 240px
+             scroll box, so a panel laid out inside it would be clipped. -->
         <invite-workspace-member
             :workspace="workspace"
+            :anchor="invite_anchor"
+            placement="right-start"
             v-if="invite_workspace"
             @invite-member="closeInviteMember()"
-            top="100px"
-            left="90px"
         />
 
         <ul
@@ -297,6 +297,7 @@ export default {
             hide_projects: false,
             hide_starred: false,
             invite_workspace: false,
+            invite_anchor: null,
             loading_items: [1, 2, 3, 4, 5],
             visible: { project_create: false },
             user: null,
@@ -421,9 +422,14 @@ export default {
 
             return component === 'Workspaces/MainDashboard' || url.includes('/main-dashboard');
         },
+        toggleInviteMember(event) {
+            // The button sits inside the Team Members link.
+            event.preventDefault();
+            this.invite_anchor = event.currentTarget;
+            this.invite_workspace = !this.invite_workspace;
+        },
         closeInviteMember() {
             this.invite_workspace = false;
-            window.location.href = this.route('workspace.members', this.workspace.slug || this.workspace.id);
         },
         saveProject(e, project) {
             e.preventDefault();

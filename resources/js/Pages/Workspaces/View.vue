@@ -3,8 +3,11 @@
         <Head :title="$t(title)" />
         <div class="flex workspace__view flex-col task__table overflow-hidden overflow-y-auto">
             <!-- Enhanced Workspace Header -->
+            <!-- Not clipped: the panels the buttons in here open (invite, the
+                 more menu) drop below the header's bottom edge. The decorative
+                 layers below are all inset-0, so nothing needs clipping. -->
             <div
-                class="relative bg-gradient-to-br from-indigo-600 via-purple-600 via-pink-500 to-orange-500 text-white overflow-hidden"
+                class="relative bg-gradient-to-br from-indigo-600 via-purple-600 via-pink-500 to-orange-500 text-white"
             >
                 <!-- Animated Background Pattern -->
                 <div class="absolute inset-0 opacity-10">
@@ -67,12 +70,22 @@
                         <div class="flex items-center gap-3">
                             <button
                                 v-if="workspace.member.role === 'admin'"
-                                @click="invite_workspace = true"
+                                @click="toggleInviteMember($event)"
                                 class="flex gap-2 bg-white/25 hover:bg-white/35 backdrop-blur-md h-11 items-center text-white rounded-xl px-5 transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 font-semibold border border-white/30"
                             >
                                 <icon name="user_plus" class="w-5 h-5 fill-white" />
                                 <span>{{ $t('Invite Members') }}</span>
                             </button>
+
+                            <!-- Placed from the button it was opened from; it
+                                 renders on the body, so it is not clipped by
+                                 the header it sits in. -->
+                            <invite-workspace-member
+                                :workspace="workspace"
+                                :anchor="invite_anchor"
+                                v-if="invite_workspace"
+                                @invite-member="closeInviteMember()"
+                            />
                             <div
                                 v-if="workspace.member.role === 'admin'"
                                 class="relative"
@@ -769,14 +782,6 @@
             </div>
         </div>
 
-        <invite-workspace-member
-            :workspace="workspace"
-            v-if="invite_workspace"
-            @invite-member="closeInviteMember()"
-            top="50px"
-            right="0px"
-        />
-
         <delete-confirmation
             v-if="delete_workspace_popup"
             @popup="delete_workspace_popup = false"
@@ -829,6 +834,7 @@ export default {
             delete_workspace_popup: false,
             edit_workspace_option: false,
             invite_workspace: false,
+            invite_anchor: null,
             show_more: false,
             showSortMenu: false,
             types: [],
@@ -897,9 +903,15 @@ export default {
         deleteWorkspace() {
             this.$inertia.delete(this.route('workspace.destroy', this.workspace.id));
         },
+        toggleInviteMember(event) {
+            this.invite_anchor = event.currentTarget;
+            this.invite_workspace = !this.invite_workspace;
+        },
         closeInviteMember() {
             this.invite_workspace = false;
-            window.location.href = this.route('workspace.members', this.workspace.slug || this.workspace.id);
+            // Closing a popover should not take the page away from under the
+            // user; the counts it affects are refetched in place instead.
+            this.$inertia.reload({ preserveState: true, preserveScroll: true });
         },
         updateWorkspace() {
             this.form.post(this.route('workspace.update', this.workspace.id));

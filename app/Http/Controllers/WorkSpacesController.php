@@ -354,6 +354,7 @@ class WorkSpacesController extends Controller
                     return [
                         'id' => $member->id,
                         'name' => $member->user ? $member->user->first_name.' '.$member->user->last_name : '',
+                        'title' => $member->user ? $member->user->title : '',
                         'photo' => $member->user ? $member->user->photo_path : '',
                         'role' => $member->role,
                         'workspace_id' => $member->workspace_id,
@@ -1023,7 +1024,7 @@ class WorkSpacesController extends Controller
     public function getOtherUsers($workspace_id)
     {
         $workspaceUsers = TeamMember::where('workspace_id', $workspace_id)->groupBy('user_id')->pluck('user_id');
-        $users = User::select('id', 'first_name', 'last_name', 'photo_path')->where('id', '!=', auth()->id())->get();
+        $users = User::select('id', 'first_name', 'last_name', 'title', 'photo_path')->where('id', '!=', auth()->id())->get();
 
         return response()->json(['users' => $users, 'workspace_users' => $workspaceUsers]);
     }

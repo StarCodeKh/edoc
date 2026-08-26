@@ -57,9 +57,21 @@ body {
                     top: 60px;
                     right: 40px;
 
+                    /* The panel takes its width from the longest label in it.
+                       A fixed row width cannot serve every language: 160px
+                       left the Khmer labels sitting in an empty blue box, and
+                       anything narrower splits them, since Khmer has no spaces
+                       to break at. */
                     .t__menu {
                         justify-content: space-between;
-                        width: 160px;
+                        gap: 10px;
+                        width: 100%;
+                        white-space: nowrap;
+
+                        /* The list a row opens hangs off the panel rather than
+                           off the row, so it clears both rows whichever one
+                           opened it. */
+                        position: static;
                     }
                 }
             }

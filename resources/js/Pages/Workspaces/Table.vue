@@ -275,54 +275,94 @@
 
                         <!-- List Popup Assignee -->
                         <div
-                            class="absolute flex w-[300px] z-10 text-sm flex-col bg-white px-4 py-4 rounded shadow"
+                            class="absolute flex w-[300px] z-10 text-sm flex-col bg-white dark:bg-gray-800 px-4 py-4 rounded-2xl shadow-2xl border border-gray-200/60 dark:border-white/10"
                             :style="{ top: selected.top, left: selected.left }"
                             v-if="showAssigneeBox"
                         >
-                            <h4 class="text-center mb-3 font-bold">Assignee</h4>
+                            <div class="flex items-start gap-2.5 pr-8">
+                                <span
+                                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-300"
+                                >
+                                    <icon class="h-4 w-4" name="users" />
+                                </span>
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-center gap-1.5">
+                                        <h4 class="truncate font-bold leading-tight dark:text-white">
+                                            {{ $t('Assignee') }}
+                                        </h4>
+                                        <span
+                                            v-if="task_assignees().length"
+                                            class="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-indigo-600 px-1.5 text-[10px] font-bold leading-none text-white"
+                                            >{{ task_assignees().length }}</span
+                                        >
+                                    </div>
+                                    <p class="mt-0.5 text-[11px] leading-snug text-gray-500 dark:text-gray-400">
+                                        {{ $t('Select who is responsible') }}
+                                    </p>
+                                </div>
+                            </div>
                             <div
-                                class="absolute cursor-pointer hover:bg-gray-200 top-3 right-3 p-1.5 rounded"
+                                class="absolute cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 top-3 right-3 p-1.5 rounded"
                                 @click="showAssigneeBox = false"
                             >
-                                <icon class="w-4 h-4" name="close" />
+                                <icon class="w-4 h-4 dark:text-gray-300" name="close" />
                             </div>
+                            <div class="-mx-4 my-3 border-t border-gray-200 dark:border-gray-700"></div>
                             <input
                                 id="w_t_s_u"
                                 v-model="user_search"
-                                class="border-[2px] px-2 py-1 border-gray-400 rounded-[3px]"
-                                placeholder="Search users"
+                                class="rounded-xl border-2 border-gray-200 bg-gray-50 px-3 py-2 text-sm transition-all hover:bg-white focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                                :placeholder="$t('Search User')"
                             />
-                            <ul class="flex flex-col mt-3 gap-1 h-48 max-h-[200px] overflow-y-auto">
-                                <li v-for="(userObject, user_index) in searchUser(user_search)">
+                            <ul
+                                class="mt-3 flex flex-col gap-0.5 h-48 max-h-[200px] overflow-y-auto overscroll-contain pr-1"
+                            >
+                                <li
+                                    v-for="(userObject, user_index) in searchUser(user_search)"
+                                    :key="'assignee_' + user_index"
+                                >
                                     <label
                                         :for="'w_u_id_' + user_index"
-                                        class="flex p-2 cursor-pointer hover:bg-gray-200 rounded"
+                                        class="flex items-center gap-2 rounded-xl p-2 cursor-pointer transition-colors"
+                                        :class="
+                                            task_assignees().includes(userObject.user_id)
+                                                ? 'bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-500/20 dark:hover:bg-indigo-500/30'
+                                                : 'hover:bg-gray-100 dark:hover:bg-white/10'
+                                        "
                                     >
                                         <input
                                             :id="'w_u_id_' + user_index"
-                                            class="w-5 ml-1 mr-2"
+                                            class="h-4 w-4 shrink-0 cursor-pointer accent-indigo-600"
                                             type="checkbox"
                                             :checked="task_assignees().includes(userObject.user_id)"
                                             @change="assignUserToTask($event.target.checked, userObject.user_id)"
                                         />
                                         <img
-                                            v-if="userObject.user.photo_path"
                                             :aria-label="userObject.user.name"
                                             :alt="userObject.user.name"
-                                            class="w-6 h-6 rounded-full"
-                                            :src="userObject.user.photo_path"
+                                            class="h-7 w-7 shrink-0 rounded-full object-cover ring-1 ring-black/5"
+                                            :src="userObject.user.photo_path || '/images/user.svg'"
                                         />
-                                        <img
-                                            v-else
-                                            :aria-label="userObject.user.name"
-                                            :alt="userObject.user.name"
-                                            class="w-6 h-6 rounded-full"
-                                            src="/images/user.svg"
-                                        />
-                                        <span data-a="" class="p-1" type="button" :tabindex="user_index">
-                                            {{ userObject.user.name }}
+                                        <span class="flex min-w-0 flex-1 flex-col leading-tight">
+                                            <span
+                                                class="truncate font-medium dark:text-gray-200"
+                                                :title="userObject.user.name"
+                                                >{{ userObject.user.name }}</span
+                                            >
+                                            <span
+                                                v-if="userObject.user.title"
+                                                class="truncate text-[11px] text-gray-500 dark:text-gray-400"
+                                                :title="userObject.user.title"
+                                                >{{ userObject.user.title }}</span
+                                            >
                                         </span>
                                     </label>
+                                </li>
+                                <li
+                                    v-if="!searchUser(user_search).length"
+                                    class="py-8 text-center text-sm text-gray-500"
+                                >
+                                    {{ $t('No item found!') }}
                                 </li>
                             </ul>
                         </div>
@@ -795,7 +835,15 @@ export default {
             return this.labels.filter((lab) => lab.name.toLowerCase().indexOf(input) > -1);
         },
         searchUser(input) {
-            return this.team_members.filter((tm) => tm.user.name.toLowerCase().indexOf(input) > -1);
+            const needle = (input || '').trim().toLowerCase();
+            if (!needle) return this.team_members;
+
+            return this.team_members.filter(
+                (tm) =>
+                    tm.user &&
+                    (tm.user.name.toLowerCase().indexOf(needle) > -1 ||
+                        (tm.user.title || '').toLowerCase().indexOf(needle) > -1)
+            );
         },
         makeArchive(e, id, tasks, index) {
             e.preventDefault();
