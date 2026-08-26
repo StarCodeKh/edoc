@@ -3,7 +3,6 @@
 namespace App\Console;
 
 use App\Console\Commands\DueTasksReminder;
-use App\Console\Commands\ImportDemo;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -15,7 +14,6 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        ImportDemo::class,
         DueTasksReminder::class,
     ];
 
@@ -26,10 +24,6 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        if (!config('app.demo')) {
-            $schedule->command('license:ping')->daily();
-        }
-
         $schedule->command('notifications:prune')->daily();
 
         // $schedule->command('inspire')->hourly();

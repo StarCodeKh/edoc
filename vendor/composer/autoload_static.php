@@ -48,7 +48,7 @@ class ComposerStaticInit84d6843af53bf07f69947a3dc27618e0
         'a1cfe24d14977df6878b9bf804af2d1c' => __DIR__ . '/..' . '/nunomaduro/collision/src/Adapters/Phpunit/Autoload.php',
         'ec07570ca5a812141189b1fa81503674' => __DIR__ . '/..' . '/phpunit/phpunit/src/Framework/Assert/Functions.php',
         '320163ac6b93aebe3dc25b60a0533d56' => __DIR__ . '/..' . '/spatie/laravel-ignition/src/helpers.php',
-        'b4e3f29b106af37a2bb239f73cdf68c7' => __DIR__ . '/../..' . '/app/helpers.php',
+        '8c056cc2efb739ae86c80b7e75212ec1' => __DIR__ . '/../..' . '/app/helpers.php',
     );
 
     public static $prefixLengthsPsr4 = array (
@@ -735,8 +735,6 @@ class ComposerStaticInit84d6843af53bf07f69947a3dc27618e0
     public static $classMap = array (
         'App\\Console\\Commands\\DueTasksReminder' => __DIR__ . '/../..' . '/app/Console/Commands/DueTasksReminder.php',
         'App\\Console\\Commands\\ExtractTranslationsCommand' => __DIR__ . '/../..' . '/app/Console/Commands/ExtractTranslationsCommand.php',
-        'App\\Console\\Commands\\ImportDemo' => __DIR__ . '/../..' . '/app/Console/Commands/ImportDemo.php',
-        'App\\Console\\Commands\\LicensePingCommand' => __DIR__ . '/../..' . '/app/Console/Commands/LicensePingCommand.php',
         'App\\Console\\Commands\\PruneOldNotifications' => __DIR__ . '/../..' . '/app/Console/Commands/PruneOldNotifications.php',
         'App\\Console\\Kernel' => __DIR__ . '/../..' . '/app/Console/Kernel.php',
         'App\\Edoc' => __DIR__ . '/../..' . '/app/Edoc.php',
@@ -767,7 +765,6 @@ class ComposerStaticInit84d6843af53bf07f69947a3dc27618e0
         'App\\Http\\Controllers\\AuditLogController' => __DIR__ . '/../..' . '/app/Http/Controllers/AuditLogController.php',
         'App\\Http\\Controllers\\Auth\\AuthenticatedSessionController' => __DIR__ . '/../..' . '/app/Http/Controllers/Auth/AuthenticatedSessionController.php',
         'App\\Http\\Controllers\\BackgroundsController' => __DIR__ . '/../..' . '/app/Http/Controllers/BackgroundsController.php',
-        'App\\Http\\Controllers\\BackupController' => __DIR__ . '/../..' . '/app/Http/Controllers/BackupController.php',
         'App\\Http\\Controllers\\CheckListsController' => __DIR__ . '/../..' . '/app/Http/Controllers/CheckListsController.php',
         'App\\Http\\Controllers\\CommentsController' => __DIR__ . '/../..' . '/app/Http/Controllers/CommentsController.php',
         'App\\Http\\Controllers\\Concerns\\AuthorizesTasks' => __DIR__ . '/../..' . '/app/Http/Controllers/Concerns/AuthorizesTasks.php',
@@ -775,7 +772,6 @@ class ComposerStaticInit84d6843af53bf07f69947a3dc27618e0
         'App\\Http\\Controllers\\CronJobsController' => __DIR__ . '/../..' . '/app/Http/Controllers/CronJobsController.php',
         'App\\Http\\Controllers\\DashboardController' => __DIR__ . '/../..' . '/app/Http/Controllers/DashboardController.php',
         'App\\Http\\Controllers\\DatabaseController' => __DIR__ . '/../..' . '/app/Http/Controllers/DatabaseController.php',
-        'App\\Http\\Controllers\\DemoController' => __DIR__ . '/../..' . '/app/Http/Controllers/DemoController.php',
         'App\\Http\\Controllers\\EmailTemplatesController' => __DIR__ . '/../..' . '/app/Http/Controllers/EmailTemplatesController.php',
         'App\\Http\\Controllers\\EnvironmentController' => __DIR__ . '/../..' . '/app/Http/Controllers/EnvironmentController.php',
         'App\\Http\\Controllers\\ErrorLogController' => __DIR__ . '/../..' . '/app/Http/Controllers/ErrorLogController.php',

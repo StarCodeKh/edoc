@@ -7,11 +7,6 @@ use Illuminate\Support\Facades\Artisan;
 class CronJobsController extends Controller
 {
     // command:piping_email
-    public function piping()
-    {
-        Artisan::call('command:piping_email');
-        dd('completed');
-    }
 
     public function queueWork()
     {

@@ -21,18 +21,6 @@
 //@import 'tailwindcss/screens';
 @tailwind screens;
 
-/** Landing Site */
-@include meta.load-css("landing/custom.scss");
-//@import 'landing/_buttons';
-//@import 'landing/_choices';
-//@import 'landing/_contact';
-//@import 'landing/_footer';
-//@import 'landing/_general';
-//@import 'landing/_helper';
-//@import 'landing/_hero';
-//@import 'landing/_portfolio';
-//@import 'landing/_topnav';
-
 /* Modules */
 @include meta.load-css("loader");
 @include meta.load-css("variables");

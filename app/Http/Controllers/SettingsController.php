@@ -7,7 +7,6 @@ use App\Models\Language;
 use App\Models\Setting;
 use App\Models\User;
 use App\Support\EnvFile;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -251,26 +250,5 @@ class SettingsController extends Controller
             $env->setKey($data_key, $data_value);
         }
         $env->save();
-    }
-
-    public function clearCache($slug)
-    {
-        $slugArray = [
-            'config' => 'config:cache', 'optimize' => 'optimize', 'cache' => 'cache:clear',
-            'route' => 'route:cache', 'view' => 'view:clear',
-        ];
-
-        if (isset($slugArray[$slug])) {
-            Artisan::call($slugArray[$slug]);
-        } elseif ($slug == 'all') {
-            Artisan::call('optimize');
-            Artisan::call('cache:clear');
-            Artisan::call('route:cache');
-            Artisan::call('view:clear');
-            Artisan::call('config:cache');
-            Artisan::call('clear-compiled');
-        }
-
-        return response()->json(['success' => true]);
     }
 }

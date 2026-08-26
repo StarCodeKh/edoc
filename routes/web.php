@@ -4,13 +4,11 @@ use App\Http\Controllers\AssigneesController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\BackgroundsController;
-use App\Http\Controllers\BackupController;
 use App\Http\Controllers\CheckListsController;
 use App\Http\Controllers\CommentsController;
 use App\Http\Controllers\CronJobsController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DatabaseController;
-use App\Http\Controllers\DemoController;
 use App\Http\Controllers\EmailTemplatesController;
 use App\Http\Controllers\EnvironmentController;
 use App\Http\Controllers\ErrorLogController;
@@ -260,7 +258,6 @@ Route::get('settings/smtp', [SettingsController::class, 'smtp'])->name('settings
 Route::get('settings/pre-made-boards', [SettingsController::class, 'preMadeBoards'])->name('pre-made-boards')->middleware('auth');
 Route::put('settings/smtp/update', [SettingsController::class, 'updateSmtp'])->name('settings.smtp.update')->middleware('auth');
 
-Route::get('dev/setup/clear/{slug}', [SettingsController::class, 'clearCache'])->name('clear.cache');
 // End - Global Settings
 
 /** User Roles */
@@ -288,13 +285,10 @@ Route::post('subscribe/news', [SubscriptionController::class, 'subscribe'])->nam
 /** Newsletter Subscribe */
 
 /** Installation Steps */
-Route::get('/backup/test', [BackupController::class, 'test'])->name('backup.test');
 Route::get('/language/test/{code}', [LanguagesController::class, 'newLanguageManually'])->name('language.test');
 
 Route::get('project/csv/export/{project_id}', [ProjectsController::class, 'csvExport'])->name('project.csv.export')->middleware('auth');
 Route::get('project/excel/export/{project_id}', [ProjectsController::class, 'excelExport'])->name('project.excel.export')->middleware('auth');
-
-Route::get('/admin/import/demo', [DemoController::class, 'import'])->name('import.demo')->middleware('auth');
 
 // IMAP Custom
 Route::get('/cron/queue_work', [CronJobsController::class, 'queueWork'])->name('cron.queue_work');
@@ -319,9 +313,6 @@ Route::group(['prefix' => 'install', 'as' => 'LaravelInstaller::', 'middleware' 
     Route::get('admin_setup', [FinalController::class, 'adminSetup'])->name('admin_setup');
     Route::post('saveAdminSetup', [FinalController::class, 'saveAdminSetup'])->name('saveAdminSetup');
 });
-
-Route::get('/database/manual/migration', [DatabaseController::class, 'manual_migration'])->name('manual.migration');
-Route::get('/database/manual/seed/{flag}', [DatabaseController::class, 'manual_seed'])->name('manual.seed');
 
 // Modern Installer Routes
 Route::group(['prefix' => 'install', 'middleware' => ['web', 'install']], function () {
