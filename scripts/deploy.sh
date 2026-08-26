@@ -81,5 +81,16 @@ php artisan config:cache >/dev/null && ok "config cached"
 # No route:cache: routes/web.php defines closures, which cannot be cached.
 php artisan event:cache  >/dev/null 2>&1 && ok "events cached"
 
+step "Queue worker"
+# The worker is a long-lived process holding the code it started with, so it
+# has to be told to retire and pick the new release up. Harmless when no
+# worker is running.
+php artisan queue:restart >/dev/null 2>&1 && ok "queue worker signalled to restart"
+if systemctl is-active --quiet edoc-queue 2>/dev/null; then
+    ok "edoc-queue is running"
+else
+    printf "  \033[33mwarn\033[0m edoc-queue is not running — queued mail will sit unsent (see docs/DEPLOYMENT.md §6)\n"
+fi
+
 step "Health check"
 bash scripts/check-server.sh

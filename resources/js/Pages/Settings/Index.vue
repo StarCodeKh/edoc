@@ -216,42 +216,47 @@
                     </div>
                 </section>
 
-                <!-- Cron Job Instructions -->
+                <!-- Queue worker -->
                 <section class="settings-card">
                     <div class="settings-card__header">
                         <span class="settings-card__icon settings-card__icon--amber">
                             <icon name="clock" class="w-4 h-4" />
                         </span>
-                        <h2 class="settings-card__title">{{ $t('Cron Job Instructions') }}</h2>
+                        <h2 class="settings-card__title">{{ $t('Email Queue Setup') }}</h2>
                     </div>
                     <div class="settings-card__body">
                         <div class="settings-note">
                             <h3 class="settings-note__title">{{ $t('Email Queue Setup') }}</h3>
                             <p class="settings-note__text">
-                                {{
-                                    $t(
-                                        'To send emails without delays, set up a cron job. First, enable the queue by adding'
-                                    )
-                                }}
+                                {{ $t('Queue mail instead of sending it inside the request by adding') }}
                                 <code class="settings-inline-code">QUEUE_ENABLE=true</code>
                                 {{ $t('to your .env file.') }}
+                                {{ $t('A worker then has to be running, or nothing leaves the queue.') }}
                             </p>
                         </div>
 
                         <div class="mt-5 space-y-4">
                             <div>
-                                <label class="settings-label">{{ $t('Standard Server Cron Job') }}</label>
-                                <pre
-                                    class="settings-code"
-                                ><code>*/3 * * * * /usr/bin/php artisan queue:work --queue=high,default --stop-when-empty</code></pre>
-                                <p class="settings-hint">{{ $t('Runs every 3 minutes to process email queue') }}</p>
+                                <label class="settings-label">{{ $t('Real-time worker (recommended)') }}</label>
+                                <pre class="settings-code"><code>sudo cp scripts/edoc-queue.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now edoc-queue</code></pre>
+                                <p class="settings-hint">
+                                    {{ $t('One worker stays running and sends each email within a second.') }}
+                                </p>
                             </div>
                             <div>
                                 <label class="settings-label">{{ $t('Shared Hosting (cPanel) Cron Job') }}</label>
                                 <pre
                                     class="settings-code"
-                                ><code>*/3 * * * * wget -q -O - https://website.com/cron/queue_work >/dev/null 2>&1</code></pre>
-                                <p class="settings-hint">{{ $t('Alternative method for shared hosting providers') }}</p>
+                                ><code>* * * * * wget -q -O - https://website.com/cron/queue_work >/dev/null 2>&1</code></pre>
+                                <p class="settings-hint">
+                                    {{
+                                        $t(
+                                            'Only where a permanent worker is not allowed. Cron runs once a minute at best, so mail can wait up to a minute.'
+                                        )
+                                    }}
+                                </p>
                             </div>
                         </div>
                     </div>

@@ -139,6 +139,19 @@ return [
     |
     */
 
+    /*
+    |--------------------------------------------------------------------------
+    | Cron Token
+    |--------------------------------------------------------------------------
+    |
+    | Guards /cron/queue_work, the URL shared hosting calls to drain the mail
+    | queue. Set it and cron must pass ?token=…; leave it empty and the URL is
+    | open, as it has always been.
+    |
+    */
+
+    'cron_token' => env('CRON_TOKEN', ''),
+
     'timezone' => env('APP_TIMEZONE', 'Asia/Phnom_Penh'),
 
     /**

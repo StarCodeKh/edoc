@@ -1,0 +1,53 @@
+# eDoc queue worker - sends queued mail as it is dispatched, not on a timer.
+#
+# The cron entry it replaces (`*/3 * * * * … queue:work --stop-when-empty`)
+# starts a worker every three minutes, drains whatever it finds and exits, so a
+# message dispatched right after a run waits for the next one. This unit keeps
+# one worker alive: it takes the job within a second of the request that queued
+# it, and systemd restarts it if it dies.
+#
+# Install (adjust the paths if the site does not live in /var/www/html/edoc):
+#
+#     sudo cp scripts/edoc-queue.service /etc/systemd/system/
+#     sudo systemctl daemon-reload
+#     sudo systemctl enable --now edoc-queue
+#     systemctl status edoc-queue
+#
+# The worker holds the code it started with, so every deploy must run
+# `php artisan queue:restart` - scripts/deploy.sh already does.
+
+[Unit]
+Description=eDoc queue worker
+After=network.target mysql.service
+Wants=mysql.service
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/html/edoc
+
+# --sleep=1   how long to wait when the queue is empty, so an idle worker is
+#             not a busy loop and a queued mail still leaves within a second.
+# --tries=3   a failing mail is retried rather than dropped, then recorded in
+#             failed_jobs (`php artisan queue:failed`).
+# --max-time  the worker retires hourly and systemd starts a fresh one, which
+#             is the cheap guard against a long-lived process leaking memory.
+ExecStart=/usr/bin/php /var/www/html/edoc/artisan queue:work \
+    --queue=high,default \
+    --sleep=1 \
+    --tries=3 \
+    --backoff=10 \
+    --timeout=120 \
+    --max-time=3600
+
+# A clean stop lets the job in flight finish instead of killing it mid-send.
+ExecStop=/bin/kill -TERM $MAINPID
+TimeoutStopSec=150
+Restart=always
+RestartSec=5
+StandardOutput=append:/var/www/html/edoc/storage/logs/queue-worker.log
+StandardError=append:/var/www/html/edoc/storage/logs/queue-worker.log
+
+[Install]
+WantedBy=multi-user.target

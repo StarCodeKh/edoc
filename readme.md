@@ -83,15 +83,33 @@ an older release survives a pull and turns every page blank.
 
 ## Queue worker
 
-```bash
-php artisan queue:work --queue=high,default
-```
-
-Under systemd or supervisor for production. On shared hosting, as a cron entry:
+With `QUEUE_ENABLE=true` mail leaves the request queued, so a worker has to be
+running or nothing is ever sent. In production run one permanently — it picks
+each job up within a second, rather than whenever a timer next fires:
 
 ```bash
-php /path/to/application/artisan queue:work --queue=high,default --stop-when-empty
+sudo cp scripts/edoc-queue.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now edoc-queue
 ```
+
+Locally, the same thing in the foreground:
+
+```bash
+php artisan queue:work --queue=high,default --sleep=1
+```
+
+A worker holds the code it started with, so every deploy runs
+`php artisan queue:restart` (`scripts/deploy.sh` does).
+
+On shared hosting, where no daemon is allowed, cron is the fallback — once a
+minute is as fast as it goes:
+
+```bash
+* * * * * php /path/to/application/artisan queue:work --queue=high,default --stop-when-empty --max-time=55
+```
+
+See `docs/DEPLOYMENT.md` §6.
 
 ## Tests
 

@@ -219,7 +219,57 @@ npm ci && npm run build
 
 ---
 
-## 6. Rolling back
+## 6. Queue worker — email as it happens
+
+Mail leaves the request queued (`QUEUE_ENABLE=true`, `QUEUE_CONNECTION=database`),
+so **something has to work the queue** or nothing is ever sent. A worker started
+from cron every few minutes drains what it finds and exits, which means a
+message dispatched just after a run waits for the next one. For mail that goes
+out as the user hits send, run one worker permanently:
+
+```bash
+cd /var/www/html/edoc
+sudo cp scripts/edoc-queue.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now edoc-queue
+systemctl status edoc-queue --no-pager
+```
+
+It polls with `--sleep=1`, so a queued mail leaves within a second of being
+dispatched, and systemd restarts it if it dies. The unit is commented; adjust
+the paths in it if the site is not in `/var/www/html/edoc`.
+
+**A worker holds the code it started with.** Every deploy must run
+`php artisan queue:restart` — `scripts/deploy.sh` does it, and warns when the
+service is not running.
+
+```bash
+# is anything actually being sent?
+systemctl status edoc-queue --no-pager
+tail -40 storage/logs/queue-worker.log
+php artisan queue:failed          # mail that failed all three attempts
+php artisan queue:retry all
+```
+
+If mail is arriving late rather than not at all, the worker is not running and
+something else — the old cron entry, or the `/cron/queue_work` URL — is picking
+the queue up on a timer.
+
+**Shared hosting**, where no daemon is allowed, is the one case for cron. Once a
+minute is as fast as cron goes:
+
+```
+* * * * * cd /var/www/html/edoc && /usr/bin/php artisan queue:work --queue=high,default --stop-when-empty --max-time=55
+```
+
+Setting `QUEUE_ENABLE=false` also sends every mail immediately — inside the
+request that triggered it. That is real-time in the sense that matters here, at
+the cost of the user waiting for the SMTP round-trip on every action that sends
+mail, and losing the retries. It is a fallback, not the setup to aim for.
+
+---
+
+## 7. Rolling back
 
 A reset restores the code, but **not** a working `vendor/` — reinstall it:
 
@@ -240,7 +290,7 @@ Known-good commits:
 
 ---
 
-## 7. When something breaks
+## 8. When something breaks
 
 | Symptom | Cause | Fix |
 |---|---|---|
@@ -263,7 +313,7 @@ sudo tail -50 /var/log/php8.4-fpm.log
 
 ---
 
-## 8. Health check
+## 9. Health check
 
 Read-only, changes nothing, run it any time:
 
