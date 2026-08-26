@@ -179,12 +179,30 @@ export default {
             this.panelStyle = {
                 position: 'fixed',
                 left: `${Math.round(rect.left)}px`,
-                width: `${Math.round(rect.width)}px`,
+                // At least as wide as the trigger, then as wide as its longest
+                // option needs: a narrow field would otherwise cut every option
+                // short, and Khmer labels have no spaces to break at.
+                width: 'max-content',
+                minWidth: `${Math.round(rect.width)}px`,
+                maxWidth: `${Math.round(Math.min(448, window.innerWidth - 16))}px`,
                 ...(flip
                     ? { bottom: `${Math.round(window.innerHeight - rect.top + gap)}px` }
                     : { top: `${Math.round(rect.bottom + gap)}px` }),
                 '--filter-select-max-h': `${Math.max(160, Math.round((flip ? above : below) - 12))}px`,
             };
+
+            // How wide it actually came out is only known once it is rendered;
+            // a panel wider than its trigger can run off the right edge.
+            this.$nextTick(() => {
+                const panel = this.$refs.panel;
+                if (!panel) return;
+
+                const width = panel.getBoundingClientRect().width;
+                const left = Math.max(8, Math.min(rect.left, window.innerWidth - width - 8));
+                if (Math.round(left) !== Math.round(rect.left)) {
+                    this.panelStyle = { ...this.panelStyle, left: `${Math.round(left)}px` };
+                }
+            });
         },
         isSelected(value) {
             return this.selectedValues.includes(String(value));

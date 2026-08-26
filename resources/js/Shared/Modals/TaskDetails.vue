@@ -116,57 +116,47 @@
                         <span class="title mt-4 mb-1 font-bold dark:text-gray-200">{{
                             $t('Select a destination')
                         }}</span>
-                        <div
-                            class="td__btn relative flex flex-col rounded bg-gray-100 dark:bg-gray-700 mb-3 px-3 py-2.5"
-                        >
-                            <span class="mb-1 dark:text-gray-300">{{ $t('Project') }}</span>
-                            <span class="text-[14px] font-bold dark:text-white">{{ getSelectedProject().title }}</span>
-                            <select
-                                class="absolute left-0 top-0 opacity-0 w-full cursor-pointer h-[50px] z-2"
-                                v-model="move_object.project_id"
-                            >
-                                <option v-for="project in this.projects" :value="project.id">
-                                    {{ project.title }}
-                                </option>
-                            </select>
+                        <!-- These were styled boxes with a transparent native
+                             <select> laid over them: the box looked right and
+                             the list that opened was the OS one, unstyled and
+                             cramped around long Khmer step names. Same picker
+                             the rest of the dialog uses now. -->
+                        <div class="mb-3">
+                            <span class="mb-1 block dark:text-gray-300">{{ $t('Project') }}</span>
+                            <filter-select
+                                :model-value="move_object.project_id"
+                                :options="moveProjectOptions"
+                                :show-all="false"
+                                :placeholder="$t('Select Project')"
+                                :search-placeholder="$t('Search') + '…'"
+                                :empty-label="$t('No matches')"
+                                class="w-full filter-select--block"
+                                @update:model-value="selectMoveProject"
+                            />
                         </div>
                         <div class="flex gap-2">
-                            <div
-                                class="td__btn relative flex flex-col w-[70%] rounded bg-gray-100 dark:bg-gray-700 px-3 py-2.5"
-                            >
-                                <span class="mb-1 dark:text-gray-300">{{ $t('List') }}</span>
-                                <span class="text-[14px] font-bold dark:text-white">{{ getSelectedList().title }}</span>
-                                <select
-                                    class="absolute left-0 top-0 opacity-0 w-full cursor-pointer h-[50px] z-2"
-                                    v-model="move_object.list_id"
-                                    @change="
-                                        move_object.order =
-                                            move_object.list_id === this.task.list_id ? this.task.order : 1
-                                    "
-                                >
-                                    <option v-for="list_item in getSelectedProjectLists()" :value="list_item.id">
-                                        {{ list_item.title }}
-                                    </option>
-                                </select>
+                            <div class="w-[70%]">
+                                <span class="mb-1 block dark:text-gray-300">{{ $t('List') }}</span>
+                                <filter-select
+                                    :model-value="move_object.list_id"
+                                    :options="moveListOptions"
+                                    :show-all="false"
+                                    :search-placeholder="$t('Search') + '…'"
+                                    :empty-label="$t('No matches')"
+                                    class="w-full filter-select--block"
+                                    @update:model-value="selectMoveList"
+                                />
                             </div>
-                            <div
-                                class="td__btn relative flex flex-col w-[30%] rounded bg-gray-100 dark:bg-gray-700 px-3 py-2.5"
-                            >
-                                <span class="mb-1 dark:text-gray-300">{{ $t('Position') }}</span>
-                                <span class="text-[14px] font-bold dark:text-white">{{ move_object.order }}</span>
-                                <select
-                                    class="absolute left-0 top-0 opacity-0 w-full cursor-pointer h-[50px] z-2"
+                            <div class="w-[30%]">
+                                <span class="mb-1 block dark:text-gray-300">{{ $t('Position') }}</span>
+                                <filter-select
                                     v-model="move_object.order"
-                                >
-                                    <option
-                                        v-for="list_item in [...Array(getSelectedListPostions()).keys()].map(
-                                            (x) => ++x
-                                        )"
-                                        :value="list_item"
-                                    >
-                                        {{ list_item }}
-                                    </option>
-                                </select>
+                                    :options="movePositionOptions"
+                                    :show-all="false"
+                                    :search-placeholder="$t('Search') + '…'"
+                                    :empty-label="$t('No matches')"
+                                    class="w-full filter-select--block"
+                                />
                             </div>
                         </div>
                         <div class="flex justify-between items-center action__buttons mt-3">
@@ -2252,6 +2242,19 @@ export default {
             return (this.availableUserGroups || []).map((g) => ({ value: g.id, label: g.name }));
         },
 
+        moveProjectOptions() {
+            return (this.projects || []).map((p) => ({ value: p.id, label: p.title }));
+        },
+        moveListOptions() {
+            return this.getSelectedProjectLists().map((l) => ({ value: l.id, label: l.title }));
+        },
+        movePositionOptions() {
+            return [...Array(this.getSelectedListPostions()).keys()].map((i) => ({
+                value: i + 1,
+                label: String(i + 1),
+            }));
+        },
+
         /**
          * What the signed-in user may do with this document. Mirrors
          * App\Support\TaskAbility, which every endpoint enforces anyway - this
@@ -3003,23 +3006,44 @@ export default {
                 this.toastError(this.$t('Failed to move the task.'));
             });
         },
+        /**
+         * Read-only: it used to repair move_object.list_id on its own, which is
+         * a write during render now that the options come from a computed.
+         * selectMoveProject does the repair instead, when the project changes.
+         */
         getSelectedList() {
-            let listItem = this.list_items.filter((l) => {
-                return l.id === this.move_object.list_id && l.project_id === this.move_object.project_id;
-            });
-            if (!listItem.length) {
-                listItem = this.list_items.filter((l) => l.project_id === this.move_object.project_id);
-                this.move_object.list_id = listItem[0].id;
+            const lists = this.getSelectedProjectLists();
+            const exact = lists.find((l) => l.id === this.move_object.list_id);
+
+            return exact || lists[0] || { id: null, title: '', tasks_count: 0 };
+        },
+
+        /** Picking another project moves the card to that project's first list. */
+        selectMoveProject(project_id) {
+            this.move_object.project_id = project_id;
+
+            const lists = this.getSelectedProjectLists();
+            if (!lists.some((l) => l.id === this.move_object.list_id)) {
+                this.move_object.list_id = lists.length ? lists[0].id : null;
+                this.move_object.order = 1;
             }
-            return listItem[0];
+        },
+
+        selectMoveList(list_id) {
+            this.move_object.list_id = list_id;
+            // Back where it was if this is the card's own list; first place otherwise.
+            this.move_object.order = list_id === this.task.list_id ? this.task.order : 1;
         },
         getSelectedProjectLists() {
             return this.list_items.filter((l) => l.project_id === this.move_object.project_id);
         },
         getSelectedListPostions() {
-            return this.getSelectedList().id === this.task.list_id
-                ? parseInt(this.getSelectedList().tasks_count, 10)
-                : parseInt(this.getSelectedList().tasks_count, 10) + 1;
+            const list = this.getSelectedList();
+            const count = parseInt(list.tasks_count, 10) || 0;
+
+            // Moving within the same list keeps the same number of slots;
+            // arriving from another one adds a slot at the end.
+            return Math.max(1, list.id === this.task.list_id ? count : count + 1);
         },
         getSelectedProject() {
             return this.projects.filter((p) => p.id === this.move_object.project_id)[0];
