@@ -58,6 +58,20 @@
                         <option :value="null" />
                         <option v-for="c in roles" :key="c.id" :value="c.id">{{ $t(c.name) }}</option>
                     </select-input>
+                    <!-- Which workflow responsibility this person carries. The
+                         options come from Settings > Workflow Roles, so the list
+                         follows whatever is configured there. -->
+                    <select-input
+                        v-model="form.workflow_sub_role_id"
+                        :error="form.errors.workflow_sub_role_id"
+                        class="pb-8 pr-6 w-full lg:w-1/3"
+                        :label="$t('Responsibility')"
+                    >
+                        <option :value="null">{{ $t('None') }}</option>
+                        <option v-for="sub in sub_roles" :key="sub.id" :value="sub.id">
+                            {{ sub.name && sub.name !== sub.code ? sub.name + ' (' + sub.code + ')' : sub.code }}
+                        </option>
+                    </select-input>
                     <file-input
                         v-model="form.photo"
                         :error="form.errors.photo"
@@ -112,6 +126,7 @@ export default {
         auth: Object,
         countries: Array,
         roles: Array,
+        sub_roles: { type: Array, default: () => [] },
         cities: Array,
         title: String,
     },
@@ -130,6 +145,7 @@ export default {
                 password: '',
                 role: this.user.role,
                 role_id: this.user.role_id,
+                workflow_sub_role_id: this.user.workflow_sub_role_id,
                 photo: null,
             }),
         };

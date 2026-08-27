@@ -16,6 +16,7 @@ use App\Models\Task;
 use App\Models\TeamMember;
 use App\Models\Timer;
 use App\Models\User;
+use App\Models\WorkflowSubRole;
 use App\Models\Workspace;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Redirect;
@@ -64,6 +65,7 @@ class UsersController extends Controller
                 ->get()
                 ->map
                 ->only('id', 'name'),
+            'sub_roles' => WorkflowSubRole::ordered()->get(['id', 'code', 'name']),
         ]);
     }
 
@@ -77,6 +79,7 @@ class UsersController extends Controller
             'password' => ['nullable'],
             'address' => ['nullable'],
             'role_id' => ['nullable'],
+            'workflow_sub_role_id' => ['nullable', 'integer', 'exists:workflow_sub_roles,id'],
             'title' => ['nullable', 'max:100'],
         ]);
 
@@ -117,6 +120,7 @@ class UsersController extends Controller
                 ->get()
                 ->map
                 ->only('id', 'name'),
+            'sub_roles' => WorkflowSubRole::ordered()->get(['id', 'code', 'name']),
             'user' => [
                 'id' => $user->id,
                 'first_name' => $user->first_name,
@@ -126,6 +130,7 @@ class UsersController extends Controller
                 'title' => $user->title,
                 'role' => $user->role,
                 'role_id' => $user->role_id,
+                'workflow_sub_role_id' => $user->workflow_sub_role_id,
                 'address' => $user->address,
                 'photo' => $user->photo_path ?? null,
                 'photo_path' => $user->photo_path ?? null,
@@ -157,9 +162,14 @@ class UsersController extends Controller
             'photo' => ['nullable', 'image'],
             'locale' => ['nullable', 'max:5'],
             'title' => ['nullable', 'max:100'],
+            'workflow_sub_role_id' => ['nullable', 'integer', 'exists:workflow_sub_roles,id'],
         ]);
 
         $user->update(Request::only(['first_name', 'last_name', 'phone', 'email', 'address', 'locale', 'title']));
+
+        // Sent on every save, and clearing it is a real choice - so unlike
+        // role_id it is written even when empty.
+        $user->update(['workflow_sub_role_id' => Request::get('workflow_sub_role_id') ?: null]);
 
         if (!empty(Request::get('role_id'))) {
             $user->update(['role_id' => Request::get('role_id')]);

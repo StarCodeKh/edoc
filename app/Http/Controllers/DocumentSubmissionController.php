@@ -537,7 +537,7 @@ class DocumentSubmissionController extends Controller
 
         // Who is meant to act at each step, where the workspace has a workflow.
         $roles = EdocWorkflowRole::where('workspace_id', $workspace->id)
-            ->get(['list_title', 'responsible_role', 'sla_hours', 'requires_signature', 'is_terminal'])
+            ->get(['list_title', 'responsible_role', 'requires_signature', 'is_terminal'])
             ->keyBy('list_title');
 
         $currentOrder = optional($task->list)->order;
@@ -556,7 +556,6 @@ class DocumentSubmissionController extends Controller
                 'entered_at' => $arrival['at'] ?? null,
                 'actor' => $arrival['by'] ?? null,
                 'responsible_role' => optional($role)->responsible_role,
-                'sla_hours' => optional($role)->sla_hours,
                 'requires_signature' => (bool) optional($role)->requires_signature,
                 'is_terminal' => (bool) optional($role)->is_terminal,
             ];

@@ -2,6 +2,125 @@
     <div class="sec-cont">
         <Head :title="$t(title)" />
 
+        <!-- The responsibilities a step can be handed to. Their own list, because
+             a workflow step names who should act, not what anyone may access. -->
+        <div
+            class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden mr-2 mb-5"
+        >
+            <div class="px-4 sm:px-6 lg:px-8 py-5 sm:py-6">
+                <div class="flex items-start gap-3 sm:gap-4">
+                    <span
+                        class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300"
+                    >
+                        <Icon name="users" class="w-5 h-5" />
+                    </span>
+                    <div class="flex-1 min-w-0">
+                        <div class="font-bold text-gray-900 dark:text-gray-100">
+                            {{ $t('Responsibilities') }}
+                        </div>
+                        <p class="pt-1 text-sm text-gray-500 dark:text-gray-400">
+                            {{ $t('The list every workflow step chooses its responsible role from.') }}
+                        </p>
+                    </div>
+                    <span
+                        class="flex-shrink-0 rounded-full bg-gray-100 dark:bg-gray-700 px-2.5 py-1 text-xs font-bold text-gray-600 dark:text-gray-300"
+                    >
+                        {{ localSubRoles.length }}
+                    </span>
+                </div>
+
+                <p v-if="subRoleError" class="mt-3 text-sm font-medium text-red-600">{{ subRoleError }}</p>
+
+                <ul class="mt-4 divide-y divide-gray-100 dark:divide-gray-700">
+                    <li
+                        v-for="subRole in localSubRoles"
+                        :key="subRole.id"
+                        class="flex flex-wrap items-center gap-2 py-2"
+                    >
+                        <template v-if="subRole.editing">
+                            <input
+                                v-model="subRole.code"
+                                type="text"
+                                class="w-28 min-w-0 bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                :placeholder="$t('Code')"
+                            />
+                            <input
+                                v-model="subRole.name"
+                                type="text"
+                                @keyup.enter="saveSubRole(subRole)"
+                                class="flex-1 min-w-0 bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                :placeholder="$t('Name')"
+                            />
+                            <button
+                                type="button"
+                                class="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+                                :disabled="subRole.saving"
+                                @click="saveSubRole(subRole)"
+                            >
+                                {{ $t('Save') }}
+                            </button>
+                        </template>
+
+                        <template v-else>
+                            <span
+                                class="rounded-md bg-gray-100 dark:bg-gray-700 px-2 py-0.5 font-mono text-xs font-bold text-gray-600 dark:text-gray-300"
+                            >
+                                {{ subRole.code }}
+                            </span>
+                            <span class="flex-1 min-w-0 truncate text-sm text-gray-800 dark:text-gray-200">
+                                {{ subRole.name }}
+                            </span>
+                            <button
+                                type="button"
+                                class="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-indigo-600 dark:hover:bg-gray-700"
+                                :title="$t('Edit')"
+                                @click="subRole.editing = true"
+                            >
+                                <Icon name="edit" class="w-4 h-4" />
+                            </button>
+                            <button
+                                type="button"
+                                class="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-gray-700"
+                                :title="$t('Delete')"
+                                @click="removeSubRole(subRole)"
+                            >
+                                <Icon name="trash" class="w-4 h-4" />
+                            </button>
+                        </template>
+                    </li>
+
+                    <li v-if="!localSubRoles.length" class="py-6 text-center text-sm text-gray-400">
+                        {{ $t('No responsibilities yet.') }}
+                    </li>
+                </ul>
+
+                <div class="mt-4 flex flex-wrap items-center gap-2 border-t border-gray-100 dark:border-gray-700 pt-4">
+                    <input
+                        v-model="newSubRole.code"
+                        type="text"
+                        class="w-28 min-w-0 bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        :placeholder="$t('Code')"
+                    />
+                    <input
+                        v-model="newSubRole.name"
+                        type="text"
+                        @keyup.enter="addSubRole"
+                        class="flex-1 min-w-0 bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        :placeholder="$t('Name')"
+                    />
+                    <button
+                        type="button"
+                        class="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+                        :disabled="savingSubRole"
+                        @click="addSubRole"
+                    >
+                        <Icon name="plus" class="w-4 h-4" />
+                        {{ $t('Add') }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Add a new workflow type -->
         <div
             class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden mr-2 mb-5"
@@ -115,7 +234,7 @@
                         </span>
                     </div>
                     <p class="pt-1 text-sm text-gray-500 dark:text-gray-400">
-                        {{ $t('Steps, responsible role, SLA and signature requirements for this workflow.') }}
+                        {{ $t('Steps, responsible role and signature requirements for this workflow.') }}
                     </p>
                 </div>
                 <span class="text-xs font-medium text-gray-400 dark:text-gray-500 flex-shrink-0 mt-1">
@@ -139,7 +258,6 @@
                 <span>{{ $t('Step name') }}</span>
                 <span>{{ $t('Workspace') }}</span>
                 <span>{{ $t('Role') }}</span>
-                <span>{{ $t('SLA hrs') }}</span>
                 <span>{{ $t('Signature') }}</span>
                 <span>{{ $t('Terminal') }}</span>
                 <span></span>
@@ -173,19 +291,15 @@
                         class="col-span-2 w-full filter-select--block"
                     />
 
-                    <input
+                    <filter-select
                         v-model="role.responsible_role"
-                        type="text"
-                        class="w-full min-w-0 bg-gray-50 dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        :options="subRoleOptions"
+                        :show-all="false"
                         :placeholder="$t('Role')"
-                    />
-
-                    <input
-                        v-model.number="role.sla_hours"
-                        type="number"
-                        min="0"
-                        class="w-full min-w-0 bg-gray-50 dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        :placeholder="$t('SLA hrs')"
+                        :search-placeholder="$t('Search') + '…'"
+                        :empty-label="$t('No matches')"
+                        icon="users"
+                        class="w-full filter-select--block"
                     />
 
                     <label
@@ -260,20 +374,15 @@
                     icon="briefcase"
                     class="col-span-2 w-full filter-select--block"
                 />
-                <input
+                <filter-select
                     v-model="newRoleForms[type].responsible_role"
-                    type="text"
-                    @keyup.enter="addRole(type)"
-                    class="w-full min-w-0 bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    :options="subRoleOptions"
+                    :show-all="false"
                     :placeholder="$t('Role')"
-                />
-                <input
-                    v-model.number="newRoleForms[type].sla_hours"
-                    type="number"
-                    min="0"
-                    @keyup.enter="addRole(type)"
-                    class="w-full min-w-0 bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    :placeholder="$t('SLA hrs')"
+                    :search-placeholder="$t('Search') + '…'"
+                    :empty-label="$t('No matches')"
+                    icon="users"
+                    class="w-full filter-select--block"
                 />
                 <label class="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300 flex-shrink-0 py-1">
                     <input
@@ -368,6 +477,7 @@ export default {
         roles: { type: Array, default: () => [] },
         workflow_types: { type: Array, default: () => ['external_ministry', 'casino_operator', 'internal_cgmc'] },
         workspaces: { type: Array, default: () => [] },
+        sub_roles: { type: Array, default: () => [] },
     },
     data() {
         const builtInLabels = {
@@ -389,6 +499,7 @@ export default {
             savedLabels = {};
         }
 
+        const subRoles = (this.sub_roles || []).map((r) => ({ ...r, editing: false, saving: false }));
         const roles = (this.roles || []).map((r) => ({ ...r, saving: false }));
         const discoveredFromRoles = [...new Set(roles.map((r) => r.workflow_type).filter(Boolean))];
         const startingTypes = [...new Set([...(this.workflow_types || []), ...discoveredFromRoles])];
@@ -398,7 +509,6 @@ export default {
             newRoleForms[type] = {
                 list_title: '',
                 responsible_role: '',
-                sla_hours: null,
                 requires_signature: false,
                 is_terminal: false,
                 workspace_id: null,
@@ -407,6 +517,10 @@ export default {
 
         return {
             localRoles: roles,
+            localSubRoles: subRoles,
+            newSubRole: { code: '', name: '' },
+            subRoleError: '',
+            savingSubRole: false,
             newRoleForms,
             dynamicWorkflowTypes: [],
             typeLabels: { ...builtInLabels, ...savedLabels },
@@ -437,6 +551,14 @@ export default {
             ];
         },
 
+        /** The dropdown the steps pick from, straight off the managed list. */
+        subRoleOptions() {
+            return this.localSubRoles.map((r) => ({
+                value: r.code,
+                label: r.name && r.name !== r.code ? `${r.name} (${r.code})` : r.code,
+            }));
+        },
+
         allWorkflowTypes() {
             const fromProp = this.workflow_types || [];
             const fromRoles = this.localRoles.map((r) => r.workflow_type).filter(Boolean);
@@ -463,6 +585,86 @@ export default {
         },
     },
     methods: {
+        addSubRole() {
+            const code = (this.newSubRole.code || '').trim();
+            const name = (this.newSubRole.name || '').trim();
+
+            this.subRoleError = '';
+
+            if (!code || !name) {
+                this.subRoleError = this.$t('A code and a name are both required.');
+                return;
+            }
+
+            this.savingSubRole = true;
+
+            axios
+                .post(this.route('workflow-roles.sub.create'), { code, name })
+                .then((response) => {
+                    this.localSubRoles.push({ ...response.data, editing: false, saving: false });
+                    this.newSubRole = { code: '', name: '' };
+                })
+                .catch((error) => {
+                    this.subRoleError = this.subRoleMessage(error);
+                })
+                .finally(() => {
+                    this.savingSubRole = false;
+                });
+        },
+        saveSubRole(subRole) {
+            const code = (subRole.code || '').trim();
+            const name = (subRole.name || '').trim();
+
+            if (!code || !name) {
+                this.subRoleError = this.$t('A code and a name are both required.');
+                return;
+            }
+
+            subRole.saving = true;
+            this.subRoleError = '';
+
+            axios
+                .post(this.route('workflow-roles.sub.update', subRole.id), { code, name })
+                .then((response) => {
+                    // A renamed code is carried across the steps server-side; the
+                    // rows already loaded here have to follow it.
+                    const previous = subRole.code;
+                    Object.assign(subRole, response.data);
+                    if (previous !== response.data.code) {
+                        this.localRoles.forEach((role) => {
+                            if (role.responsible_role === previous) {
+                                role.responsible_role = response.data.code;
+                            }
+                        });
+                    }
+                    subRole.editing = false;
+                })
+                .catch((error) => {
+                    this.subRoleError = this.subRoleMessage(error);
+                })
+                .finally(() => {
+                    subRole.saving = false;
+                });
+        },
+        removeSubRole(subRole) {
+            this.subRoleError = '';
+
+            axios
+                .post(this.route('workflow-roles.sub.delete', subRole.id))
+                .then(() => {
+                    this.localSubRoles = this.localSubRoles.filter((r) => r.id !== subRole.id);
+                })
+                .catch((error) => {
+                    this.subRoleError = this.subRoleMessage(error);
+                });
+        },
+        subRoleMessage(error) {
+            const data = error.response && error.response.data;
+            if (!data) return this.$t('Something went wrong.');
+            if (data.message && !data.errors) return data.message;
+            const first = data.errors && Object.values(data.errors)[0];
+            return (first && first[0]) || data.message || this.$t('Something went wrong.');
+        },
         slugify(value) {
             return (value || '')
                 .toLowerCase()
@@ -571,7 +773,6 @@ export default {
                 this.newRoleForms[type] = {
                     list_title: '',
                     responsible_role: '',
-                    sla_hours: null,
                     requires_signature: false,
                     is_terminal: false,
                     workspace_id: null,
@@ -610,7 +811,6 @@ export default {
                     list_title: role.list_title,
                     workspace_id: role.workspace_id || null,
                     responsible_role: role.responsible_role,
-                    sla_hours: role.sla_hours,
                     requires_signature: !!role.requires_signature,
                     is_terminal: !!role.is_terminal,
                 })
@@ -651,7 +851,6 @@ export default {
                     list_title: title,
                     workspace_id: form.workspace_id || null,
                     responsible_role: form.responsible_role || '',
-                    sla_hours: form.sla_hours,
                     requires_signature: !!form.requires_signature,
                     is_terminal: !!form.is_terminal,
                 })
@@ -661,7 +860,6 @@ export default {
                         this.newRoleForms[type] = {
                             list_title: '',
                             responsible_role: '',
-                            sla_hours: null,
                             requires_signature: false,
                             is_terminal: false,
                             workspace_id: null,
@@ -693,7 +891,7 @@ export default {
 }
 @media (min-width: 1024px) {
     .wr-row {
-        grid-template-columns: 2.5rem minmax(180px, 1fr) 11.5rem 6.5rem 5rem auto auto auto auto;
+        grid-template-columns: 2.5rem minmax(180px, 1fr) 11.5rem 6.5rem auto auto auto auto;
     }
     /* the col-span-* the stacked layout needs must not survive up here */
     .wr-row > * {

@@ -14,7 +14,6 @@ class EdocWorkflowRole extends Model
         'list_title',
         'order',
         'responsible_role',
-        'sla_hours',
         'requires_signature',
         'is_terminal',
     ];
@@ -22,7 +21,6 @@ class EdocWorkflowRole extends Model
     protected $casts = [
         'requires_signature' => 'boolean',
         'is_terminal' => 'boolean',
-        'sla_hours' => 'integer',
         'order' => 'integer',
     ];
 }

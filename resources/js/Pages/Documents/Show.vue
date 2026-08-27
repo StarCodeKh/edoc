@@ -338,13 +338,6 @@
                                                         </div>
 
                                                         <div class="mt-1.5 flex flex-wrap gap-1">
-                                                            <span v-if="isOverdue(step)" class="step-chip is-late">
-                                                                {{
-                                                                    $t('Past its :hours h target', {
-                                                                        hours: step.sla_hours,
-                                                                    })
-                                                                }}
-                                                            </span>
                                                             <span v-if="step.requires_signature" class="step-chip">
                                                                 {{ $t('Signature required') }}
                                                             </span>
@@ -603,15 +596,6 @@ export default {
             if (step.state === 'done') return 'bg-emerald-100 text-emerald-700';
             return 'bg-gray-200 text-gray-500';
         },
-        /**
-         * Only the board the document is sitting on can be late - a step it has
-         * already left took however long it took, and one it has not reached
-         * has no clock running.
-         */
-        isOverdue(step) {
-            if (step.state !== 'current' || !step.sla_hours || !step.entered_at) return false;
-            return moment(step.entered_at).add(step.sla_hours, 'hours').isBefore(moment());
-        },
         neighbourHref(neighbour) {
             return this.route('workspace.documents.show', [this.workspace.slug || this.workspace.id, neighbour.uid]);
         },
@@ -797,11 +781,6 @@ export default {
     font-size: 10px;
     font-weight: 700;
     line-height: 1.7;
-}
-
-.step-chip.is-late {
-    background: #fee2e2;
-    color: #b91c1c;
 }
 
 /* Timeline: the rail is drawn behind each avatar and stops at the last row. */

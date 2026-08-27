@@ -53,7 +53,6 @@ class WorkflowStep
                 'id' => $step->id,
                 'order' => $step->order,
                 'responsible_role' => $step->responsible_role,
-                'sla_hours' => $step->sla_hours,
             ] : null;
             $lists[$index]['requires_signature'] = (bool) ($step->requires_signature ?? false);
             $lists[$index]['is_terminal'] = (bool) ($step->is_terminal ?? false);

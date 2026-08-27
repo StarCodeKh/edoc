@@ -83,6 +83,12 @@ class User extends Authenticatable
      * Super Admin and Admin share the slug 'admin', so the two are told apart by
      * role name / id; every existing `slug == 'admin'` check keeps working.
      */
+    /** The workflow responsibility this user carries, if any. */
+    public function workflowSubRole()
+    {
+        return $this->belongsTo(WorkflowSubRole::class, 'workflow_sub_role_id');
+    }
+
     public function isSuperAdmin(): bool
     {
         return $this->role_id === 1 || strtolower((string) ($this->role->name ?? '')) === 'super admin';

@@ -148,13 +148,18 @@ Route::get('json/workspace/{id}/projects-count', [WorkSpacesController::class, '
 
 Route::get('/json/priorities', [JsonPriorityController::class, 'all'])->name('json.priorities.all')->middleware('auth');
 
-Route::get('/json/workflow-roles/board-lists', [WorkflowRoleController::class, 'listTitlesByWorkspace'])->name('workflow-roles.board-lists');
-Route::get('/settings/workflow-roles', [WorkflowRoleController::class, 'index'])->name('workflow-roles');
-Route::post('/workflow-roles/create', [WorkflowRoleController::class, 'store'])->name('workflow-roles.create');
-Route::post('/workflow-roles/update/{id}', [WorkflowRoleController::class, 'update'])->name('workflow-roles.update');
-Route::post('/workflow-roles/delete/{id}', [WorkflowRoleController::class, 'destroy'])->name('workflow-roles.delete');
-Route::get('/json/workflow-roles/types', [WorkflowRoleController::class, 'workflowTypesSummary'])->name('workflow-roles.types');
-Route::post('/json/workflow-roles/assign-workspace', [WorkflowRoleController::class, 'assignWorkspace'])->name('workflow-roles.assign-workspace');
+Route::get('/json/workflow-roles/board-lists', [WorkflowRoleController::class, 'listTitlesByWorkspace'])->name('workflow-roles.board-lists')->middleware('auth');
+Route::get('/settings/workflow-roles', [WorkflowRoleController::class, 'index'])->name('workflow-roles')->middleware('auth');
+Route::post('/workflow-roles/create', [WorkflowRoleController::class, 'store'])->name('workflow-roles.create')->middleware('auth');
+Route::post('/workflow-roles/update/{id}', [WorkflowRoleController::class, 'update'])->name('workflow-roles.update')->middleware('auth');
+Route::post('/workflow-roles/delete/{id}', [WorkflowRoleController::class, 'destroy'])->name('workflow-roles.delete')->middleware('auth');
+Route::get('/json/workflow-roles/types', [WorkflowRoleController::class, 'workflowTypesSummary'])->name('workflow-roles.types')->middleware('auth');
+Route::post('/json/workflow-roles/assign-workspace', [WorkflowRoleController::class, 'assignWorkspace'])->name('workflow-roles.assign-workspace')->middleware('auth');
+
+// The responsibilities a workflow step can be handed to (Settings -> Workflow Roles).
+Route::post('/workflow-roles/sub-roles/create', [WorkflowRoleController::class, 'storeSubRole'])->name('workflow-roles.sub.create')->middleware('auth');
+Route::post('/workflow-roles/sub-roles/update/{id}', [WorkflowRoleController::class, 'updateSubRole'])->name('workflow-roles.sub.update')->middleware('auth');
+Route::post('/workflow-roles/sub-roles/delete/{id}', [WorkflowRoleController::class, 'destroySubRole'])->name('workflow-roles.sub.delete')->middleware('auth');
 
 Route::delete('project/destroy/{id}', [ProjectsController::class, 'destroy'])->name('project.destroy')->middleware('auth');
 Route::get('projects', [ProjectsController::class, 'index'])->name('projects.index')->middleware('auth');

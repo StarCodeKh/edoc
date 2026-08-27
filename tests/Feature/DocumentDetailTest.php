@@ -151,7 +151,7 @@ class DocumentDetailTest extends TestCase
             );
     }
 
-    public function test_a_step_carries_its_workflow_role_and_sla(): void
+    public function test_a_step_carries_its_workflow_role(): void
     {
         EdocWorkflowRole::create([
             'workflow_type' => 'internal_cgmc',
@@ -159,7 +159,6 @@ class DocumentDetailTest extends TestCase
             'list_title' => 'Registry',
             'order' => 1,
             'responsible_role' => 'Registry Officer',
-            'sla_hours' => 24,
             'requires_signature' => true,
         ]);
 
@@ -169,7 +168,6 @@ class DocumentDetailTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where('steps.0.responsible_role', 'Registry Officer')
-                ->where('steps.0.sla_hours', 24)
                 ->where('steps.0.requires_signature', true)
             );
     }

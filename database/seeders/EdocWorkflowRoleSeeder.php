@@ -18,33 +18,33 @@ class EdocWorkflowRoleSeeder extends Seeder
      */
     private const DEFINITIONS = [
         'external_ministry' => [
-            ['order' => 1, 'title' => 'ទទួល Scan/Upload ឯកសារចូល (Tracking ID/QR)', 'role' => 'admin', 'sla_hours' => 4, 'requires_signature' => false, 'is_terminal' => false],
-            ['order' => 3, 'title' => 'ត្រួតពិនិត្យបឋមដោយ ADSG/ASG', 'role' => 'adsg', 'sla_hours' => 24, 'requires_signature' => false, 'is_terminal' => false],
-            ['order' => 4, 'title' => 'ចាត់តាំង/សម្រេចដោយ SG', 'role' => 'sg', 'sla_hours' => 24, 'requires_signature' => false, 'is_terminal' => false],
-            ['order' => 5, 'title' => 'កំពុងអនុវត្តភារកិច្ចដោយ Dpt', 'role' => 'dpt', 'sla_hours' => 72, 'requires_signature' => false, 'is_terminal' => false],
-            ['order' => 6, 'title' => 'ត្រួតពិនិត្យលិខិតឆ្លើយតបដោយ SG / អនុម័ត', 'role' => 'sg', 'sla_hours' => 24, 'requires_signature' => true, 'is_terminal' => false],
-            ['order' => 7, 'title' => 'ចេញលេខ Outward និងផ្ញើលិខិតឆ្លើយតប', 'role' => 'admin', 'sla_hours' => 4, 'requires_signature' => false, 'is_terminal' => false],
-            ['order' => 8, 'title' => 'រក្សាទុកបណ្ណសារ', 'role' => 'admin', 'sla_hours' => null, 'requires_signature' => false, 'is_terminal' => true],
+            ['order' => 1, 'title' => 'ទទួល Scan/Upload ឯកសារចូល (Tracking ID/QR)', 'role' => 'admin', 'requires_signature' => false, 'is_terminal' => false],
+            ['order' => 3, 'title' => 'ត្រួតពិនិត្យបឋមដោយ ADSG/ASG', 'role' => 'adsg', 'requires_signature' => false, 'is_terminal' => false],
+            ['order' => 4, 'title' => 'ចាត់តាំង/សម្រេចដោយ SG', 'role' => 'sg', 'requires_signature' => false, 'is_terminal' => false],
+            ['order' => 5, 'title' => 'កំពុងអនុវត្តភារកិច្ចដោយ Dpt', 'role' => 'dpt', 'requires_signature' => false, 'is_terminal' => false],
+            ['order' => 6, 'title' => 'ត្រួតពិនិត្យលិខិតឆ្លើយតបដោយ SG / អនុម័ត', 'role' => 'sg', 'requires_signature' => true, 'is_terminal' => false],
+            ['order' => 7, 'title' => 'ចេញលេខ Outward និងផ្ញើលិខិតឆ្លើយតប', 'role' => 'admin', 'requires_signature' => false, 'is_terminal' => false],
+            ['order' => 8, 'title' => 'រក្សាទុកបណ្ណសារ', 'role' => 'admin', 'requires_signature' => false, 'is_terminal' => true],
         ],
         'casino_operator' => [
-            ['order' => 1, 'title' => 'ទទួល Scan/Upload ឯកសារចូល (Tracking ID/QR)', 'role' => 'admin', 'sla_hours' => 4, 'requires_signature' => false, 'is_terminal' => false],
-            ['order' => 2, 'title' => 'ត្រួតពិនិត្យដោយ ASG', 'role' => 'asg', 'sla_hours' => 24, 'requires_signature' => false, 'is_terminal' => false],
-            ['order' => 3, 'title' => 'SG ពិនិត្យ និងចាត់តាំងការងារជូន HD', 'role' => 'sg', 'sla_hours' => 24, 'requires_signature' => false, 'is_terminal' => false],
-            ['order' => 4, 'title' => 'HD ពិនិត្យ និងចេញលេខិតឆ្លើយតប', 'role' => 'hd', 'sla_hours' => 48, 'requires_signature' => false, 'is_terminal' => false],
-            ['order' => 5, 'title' => 'អនុម័ត និងចុះហត្ថលេខាដោយ SG', 'role' => 'dsg', 'sla_hours' => 24, 'requires_signature' => true, 'is_terminal' => false],
-            ['order' => 6, 'title' => 'ចេញលេខផ្លូវការ និងបញ្ជូនទៅ CO', 'role' => 'sg', 'sla_hours' => 24, 'requires_signature' => false, 'is_terminal' => true],
-            ['order' => 7, 'title' => 'រក្សាទុកបណ្ណសារ / បិទរឿង', 'role' => 'admin', 'sla_hours' => 4, 'requires_signature' => false, 'is_terminal' => false],
+            ['order' => 1, 'title' => 'ទទួល Scan/Upload ឯកសារចូល (Tracking ID/QR)', 'role' => 'admin', 'requires_signature' => false, 'is_terminal' => false],
+            ['order' => 2, 'title' => 'ត្រួតពិនិត្យដោយ ASG', 'role' => 'asg', 'requires_signature' => false, 'is_terminal' => false],
+            ['order' => 3, 'title' => 'SG ពិនិត្យ និងចាត់តាំងការងារជូន HD', 'role' => 'sg', 'requires_signature' => false, 'is_terminal' => false],
+            ['order' => 4, 'title' => 'HD ពិនិត្យ និងចេញលេខិតឆ្លើយតប', 'role' => 'hd', 'requires_signature' => false, 'is_terminal' => false],
+            ['order' => 5, 'title' => 'អនុម័ត និងចុះហត្ថលេខាដោយ SG', 'role' => 'dsg', 'requires_signature' => true, 'is_terminal' => false],
+            ['order' => 6, 'title' => 'ចេញលេខផ្លូវការ និងបញ្ជូនទៅ CO', 'role' => 'sg', 'requires_signature' => false, 'is_terminal' => true],
+            ['order' => 7, 'title' => 'រក្សាទុកបណ្ណសារ / បិទរឿង', 'role' => 'admin', 'requires_signature' => false, 'is_terminal' => false],
         ],
         'internal_cgmc' => [
-            ['order' => 1, 'title' => 'ទទួល Scan/Upload ឯកសារចូល (Tracking ID/QR)', 'role' => 'admin', 'sla_hours' => 4, 'requires_signature' => false, 'is_terminal' => false],
-            ['order' => 3, 'title' => 'ត្រួតពិនិត្យដោយ ADSG & DSG', 'role' => 'adsg', 'sla_hours' => 24, 'requires_signature' => false, 'is_terminal' => false],
-            ['order' => 4, 'title' => 'រៀបចំ និងត្រួតពិនិត្យដោយ ASG', 'role' => 'asg', 'sla_hours' => 24, 'requires_signature' => false, 'is_terminal' => false],
-            ['order' => 5, 'title' => 'SG ពិនិត្យ និងសម្រេច', 'role' => 'sg', 'sla_hours' => 24, 'requires_signature' => true, 'is_terminal' => false],
-            ['order' => 6, 'title' => 'អនុម័ត និងចុះហត្ថលេខាឌីជីថលដោយ SG', 'role' => 'sg', 'sla_hours' => 24, 'requires_signature' => true, 'is_terminal' => false],
-            ['order' => 7, 'title' => 'ចេញលិខិតផ្លូវការ និងជូនដំណឹង', 'role' => 'admin', 'sla_hours' => 4, 'requires_signature' => false, 'is_terminal' => false],
-            ['order' => 8, 'title' => 'រក្សាទុក Audit Trail / បណ្ណសារ', 'role' => 'admin', 'sla_hours' => null, 'requires_signature' => false, 'is_terminal' => true],
-            ['order' => 9, 'title' => 'នាយកដ្ឋានទទួលឯកសារ និងចាប់ផ្តល់អនុវត្ត', 'role' => 'admin', 'sla_hours' => 4, 'requires_signature' => false, 'is_terminal' => false],
-            ['order' => 10, 'title' => 'បញ្ជូនចេញបិទសំណុំរឿង / រក្សាទុកបណ្ណសារ', 'role' => null, 'sla_hours' => null, 'requires_signature' => false, 'is_terminal' => false],
+            ['order' => 1, 'title' => 'ទទួល Scan/Upload ឯកសារចូល (Tracking ID/QR)', 'role' => 'admin', 'requires_signature' => false, 'is_terminal' => false],
+            ['order' => 3, 'title' => 'ត្រួតពិនិត្យដោយ ADSG & DSG', 'role' => 'adsg', 'requires_signature' => false, 'is_terminal' => false],
+            ['order' => 4, 'title' => 'រៀបចំ និងត្រួតពិនិត្យដោយ ASG', 'role' => 'asg', 'requires_signature' => false, 'is_terminal' => false],
+            ['order' => 5, 'title' => 'SG ពិនិត្យ និងសម្រេច', 'role' => 'sg', 'requires_signature' => true, 'is_terminal' => false],
+            ['order' => 6, 'title' => 'អនុម័ត និងចុះហត្ថលេខាឌីជីថលដោយ SG', 'role' => 'sg', 'requires_signature' => true, 'is_terminal' => false],
+            ['order' => 7, 'title' => 'ចេញលិខិតផ្លូវការ និងជូនដំណឹង', 'role' => 'admin', 'requires_signature' => false, 'is_terminal' => false],
+            ['order' => 8, 'title' => 'រក្សាទុក Audit Trail / បណ្ណសារ', 'role' => 'admin', 'requires_signature' => false, 'is_terminal' => true],
+            ['order' => 9, 'title' => 'នាយកដ្ឋានទទួលឯកសារ និងចាប់ផ្តល់អនុវត្ត', 'role' => 'admin', 'requires_signature' => false, 'is_terminal' => false],
+            ['order' => 10, 'title' => 'បញ្ជូនចេញបិទសំណុំរឿង / រក្សាទុកបណ្ណសារ', 'role' => null, 'requires_signature' => false, 'is_terminal' => false],
         ],
     ];
 
@@ -82,7 +82,6 @@ class EdocWorkflowRoleSeeder extends Seeder
                                 'list_title' => $col['title'],
                                 'workspace_id' => $workspaceId,
                                 'responsible_role' => $col['role'],
-                                'sla_hours' => $col['sla_hours'],
                                 'requires_signature' => $col['requires_signature'],
                                 'is_terminal' => $col['is_terminal'],
                                 'updated_at' => now(),
@@ -96,7 +95,7 @@ class EdocWorkflowRoleSeeder extends Seeder
                     }
                 }
 
-                $this->command->line("[{$workflowType}] Step {$order}: {$col['title']} (role=".($col['role'] ?? 'n/a').", workspace_id={$workspaceId}, sla=".($col['sla_hours'] ?? 'n/a').'h)');
+                $this->command->line("[{$workflowType}] Step {$order}: {$col['title']} (role=".($col['role'] ?? 'n/a').", workspace_id={$workspaceId})");
             }
 
             // The definitions above are the source of truth: drop any step this
