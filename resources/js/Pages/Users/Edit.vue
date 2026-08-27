@@ -116,7 +116,7 @@ export default {
         title: String,
     },
     remember: 'form',
-    async data() {
+    data() {
         return {
             form: useForm({
                 _method: 'put',

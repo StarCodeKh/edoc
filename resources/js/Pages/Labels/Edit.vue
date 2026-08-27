@@ -46,7 +46,7 @@ export default {
         label: Object,
     },
     remember: 'form',
-    async data() {
+    data() {
         return {
             form: useForm({
                 name: this.label.name,

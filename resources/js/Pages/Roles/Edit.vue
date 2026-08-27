@@ -89,7 +89,7 @@ export default {
         role: Object,
     },
     remember: 'form',
-    async data() {
+    data() {
         return {
             form: useForm({
                 name: this.role.name,

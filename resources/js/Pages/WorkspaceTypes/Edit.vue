@@ -46,7 +46,7 @@ export default {
         workspace_type: Object,
     },
     remember: 'form',
-    async data() {
+    data() {
         return {
             form: useForm({
                 name: this.workspace_type.name,

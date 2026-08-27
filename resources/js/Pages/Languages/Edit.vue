@@ -117,7 +117,7 @@ export default {
         languages: Object,
     },
     remember: 'form',
-    async data() {
+    data() {
         return {
             new_lang_form: false,
             form: useForm({

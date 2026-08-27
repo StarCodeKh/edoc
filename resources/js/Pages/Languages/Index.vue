@@ -77,7 +77,7 @@ export default {
         title: String,
         filters: Object,
     },
-    async data() {
+    data() {
         return {
             form: {
                 search: this.filters.search,

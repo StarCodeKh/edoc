@@ -131,6 +131,37 @@ class PagesRenderTest extends TestCase
     }
 
     /**
+     * `async data()` returns a Promise, and Vue's Options API assigns it as the
+     * component's data without complaint - every field then reads as undefined
+     * and the template throws on first access. The page returns 200 with a
+     * correct data-page attribute and renders nothing, so no server-side test
+     * can see it. Six pages shipped this way.
+     */
+    public function test_no_page_declares_an_async_data_option(): void
+    {
+        $offenders = [];
+
+        // glob() does not recurse, so the tree is walked properly.
+        $files = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator(resource_path('js'), \FilesystemIterator::SKIP_DOTS)
+        );
+
+        foreach ($files as $file) {
+            if ($file->getExtension() !== 'vue') {
+                continue;
+            }
+
+            if (preg_match('/async\s+data\s*\(/', file_get_contents($file->getPathname()))) {
+                $offenders[] = str_replace(resource_path('js').'/', '', $file->getPathname());
+            }
+        }
+
+        sort($offenders);
+
+        $this->assertSame([], $offenders, 'data() must be synchronous, or the component renders blank: '.implode(', ', $offenders));
+    }
+
+    /**
      * Every page component a controller names has to exist on disk. This is
      * what catches a page deleted while a controller still renders it.
      */
