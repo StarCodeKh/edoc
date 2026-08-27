@@ -9,6 +9,7 @@ use App\Http\Controllers\CommentsController;
 use App\Http\Controllers\CronJobsController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DatabaseController;
+use App\Http\Controllers\DocumentSubmissionController;
 use App\Http\Controllers\EmailTemplatesController;
 use App\Http\Controllers\EnvironmentController;
 use App\Http\Controllers\ErrorLogController;
@@ -126,12 +127,19 @@ Route::get('w/{uid}/tasks/timeline', [WorkSpacesController::class, 'workspaceTim
 Route::get('w/{uid}/tasks/table', [WorkSpacesController::class, 'workspaceTables'])->name('workspace.view.table')->middleware('auth');
 Route::get('w/{uid}/documents', [WorkSpacesController::class, 'workspaceDocuments'])->name('workspace.view.documents')->middleware('auth');
 
+// The standard intake form. GET renders it, POST files the document.
+Route::get('w/{uid}/documents/submit', [DocumentSubmissionController::class, 'create'])->name('workspace.documents.submit')->middleware('auth');
+Route::post('w/{uid}/documents/submit', [DocumentSubmissionController::class, 'store'])->name('workspace.documents.submit.store')->middleware('auth');
+Route::get('w/{uid}/documents/{taskUid}', [DocumentSubmissionController::class, 'show'])->name('workspace.documents.show')->middleware('auth');
+Route::post('w/{uid}/documents/{taskUid}/forward', [DocumentSubmissionController::class, 'forward'])->name('workspace.documents.forward')->middleware('auth');
+
 Route::get('w/{uid}/my-tasks/count', [WorkSpacesController::class, 'jsonMyTasksCount'])->name('json.workspace.my-tasks.count')->middleware('auth');
 Route::get('w/{uid}/tasks/my-tasks/board', [WorkSpacesController::class, 'workspaceMyTasksBoard'])->name('workspace.view.my-tasks.board')->middleware('auth');
 
 Route::get('w/{uid}/tasks/my-tasks/calendar', [WorkSpacesController::class, 'workspaceMyTasksCalendar'])->name('workspace.view.my-tasks.calendar')->middleware('auth');
 Route::get('w/{uid}/tasks/my-tasks/timeline', [WorkSpacesController::class, 'workspaceMyTasksTimeline'])->name('workspace.view.my-tasks.timeline')->middleware('auth');
 Route::get('w/{uid}/tasks/my-tasks/table', [WorkSpacesController::class, 'workspaceMyTasks'])->name('workspace.view.my-tasks.table')->middleware('auth');
+Route::get('w/{uid}/tasks/my-tasks/documents', [WorkSpacesController::class, 'workspaceMyTasksDocuments'])->name('workspace.view.my-tasks.documents')->middleware('auth');
 Route::get('w/{uid}/tasks/my-tasks', [WorkSpacesController::class, 'workspaceMyTasks'])->name('workspace.view.my-tasks')->middleware('auth');
 Route::get('w/{uid}/tables', [WorkSpacesController::class, 'workspaceTables'])->name('workspace.tables')->middleware('auth');
 Route::delete('workspace/destroy/{id}', [WorkSpacesController::class, 'destroy'])->name('workspace.destroy')->middleware('auth');

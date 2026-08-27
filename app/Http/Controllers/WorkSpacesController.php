@@ -451,48 +451,12 @@ class WorkSpacesController extends Controller
             ->when($filters['type'] ?? null, fn ($q, $type) => $q->whereIn('type_id', array_filter(explode(',', (string) $type))))
             ->when($from, fn ($q) => $q->where('created_at', '>=', $from))
             ->when($to, fn ($q) => $q->where('created_at', '<=', $to))
-            ->with([
-                'user:id,first_name,last_name,photo_path',
-                'project:id,title,slug',
-                'documentSource:id,name',
-                'list:id,title',
-                'type:id,name',
-                'attachments' => fn ($query) => $query
-                    ->select('id', 'task_id', 'name', 'path', 'size', 'created_at')
-                    ->orderByDesc('created_at')
-                    ->orderByDesc('id'),
-            ])
+            ->with($this->documentListRelations())
             ->withCount('attachments')
             ->latest('created_at')
             ->paginate(20)
             ->withQueryString()
-            ->through(fn (Task $task) => [
-                'id' => $task->id,
-                'code' => $task->task_code,
-                'title' => $task->title,
-                'slug' => $task->slug,
-                'is_done' => (bool) $task->is_done,
-                'created_at' => optional($task->created_at)->toIso8601String(),
-                'entry_date' => optional($task->entry_date)->toIso8601String(),
-                'due_date' => optional($task->due_date)->toIso8601String(),
-                'attachments_count' => $task->attachments_count,
-                'files' => $task->attachments->map(fn ($file) => [
-                    'id' => $file->id,
-                    'name' => $file->name,
-                    'path' => $file->path,
-                    'size' => (int) $file->size,
-                    'ext' => strtolower(pathinfo($file->name, PATHINFO_EXTENSION)),
-                ])->values(),
-                'project' => $task->project ? ['id' => $task->project->id, 'title' => $task->project->title, 'slug' => $task->project->slug] : null,
-                'source' => optional($task->documentSource)->name,
-                'type' => optional($task->type)->name,
-                'status' => optional($task->list)->title,
-                'user' => $task->user ? [
-                    'id' => $task->user->id,
-                    'name' => trim($task->user->first_name.' '.$task->user->last_name),
-                    'photo' => $task->user->photo_path,
-                ] : null,
-            ]);
+            ->through(fn (Task $task) => $this->documentListRow($task));
 
         $uploaderIds = (clone $base)->distinct()->pluck('user_id')->filter()->values();
 
@@ -514,6 +478,104 @@ class WorkSpacesController extends Controller
             // a fixed list, and most documents have no type set yet.
             'types' => WorkspaceType::orderBy('id')->get(['id', 'name']),
         ]);
+    }
+
+    /**
+     * The same register as workspaceDocuments, narrowed to the documents the
+     * signed-in user is actually on the hook for. My Tasks already offers four
+     * shapes of the same data; this is the fifth, and the one that matches the
+     * document register people are used to reading.
+     */
+    public function workspaceMyTasksDocuments($uid, Request $request)
+    {
+        $workspace = Workspace::where('id', $uid)->orWhere('slug', $uid)->whereHas('member')->with('member')->first();
+        if (empty($workspace)) {
+            return abort(404);
+        }
+
+        $userId = auth()->id();
+        $filters = $request->only('type', 'period', 'from', 'to');
+        $projectIds = Project::where('workspace_id', $workspace->id)->pluck('id');
+        [$from, $to] = $this->documentDateRange($filters);
+
+        // Same four conditions as the sidebar badge (jsonAssignedTasksCount), so
+        // the number on the menu and the number of rows here cannot disagree.
+        // is_done and whereHas('list') are the two that matter: a finished
+        // document, or one whose board was archived, is off your plate.
+        $base = Task::whereIn('project_id', $projectIds)
+            ->where('is_done', 0)
+            ->isOpen()
+            ->whereHas('list')
+            ->visibleTo()
+            ->whereHas('assignees', fn ($q) => $q->where('user_id', $userId));
+
+        $documents = (clone $base)
+            ->when($filters['type'] ?? null, fn ($q, $type) => $q->whereIn('type_id', array_filter(explode(',', (string) $type))))
+            ->when($from, fn ($q) => $q->where('created_at', '>=', $from))
+            ->when($to, fn ($q) => $q->where('created_at', '<=', $to))
+            ->with($this->documentListRelations())
+            ->withCount('attachments')
+            ->latest('created_at')
+            ->paginate(20)
+            ->withQueryString()
+            ->through(fn (Task $task) => $this->documentListRow($task));
+
+        return Inertia::render('Workspaces/MyTasksDocuments', [
+            'title' => 'My Documents | '.$workspace->name,
+            'workspace' => $workspace,
+            'documents' => $documents,
+            'filters' => $filters,
+            'total' => (clone $base)->count(),
+            'types' => WorkspaceType::orderBy('id')->get(['id', 'name']),
+        ]);
+    }
+
+    /** Eager loads every document row in the register needs. */
+    private function documentListRelations(): array
+    {
+        return [
+            'user:id,first_name,last_name,photo_path',
+            'project:id,title,slug',
+            'documentSource:id,name',
+            'list:id,title',
+            'type:id,name',
+            'attachments' => fn ($query) => $query
+                ->select('id', 'task_id', 'name', 'path', 'size', 'created_at')
+                ->orderByDesc('created_at')
+                ->orderByDesc('id'),
+        ];
+    }
+
+    /** One row of the document register, in the shape both listings render. */
+    private function documentListRow(Task $task): array
+    {
+        return [
+            'id' => $task->id,
+            'code' => $task->task_code,
+            'title' => $task->title,
+            'slug' => $task->slug,
+            'is_done' => (bool) $task->is_done,
+            'created_at' => optional($task->created_at)->toIso8601String(),
+            'entry_date' => optional($task->entry_date)->toIso8601String(),
+            'due_date' => optional($task->due_date)->toIso8601String(),
+            'attachments_count' => $task->attachments_count,
+            'files' => $task->attachments->map(fn ($file) => [
+                'id' => $file->id,
+                'name' => $file->name,
+                'path' => $file->path,
+                'size' => (int) $file->size,
+                'ext' => strtolower(pathinfo($file->name, PATHINFO_EXTENSION)),
+            ])->values(),
+            'project' => $task->project ? ['id' => $task->project->id, 'title' => $task->project->title, 'slug' => $task->project->slug] : null,
+            'source' => optional($task->documentSource)->name,
+            'type' => optional($task->type)->name,
+            'status' => optional($task->list)->title,
+            'user' => $task->user ? [
+                'id' => $task->user->id,
+                'name' => trim($task->user->first_name.' '.$task->user->last_name),
+                'photo' => $task->user->photo_path,
+            ] : null,
+        ];
     }
 
     /**

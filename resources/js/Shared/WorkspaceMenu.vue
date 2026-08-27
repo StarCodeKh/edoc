@@ -47,9 +47,7 @@
                     <span class="flex-1 ml-3">
                         {{ $t('Workspace Tasks') }}
                     </span>
-                    <span
-                        class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 mr-1 rounded-full bg-indigo-600 text-white text-[10px] font-semibold"
-                    >
+                    <span v-if="my_tasks_count > 0" class="count__badge">
                         {{ my_tasks_count }}
                     </span>
                 </Link>
@@ -57,7 +55,7 @@
 
             <li>
                 <Link
-                    :href="route('workspace.view.my-tasks.board', workspace.slug || workspace.id)"
+                    :href="route('workspace.view.my-tasks.documents', workspace.slug || workspace.id)"
                     class="flex items-center px-3 py-2 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 group"
                     :class="{ active: isMyTasksActive() }"
                 >
@@ -65,9 +63,7 @@
                     <span class="flex-1 ml-3">
                         {{ $t('My Tasks') }}
                     </span>
-                    <span
-                        class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 mr-1 rounded-full bg-indigo-600 text-white text-[10px] font-semibold"
-                    >
+                    <span v-if="assigned_tasks_count > 0" class="count__badge count__badge--urgent">
                         {{ assigned_tasks_count }}
                     </span>
                 </Link>
@@ -82,6 +78,19 @@
                     <icon class="w-4 h-4" name="book" />
                     <span class="flex-1 ml-3">
                         {{ $t('All Documents') }}
+                    </span>
+                </Link>
+            </li>
+
+            <li>
+                <Link
+                    :href="route('workspace.documents.submit', workspace.slug || workspace.id)"
+                    class="flex items-center px-3 py-2 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 group"
+                    :class="{ active: isSubmitDocumentActive() }"
+                >
+                    <icon class="w-4 h-4" name="post" />
+                    <span class="flex-1 ml-3">
+                        {{ $t('Submit Document') }}
                     </span>
                 </Link>
             </li>
@@ -412,10 +421,18 @@ export default {
             const component = this.$page.component;
             const url = this.$page.url || '';
 
-            return component === 'Workspaces/MyTasks' || url.includes('/tasks/my-tasks');
+            // A document's own page keeps this lit: it is where the listing sends
+            // you, and without it nothing in the menu is highlighted at all -
+            // Workspaces/Documents does not match 'Documents/Show' either.
+            return (
+                component === 'Workspaces/MyTasks' || component === 'Documents/Show' || url.includes('/tasks/my-tasks')
+            );
         },
         isDocumentsActive() {
             return this.$page.component === 'Workspaces/Documents';
+        },
+        isSubmitDocumentActive() {
+            return this.$page.component === 'Documents/Submit';
         },
         isAuditLogActive() {
             return this.$page.component === 'AuditLog/Index';
@@ -534,3 +551,52 @@ export default {
     },
 };
 </script>
+
+<style scoped>
+/* Shown only above zero - a badge reading "0" is noise. */
+.count__badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    margin-right: 4px;
+    border-radius: 9999px;
+    background: #4f46e5;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+/* Only the signed-in user's own queue. The workspace-wide count is information;
+   this one is work waiting on you, so it is the only badge that gets to shout. */
+.count__badge--urgent {
+    background: #e11d48;
+    animation: count-pulse 2.2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+}
+
+/* The halo is a box-shadow rather than a scaled pseudo-element: nothing is
+   layered behind the badge, so there is no stacking context to get wrong and
+   the number itself never moves or blurs. */
+@keyframes count-pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.55);
+    }
+    70% {
+        box-shadow: 0 0 0 7px rgba(225, 29, 72, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(225, 29, 72, 0);
+    }
+}
+
+/* A badge that never stops moving is a problem for anyone who asked the system
+   to calm animation down. The colour still carries the message. */
+@media (prefers-reduced-motion: reduce) {
+    .count__badge--urgent {
+        animation: none;
+    }
+}
+</style>

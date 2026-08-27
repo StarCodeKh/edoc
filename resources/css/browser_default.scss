@@ -84,6 +84,18 @@ strong {
     font-weight: bolder;
 }
 
+/* Preflight normally carries this and it was missing here: form controls do
+   not inherit the page font from the UA, so every input, button and select in
+   the app was rendering Khmer in whatever face the OS chose rather than the
+   Kantumruy Pro the page around it uses. */
+button,
+input,
+optgroup,
+select,
+textarea {
+    font-family: inherit;
+}
+
 code,
 kbd,
 samp,

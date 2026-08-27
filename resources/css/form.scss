@@ -2,18 +2,39 @@
     @apply mb-2 block select-none;
     font-size: 15px;
     font-weight: bold;
+    /* Khmer stacks vowel signs above the base glyph (ជើ, ុំ). At the inherited
+       1.5 the line box cut the tops off every label written in Khmer. */
+    line-height: 1.8;
 }
 
 .form-input,
 .form-textarea,
 .form-select {
-    @apply leading-normal block w-full border bg-white font-sans rounded text-left appearance-none relative focus:border-indigo-400 focus:ring;
+    @apply block w-full border bg-white rounded text-left appearance-none relative;
+    /* Form controls do not inherit the body font, and Tailwind's `font-sans`
+       stack contains no Khmer family - so every field fell back to whatever
+       Khmer face the OS happened to pick, beside a page set in Kantumruy Pro. */
+    font-family: var(--font-khmer-body);
     padding: 3px 10px;
     font-size: 15px;
+    /* Same reason as .form-label: 1.5 clips the marks Khmer stacks upward. */
+    line-height: 1.75;
     height: 2.3rem;
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
 
     &::placeholder {
         @apply text-gray-500 opacity-100;
+    }
+
+    /* Matches FilterSelect's focus exactly, so a text field and the styled
+       select next to it light up the same way. Tailwind's bare `ring` drew a
+       3px blue-500 halo, which was both heavier and the wrong hue. */
+    &:focus {
+        outline: 0;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
     }
 }
 
@@ -62,7 +83,12 @@
 .form-input.error,
 .form-textarea.error,
 .form-select.error {
-    @apply border-red-500 focus:ring focus:ring-red-200;
+    @apply border-red-500;
+
+    &:focus {
+        border-color: #ef4444;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+    }
 }
 
 .form-error {
@@ -108,13 +134,6 @@
 
     .form-error {
         color: #f87171;
-    }
-}
-
-.form-select {
-    &:focus {
-        border-color: #9b4dca;
-        outline: 0;
     }
 }
 

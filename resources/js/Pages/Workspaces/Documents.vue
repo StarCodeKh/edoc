@@ -27,6 +27,15 @@
                                     <div class="text-lg font-bold text-white">{{ khNum(total) }}</div>
                                     <div class="text-[11px] font-medium text-indigo-100">{{ $t('Total') }}</div>
                                 </div>
+                                <!-- The register is where you notice something is missing,
+                                     so the way to file it belongs here too. -->
+                                <Link
+                                    :href="route('workspace.documents.submit', workspace.slug || workspace.id)"
+                                    class="flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-indigo-700 shadow-sm hover:bg-indigo-50"
+                                >
+                                    <icon name="post" class="h-4 w-4" />
+                                    {{ $t('Submit Document') }}
+                                </Link>
                             </div>
                         </div>
                     </div>
@@ -278,11 +287,23 @@
                             {{ $t('Close') }}
                         </button>
                         <Link
+                            :href="
+                                route('workspace.documents.show', [
+                                    workspace.slug || workspace.id,
+                                    detail.slug || detail.id,
+                                ])
+                            "
+                            class="doc-btn doc-btn--primary"
+                        >
+                            <icon name="details" class="h-3.5 w-3.5" />
+                            {{ $t('View details') }}
+                        </Link>
+                        <Link
                             v-if="detail.project"
                             :href="
                                 route('projects.board.with.task', [detail.project.slug || detail.project.id, detail.id])
                             "
-                            class="doc-btn doc-btn--primary"
+                            class="doc-btn doc-btn--ghost"
                         >
                             <icon name="link_external" class="h-3.5 w-3.5" />
                             {{ $t('Open full task') }}
@@ -478,130 +499,6 @@ export default {
 </script>
 
 <style scoped>
-/* ---- one-line rows ---- */
-.doc-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-    padding: 9px 16px;
-    text-align: left;
-    transition: background-color 0.12s ease;
-}
-.doc-row:hover {
-    background: rgba(238, 242, 255, 0.55);
-}
-.doc-row:hover .doc-row__chevron {
-    color: #6574cd;
-    transform: translateX(2px);
-}
-
-.doc-row__icon {
-    width: 22px;
-    height: 22px;
-    flex-shrink: 0;
-}
-
-.doc-row__code {
-    flex-shrink: 0;
-    padding: 2px 6px;
-    border-radius: 6px;
-    background: #f1f5f9;
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 11px;
-    font-weight: 700;
-    color: #475569;
-}
-.doc-row__title {
-    flex: 1;
-    min-width: 0;
-    font-size: 13px;
-    font-weight: 700;
-    color: #111827;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-.doc-row__project {
-    width: 8rem;
-    flex-shrink: 0;
-    font-size: 12px;
-    color: #6b7280;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-.doc-row__files {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    width: 3rem;
-    flex-shrink: 0;
-    font-size: 11px;
-    font-weight: 600;
-    color: #94a3b8;
-}
-.doc-row__user {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    width: 9rem;
-    flex-shrink: 0;
-    min-width: 0;
-}
-.doc-row__avatar {
-    width: 20px;
-    height: 20px;
-    flex-shrink: 0;
-    border-radius: 999px;
-    object-fit: cover;
-}
-.doc-row__user-name {
-    font-size: 12px;
-    color: #4b5563;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-.doc-row__date {
-    width: 6rem;
-    flex-shrink: 0;
-    text-align: right;
-    font-size: 11px;
-    font-weight: 600;
-    color: #9ca3af;
-}
-.doc-row__status {
-    flex-shrink: 0;
-    max-width: 12rem;
-    padding: 3px 10px;
-    border-radius: 999px;
-    font-size: 11px;
-    font-weight: 600;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-.doc-row__status.is-done {
-    background: #dcfce7;
-    color: #15803d;
-}
-.doc-row__status.is-open {
-    background: #dbeafe;
-    color: #1d4ed8;
-}
-
-.doc-row__chevron {
-    width: 14px;
-    height: 14px;
-    flex-shrink: 0;
-    color: #d1d5db;
-    transition:
-        color 0.12s ease,
-        transform 0.12s ease;
-}
-
-/* ---- detail panel ---- */
 .doc-backdrop {
     position: fixed;
     inset: 0;

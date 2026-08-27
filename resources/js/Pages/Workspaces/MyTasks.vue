@@ -6,17 +6,33 @@
                 <div class="view__menus flex items-center flex-start gap-1 flex-wrap lg:flex-nowrap">
                     <h2 class="text-lg font-bold hover:bg-[#a6c5e229] rounded px-3 mr-1 py-1">{{ workspace.name }}</h2>
                     <Link
-                        v-for="(option, option_index) in viewOptions"
+                        v-for="option in viewOptions"
                         :key="option.slug"
                         class="flex py-2 px-3 items-center cursor-pointer capitalize rounded"
                         :class="{ active: currentView === option.slug }"
                         :href="route('workspace.view.my-tasks.' + option.slug, workspace.slug || workspace.id)"
                     >
-                        <icon :name="viewIcons[option_index]" class="w-4 fill-[#ffffff] h-4 mr-[5px]" />
+                        <icon :name="option.icon" class="w-4 fill-[#ffffff] h-4 mr-[5px]" />
                         {{ $t(option.name) }}
                     </Link>
                 </div>
                 <div class="flex items-center flex-start gap-1 ml-auto view__menus">
+                    <!-- What the list adds up to, before the filters that shape it. -->
+                    <span class="mytasks__count" :title="$t('Total')">
+                        <icon name="list" class="w-3.5 h-3.5" />
+                        {{ documentCount }}
+                    </span>
+                    <span v-if="overdueCount" class="mytasks__count is-overdue" :title="$t('Overdue')">
+                        <icon name="time" class="w-3.5 h-3.5" />
+                        {{ overdueCount }}
+                    </span>
+                    <Link
+                        :href="route('workspace.documents.submit', workspace.slug || workspace.id)"
+                        class="flex px-3 py-2 items-center cursor-pointer rounded hover:bg-[#a6c5e229]"
+                    >
+                        <icon name="post" class="w-4 h-4 mr-[5px]" />
+                        {{ $t('Submit Document') }}
+                    </Link>
                     <button
                         class="flex pl-4 pr-2 items-center __filter cursor-pointer capitalize rounded hover:bg-[#a6c5e229]"
                         @click="open_filter = !open_filter"
@@ -120,6 +136,19 @@
                                             >
                                                 <icon v-if="element.timer" name="blink" class="w-2 h-2" />
                                                 <h2 class="font-medium t__title text-pretty">{{ element.title }}</h2>
+                                            </Link>
+                                            <Link
+                                                v-if="element.task_code"
+                                                class="t__code"
+                                                :href="
+                                                    route('workspace.documents.show', [
+                                                        workspace.slug || workspace.id,
+                                                        element.slug || element.id,
+                                                    ])
+                                                "
+                                                :title="$t('View details')"
+                                            >
+                                                {{ element.task_code }}
                                             </Link>
                                         </td>
                                         <td
@@ -249,8 +278,24 @@
                             </draggable>
                             <tbody v-if="!tasks.length">
                                 <tr>
-                                    <td class="border-t px-6 py-4 text-center" colspan="7">
-                                        {{ $t('To tasks found!') }}
+                                    <td class="border-t px-6 py-12" colspan="7">
+                                        <div class="flex flex-col items-center justify-center gap-3 text-center">
+                                            <div class="rounded-2xl bg-gray-100 p-4">
+                                                <icon name="list" class="h-8 w-8 text-gray-400" />
+                                            </div>
+                                            <p class="font-semibold text-gray-700">{{ $t('No tasks found!') }}</p>
+                                            <p class="text-sm text-gray-500">
+                                                {{ $t('Documents assigned to you show up here.') }}
+                                            </p>
+                                            <Link
+                                                :href="
+                                                    route('workspace.documents.submit', workspace.slug || workspace.id)
+                                                "
+                                                class="text-sm font-semibold text-indigo-600 hover:text-indigo-800"
+                                            >
+                                                {{ $t('Submit Document') }}
+                                            </Link>
+                                        </div>
                                     </td>
                                 </tr>
                             </tbody>
@@ -469,13 +514,17 @@ export default {
             team_members: null,
             open_filter: false,
             currentView: 'table',
+            // Documents first: it is where the sidebar lands. The icon rides on
+            // the option so the order can be changed in one place - it used to
+            // live in a second, position-parallel array that had to be kept in
+            // step by hand across five files.
             viewOptions: [
-                { name: 'Board', slug: 'board' },
-                { name: 'Calendar', slug: 'calendar' },
-                { name: 'Timeline', slug: 'timeline' },
-                { name: 'List', slug: 'table' },
+                { name: 'Documents', slug: 'documents', icon: 'file-text' },
+                { name: 'Board', slug: 'board', icon: 'board' },
+                { name: 'Calendar', slug: 'calendar', icon: 'calendar' },
+                { name: 'Timeline', slug: 'timeline', icon: 'timeline' },
+                { name: 'List', slug: 'table', icon: 'table' },
             ],
-            viewIcons: ['board', 'calendar', 'timeline', 'table'],
             formInitialized: false, // Flag to prevent watcher from triggering on initial load
             form: {
                 // Don't include user in form - it's handled by the backend
@@ -516,6 +565,16 @@ export default {
     computed: {
         isModalVisible() {
             return this.taskDetailsOpen;
+        },
+        documentCount() {
+            return this.tasks ? this.tasks.length : 0;
+        },
+        /** Past its due date and not yet finished - the ones worth chasing. */
+        overdueCount() {
+            if (!this.tasks) return 0;
+            return this.tasks.filter(
+                (task) => task.due_date && !task.is_done && moment(task.due_date).isBefore(moment())
+            ).length;
         },
         lists() {
             const items = this.board_lists;
@@ -776,3 +835,35 @@ export default {
     },
 };
 </script>
+
+<style scoped>
+/* The toolbar is a translucent dark bar (layout.scss), so the badges are
+   drawn in its own idiom rather than the light-card one used further down. */
+.mytasks__count {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 9px;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.16);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.6;
+}
+
+.mytasks__count.is-overdue {
+    background: rgba(248, 113, 113, 0.28);
+}
+
+/* The tracking code people actually quote on the phone. Sits under the title,
+   quiet enough not to compete with it. */
+.t__code {
+    display: block;
+    margin-top: 2px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: #94a3b8;
+}
+</style>

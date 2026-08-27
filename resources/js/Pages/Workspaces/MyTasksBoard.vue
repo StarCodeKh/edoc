@@ -6,12 +6,12 @@
                 <div class="view__menus flex items-center flex-start gap-1 flex-wrap lg:flex-nowrap">
                     <h2 class="text-lg font-bold hover:bg-[#a6c5e229] rounded px-3 mr-1 py-1">{{ workspace.name }}</h2>
                     <Link
-                        v-for="(option, option_index) in viewOptions"
+                        v-for="option in viewOptions"
                         class="flex py-2 px-3 items-center cursor-pointer capitalize rounded"
                         :class="{ active: currentView === option.slug }"
                         :href="route('workspace.view.my-tasks.' + option.slug, workspace.slug || workspace.id)"
                     >
-                        <icon :name="viewIcons[option_index]" class="w-4 fill-[#ffffff] h-4 mr-[5px]" />
+                        <icon :name="option.icon" class="w-4 fill-[#ffffff] h-4 mr-[5px]" />
                         {{ $t(option.name) }}
                     </Link>
                 </div>
@@ -475,13 +475,17 @@ export default {
             open_filter: false,
             workspaceProjects: [],
             currentView: 'board',
+            // Documents first: it is where the sidebar lands. The icon rides on
+            // the option so the order can be changed in one place - it used to
+            // live in a second, position-parallel array that had to be kept in
+            // step by hand across five files.
             viewOptions: [
-                { name: 'Board', slug: 'board' },
-                { name: 'Calendar', slug: 'calendar' },
-                { name: 'Timeline', slug: 'timeline' },
-                { name: 'List', slug: 'table' },
+                { name: 'Documents', slug: 'documents', icon: 'file-text' },
+                { name: 'Board', slug: 'board', icon: 'board' },
+                { name: 'Calendar', slug: 'calendar', icon: 'calendar' },
+                { name: 'Timeline', slug: 'timeline', icon: 'timeline' },
+                { name: 'List', slug: 'table', icon: 'table' },
             ],
-            viewIcons: ['board', 'calendar', 'timeline', 'table'],
             form: {
                 user: this.$page.props.auth?.user?.id || null, // Always filter by current user
                 due: this.filters?.due || null,
