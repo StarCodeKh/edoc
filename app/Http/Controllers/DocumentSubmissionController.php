@@ -17,6 +17,7 @@ use App\Models\Project;
 use App\Models\Task;
 use App\Models\TeamMember;
 use App\Models\User;
+use App\Models\WorkflowSubRole;
 use App\Models\Workspace;
 use App\Models\WorkspaceType;
 use App\Support\TaskAbility;
@@ -200,7 +201,16 @@ class DocumentSubmissionController extends Controller
         // assignee, so this is what drops it out of the listing and the badge.
         Assignee::where('task_id', $task->id)->where('user_id', auth()->id())->delete();
 
-        $message = __('Forwarded to :step.', ['step' => $next->title]);
+        // ...and puts it on the plate of whoever carries the next step's
+        // responsibility, as configured in Settings > Workflow Roles.
+        $handedTo = $this->assignStepOwners($task, $workspace, $next);
+
+        $message = $handedTo->isEmpty()
+            ? __('Forwarded to :step.', ['step' => $next->title])
+            : __('Forwarded to :step, assigned to :count person(s).', [
+                'step' => $next->title,
+                'count' => $handedTo->count(),
+            ]);
 
         // Unassigning can cost a Normal User the right to open the document at
         // all, so going back to it would 403. They go back to their pile.
@@ -230,12 +240,62 @@ class DocumentSubmissionController extends Controller
      */
     private function pageAbilities(Task $task): array
     {
-        $holds = TaskAbility::isAssigned(auth()->user(), $task);
+        // "Holding" a document is being assigned it, or being responsible for
+        // the board it is waiting on - a reviewer who was never named still has
+        // it on their desk.
+        $user = auth()->user();
+        $holds = TaskAbility::isAssigned($user, $task) || TaskAbility::isResponsibleForItsBoard($user, $task);
 
         return [
             'attach' => $holds && $this->userCan('attach', $task),
             'forward' => $holds && $this->userCan('move', $task),
         ];
+    }
+
+    /**
+     * Assign the document to everyone carrying the responsibility the step it
+     * just landed on calls for.
+     *
+     * The chain is board title -> workflow step -> responsible_role code ->
+     * sub-role -> the users holding it. Any missing link simply means nobody is
+     * assigned automatically: an administration that has not configured a step,
+     * or has nobody in that responsibility yet, still gets a working forward.
+     *
+     * The forwarder is skipped even when they hold the next responsibility -
+     * they have just handed the document on, and putting it straight back on
+     * their list would make the hand-off look like it had not happened.
+     */
+    private function assignStepOwners(Task $task, Workspace $workspace, BoardList $step)
+    {
+        $code = EdocWorkflowRole::where('workspace_id', $workspace->id)
+            ->where('list_title', $step->title)
+            ->value('responsible_role');
+
+        if (empty($code)) {
+            return collect();
+        }
+
+        $subRole = WorkflowSubRole::where('code', $code)->first();
+
+        if (empty($subRole)) {
+            return collect();
+        }
+
+        $alreadyOn = Assignee::where('task_id', $task->id)->pluck('user_id')->all();
+
+        $owners = User::where('workflow_sub_role_id', $subRole->id)
+            ->where('id', '!=', auth()->id())
+            ->whereNotIn('id', $alreadyOn)
+            ->get();
+
+        $assigner = auth()->user();
+
+        foreach ($owners as $owner) {
+            Assignee::create(['task_id' => $task->id, 'user_id' => $owner->id]);
+            event(new UserAssignedToTask($owner, $task, $assigner));
+        }
+
+        return $owners;
     }
 
     /** The next board along, or null when the document is at the last one. */

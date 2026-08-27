@@ -322,6 +322,7 @@
     "Forgot your password?": "忘记密码？",
     "Forward": "转发",
     "Forward to :step": "转发至 :step",
+    "Forwarded to :step, assigned to :count person(s).": "已转发至 :step，并指派给 :count 人。",
     "Forwarded to :step.": "已转发至 :step。",
     "From": "从",
     "From Address": "发件人地址",

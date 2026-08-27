@@ -322,6 +322,7 @@
     "Forgot your password?": "Forgot your password?",
     "Forward": "Forward",
     "Forward to :step": "Forward to :step",
+    "Forwarded to :step, assigned to :count person(s).": "Forwarded to :step, assigned to :count person(s).",
     "Forwarded to :step.": "Forwarded to :step.",
     "From": "From",
     "From Address": "From Address",

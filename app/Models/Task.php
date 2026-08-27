@@ -247,11 +247,22 @@ class Task extends Model
             return $query;
         }
 
-        return $query->where(function ($query) use ($user) {
+        // Boards this user is responsible for, via their workflow responsibility.
+        // A document sitting on one of them is theirs to look at whether or not
+        // anyone remembered to assign it.
+        $responsibleFor = $user->responsibleListTitles();
+
+        return $query->where(function ($query) use ($user, $responsibleFor) {
             $query->where('tasks.user_id', $user->id)
                 ->orWhereHas('assignees', function ($assignees) use ($user) {
                     $assignees->where('user_id', $user->id);
                 });
+
+            if (!empty($responsibleFor)) {
+                $query->orWhereHas('list', function ($list) use ($responsibleFor) {
+                    $list->whereIn('title', $responsibleFor);
+                });
+            }
         });
     }
 

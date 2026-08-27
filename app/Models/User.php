@@ -83,7 +83,44 @@ class User extends Authenticatable
      * Super Admin and Admin share the slug 'admin', so the two are told apart by
      * role name / id; every existing `slug == 'admin'` check keeps working.
      */
+    /**
+     * The board titles this user is responsible for, via their workflow
+     * responsibility.
+     *
+     * Workflow steps are matched to boards by title - that is how
+     * Support\WorkflowStep has always resolved them - so a responsibility
+     * resolves to a set of titles rather than board ids.
+     *
+     * Memoised: visibility is asked once per task in some loops, and this
+     * would otherwise be two queries every time.
+     */
+    public function responsibleListTitles(): array
+    {
+        if ($this->responsibleTitlesCache !== null) {
+            return $this->responsibleTitlesCache;
+        }
+
+        if (empty($this->workflow_sub_role_id)) {
+            return $this->responsibleTitlesCache = [];
+        }
+
+        $code = WorkflowSubRole::whereKey($this->workflow_sub_role_id)->value('code');
+
+        if (empty($code)) {
+            return $this->responsibleTitlesCache = [];
+        }
+
+        return $this->responsibleTitlesCache = EdocWorkflowRole::where('responsible_role', $code)
+            ->pluck('list_title')
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+    }
+
     /** The workflow responsibility this user carries, if any. */
+    private ?array $responsibleTitlesCache = null;
+
     public function workflowSubRole()
     {
         return $this->belongsTo(WorkflowSubRole::class, 'workflow_sub_role_id');

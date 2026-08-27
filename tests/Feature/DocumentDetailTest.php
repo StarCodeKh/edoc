@@ -10,7 +10,9 @@ use App\Models\Project;
 use App\Models\Role;
 use App\Models\Task;
 use App\Models\User;
+use App\Models\WorkflowSubRole;
 use App\Models\Workspace;
+use App\Support\TaskAbility;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia;
 use Tests\TestCase;
@@ -407,6 +409,165 @@ class DocumentDetailTest extends TestCase
             );
     }
 
+    /**
+     * The point of the whole chain: board title -> workflow step ->
+     * responsible_role -> sub-role -> the users holding it. Forwarding should
+     * land the document on the next step owner's list without anyone picking
+     * names by hand.
+     */
+    public function test_forwarding_assigns_the_next_steps_responsible_users(): void
+    {
+        $subRole = WorkflowSubRole::create(['code' => 'sg', 'name' => 'Secretary General', 'order' => 0]);
+
+        EdocWorkflowRole::create([
+            'workflow_type' => 'internal_cgmc',
+            'workspace_id' => $this->workspace->id,
+            'list_title' => 'Review',
+            'order' => 2,
+            'responsible_role' => 'sg',
+        ]);
+
+        $owner = User::factory()->create([
+            'role_id' => $this->user->role_id,
+            'workflow_sub_role_id' => $subRole->id,
+        ]);
+        $unrelated = User::factory()->create(['role_id' => $this->user->role_id]);
+
+        $task = $this->makeDocument([], true);
+
+        $this->post($this->forwardUrl($task))->assertSessionHas('success');
+
+        $this->assertSame(1, Assignee::where('task_id', $task->id)->where('user_id', $owner->id)->count());
+        $this->assertSame(0, Assignee::where('task_id', $task->id)->where('user_id', $unrelated->id)->count());
+        // The forwarder still leaves their own plate.
+        $this->assertSame(0, Assignee::where('task_id', $task->id)->where('user_id', $this->user->id)->count());
+    }
+
+    /**
+     * The forwarder is skipped even when they hold the next responsibility -
+     * re-assigning them immediately would make the hand-off look broken.
+     */
+    public function test_a_forwarder_who_holds_the_next_responsibility_is_not_handed_it_back(): void
+    {
+        $subRole = WorkflowSubRole::create(['code' => 'sg', 'name' => 'Secretary General', 'order' => 0]);
+        $this->user->update(['workflow_sub_role_id' => $subRole->id]);
+
+        EdocWorkflowRole::create([
+            'workflow_type' => 'internal_cgmc',
+            'workspace_id' => $this->workspace->id,
+            'list_title' => 'Review',
+            'order' => 2,
+            'responsible_role' => 'sg',
+        ]);
+
+        $task = $this->makeDocument([], true);
+
+        $this->post($this->forwardUrl($task))->assertSessionHas('success');
+
+        $this->assertSame(0, Assignee::where('task_id', $task->id)->where('user_id', $this->user->id)->count());
+    }
+
+    /**
+     * A workspace with no workflow configured, or nobody in that
+     * responsibility, must still be able to forward.
+     */
+    public function test_forwarding_works_when_no_one_carries_the_responsibility(): void
+    {
+        $task = $this->makeDocument([], true);
+
+        $this->post($this->forwardUrl($task))->assertSessionHas('success');
+
+        $this->assertSame($this->second->id, (int) $task->fresh()->list_id);
+        $this->assertSame(0, Assignee::where('task_id', $task->id)->count());
+    }
+
+    /** A Normal User whose responsibility covers the board it is waiting on. */
+    private function responsibleReviewer(string $code = 'adsg'): User
+    {
+        $subRole = WorkflowSubRole::firstOrCreate(['code' => $code], ['name' => strtoupper($code), 'order' => 0]);
+
+        EdocWorkflowRole::create([
+            'workflow_type' => 'internal_cgmc',
+            'workspace_id' => $this->workspace->id,
+            'list_title' => 'Registry',
+            'order' => 1,
+            'responsible_role' => $code,
+        ]);
+
+        return User::factory()->create([
+            'role_id' => Role::create(['name' => 'User '.$code, 'slug' => 'user', 'access' => json_encode([])])->id,
+            'workflow_sub_role_id' => $subRole->id,
+        ]);
+    }
+
+    /**
+     * Responsibility is what makes the page usable: the reviewer of a step was
+     * never assigned the document by name, but forwarding, attaching and
+     * commenting are exactly their job.
+     */
+    public function test_a_responsible_reviewer_is_offered_the_actions(): void
+    {
+        $reviewer = $this->responsibleReviewer();
+        $task = $this->makeDocument();
+
+        $this->actingAs($reviewer);
+
+        $this->get($this->showUrl($task))
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('can.forward', true)
+                ->where('can.attach', true)
+            );
+    }
+
+    public function test_a_responsible_reviewer_can_forward_with_a_note(): void
+    {
+        $reviewer = $this->responsibleReviewer();
+        $task = $this->makeDocument();
+
+        $this->actingAs($reviewer);
+
+        $this->post($this->forwardUrl($task), ['note' => 'Checked by ADSG.'])
+            ->assertSessionHas('success');
+
+        $this->assertSame($this->second->id, (int) $task->fresh()->list_id);
+        $this->assertDatabaseHas('comments', [
+            'task_id' => $task->id,
+            'user_id' => $reviewer->id,
+            'details' => 'Checked by ADSG.',
+        ]);
+    }
+
+    /**
+     * The responsibility is to a board, not to the document. Once it moves on to
+     * a board they do not cover, the actions go with it.
+     */
+    public function test_the_actions_end_when_the_document_leaves_their_board(): void
+    {
+        $reviewer = $this->responsibleReviewer();
+        $task = $this->makeDocument(['list_id' => $this->second->id]);
+
+        $this->actingAs($reviewer);
+
+        $this->get($this->showUrl($task))->assertForbidden();
+    }
+
+    /**
+     * Widened deliberately narrowly: reviewing a step is not licence to rewrite
+     * the document or delete it.
+     */
+    public function test_responsibility_does_not_grant_editing_or_deleting(): void
+    {
+        $reviewer = $this->responsibleReviewer();
+        $task = $this->makeDocument();
+
+        $this->assertTrue(TaskAbility::canMove($reviewer, $task));
+        $this->assertTrue(TaskAbility::canAttach($reviewer, $task));
+        $this->assertTrue(TaskAbility::canComment($reviewer, $task));
+        $this->assertFalse(TaskAbility::canEdit($reviewer, $task));
+        $this->assertFalse(TaskAbility::canDelete($reviewer, $task));
+    }
+
     public function test_a_guest_cannot_forward(): void
     {
         $task = $this->makeDocument();
@@ -416,6 +577,50 @@ class DocumentDetailTest extends TestCase
         $this->post($this->forwardUrl($task))->assertRedirect(route('login'));
 
         $this->assertSame($this->first->id, (int) $task->fresh()->list_id);
+    }
+
+    /**
+     * Listing a document and being allowed to open it are two different checks -
+     * Task::scopeVisibleTo and TaskAbility::canView. Both grew the same
+     * responsibility arm, and this is what proves they agree: without the
+     * second, the document would appear in the listing and then 403.
+     */
+    public function test_a_normal_user_can_open_a_document_on_a_board_they_are_responsible_for(): void
+    {
+        $subRole = WorkflowSubRole::create(['code' => 'adsg', 'name' => 'ADSG', 'order' => 0]);
+
+        EdocWorkflowRole::create([
+            'workflow_type' => 'internal_cgmc',
+            'workspace_id' => $this->workspace->id,
+            'list_title' => 'Registry',
+            'order' => 1,
+            'responsible_role' => 'adsg',
+        ]);
+
+        $normal = User::factory()->create([
+            'role_id' => Role::create(['name' => 'User', 'slug' => 'user', 'access' => json_encode([])])->id,
+            'workflow_sub_role_id' => $subRole->id,
+        ]);
+
+        // Not theirs, not assigned to them - only the responsibility connects them.
+        $task = $this->makeDocument();
+
+        $this->actingAs($normal);
+
+        $this->get($this->showUrl($task))->assertOk();
+    }
+
+    public function test_a_normal_user_still_cannot_open_an_unrelated_document(): void
+    {
+        $normal = User::factory()->create([
+            'role_id' => Role::create(['name' => 'User', 'slug' => 'user', 'access' => json_encode([])])->id,
+        ]);
+
+        $task = $this->makeDocument();
+
+        $this->actingAs($normal);
+
+        $this->get($this->showUrl($task))->assertForbidden();
     }
 
     public function test_a_guest_cannot_view_a_document(): void

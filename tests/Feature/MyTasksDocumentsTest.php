@@ -4,10 +4,12 @@ namespace Tests\Feature;
 
 use App\Models\Assignee;
 use App\Models\BoardList;
+use App\Models\EdocWorkflowRole;
 use App\Models\Project;
 use App\Models\Role;
 use App\Models\Task;
 use App\Models\User;
+use App\Models\WorkflowSubRole;
 use App\Models\Workspace;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia;
@@ -175,6 +177,91 @@ class MyTasksDocumentsTest extends TestCase
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->has('documents.data', 1)
                 ->where('documents.data.0.title', 'Still live')
+            );
+    }
+
+    /**
+     * A document sitting on a board you are responsible for is yours to see,
+     * whether or not anyone remembered to assign it. That is the whole point of
+     * giving a user a responsibility.
+     */
+    public function test_a_document_on_a_board_i_am_responsible_for_shows_without_being_assigned(): void
+    {
+        $subRole = WorkflowSubRole::create(['code' => 'adsg', 'name' => 'ADSG', 'order' => 0]);
+        $this->user->update(['workflow_sub_role_id' => $subRole->id]);
+
+        EdocWorkflowRole::create([
+            'workflow_type' => 'internal_cgmc',
+            'workspace_id' => $this->workspace->id,
+            'list_title' => $this->list->title,
+            'order' => 1,
+            'responsible_role' => 'adsg',
+        ]);
+
+        // Nobody is assigned to it at all.
+        $this->makeDocument('Waiting on ADSG');
+
+        $this->get($this->url())
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->has('documents.data', 1)
+                ->where('documents.data.0.title', 'Waiting on ADSG')
+            );
+
+        $this->get(route('json.workspace.assigned-count', $this->workspace->id))
+            ->assertJson(['count' => 1]);
+    }
+
+    public function test_a_board_someone_else_is_responsible_for_stays_out_of_my_list(): void
+    {
+        $mine = WorkflowSubRole::create(['code' => 'adsg', 'name' => 'ADSG', 'order' => 0]);
+        WorkflowSubRole::create(['code' => 'sg', 'name' => 'SG', 'order' => 1]);
+        $this->user->update(['workflow_sub_role_id' => $mine->id]);
+
+        EdocWorkflowRole::create([
+            'workflow_type' => 'internal_cgmc',
+            'workspace_id' => $this->workspace->id,
+            'list_title' => $this->list->title,
+            'order' => 1,
+            'responsible_role' => 'sg',
+        ]);
+
+        $this->makeDocument('Waiting on SG');
+
+        $this->get($this->url())
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page->has('documents.data', 0));
+    }
+
+    /**
+     * The responsibility arm has to be in both queries, or the badge and the
+     * listing disagree again.
+     */
+    public function test_the_badge_still_matches_the_rows_with_responsibilities_in_play(): void
+    {
+        $subRole = WorkflowSubRole::create(['code' => 'adsg', 'name' => 'ADSG', 'order' => 0]);
+        $this->user->update(['workflow_sub_role_id' => $subRole->id]);
+
+        EdocWorkflowRole::create([
+            'workflow_type' => 'internal_cgmc',
+            'workspace_id' => $this->workspace->id,
+            'list_title' => $this->list->title,
+            'order' => 1,
+            'responsible_role' => 'adsg',
+        ]);
+
+        $this->makeDocument('By responsibility');
+        $this->makeDocument('By assignment', $this->user);
+
+        $badge = $this->get(route('json.workspace.assigned-count', $this->workspace->id))->json('count');
+
+        $this->assertSame(2, $badge);
+
+        // Assigned AND responsible must not be counted twice.
+        $this->get($this->url())
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->has('documents.data', $badge)
+                ->where('total', $badge)
             );
     }
 

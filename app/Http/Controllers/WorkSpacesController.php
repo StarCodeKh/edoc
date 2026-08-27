@@ -84,9 +84,7 @@ class WorkSpacesController extends Controller
             return response()->json(['count' => 0]);
         }
 
-        $count = Task::whereHas('assignees', function ($q) use ($user) {
-            $q->where('user_id', $user->id);
-        })
+        $count = Task::where(fn ($q) => $this->onMyPlate($q, $user))
             ->whereHas('project', function ($q) use ($workspace) {
                 $q->where('workspace_id', $workspace->id);
             })
@@ -507,7 +505,7 @@ class WorkSpacesController extends Controller
             ->isOpen()
             ->whereHas('list')
             ->visibleTo()
-            ->whereHas('assignees', fn ($q) => $q->where('user_id', $userId));
+            ->where(fn ($q) => $this->onMyPlate($q, auth()->user()));
 
         $documents = (clone $base)
             ->when($filters['type'] ?? null, fn ($q, $type) => $q->whereIn('type_id', array_filter(explode(',', (string) $type))))
@@ -528,6 +526,30 @@ class WorkSpacesController extends Controller
             'total' => (clone $base)->count(),
             'types' => WorkspaceType::orderBy('id')->get(['id', 'name']),
         ]);
+    }
+
+    /**
+     * "On my plate": assigned to me, or sitting on a board my workflow
+     * responsibility covers.
+     *
+     * The listing and the sidebar badge both build on this, so the number on
+     * the menu and the number of rows cannot disagree.
+     */
+    private function onMyPlate($query, ?User $user)
+    {
+        if (empty($user)) {
+            return $query;
+        }
+
+        $query->whereHas('assignees', fn ($q) => $q->where('user_id', $user->id));
+
+        $responsibleFor = $user->responsibleListTitles();
+
+        if (!empty($responsibleFor)) {
+            $query->orWhereHas('list', fn ($q) => $q->whereIn('title', $responsibleFor));
+        }
+
+        return $query;
     }
 
     /** Eager loads every document row in the register needs. */

@@ -40,7 +40,27 @@ class TaskAbility
     /** May the user open the document at all? */
     public static function canView(User $user, Task $task): bool
     {
-        return $user->isAdmin() || self::isOwner($user, $task) || self::isAssigned($user, $task);
+        return $user->isAdmin()
+            || self::isOwner($user, $task)
+            || self::isAssigned($user, $task)
+            || self::isResponsibleForItsBoard($user, $task);
+    }
+
+    /**
+     * The model-level twin of the responsibility arm of Task::scopeVisibleTo.
+     * Both have to agree, or a document would list but refuse to open.
+     */
+    public static function isResponsibleForItsBoard(User $user, Task $task): bool
+    {
+        $titles = $user->responsibleListTitles();
+
+        if (empty($titles)) {
+            return false;
+        }
+
+        $title = optional($task->relationLoaded('list') ? $task->list : $task->list()->first())->title;
+
+        return $title !== null && in_array($title, $titles, true);
     }
 
     /**
@@ -57,10 +77,17 @@ class TaskAbility
         return self::isOwner($user, $task) && !$task->hasLeftOriginList();
     }
 
-    /** Moving between boards is an edit, kept separate so it can diverge later. */
+    /**
+     * Moving between boards, which is where this parts company with canEdit.
+     *
+     * Whoever is responsible for the board a document is sitting on may send it
+     * onward - that is the job. It deliberately does not extend to canEdit:
+     * being the reviewer of a step is not licence to rewrite the document's
+     * title, dates or priority, and canDelete stays narrower still.
+     */
     public static function canMove(User $user, Task $task): bool
     {
-        return self::canEdit($user, $task);
+        return self::canEdit($user, $task) || self::isResponsibleForItsBoard($user, $task);
     }
 
     /** Deleting is only ever the administration's or the untouched creator's. */
@@ -71,11 +98,14 @@ class TaskAbility
 
     /**
      * Attaching a document and commenting are the two things a Normal User keeps
-     * on work handed to them - so anyone who can edit, plus any assignee.
+     * on work handed to them - so anyone who can edit, plus any assignee, plus
+     * whoever is responsible for the board it is waiting on.
      */
     public static function canAttach(User $user, Task $task): bool
     {
-        return self::canEdit($user, $task) || self::isAssigned($user, $task);
+        return self::canEdit($user, $task)
+            || self::isAssigned($user, $task)
+            || self::isResponsibleForItsBoard($user, $task);
     }
 
     public static function canComment(User $user, Task $task): bool
