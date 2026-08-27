@@ -11,12 +11,15 @@ use App\Models\User;
  * The rules, as given:
  *   Super Admin - everything in the system.
  *   Admin       - everything on every board flow.
- *   Normal User  - sees only documents assigned to them or created by them;
+ *   Normal User  - sees documents assigned to them or created by them;
  *                 may review / edit / delete a document they created only while
  *                 it still sits in the board it was created in; once it moves on
  *                 they may no longer change it. On a document created by the
  *                 administration and assigned to them, they may only attach
- *                 files and leave comments.
+ *                 files and leave comments. A document they are merely related
+ *                 to - their group holds it, they follow it, they handled it at
+ *                 an earlier step, or they commented on it - lists as normal but
+ *                 opens read-only, with no action available on it at all.
  *
  * Controllers, policies and the Inertia payload all read from here, so the
  * answer cannot drift between the API and the buttons the UI shows.
@@ -43,7 +46,30 @@ class TaskAbility
         return $user->isAdmin()
             || self::isOwner($user, $task)
             || self::isAssigned($user, $task)
-            || self::isResponsibleForItsBoard($user, $task);
+            || self::isResponsibleForItsBoard($user, $task)
+            || self::isRelatedTo($user, $task);
+    }
+
+    /**
+     * The model-level twin of the related arm of Task::scopeVisibleTo: a group
+     * the user belongs to holds the document, they follow it, they handled it
+     * at an earlier workflow step, or they commented on it.
+     *
+     * This grants reading and nothing else. It is deliberately absent from
+     * canEdit, canMove, canDelete and canAttach, which is what makes a related
+     * document open as a detail page with no actions on it.
+     *
+     * The four checks are ordered cheapest-and-likeliest first and short
+     * circuit, so the common case costs one query rather than four.
+     */
+    public static function isRelatedTo(User $user, Task $task): bool
+    {
+        return $task->activities()->where('user_id', $user->id)->exists()
+            || $task->comments()->where('user_id', $user->id)->exists()
+            || $task->watchers()->where('users.id', $user->id)->exists()
+            || $task->groupAssignees()
+                ->whereHas('userGroup.members', fn ($members) => $members->where('users.id', $user->id))
+                ->exists();
     }
 
     /**

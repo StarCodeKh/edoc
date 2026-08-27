@@ -235,9 +235,13 @@ class Task extends Model
     /**
      * Documents a user is allowed to see at all.
      *
-     * Admins (and Super Admins) see every document. A Normal User sees only what
-     * is assigned to them, plus documents they created themselves - they have to
-     * see their own document to review it before it enters the workflow.
+     * Admins (and Super Admins) see every document. A Normal User sees what is
+     * assigned to them, plus documents they created themselves - they have to
+     * see their own document to review it before it enters the workflow - plus
+     * anything they are merely related to, which lists and opens read-only.
+     *
+     * Every arm here has a twin in Support\TaskAbility::canView. The two have
+     * to agree, or a document would list but refuse to open.
      */
     public function scopeVisibleTo($query, $user = null)
     {
@@ -263,6 +267,22 @@ class Task extends Model
                     $list->whereIn('title', $responsibleFor);
                 });
             }
+
+            // Looser connections to the same document: a group they belong to
+            // holds it, they follow it, they handled it at an earlier workflow
+            // step, or they commented on it. These earn a place in the register
+            // and a readable detail page, nothing more - canEdit, canMove,
+            // canDelete and canAttach all deliberately omit this arm, so the
+            // document opens with no actions on it.
+            $query->orWhereHas('groupAssignees.userGroup.members', function ($members) use ($user) {
+                $members->where('users.id', $user->id);
+            })->orWhereHas('watchers', function ($watchers) use ($user) {
+                $watchers->where('users.id', $user->id);
+            })->orWhereHas('activities', function ($activities) use ($user) {
+                $activities->where('user_id', $user->id);
+            })->orWhereHas('comments', function ($comments) use ($user) {
+                $comments->where('user_id', $user->id);
+            });
         });
     }
 
