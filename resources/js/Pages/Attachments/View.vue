@@ -158,7 +158,7 @@
 
             <a
                 v-if="attachment"
-                :href="attachment.path"
+                :href="downloadUrl"
                 :download="attachment.name"
                 class="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg bg-gray-100 dark:bg-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex-shrink-0"
             >
@@ -211,7 +211,7 @@
         <!-- ================= Image preview ================= -->
         <div v-else-if="isImage(attachment.name)" class="flex-1 overflow-auto flex items-center justify-center p-6">
             <img
-                :src="attachment.path"
+                :src="fileUrl"
                 :alt="attachment.name"
                 class="max-w-full max-h-full object-contain rounded shadow-lg"
             />
@@ -225,7 +225,7 @@
             <icon name="attachment" class="w-10 h-10 text-gray-400" />
             <p class="text-sm font-medium dark:text-gray-200">{{ $t('This file type cannot be previewed here.') }}</p>
             <a
-                :href="attachment.path"
+                :href="downloadUrl"
                 :download="attachment.name"
                 class="text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline"
                 >{{ $t('Download') }}</a
@@ -928,10 +928,31 @@ export default {
             });
         },
 
+        /**
+         * Where the bytes come from - not `attachment.path`, which is the
+         * file's place on disk under public/. Served that way the web server
+         * hands the document to anyone who knows the URL, and only when every
+         * directory on the way happens to be traversable by the web user; when
+         * one is not, the answer is a bare 403 and the file will not open at
+         * all. This route reads it through PHP, behind the same permission
+         * check that guards this page.
+         */
+        fileUrl() {
+            if (!this.attachment?.id) return null;
+            return this.route('task.attachment.file', {
+                taskUid: this.taskUid,
+                attachmentId: this.attachment.id,
+            });
+        },
+
+        downloadUrl() {
+            return this.fileUrl ? `${this.fileUrl}?download=1` : null;
+        },
+
         pdfIframeSrc() {
-            const path = this.attachment?.path;
-            if (!path) return path;
-            return this.currentDrawPage > 1 ? `${path}#page=${this.currentDrawPage}` : path;
+            const url = this.fileUrl;
+            if (!url) return url;
+            return this.currentDrawPage > 1 ? `${url}#page=${this.currentDrawPage}` : url;
         },
 
         filteredActivities() {
@@ -1366,7 +1387,7 @@ export default {
         async ensurePdfDocProxy() {
             if (this.pdfDocProxy || !this.attachment) return;
 
-            const url = this.attachment.path;
+            const url = this.fileUrl;
             if (!url) {
                 console.error('PDF render: attachment has no usable path/url. attachment =', this.attachment);
                 this.toastError(this.$t('Failed to load the PDF for drawing.'));
@@ -2042,7 +2063,7 @@ export default {
             }
 
             try {
-                const fileRes = await fetch(attachment.path, { credentials: 'same-origin' });
+                const fileRes = await fetch(this.fileUrl, { credentials: 'same-origin' });
                 if (!fileRes.ok) {
                     throw new Error(`Failed to fetch the original file (status ${fileRes.status})`);
                 }

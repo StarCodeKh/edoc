@@ -399,7 +399,7 @@ Known-good commits:
 | **Blank page, scripts 404 to `localhost:5173`** | A stale `public/hot` from a dev server | `rm public/hot` |
 | **"Unable to locate file in Vite manifest"** | `public/build` missing | `npm run build` |
 | **Site stuck on the maintenance page** | `artisan down` never got its `up` | `php artisan up`, or delete `storage/framework/down` |
-| **403 Forbidden from nginx on an attachment** (the PDF viewer reports "HTTP 403 while downloading the PDF") | The upload's directory is 0700 — created before `visibility` was set on the disk — so nginx cannot traverse it | `namei -l public/files/tasks/<file>.pdf` shows where it stops, then `sudo chmod -R u=rwX,go=rX public/files` — see §3 |
+| **403 Forbidden from nginx on an attachment** (the PDF viewer reports "HTTP 403 while downloading the PDF") | Old builds fetched the PDF straight off disk, so any directory nginx could not traverse — 0700, or owned by a user nginx does not run as — answered 403. Attachments now stream through `task.attachment.file`, so this is fixed by deploying current code | deploy, then `npm ci && npm run build`. Profile photos are still served off disk: `sudo chmod -R u=rwX,go=rX public/files` — see §3 |
 
 Logs, in the order worth reading:
 

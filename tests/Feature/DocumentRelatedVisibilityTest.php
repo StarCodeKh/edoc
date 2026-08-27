@@ -298,6 +298,88 @@ class DocumentRelatedVisibilityTest extends TestCase
         ]))->assertOk();
     }
 
+    /**
+     * The file itself is held to the same rule. It used to be served straight
+     * off disk by the web server, which asked nobody anything - the viewer
+     * page was closed while the document behind it was not.
+     */
+    public function test_the_attachment_file_is_closed_to_an_unrelated_user(): void
+    {
+        $task = $this->makeDocument();
+        $attachment = Attachment::create([
+            'task_id' => $task->id,
+            'name' => 'circular.pdf',
+            'user_id' => $this->admin->id,
+            'size' => 1024,
+            'path' => '/files/tasks/circular.pdf',
+        ]);
+
+        $this->actingAs($this->normal);
+
+        $this->get(route('task.attachment.file', [
+            'taskUid' => $task->id,
+            'attachmentId' => $attachment->id,
+        ]))->assertForbidden();
+    }
+
+    /** A related user gets the bytes, whatever the file's mode on disk is. */
+    public function test_the_attachment_file_is_served_to_a_related_user(): void
+    {
+        $task = $this->makeDocument();
+        $name = 'test-'.uniqid().'.pdf';
+        $onDisk = public_path('files/tasks/'.$name);
+
+        @mkdir(dirname($onDisk), 0755, true);
+        file_put_contents($onDisk, "%PDF-1.4\n%%EOF\n");
+        // The mode nginx cannot read through. PHP owns the file, so it can.
+        chmod($onDisk, 0600);
+
+        $attachment = Attachment::create([
+            'task_id' => $task->id,
+            'name' => 'circular.pdf',
+            'user_id' => $this->admin->id,
+            'size' => filesize($onDisk),
+            'path' => '/files/tasks/'.$name,
+        ]);
+
+        $task->watchers()->attach($this->normal->id);
+        $this->actingAs($this->normal);
+
+        try {
+            $response = $this->get(route('task.attachment.file', [
+                'taskUid' => $task->id,
+                'attachmentId' => $attachment->id,
+            ]));
+
+            $response->assertOk();
+            $this->assertStringContainsString('inline', $response->headers->get('content-disposition'));
+            $this->assertSame('%PDF-1.4', substr($response->streamedContent(), 0, 8));
+        } finally {
+            @unlink($onDisk);
+        }
+    }
+
+    /** A stored path that climbs out of the uploads directory serves nothing. */
+    public function test_an_attachment_path_outside_the_uploads_directory_is_not_served(): void
+    {
+        $task = $this->makeDocument();
+        $attachment = Attachment::create([
+            'task_id' => $task->id,
+            'name' => 'env',
+            'user_id' => $this->admin->id,
+            'size' => 10,
+            'path' => '/files/tasks/../../../.env',
+        ]);
+
+        $task->watchers()->attach($this->normal->id);
+        $this->actingAs($this->normal);
+
+        $this->get(route('task.attachment.file', [
+            'taskUid' => $task->id,
+            'attachmentId' => $attachment->id,
+        ]))->assertNotFound();
+    }
+
     /** A relation to one document is not a relation to the next one. */
     public function test_relating_to_one_document_does_not_open_another(): void
     {

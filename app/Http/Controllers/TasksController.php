@@ -474,6 +474,50 @@ class TasksController extends Controller
      */
     public function viewAttachment($taskUid, $attachmentId)
     {
+        [, $attachment] = $this->resolveAttachment($taskUid, $attachmentId);
+
+        return Inertia::render('Attachments/View', [
+            'taskUid' => $taskUid,
+            'attachmentId' => $attachment->id,
+        ]);
+    }
+
+    /**
+     * Hand back the file itself.
+     *
+     * Uploads live under public/files, so nginx would happily serve them
+     * straight off disk - but only if every directory on the way is
+     * traversable by the web user, and only to anyone at all, signed in or
+     * not. Streaming through here removes both problems: the same permission
+     * check the viewer page runs applies to the bytes, and the file is read by
+     * PHP, which owns it, rather than by nginx.
+     */
+    public function streamAttachment($taskUid, $attachmentId, Request $request)
+    {
+        [, $attachment] = $this->resolveAttachment($taskUid, $attachmentId);
+
+        $path = $this->attachmentAbsolutePath($attachment);
+
+        if ($path === null) {
+            abort(404, 'The file is no longer on disk.');
+        }
+
+        return response()->file($path, [
+            'Content-Disposition' => $request->boolean('download')
+                ? 'attachment; filename="'.addslashes($attachment->name).'"'
+                : 'inline; filename="'.addslashes($attachment->name).'"',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
+    }
+
+    /**
+     * The task and attachment behind a viewer URL, or an abort. The page is a
+     * full document viewer, so opening it is opening the document - held to
+     * the same rule as the detail page rather than left to whoever guesses an
+     * attachment id.
+     */
+    private function resolveAttachment($taskUid, $attachmentId)
+    {
         $task = Task::withTrashed()
             ->when(is_numeric($taskUid), function ($query) use ($taskUid) {
                 $query->where('id', $taskUid);
@@ -486,9 +530,6 @@ class TasksController extends Controller
             abort(404, 'Task not found.');
         }
 
-        // The page is a full document viewer, so opening it is opening the
-        // document - held to the same rule as the detail page rather than left
-        // to whoever guesses an attachment id.
         $this->authorizeTaskModel($task->loadMissing('assignees'), 'view');
 
         $attachment = Attachment::where('id', $attachmentId)->where('task_id', $task->id)->first();
@@ -497,10 +538,28 @@ class TasksController extends Controller
             abort(404, 'Attachment not found.');
         }
 
-        return Inertia::render('Attachments/View', [
-            'taskUid' => $taskUid,
-            'attachmentId' => $attachment->id,
-        ]);
+        return [$task, $attachment];
+    }
+
+    /**
+     * Resolve an attachment's stored path to a real file inside the uploads
+     * directory. Anything that resolves outside it - or is not there at all -
+     * comes back null rather than being served.
+     */
+    private function attachmentAbsolutePath(Attachment $attachment): ?string
+    {
+        if (empty($attachment->path)) {
+            return null;
+        }
+
+        $root = realpath(public_path('files'));
+        $path = realpath(public_path(ltrim($attachment->path, '/')));
+
+        if ($root === false || $path === false || !is_file($path)) {
+            return null;
+        }
+
+        return str_starts_with($path, $root.DIRECTORY_SEPARATOR) ? $path : null;
     }
 
     public function removeAttachment($id)

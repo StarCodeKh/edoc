@@ -187,6 +187,9 @@ Route::get('task/list/count/{id}', [TasksController::class, 'countListItemsById'
 Route::get('task/other/data/{task_id}/{project_id}', [TasksController::class, 'taskOtherData'])->name('task.other.data')->middleware('auth');
 Route::post('task/attachment/add/{id}', [TasksController::class, 'addAttachment'])->name('task.attachment.add')->middleware('auth');
 Route::get('task/{taskUid}/attachment/{attachmentId}/view', [TasksController::class, 'viewAttachment'])->name('task.attachment.view')->middleware('auth');
+// The bytes themselves. Served by PHP rather than as a static file so the
+// permission check applies to the document and not only to the viewer page.
+Route::get('task/{taskUid}/attachment/{attachmentId}/file', [TasksController::class, 'streamAttachment'])->name('task.attachment.file')->middleware('auth');
 
 // Approve & Sign from Secretariat General — shown on cards sitting in a board
 // whose workflow step has `requires_signature` (Settings → Workflow Roles).
