@@ -10,6 +10,7 @@ use App\Models\Assignee;
 use App\Models\Attachment;
 use App\Models\BoardList;
 use App\Models\Comment;
+use App\Models\DocumentLink;
 use App\Models\DocumentSource;
 use App\Models\EdocWorkflowRole;
 use App\Models\Priority;
@@ -20,6 +21,7 @@ use App\Models\User;
 use App\Models\WorkflowSubRole;
 use App\Models\Workspace;
 use App\Models\WorkspaceType;
+use App\Support\DocumentChain;
 use App\Support\TaskAbility;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -48,9 +50,20 @@ class DocumentSubmissionController extends Controller
 
     private const MAX_FILES = 10;
 
-    public function create($uid)
+    /**
+     * How many external documents the link picker offers. Searching is
+     * client-side, so this bounds the payload rather than the choice.
+     */
+    private const MAX_LINK_CANDIDATES = 200;
+
+    public function create($uid, Request $request)
     {
         $workspace = $this->resolveWorkspace($uid);
+
+        // Raised from an external document: the form is pre-filled from it and
+        // the two are linked on save. Read through the same 'view' rule as the
+        // parent's own page, so ?from= cannot be used to read a document.
+        $parent = $this->resolveParentDocument($request->query('from'));
 
         $projects = Project::where('workspace_id', $workspace->id)
             ->orderBy('title')
@@ -98,7 +111,92 @@ class DocumentSubmissionController extends Controller
                 'max_files' => self::MAX_FILES,
                 'max_file_mb' => (int) (self::MAX_FILE_KB / 1024),
             ],
+            'parent_document' => $parent ? $this->linkedDocumentPayload($parent) : null,
+            'linkable_documents' => $this->linkableDocuments($workspace),
         ]);
+    }
+
+    /**
+     * External documents this one can be filed against.
+     *
+     * "External" here means simply "not in the workspace being filed into" -
+     * an internal document answers work that came from somewhere else, and
+     * defining it by workspace rather than by a hardcoded workflow name keeps
+     * it working for any flow an administration configures.
+     *
+     * Finished documents are left out: nothing is waiting on them. The list is
+     * capped and searched client-side, which is the same shape the assignee
+     * picker on this form already uses.
+     */
+    private function linkableDocuments(Workspace $workspace): array
+    {
+        $ownProjectIds = Project::where('workspace_id', $workspace->id)->pluck('id');
+
+        return Task::whereNotIn('project_id', $ownProjectIds)
+            ->isOpen()
+            ->where('is_done', 0)
+            ->visibleTo()
+            ->with(['list', 'project.workspace'])
+            ->latest('created_at')
+            ->limit(self::MAX_LINK_CANDIDATES)
+            ->get()
+            ->reject(fn (Task $task) => DocumentChain::isComplete($task))
+            ->map(fn (Task $task) => [
+                'id' => $task->id,
+                'code' => $task->task_code,
+                'title' => $task->title,
+                'status' => optional($task->list)->title,
+                'workspace' => optional(optional($task->project)->workspace)->name,
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * The external document an internal one is being raised from, if the form
+     * was opened that way. Anything the user may not view is treated as absent
+     * rather than refused - the form still works, it just files nothing linked.
+     */
+    private function resolveParentDocument($from): ?Task
+    {
+        if (empty($from)) {
+            return null;
+        }
+
+        $parent = Task::where('id', $from)->orWhere('slug', $from)->first();
+
+        if (empty($parent) || !$this->userCan('view', $parent->loadMissing('assignees'))) {
+            return null;
+        }
+
+        return $parent;
+    }
+
+    /** One linked document, in the shape both ends of the link render. */
+    private function linkedDocumentPayload(Task $task): array
+    {
+        $task->loadMissing(['list', 'project']);
+
+        return [
+            'id' => $task->id,
+            'uid' => $task->slug ?: $task->id,
+            'code' => $task->task_code,
+            'title' => $task->title,
+            'status' => optional($task->list)->title,
+            'is_done' => (bool) $task->is_done,
+            'is_complete' => DocumentChain::isComplete($task),
+            'workspace_uid' => $this->workspaceUidFor($task),
+        ];
+    }
+
+    /** The workspace slug a linked document lives in, for its page link. */
+    private function workspaceUidFor(Task $task): ?string
+    {
+        $workspace = optional($task->project)->workspace_id
+            ? Workspace::find($task->project->workspace_id)
+            : null;
+
+        return $workspace ? (string) ($workspace->slug ?: $workspace->id) : null;
     }
 
     /**
@@ -151,7 +249,63 @@ class DocumentSubmissionController extends Controller
             'neighbours' => $this->neighbours($task, $workspace),
             'next_step' => $this->nextStepPayload($task),
             'can' => $this->pageAbilities($task),
+            'links' => $this->linksPayload($task),
         ]);
+    }
+
+    /**
+     * The chain either side of this document: internal documents raised off it
+     * (which hold it open) and the external document it answers.
+     */
+    private function linksPayload(Task $task): array
+    {
+        $children = $task->childDocuments()->with(['list', 'project'])->get();
+        $parents = $task->parentDocuments()->with(['list', 'project'])->get();
+        $pending = $children->reject(fn (Task $child) => DocumentChain::isComplete($child))->values();
+
+        return [
+            'children' => $children->map(fn (Task $child) => $this->linkedDocumentPayload($child))->all(),
+            'parents' => $parents->map(fn (Task $parent) => $this->linkedDocumentPayload($parent))->all(),
+            // Held means the finishing step is refused, not that the document
+            // is stuck - it moves through everything before that normally.
+            'held' => $pending->isNotEmpty(),
+            'pending_count' => $pending->count(),
+            // Exactly when forward() would refuse: the next step is the one
+            // that finishes this document, and children are still running. The
+            // button disables on the same condition the server enforces.
+            'blocks_forward' => $pending->isNotEmpty()
+                && DocumentChain::wouldComplete($task, $this->nextStep($task)),
+            // Where "raise an internal document" goes. Null when the workspace
+            // running the internal workflow is not configured or not reachable.
+            'internal_workspace_uid' => $this->internalWorkspaceUid(),
+        ];
+    }
+
+    /**
+     * The workspace running the internal CGMC workflow, which is where an
+     * internal document raised off an external one is filed.
+     *
+     * Resolved from Settings → Workflow Roles rather than hardcoded, and only
+     * when exactly one workspace carries that workflow - otherwise there is no
+     * single right answer and the button is not offered.
+     */
+    private function internalWorkspaceUid(): ?string
+    {
+        $workspaceIds = EdocWorkflowRole::where('workflow_type', 'internal_cgmc')
+            ->pluck('workspace_id')
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($workspaceIds->count() !== 1) {
+            return null;
+        }
+
+        $workspace = Workspace::where('id', $workspaceIds->first())
+            ->whereHas('member')
+            ->first();
+
+        return $workspace ? (string) ($workspace->slug ?: $workspace->id) : null;
     }
 
     /**
@@ -183,6 +337,17 @@ class DocumentSubmissionController extends Controller
             return Redirect::back()->with('error', __('This document is already at the last step.'));
         }
 
+        // An external document is not finished until the internal work it
+        // raised is. Only the step that would finish it is held - everything
+        // before that moves normally.
+        if (DocumentChain::wouldComplete($task, $next)) {
+            $pending = DocumentChain::pendingChildren($task);
+
+            if ($pending->isNotEmpty()) {
+                return Redirect::back()->with('error', DocumentChain::heldMessage($pending));
+            }
+        }
+
         // The note is filed before the move, so the trail reads in the order it
         // happened: what the reviewer said, then where they sent it.
         if (!empty($validated['note']) && $this->userCan('comment', $task)) {
@@ -211,6 +376,10 @@ class DocumentSubmissionController extends Controller
                 'step' => $next->title,
                 'count' => $handedTo->count(),
             ]);
+
+        // Finishing this document may be the last thing an external document was
+        // waiting on, which closes it in turn.
+        DocumentChain::releaseParents($task->fresh(['list']), auth()->user());
 
         // Unassigning can cost a Normal User the right to open the document at
         // all, so going back to it would 403. They go back to their pile.
@@ -480,6 +649,9 @@ class DocumentSubmissionController extends Controller
             'assignees.*' => 'integer|exists:users,id',
             'files' => 'nullable|array|max:'.self::MAX_FILES,
             'files.*' => 'file|mimes:pdf|max:'.self::MAX_FILE_KB,
+            'parent_task_id' => 'nullable|integer|exists:tasks,id',
+            'parent_task_ids' => 'nullable|array',
+            'parent_task_ids.*' => 'integer|exists:tasks,id',
         ], [
             'files.*.mimes' => __('Only PDF files are allowed.'),
             'files.*.max' => __('Each file may not be larger than :size MB.', ['size' => (int) (self::MAX_FILE_KB / 1024)]),
@@ -534,6 +706,26 @@ class DocumentSubmissionController extends Controller
             return $task;
         });
 
+        // Link it to every external document it answers, and say so on both
+        // trails - those documents are now held open by this one, which is not
+        // something either page should leave unexplained.
+        //
+        // The singular key is what the "create internal document" button sends;
+        // the plural is what the picker on this form sends. Both are accepted so
+        // one path does not have to know about the other.
+        $parentIds = collect($validated['parent_task_ids'] ?? [])
+            ->push($validated['parent_task_id'] ?? null)
+            ->filter()
+            ->unique();
+
+        foreach ($parentIds as $parentId) {
+            $parent = $this->resolveParentDocument($parentId);
+
+            if ($parent && $parent->id !== $task->id) {
+                $this->linkDocuments($parent, $task);
+            }
+        }
+
         // Notifications go out after the transaction commits, so a listener can
         // never read a half-written document.
         $assigner = auth()->user();
@@ -550,6 +742,38 @@ class DocumentSubmissionController extends Controller
             'uid' => $workspace->slug ?: $workspace->id,
             'taskUid' => $task->slug ?: $task->id,
         ])->with('success', __('Document :code submitted.', ['code' => $task->task_code]));
+    }
+
+    /**
+     * Record that an internal document was raised off an external one, on both
+     * documents' trails.
+     */
+    private function linkDocuments(Task $parent, Task $child): void
+    {
+        DB::transaction(function () use ($parent, $child) {
+            DocumentLink::firstOrCreate(
+                ['parent_task_id' => $parent->id, 'child_task_id' => $child->id],
+                ['created_by' => auth()->id()],
+            );
+
+            // Written as prose in the same shape as every other trail entry -
+            // old_value and new_value are joined and read as one sentence.
+            Activity::create([
+                'user_id' => auth()->id(),
+                'task_id' => $parent->id,
+                'field_changed' => 'internal_document_raised',
+                'old_value' => 'raised the internal document',
+                'new_value' => '`'.DocumentChain::label($child).'`',
+            ]);
+
+            Activity::create([
+                'user_id' => auth()->id(),
+                'task_id' => $child->id,
+                'field_changed' => 'raised_from_external_document',
+                'old_value' => 'raised this document from the external document',
+                'new_value' => '`'.DocumentChain::label($parent).'`',
+            ]);
+        });
     }
 
     /**

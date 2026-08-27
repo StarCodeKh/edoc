@@ -81,6 +81,12 @@ class WorkflowStep
         return (bool) (self::forList($list)->requires_signature ?? false);
     }
 
+    /** The step a document finishes on, where the workflow marks one. */
+    public static function isTerminal(?BoardList $list): bool
+    {
+        return (bool) (self::forList($list)->is_terminal ?? false);
+    }
+
     private static function key(?string $title): string
     {
         return mb_strtolower(trim(preg_replace('/\s+/u', ' ', (string) $title)));

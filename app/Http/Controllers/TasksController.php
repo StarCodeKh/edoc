@@ -486,6 +486,11 @@ class TasksController extends Controller
             abort(404, 'Task not found.');
         }
 
+        // The page is a full document viewer, so opening it is opening the
+        // document - held to the same rule as the detail page rather than left
+        // to whoever guesses an attachment id.
+        $this->authorizeTaskModel($task->loadMissing('assignees'), 'view');
+
         $attachment = Attachment::where('id', $attachmentId)->where('task_id', $task->id)->first();
 
         if (empty($attachment)) {

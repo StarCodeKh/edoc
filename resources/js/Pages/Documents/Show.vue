@@ -193,6 +193,17 @@
 
                                     <p v-if="notice" class="form-error">{{ notice }}</p>
 
+                                    <!-- The step itself is the instruction: at a signature
+                                         step the file is not just readable, it is waiting to
+                                         be signed, and the row says so. -->
+                                    <p
+                                        v-if="canSign && attachments.length"
+                                        class="mt-2 flex items-center gap-1.5 rounded-xl bg-indigo-50 px-3 py-2 text-xs font-medium text-indigo-700"
+                                    >
+                                        <icon name="edit" class="h-3.5 w-3.5 shrink-0" />
+                                        {{ $t('This step needs a signature — open the file to draw or type on it.') }}
+                                    </p>
+
                                     <ul v-if="attachments.length" class="mt-2 space-y-2">
                                         <li
                                             v-for="file in attachments"
@@ -209,7 +220,18 @@
                                                 }}</span>
                                             </span>
                                             <a
-                                                :href="file.path"
+                                                v-if="canSign"
+                                                :href="annotatorUrl(file)"
+                                                target="_blank"
+                                                rel="noopener"
+                                                class="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700"
+                                                :title="$t('Open the document to sign it')"
+                                            >
+                                                <icon name="edit" class="h-3.5 w-3.5" />
+                                                {{ $t('Sign') }}
+                                            </a>
+                                            <a
+                                                :href="annotatorUrl(file)"
                                                 target="_blank"
                                                 rel="noopener"
                                                 class="rounded-lg p-1.5 text-gray-400 hover:bg-indigo-50 hover:text-indigo-600"
@@ -435,8 +457,14 @@
                                                     <button
                                                         type="button"
                                                         class="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
-                                                        :disabled="forwarding"
-                                                        :title="$t('Forward to :step', { step: next_step.title })"
+                                                        :disabled="forwarding || links.blocks_forward"
+                                                        :title="
+                                                            links.blocks_forward
+                                                                ? $t(
+                                                                      'Waiting on the internal document(s) raised from this one.'
+                                                                  )
+                                                                : $t('Forward to :step', { step: next_step.title })
+                                                        "
                                                         @click="forward"
                                                     >
                                                         <icon
@@ -449,7 +477,15 @@
                                                 </div>
 
                                                 <p
-                                                    v-if="canForward"
+                                                    v-if="links.blocks_forward"
+                                                    class="mt-1.5 text-center text-[11px] font-medium text-amber-600"
+                                                >
+                                                    {{
+                                                        $t('Waiting on the internal document(s) raised from this one.')
+                                                    }}
+                                                </p>
+                                                <p
+                                                    v-else-if="canForward"
                                                     class="mt-1.5 text-center text-[11px] text-gray-400"
                                                 >
                                                     {{ $t('Next: :step', { step: next_step.title }) }}
@@ -460,6 +496,98 @@
                                             </div>
                                         </template>
                                     </div>
+                                </div>
+
+                                <!-- The chain either side of this document. An external
+                                     document is not finished until every internal one
+                                     raised off it is, so both ends need to be visible
+                                     from either page. -->
+                                <div
+                                    v-if="showLinksCard"
+                                    class="rounded-2xl border border-gray-200/70 bg-white p-4 shadow-sm"
+                                >
+                                    <h3 class="text-sm font-bold text-gray-900">{{ $t('Linked documents') }}</h3>
+
+                                    <div v-if="links.parents.length" class="mt-3">
+                                        <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+                                            {{ $t('Raised from') }}
+                                        </p>
+                                        <ul class="mt-1.5 space-y-1.5">
+                                            <li v-for="doc in links.parents" :key="'p-' + doc.id">
+                                                <a
+                                                    :href="linkedHref(doc)"
+                                                    class="flex items-center gap-2 rounded-xl border border-gray-200 px-3 py-2 hover:bg-gray-50"
+                                                >
+                                                    <icon name="file-text" class="h-4 w-4 shrink-0 text-gray-400" />
+                                                    <span class="min-w-0 flex-1">
+                                                        <span
+                                                            class="block truncate text-xs font-semibold text-gray-800"
+                                                            >{{ doc.code || doc.title }}</span
+                                                        >
+                                                        <span class="block truncate text-[11px] text-gray-400">{{
+                                                            doc.status
+                                                        }}</span>
+                                                    </span>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+
+                                    <div v-if="links.children.length" class="mt-3">
+                                        <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+                                            {{ $t('Internal documents raised') }}
+                                        </p>
+                                        <ul class="mt-1.5 space-y-1.5">
+                                            <li v-for="doc in links.children" :key="'c-' + doc.id">
+                                                <a
+                                                    :href="linkedHref(doc)"
+                                                    class="flex items-center gap-2 rounded-xl border border-gray-200 px-3 py-2 hover:bg-gray-50"
+                                                >
+                                                    <icon name="file-text" class="h-4 w-4 shrink-0 text-gray-400" />
+                                                    <span class="min-w-0 flex-1">
+                                                        <span
+                                                            class="block truncate text-xs font-semibold text-gray-800"
+                                                            >{{ doc.code || doc.title }}</span
+                                                        >
+                                                        <span class="block truncate text-[11px] text-gray-400">{{
+                                                            doc.status
+                                                        }}</span>
+                                                    </span>
+                                                    <span
+                                                        class="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                                                        :class="
+                                                            doc.is_complete
+                                                                ? 'bg-emerald-100 text-emerald-700'
+                                                                : 'bg-amber-100 text-amber-700'
+                                                        "
+                                                    >
+                                                        {{ doc.is_complete ? $t('Complete') : $t('In progress') }}
+                                                    </span>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+
+                                    <p
+                                        v-if="links.held"
+                                        class="mt-3 flex items-start gap-1.5 rounded-xl bg-amber-50 px-3 py-2 text-[11px] font-medium text-amber-700"
+                                    >
+                                        <icon name="clock" class="mt-px h-3.5 w-3.5 shrink-0" />
+                                        <span>{{
+                                            $t('This document stays open until :count internal document(s) finish.', {
+                                                count: links.pending_count,
+                                            })
+                                        }}</span>
+                                    </p>
+
+                                    <a
+                                        v-if="canRaiseInternal"
+                                        :href="raiseInternalHref"
+                                        class="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-indigo-200 px-4 py-2 text-sm font-semibold text-indigo-600 hover:bg-indigo-50"
+                                    >
+                                        <icon name="plus" class="h-4 w-4" />
+                                        {{ $t('Create internal document') }}
+                                    </a>
                                 </div>
 
                                 <div
@@ -502,6 +630,17 @@ export default {
         neighbours: { type: Object, default: () => ({ previous: null, next: null, position: 0, total: 0 }) },
         next_step: { type: Object, default: null },
         can: { type: Object, default: () => ({ attach: false, forward: false }) },
+        links: {
+            type: Object,
+            default: () => ({
+                children: [],
+                parents: [],
+                held: false,
+                pending_count: 0,
+                blocks_forward: false,
+                internal_workspace_uid: null,
+            }),
+        },
     },
     data() {
         return {
@@ -575,6 +714,46 @@ export default {
         canForward() {
             return !!(this.can.forward && this.next_step);
         },
+        /**
+         * Raising internal work is the administration's move, and only from a
+         * document that is not itself internal - a document cannot be raised
+         * off one already living in the internal workflow.
+         */
+        canRaiseInternal() {
+            return !!(
+                this.can.forward &&
+                this.links.internal_workspace_uid &&
+                this.links.internal_workspace_uid !== String(this.workspace.slug || this.workspace.id)
+            );
+        },
+        raiseInternalHref() {
+            if (!this.links.internal_workspace_uid) return '';
+            return (
+                this.route('workspace.documents.submit', { uid: this.links.internal_workspace_uid }) +
+                '?from=' +
+                encodeURIComponent(this.document.slug || this.document.id)
+            );
+        },
+        /** The card is worth drawing only if it has something in it. */
+        showLinksCard() {
+            return !!(this.links.parents.length || this.links.children.length || this.canRaiseInternal);
+        },
+        /**
+         * The step the document is sitting on, which is the one that decides
+         * whether a signature is being asked for.
+         */
+        currentStep() {
+            return this.steps.find((step) => step.state === 'current') || null;
+        },
+        /**
+         * A signature step turns the attachment list into something to act on
+         * rather than read. Gated on can.attach because signing means saving an
+         * annotated copy back, which is an attach - the server holds the same
+         * line, so this only decides whether the button is worth showing.
+         */
+        canSign() {
+            return !!(this.currentStep && this.currentStep.requires_signature && this.can.attach);
+        },
         sourceLabel() {
             if (this.document.department && this.document.office) {
                 return this.document.department + ' / ' + this.document.office;
@@ -583,6 +762,21 @@ export default {
         },
     },
     methods: {
+        /**
+         * The annotator, not the raw file: it is the viewer for a PDF here, and
+         * the only place a signature can be drawn onto one.
+         */
+        /** A linked document's own page, in whichever workspace it lives. */
+        linkedHref(doc) {
+            if (!doc.workspace_uid) return '#';
+            return this.route('workspace.documents.show', [doc.workspace_uid, doc.uid]);
+        },
+        annotatorUrl(file) {
+            return this.route('task.attachment.view', {
+                taskUid: this.document.id,
+                attachmentId: file.id,
+            });
+        },
         formatDate(value) {
             if (!value) return '';
             const parsed = moment(value);

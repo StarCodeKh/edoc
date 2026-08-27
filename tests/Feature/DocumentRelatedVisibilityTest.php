@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Activity;
+use App\Models\Attachment;
 use App\Models\BoardList;
 use App\Models\Comment;
 use App\Models\GroupAssignee;
@@ -249,6 +250,52 @@ class DocumentRelatedVisibilityTest extends TestCase
 
         $this->actingAs($this->normal);
         $this->get($this->showUrl($task))->assertOk();
+    }
+
+    /**
+     * The attachment viewer is a full document viewer, so it is the document's
+     * rule that governs it. It previously checked only that the attachment
+     * belonged to the task, which let anyone signed in read any file by id.
+     */
+    public function test_the_attachment_viewer_is_closed_to_an_unrelated_user(): void
+    {
+        $task = $this->makeDocument();
+        $attachment = Attachment::create([
+            'task_id' => $task->id,
+            'name' => 'circular.pdf',
+            'user_id' => $this->admin->id,
+            'size' => 1024,
+            'path' => '/files/tasks/circular.pdf',
+        ]);
+
+        $this->actingAs($this->normal);
+
+        $this->get(route('task.attachment.view', [
+            'taskUid' => $task->id,
+            'attachmentId' => $attachment->id,
+        ]))->assertForbidden();
+    }
+
+    /** And open to someone the document is related to, who may read it. */
+    public function test_the_attachment_viewer_opens_for_a_related_user(): void
+    {
+        $task = $this->makeDocument();
+        $attachment = Attachment::create([
+            'task_id' => $task->id,
+            'name' => 'circular.pdf',
+            'user_id' => $this->admin->id,
+            'size' => 1024,
+            'path' => '/files/tasks/circular.pdf',
+        ]);
+
+        $task->watchers()->attach($this->normal->id);
+
+        $this->actingAs($this->normal);
+
+        $this->get(route('task.attachment.view', [
+            'taskUid' => $task->id,
+            'attachmentId' => $attachment->id,
+        ]))->assertOk();
     }
 
     /** A relation to one document is not a relation to the next one. */

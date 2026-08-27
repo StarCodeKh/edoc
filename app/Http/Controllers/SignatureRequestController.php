@@ -7,6 +7,7 @@ use App\Models\Activity;
 use App\Models\Attachment;
 use App\Models\BoardList;
 use App\Models\Task;
+use App\Support\DocumentChain;
 use App\Support\WorkflowStep;
 use Illuminate\Support\Facades\DB;
 
@@ -70,6 +71,15 @@ class SignatureRequestController extends Controller
             abort(422, 'There is no next board to move this document to.');
         }
 
+        // This move sets is_done, so it is a finishing move and is held by the
+        // same rule as a forward: internal work raised off the document has to
+        // be finished first.
+        $pending = DocumentChain::pendingChildren($task);
+
+        if ($pending->isNotEmpty()) {
+            abort(422, DocumentChain::heldMessage($pending));
+        }
+
         DB::transaction(function () use ($task, $list, $next, $user) {
             Activity::create([
                 'user_id' => $user->id,
@@ -85,6 +95,9 @@ class SignatureRequestController extends Controller
             $task->is_done = 1;
             $task->save();
         });
+
+        // Signing finishes the document, which may release an external one.
+        DocumentChain::releaseParents($task->fresh(['list']), $user);
 
         return response()->json([
             'moved' => true,

@@ -80,6 +80,24 @@
                         </ol>
                     </div>
 
+                    <!-- Raised from an external document: the link is the reason
+                         this form was opened, so it is stated before the fields
+                         rather than left implicit in a query string. -->
+                    <div
+                        v-if="parent_document"
+                        class="mt-4 flex items-center gap-2 rounded-2xl border border-indigo-200 bg-indigo-50 px-4 py-3"
+                    >
+                        <icon name="file-text" class="h-4 w-4 shrink-0 text-indigo-500" />
+                        <p class="min-w-0 flex-1 text-xs text-indigo-800">
+                            <span class="font-semibold">{{
+                                $t('Raised from :code', { code: parent_document.code || parent_document.title })
+                            }}</span>
+                            <span class="block truncate text-indigo-600/80">{{
+                                $t('That document stays open until this one is finished.')
+                            }}</span>
+                        </p>
+                    </div>
+
                     <div class="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-3">
                         <!-- Form -->
                         <form
@@ -361,6 +379,68 @@
                                         {{ fieldError('assignees') }}
                                     </p>
                                 </div>
+
+                                <!-- The external document(s) this one answers. Picking
+                                     one here holds it open until this document is
+                                     finished, which is why it says so on the label. -->
+                                <div v-if="linkable_documents.length">
+                                    <div class="flex items-center justify-between">
+                                        <label class="form-label mb-0">{{ $t('Answers external document') }}</label>
+                                        <span class="text-xs text-gray-500">
+                                            {{ $t(':count selected', { count: form.parent_task_ids.length }) }}
+                                        </span>
+                                    </div>
+                                    <p class="mt-1 text-xs text-gray-400">
+                                        {{ $t('Those documents stay open until this one is finished.') }}
+                                    </p>
+                                    <div class="mt-2 rounded-xl border border-gray-200">
+                                        <div class="border-b border-gray-100 p-2">
+                                            <div class="relative">
+                                                <icon
+                                                    name="search"
+                                                    class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+                                                />
+                                                <input
+                                                    v-model="link_search"
+                                                    type="text"
+                                                    class="form-input pl-9"
+                                                    :placeholder="$t('Search external documents')"
+                                                />
+                                            </div>
+                                        </div>
+                                        <ul class="max-h-56 overflow-y-auto p-1">
+                                            <li v-for="doc in filteredLinkable" :key="doc.id">
+                                                <label
+                                                    class="flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 hover:bg-gray-50"
+                                                >
+                                                    <input
+                                                        v-model="form.parent_task_ids"
+                                                        type="checkbox"
+                                                        class="h-4 w-4 rounded border-gray-300 text-indigo-600"
+                                                        :value="doc.id"
+                                                    />
+                                                    <icon name="file-text" class="h-4 w-4 shrink-0 text-gray-400" />
+                                                    <span class="min-w-0">
+                                                        <span class="block truncate text-sm text-gray-800">
+                                                            {{ doc.code ? doc.code + ' · ' : '' }}{{ doc.title }}
+                                                        </span>
+                                                        <span class="block truncate text-xs text-gray-400">
+                                                            {{
+                                                                [doc.workspace, doc.status].filter(Boolean).join(' · ')
+                                                            }}
+                                                        </span>
+                                                    </span>
+                                                </label>
+                                            </li>
+                                            <li
+                                                v-if="!filteredLinkable.length"
+                                                class="px-3 py-6 text-center text-sm text-gray-400"
+                                            >
+                                                {{ $t('No external documents found') }}
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
                             </section>
 
                             <!-- STEP 3 - Content & files -->
@@ -551,6 +631,11 @@ export default {
         priorities: { type: Array, default: () => [] },
         team_members: { type: Array, default: () => [] },
         limits: { type: Object, default: () => ({ max_files: 10, max_file_mb: 50 }) },
+        // Set when the form was opened from an external document to raise
+        // internal work off it. The two are linked on save.
+        parent_document: { type: Object, default: null },
+        // External documents this one may be filed against, for the picker.
+        linkable_documents: { type: Array, default: () => [] },
     },
     data() {
         return {
@@ -564,6 +649,7 @@ export default {
             // sub-office id, exactly as the task modal stores it.
             department_id: null,
             member_search: '',
+            link_search: '',
             dragging: false,
             file_error: '',
             draft_restored: false,
@@ -582,12 +668,16 @@ export default {
                 description: '',
                 assignees: [],
                 files: [],
+                parent_task_ids: [],
             }),
         };
     },
     computed: {
         draftKey() {
-            return 'edoc.document-draft.' + this.workspace.id;
+            // A document raised from an external one keeps its own draft, so it
+            // cannot pick up - or clobber - the blank form's saved draft.
+            const parent = this.parent_document ? '.from-' + this.parent_document.id : '';
+            return 'edoc.document-draft.' + this.workspace.id + parent;
         },
         projectLists() {
             if (!this.form.project_id) return [];
@@ -628,6 +718,15 @@ export default {
                 }
                 this.form.assignees = this.form.assignees.filter((id) => id !== this.currentUserId);
             },
+        },
+        filteredLinkable() {
+            const query = this.link_search.trim().toLowerCase();
+            if (!query) return this.linkable_documents;
+            return this.linkable_documents.filter((doc) =>
+                [doc.code, doc.title, doc.workspace, doc.status]
+                    .filter(Boolean)
+                    .some((field) => String(field).toLowerCase().includes(query))
+            );
         },
         filteredMembers() {
             const query = this.member_search.trim().toLowerCase();
@@ -725,6 +824,19 @@ export default {
     },
     mounted() {
         const hadDraft = this.restoreDraft();
+
+        // The link itself is never left to a draft - it is what the page was
+        // opened for. The title is only suggested, so a restored draft keeps
+        // whatever was typed.
+        if (this.parent_document) {
+            if (!this.form.parent_task_ids.includes(this.parent_document.id)) {
+                this.form.parent_task_ids.push(this.parent_document.id);
+            }
+
+            if (!hadDraft && !this.form.title) {
+                this.form.title = this.parent_document.title || '';
+            }
+        }
 
         // A document you file is yours unless you say otherwise - without this
         // it never reaches My Tasks, which filters on assignee. A restored
@@ -887,6 +999,7 @@ export default {
                         exit_date: this.dateForSave(this.form.exit_date),
                         description: this.form.description,
                         assignees: this.form.assignees,
+                        parent_task_ids: this.form.parent_task_ids,
                     })
                 );
                 if (explicit) {
@@ -917,6 +1030,7 @@ export default {
             this.form.exit_date = draft.exit_date ? new Date(draft.exit_date.replace(' ', 'T')) : null;
             this.form.description = draft.description || '';
             this.form.assignees = Array.isArray(draft.assignees) ? draft.assignees : [];
+            this.form.parent_task_ids = Array.isArray(draft.parent_task_ids) ? draft.parent_task_ids : [];
 
             this.draft_restored = !!draft.title || !!draft.description;
 

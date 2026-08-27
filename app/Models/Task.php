@@ -456,6 +456,23 @@ class Task extends Model
         return $this->hasMany(GroupAssignee::class, 'task_id');
     }
 
+    /**
+     * Internal documents raised off this one, which it waits for before it can
+     * finish. See App\Support\DocumentChain.
+     */
+    public function childDocuments()
+    {
+        return $this->belongsToMany(Task::class, 'document_links', 'parent_task_id', 'child_task_id')
+            ->withTimestamps();
+    }
+
+    /** The external document(s) this one was raised from, if any. */
+    public function parentDocuments()
+    {
+        return $this->belongsToMany(Task::class, 'document_links', 'child_task_id', 'parent_task_id')
+            ->withTimestamps();
+    }
+
     public function type()
     {
         return $this->belongsTo(WorkspaceType::class, 'type_id');

@@ -19,6 +19,9 @@ class AuditLogController extends Controller
     private const ACTIONS = [
         'list_id' => 'Moved between boards',
         'signature_requested' => 'Approval & signature requested',
+        'internal_document_raised' => 'Internal document raised',
+        'raised_from_external_document' => 'Raised from an external document',
+        'closed_by_internal_document' => 'Closed by its internal document',
         'is_done' => 'Completion changed',
         'is_archive' => 'Archive status changed',
         'title' => 'Title changed',
