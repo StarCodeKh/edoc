@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Schema;
 class WorkflowSubRoleSeeder extends Seeder
 {
     private const RESPONSIBILITIES = [
-        ['code' => 'lobby', 'name' => 'LOBBY (គីរី នីរវៈ)'],
+        ['code' => 'lobby', 'name' => 'LOBBY'],
         ['code' => 'admin', 'name' => 'ការិយាល័យ រដ្ឋបាល'],
         ['code' => 'asg', 'name' => 'ជំនួយការ អគ្គលេខាធិការ'],
         ['code' => 'sg', 'name' => 'អគ្គលេខាធិការ'],
