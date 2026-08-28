@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
             NotificationSettingSeeder::class,
             DocumentSourceSeeder::class,
             WorkspacesInsertSeeder::class,
+            WorkflowSubRoleSeeder::class,
             EdocWorkflowRoleSeeder::class,
             UserGroupSeeder::class,
             PrioritySeeder::class,

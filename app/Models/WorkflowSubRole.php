@@ -16,12 +16,26 @@ class WorkflowSubRole extends Model
 {
     protected $table = 'workflow_sub_roles';
 
-    protected $fillable = ['code', 'name', 'order'];
+    protected $fillable = ['code', 'name', 'order', 'parent_id'];
 
     protected $casts = ['order' => 'integer'];
 
     public function scopeOrdered($query)
     {
         $query->orderBy('order')->orderBy('code');
+    }
+
+    /**
+     * The responsibility this one sits under - D1 under នាយកដ្ឋាន D1-D5.
+     * Nesting is one level deep, so a parent never has a parent of its own.
+     */
+    public function parent()
+    {
+        return $this->belongsTo(self::class, 'parent_id');
+    }
+
+    public function children()
+    {
+        return $this->hasMany(self::class, 'parent_id');
     }
 }

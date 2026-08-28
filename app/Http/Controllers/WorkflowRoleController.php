@@ -29,7 +29,7 @@ class WorkflowRoleController extends Controller
             'roles' => $roles,
             'workflow_types' => $workflowTypes,
             'workspaces' => $workspaces,
-            'sub_roles' => WorkflowSubRole::ordered()->get(['id', 'code', 'name', 'order']),
+            'sub_roles' => WorkflowSubRole::ordered()->get(['id', 'parent_id', 'code', 'name', 'order']),
         ]);
     }
 
@@ -77,7 +77,12 @@ class WorkflowRoleController extends Controller
         $validated = $request->validate([
             'code' => 'required|string|max:50|regex:/^[A-Za-z0-9_-]+$/|unique:workflow_sub_roles,code',
             'name' => 'required|string|max:255',
+            'parent_id' => 'nullable|integer|exists:workflow_sub_roles,id',
         ]);
+
+        if ($message = $this->parentProblem($validated['parent_id'] ?? null, null)) {
+            return response()->json(['error' => true, 'message' => $message], 422);
+        }
 
         $validated['order'] = (WorkflowSubRole::max('order') ?? -1) + 1;
 
@@ -91,7 +96,12 @@ class WorkflowRoleController extends Controller
         $validated = $request->validate([
             'code' => 'required|string|max:50|regex:/^[A-Za-z0-9_-]+$/|unique:workflow_sub_roles,code,'.$subRole->id,
             'name' => 'required|string|max:255',
+            'parent_id' => 'nullable|integer|exists:workflow_sub_roles,id',
         ]);
+
+        if ($message = $this->parentProblem($validated['parent_id'] ?? null, $subRole)) {
+            return response()->json(['error' => true, 'message' => $message], 422);
+        }
 
         $previous = $subRole->code;
         $subRole->update($validated);
@@ -130,9 +140,50 @@ class WorkflowRoleController extends Controller
             ], 422);
         }
 
+        $children = WorkflowSubRole::where('parent_id', $subRole->id)->count();
+
+        if ($children > 0) {
+            return response()->json([
+                'error' => true,
+                'message' => __('This responsibility stands for :count other(s). Move those out first.', ['count' => $children]),
+            ], 422);
+        }
+
         $subRole->delete();
 
         return response()->json(['success' => true]);
+    }
+
+    /**
+     * Nesting is one level deep and never circular: a responsibility cannot sit
+     * under itself, under one of its own children, or under one that already
+     * has a parent of its own.
+     */
+    private function parentProblem(?int $parentId, ?WorkflowSubRole $subject): ?string
+    {
+        if (empty($parentId)) {
+            return null;
+        }
+
+        if ($subject && (int) $parentId === (int) $subject->id) {
+            return __('A responsibility cannot sit under itself.');
+        }
+
+        $parent = WorkflowSubRole::find($parentId);
+
+        if (empty($parent)) {
+            return __('That responsibility no longer exists.');
+        }
+
+        if (!empty($parent->parent_id)) {
+            return __('Responsibilities only nest one level deep.');
+        }
+
+        if ($subject && WorkflowSubRole::where('parent_id', $subject->id)->exists()) {
+            return __('A responsibility that stands for others cannot be moved under another.');
+        }
+
+        return null;
     }
 
     public function workflowTypesSummary()
@@ -159,9 +210,15 @@ class WorkflowRoleController extends Controller
             'list_title' => 'required|string|max:255',
             'workspace_id' => 'nullable|integer|exists:workspaces,id',
             'responsible_role' => 'nullable|string|max:100',
+            'role_mode' => 'nullable|in:standard,dynamic',
             'requires_signature' => 'boolean',
+            'requires_attachment' => 'boolean',
+            'attachment_mode' => 'nullable|in:standard,dynamic',
             'is_terminal' => 'boolean',
         ]);
+
+        $validated['attachment_mode'] = $validated['attachment_mode'] ?? 'standard';
+        $validated['role_mode'] = $this->resolvedRoleMode($validated['responsible_role'] ?? null, $validated['role_mode'] ?? null);
 
         $maxOrder = EdocWorkflowRole::where('workflow_type', $validated['workflow_type'])->max('order');
         $validated['order'] = ($maxOrder ?? -1) + 1;
@@ -179,7 +236,10 @@ class WorkflowRoleController extends Controller
             'list_title' => 'required|string|max:255',
             'workspace_id' => 'nullable|integer|exists:workspaces,id',
             'responsible_role' => 'required|string|max:50',
+            'role_mode' => 'nullable|in:standard,dynamic',
             'requires_signature' => 'boolean',
+            'requires_attachment' => 'boolean',
+            'attachment_mode' => 'nullable|in:standard,dynamic',
             'is_terminal' => 'boolean',
         ]);
 
@@ -187,11 +247,32 @@ class WorkflowRoleController extends Controller
             'list_title' => $request->input('list_title'),
             'workspace_id' => $request->input('workspace_id'),
             'responsible_role' => $request->input('responsible_role'),
+            'role_mode' => $this->resolvedRoleMode($request->input('responsible_role'), $request->input('role_mode')),
             'requires_signature' => (bool) $request->input('requires_signature', false),
+            'requires_attachment' => (bool) $request->input('requires_attachment', false),
+            'attachment_mode' => $request->input('attachment_mode') ?: 'standard',
             'is_terminal' => (bool) $request->input('is_terminal', false),
         ]);
 
         return response()->json($role);
+    }
+
+    /**
+     * A step can only be dynamic when its responsibility actually stands for
+     * others - there would be nothing for the forwarder to choose from
+     * otherwise, and the document would land on nobody.
+     */
+    private function resolvedRoleMode(?string $code, ?string $requested): string
+    {
+        if ($requested !== 'dynamic' || empty($code)) {
+            return 'standard';
+        }
+
+        $parent = WorkflowSubRole::where('code', $code)->first();
+
+        $standsForOthers = $parent && WorkflowSubRole::where('parent_id', $parent->id)->exists();
+
+        return $standsForOthers ? 'dynamic' : 'standard';
     }
 
     public function destroy($id)

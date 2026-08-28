@@ -154,6 +154,8 @@ class SignatureRequestController extends Controller
             'title' => $list->title,
             'responsible_role' => $step->responsible_role ?? null,
             'requires_signature' => (bool) ($step->requires_signature ?? false),
+            'requires_attachment' => (bool) ($step->requires_attachment ?? false),
+            'attachment_mode' => $step->attachment_mode ?? 'standard',
             'is_terminal' => (bool) ($step->is_terminal ?? false),
         ];
     }

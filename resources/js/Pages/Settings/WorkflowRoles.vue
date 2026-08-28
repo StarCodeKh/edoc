@@ -33,9 +33,10 @@
 
                 <ul class="mt-4 divide-y divide-gray-100 dark:divide-gray-700">
                     <li
-                        v-for="subRole in localSubRoles"
+                        v-for="subRole in nestedSubRoles"
                         :key="subRole.id"
                         class="flex flex-wrap items-center gap-2 py-2"
+                        :class="{ 'pl-6': subRole.parent_id }"
                     >
                         <template v-if="subRole.editing">
                             <input
@@ -51,6 +52,16 @@
                                 class="flex-1 min-w-0 bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 :placeholder="$t('Name')"
                             />
+                            <select
+                                v-model="subRole.parent_id"
+                                :title="$t('The responsibility this one sits under')"
+                                class="w-48 min-w-0 bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            >
+                                <option :value="null">{{ $t('Stands on its own') }}</option>
+                                <option v-for="p in parentOptions(subRole)" :key="p.id" :value="p.id">
+                                    {{ $t('Under') }} {{ p.name }}
+                                </option>
+                            </select>
                             <button
                                 type="button"
                                 class="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
@@ -69,6 +80,13 @@
                             </span>
                             <span class="flex-1 min-w-0 truncate text-sm text-gray-800 dark:text-gray-200">
                                 {{ subRole.name }}
+                            </span>
+                            <span
+                                v-if="childCount(subRole.id)"
+                                class="flex-shrink-0 rounded-full bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 text-[11px] font-medium text-indigo-600 dark:text-indigo-300"
+                                :title="$t('A step naming this one can be handed to any of them.')"
+                            >
+                                {{ $t('stands for :count', { count: childCount(subRole.id) }) }}
                             </span>
                             <button
                                 type="button"
@@ -108,6 +126,16 @@
                         class="flex-1 min-w-0 bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         :placeholder="$t('Name')"
                     />
+                    <select
+                        v-model="newSubRole.parent_id"
+                        :title="$t('The responsibility this one sits under')"
+                        class="w-48 min-w-0 bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                        <option :value="null">{{ $t('Stands on its own') }}</option>
+                        <option v-for="p in parentOptions(null)" :key="p.id" :value="p.id">
+                            {{ $t('Under') }} {{ p.name }}
+                        </option>
+                    </select>
                     <button
                         type="button"
                         class="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
@@ -260,6 +288,7 @@
                 <span>{{ $t('Role') }}</span>
                 <span>{{ $t('Signature') }}</span>
                 <span>{{ $t('Terminal') }}</span>
+                <span>{{ $t('Attachment') }}</span>
                 <span></span>
                 <span></span>
             </div>
@@ -291,16 +320,34 @@
                         class="col-span-2 w-full filter-select--block"
                     />
 
-                    <filter-select
-                        v-model="role.responsible_role"
-                        :options="subRoleOptions"
-                        :show-all="false"
-                        :placeholder="$t('Role')"
-                        :search-placeholder="$t('Search') + '…'"
-                        :empty-label="$t('No matches')"
-                        icon="users"
-                        class="w-full filter-select--block"
-                    />
+                    <!-- The mode only appears where it can mean something: a
+                         responsibility standing for others. Dynamic hands the
+                         choice of which one to whoever forwards the document. -->
+                    <div class="w-full min-w-0 flex flex-col gap-1">
+                        <filter-select
+                            v-model="role.responsible_role"
+                            :options="subRoleOptions"
+                            :show-all="false"
+                            :placeholder="$t('Role')"
+                            :search-placeholder="$t('Search') + '…'"
+                            :empty-label="$t('No matches')"
+                            icon="users"
+                            class="w-full filter-select--block"
+                        />
+                        <select
+                            v-if="roleStandsForOthers(role.responsible_role)"
+                            v-model="role.role_mode"
+                            :title="
+                                $t(
+                                    'Standard assigns everyone in this responsibility; dynamic asks the forwarder which one it goes to.'
+                                )
+                            "
+                            class="w-full min-w-0 bg-gray-50 dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-xs rounded-lg px-1.5 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            <option value="standard">{{ $t('Standard') }}</option>
+                            <option value="dynamic">{{ $t('Dynamic') }}</option>
+                        </select>
+                    </div>
 
                     <label
                         class="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300 flex-shrink-0 py-1"
@@ -323,6 +370,33 @@
                         />
                         {{ $t('Terminal') }}
                     </label>
+
+                    <!-- Whether the step expects a document, and which kind: a
+                         standard form it always takes, or whatever the case
+                         produces. The mode only matters once the box is on. -->
+                    <div class="col-span-2 flex items-center gap-1.5 flex-shrink-0 py-1">
+                        <label class="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300">
+                            <input
+                                type="checkbox"
+                                v-model="role.requires_attachment"
+                                class="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 dark:border-gray-600"
+                            />
+                            {{ $t('Attachment') }}
+                        </label>
+                        <select
+                            v-model="role.attachment_mode"
+                            :disabled="!role.requires_attachment"
+                            :title="
+                                $t(
+                                    'Standard is the form this step always expects; dynamic is whatever the case produces.'
+                                )
+                            "
+                            class="min-w-0 flex-1 bg-gray-50 dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-xs rounded-lg px-1.5 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                        >
+                            <option value="standard">{{ $t('Standard') }}</option>
+                            <option value="dynamic">{{ $t('Dynamic') }}</option>
+                        </select>
+                    </div>
 
                     <button
                         type="button"
@@ -356,6 +430,10 @@
             <div
                 class="wr-row px-4 sm:px-6 lg:px-8 py-4 bg-gray-50 dark:bg-gray-900/30 border-t border-gray-100 dark:border-gray-700"
             >
+                <!-- Stands in for the step number the rows above carry, so this
+                     row's fields sit under the columns they belong to. -->
+                <span class="hidden lg:block"></span>
+
                 <input
                     v-model="newRoleForms[type].list_title"
                     type="text"
@@ -374,16 +452,26 @@
                     icon="briefcase"
                     class="col-span-2 w-full filter-select--block"
                 />
-                <filter-select
-                    v-model="newRoleForms[type].responsible_role"
-                    :options="subRoleOptions"
-                    :show-all="false"
-                    :placeholder="$t('Role')"
-                    :search-placeholder="$t('Search') + '…'"
-                    :empty-label="$t('No matches')"
-                    icon="users"
-                    class="w-full filter-select--block"
-                />
+                <div class="w-full min-w-0 flex flex-col gap-1">
+                    <filter-select
+                        v-model="newRoleForms[type].responsible_role"
+                        :options="subRoleOptions"
+                        :show-all="false"
+                        :placeholder="$t('Role')"
+                        :search-placeholder="$t('Search') + '…'"
+                        :empty-label="$t('No matches')"
+                        icon="users"
+                        class="w-full filter-select--block"
+                    />
+                    <select
+                        v-if="roleStandsForOthers(newRoleForms[type].responsible_role)"
+                        v-model="newRoleForms[type].role_mode"
+                        class="w-full min-w-0 bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-xs rounded-lg px-1.5 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                        <option value="standard">{{ $t('Standard') }}</option>
+                        <option value="dynamic">{{ $t('Dynamic') }}</option>
+                    </select>
+                </div>
                 <label class="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300 flex-shrink-0 py-1">
                     <input
                         type="checkbox"
@@ -400,6 +488,28 @@
                     />
                     {{ $t('Terminal') }}
                 </label>
+                <div class="col-span-2 flex items-center gap-1.5 flex-shrink-0 py-1">
+                    <label class="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300">
+                        <input
+                            type="checkbox"
+                            v-model="newRoleForms[type].requires_attachment"
+                            class="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 dark:border-gray-600"
+                        />
+                        {{ $t('Attachment') }}
+                    </label>
+                    <select
+                        v-model="newRoleForms[type].attachment_mode"
+                        :disabled="!newRoleForms[type].requires_attachment"
+                        :title="
+                            $t('Standard is the form this step always expects; dynamic is whatever the case produces.')
+                        "
+                        class="min-w-0 flex-1 bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-xs rounded-lg px-1.5 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                    >
+                        <option value="standard">{{ $t('Standard') }}</option>
+                        <option value="dynamic">{{ $t('Dynamic') }}</option>
+                    </select>
+                </div>
+
                 <button
                     type="button"
                     :disabled="!newRoleForms[type].list_title.trim()"
@@ -499,8 +609,19 @@ export default {
             savedLabels = {};
         }
 
-        const subRoles = (this.sub_roles || []).map((r) => ({ ...r, editing: false, saving: false }));
-        const roles = (this.roles || []).map((r) => ({ ...r, saving: false }));
+        const subRoles = (this.sub_roles || []).map((r) => ({
+            ...r,
+            parent_id: r.parent_id || null,
+            editing: false,
+            saving: false,
+        }));
+        const roles = (this.roles || []).map((r) => ({
+            ...r,
+            requires_attachment: !!r.requires_attachment,
+            attachment_mode: r.attachment_mode || 'standard',
+            role_mode: r.role_mode || 'standard',
+            saving: false,
+        }));
         const discoveredFromRoles = [...new Set(roles.map((r) => r.workflow_type).filter(Boolean))];
         const startingTypes = [...new Set([...(this.workflow_types || []), ...discoveredFromRoles])];
 
@@ -509,7 +630,10 @@ export default {
             newRoleForms[type] = {
                 list_title: '',
                 responsible_role: '',
+                role_mode: 'standard',
                 requires_signature: false,
+                requires_attachment: false,
+                attachment_mode: 'standard',
                 is_terminal: false,
                 workspace_id: null,
             };
@@ -518,7 +642,7 @@ export default {
         return {
             localRoles: roles,
             localSubRoles: subRoles,
-            newSubRole: { code: '', name: '' },
+            newSubRole: { code: '', name: '', parent_id: null },
             subRoleError: '',
             savingSubRole: false,
             newRoleForms,
@@ -559,6 +683,28 @@ export default {
             }));
         },
 
+        /** id -> how many responsibilities sit under it. */
+        childCounts() {
+            const counts = {};
+            this.localSubRoles.forEach((r) => {
+                if (r.parent_id) counts[r.parent_id] = (counts[r.parent_id] || 0) + 1;
+            });
+            return counts;
+        },
+
+        /** Parents in their own order, each followed by the ones it stands for. */
+        nestedSubRoles() {
+            const roots = this.localSubRoles.filter((r) => !r.parent_id);
+            const orphans = this.localSubRoles.filter(
+                (r) => r.parent_id && !this.localSubRoles.some((p) => p.id === r.parent_id)
+            );
+
+            return [
+                ...roots.flatMap((root) => [root, ...this.localSubRoles.filter((r) => r.parent_id === root.id)]),
+                ...orphans,
+            ];
+        },
+
         allWorkflowTypes() {
             const fromProp = this.workflow_types || [];
             const fromRoles = this.localRoles.map((r) => r.workflow_type).filter(Boolean);
@@ -585,6 +731,27 @@ export default {
         },
     },
     methods: {
+        childCount(id) {
+            return this.childCounts[id] || 0;
+        },
+
+        /**
+         * What a responsibility may be filed under. Nesting is one level deep,
+         * so only responsibilities that stand on their own are offered, and
+         * one that already stands for others cannot be moved beneath another.
+         */
+        parentOptions(subject) {
+            if (subject && this.childCount(subject.id)) return [];
+
+            return this.localSubRoles.filter((r) => !r.parent_id && (!subject || r.id !== subject.id));
+        },
+
+        /** Whether a step's role names a group, which is what dynamic needs. */
+        roleStandsForOthers(code) {
+            const role = this.localSubRoles.find((r) => r.code === code);
+            return !!(role && this.childCount(role.id));
+        },
+
         addSubRole() {
             const code = (this.newSubRole.code || '').trim();
             const name = (this.newSubRole.name || '').trim();
@@ -599,10 +766,14 @@ export default {
             this.savingSubRole = true;
 
             axios
-                .post(this.route('workflow-roles.sub.create'), { code, name })
+                .post(this.route('workflow-roles.sub.create'), {
+                    code,
+                    name,
+                    parent_id: this.newSubRole.parent_id || null,
+                })
                 .then((response) => {
                     this.localSubRoles.push({ ...response.data, editing: false, saving: false });
-                    this.newSubRole = { code: '', name: '' };
+                    this.newSubRole = { code: '', name: '', parent_id: null };
                 })
                 .catch((error) => {
                     this.subRoleError = this.subRoleMessage(error);
@@ -624,7 +795,11 @@ export default {
             this.subRoleError = '';
 
             axios
-                .post(this.route('workflow-roles.sub.update', subRole.id), { code, name })
+                .post(this.route('workflow-roles.sub.update', subRole.id), {
+                    code,
+                    name,
+                    parent_id: subRole.parent_id || null,
+                })
                 .then((response) => {
                     // A renamed code is carried across the steps server-side; the
                     // rows already loaded here have to follow it.
@@ -773,7 +948,10 @@ export default {
                 this.newRoleForms[type] = {
                     list_title: '',
                     responsible_role: '',
+                    role_mode: 'standard',
                     requires_signature: false,
+                    requires_attachment: false,
+                    attachment_mode: 'standard',
                     is_terminal: false,
                     workspace_id: null,
                 };
@@ -811,7 +989,10 @@ export default {
                     list_title: role.list_title,
                     workspace_id: role.workspace_id || null,
                     responsible_role: role.responsible_role,
+                    role_mode: role.role_mode || 'standard',
                     requires_signature: !!role.requires_signature,
+                    requires_attachment: !!role.requires_attachment,
+                    attachment_mode: role.attachment_mode || 'standard',
                     is_terminal: !!role.is_terminal,
                 })
                 .then(() => {
@@ -851,7 +1032,10 @@ export default {
                     list_title: title,
                     workspace_id: form.workspace_id || null,
                     responsible_role: form.responsible_role || '',
+                    role_mode: form.role_mode || 'standard',
                     requires_signature: !!form.requires_signature,
+                    requires_attachment: !!form.requires_attachment,
+                    attachment_mode: form.attachment_mode || 'standard',
                     is_terminal: !!form.is_terminal,
                 })
                 .then((response) => {
@@ -860,7 +1044,10 @@ export default {
                         this.newRoleForms[type] = {
                             list_title: '',
                             responsible_role: '',
+                            role_mode: 'standard',
                             requires_signature: false,
+                            requires_attachment: false,
+                            attachment_mode: 'standard',
                             is_terminal: false,
                             workspace_id: null,
                         };
@@ -891,7 +1078,7 @@ export default {
 }
 @media (min-width: 1024px) {
     .wr-row {
-        grid-template-columns: 2.5rem minmax(180px, 1fr) 11.5rem 6.5rem auto auto auto auto;
+        grid-template-columns: 2.5rem minmax(150px, 1fr) 9.5rem 6.5rem auto auto 12rem auto auto;
     }
     /* the col-span-* the stacked layout needs must not survive up here */
     .wr-row > * {

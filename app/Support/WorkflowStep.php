@@ -55,6 +55,8 @@ class WorkflowStep
                 'responsible_role' => $step->responsible_role,
             ] : null;
             $lists[$index]['requires_signature'] = (bool) ($step->requires_signature ?? false);
+            $lists[$index]['requires_attachment'] = (bool) ($step->requires_attachment ?? false);
+            $lists[$index]['attachment_mode'] = $step->attachment_mode ?? 'standard';
             $lists[$index]['is_terminal'] = (bool) ($step->is_terminal ?? false);
             $lists[$index]['responsible_role'] = $step->responsible_role ?? null;
         }
@@ -79,6 +81,18 @@ class WorkflowStep
     public static function requiresSignature(?BoardList $list): bool
     {
         return (bool) (self::forList($list)->requires_signature ?? false);
+    }
+
+    /** Whether the step refuses to be passed on without a document on it. */
+    public static function requiresAttachment(?BoardList $list): bool
+    {
+        return (bool) (self::forList($list)->requires_attachment ?? false);
+    }
+
+    /** 'standard' or 'dynamic' - only meaningful when an attachment is required. */
+    public static function attachmentMode(?BoardList $list): string
+    {
+        return self::forList($list)->attachment_mode ?? 'standard';
     }
 
     /** The step a document finishes on, where the workflow marks one. */

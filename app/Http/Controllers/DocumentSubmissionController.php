@@ -25,6 +25,7 @@ use App\Support\DocumentChain;
 use App\Support\TaskAbility;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
@@ -329,12 +330,31 @@ class DocumentSubmissionController extends Controller
 
         $validated = $request->validate([
             'note' => 'nullable|string',
+            'hand_to' => 'nullable|string|max:50',
         ]);
 
         $next = $this->nextStep($task);
 
         if (empty($next)) {
             return Redirect::back()->with('error', __('This document is already at the last step.'));
+        }
+
+        // A dynamic step names a group, not a person's responsibility. Refuse
+        // rather than guess: forwarding without a choice would either assign
+        // every department at once or nobody at all.
+        $handTo = $validated['hand_to'] ?? null;
+        $options = $this->handToOptions($this->stepConfig($task, $next));
+
+        if ($options->isNotEmpty()) {
+            if (empty($handTo)) {
+                return Redirect::back()->with('error', __('Choose who :step goes to.', ['step' => $next->title]));
+            }
+
+            if (!$options->pluck('code')->contains($handTo)) {
+                return Redirect::back()->with('error', __(':step cannot be handed to that responsibility.', ['step' => $next->title]));
+            }
+        } else {
+            $handTo = null;
         }
 
         // An external document is not finished until the internal work it
@@ -368,7 +388,7 @@ class DocumentSubmissionController extends Controller
 
         // ...and puts it on the plate of whoever carries the next step's
         // responsibility, as configured in Settings > Workflow Roles.
-        $handedTo = $this->assignStepOwners($task, $workspace, $next);
+        $handedTo = $this->assignStepOwners($task, $workspace, $next, $handTo);
 
         $message = $handedTo->isEmpty()
             ? __('Forwarded to :step.', ['step' => $next->title])
@@ -433,8 +453,11 @@ class DocumentSubmissionController extends Controller
      * The forwarder is skipped even when they hold the next responsibility -
      * they have just handed the document on, and putting it straight back on
      * their list would make the hand-off look like it had not happened.
+     *
+     * $handTo is the responsibility chosen while forwarding into a dynamic
+     * step, already checked by the caller against what that step offers.
      */
-    private function assignStepOwners(Task $task, Workspace $workspace, BoardList $step)
+    private function assignStepOwners(Task $task, Workspace $workspace, BoardList $step, ?string $handTo = null)
     {
         $code = EdocWorkflowRole::where('workspace_id', $workspace->id)
             ->where('list_title', $step->title)
@@ -450,12 +473,25 @@ class DocumentSubmissionController extends Controller
             return collect();
         }
 
+        $chosen = $handTo ? WorkflowSubRole::where('code', $handTo)->first() : null;
+
         $alreadyOn = Assignee::where('task_id', $task->id)->pluck('user_id')->all();
 
-        $owners = User::where('workflow_sub_role_id', $subRole->id)
-            ->where('id', '!=', auth()->id())
-            ->whereNotIn('id', $alreadyOn)
-            ->get();
+        $holders = function (WorkflowSubRole $role) use ($alreadyOn) {
+            return User::where('workflow_sub_role_id', $role->id)
+                ->where('id', '!=', auth()->id())
+                ->whereNotIn('id', $alreadyOn)
+                ->get();
+        };
+
+        $owners = $chosen ? $holders($chosen) : collect();
+
+        // Nobody carries the chosen department yet - people may still be filed
+        // under the group it sits in. Falling back to the group beats handing
+        // the document to nobody, and the step is still recorded as the choice.
+        if ($owners->isEmpty()) {
+            $owners = $holders($subRole);
+        }
 
         $assigner = auth()->user();
 
@@ -494,7 +530,65 @@ class DocumentSubmissionController extends Controller
     {
         $next = $this->nextStep($task);
 
-        return $next ? ['id' => $next->id, 'title' => $next->title] : null;
+        if (empty($next)) {
+            return null;
+        }
+
+        $step = $this->stepConfig($task, $next);
+        $options = $this->handToOptions($step);
+
+        return [
+            'id' => $next->id,
+            'title' => $next->title,
+            'responsible_role' => $step->responsible_role ?? null,
+            // 'dynamic' means the step names a group and the forwarder has to
+            // say which of its members actually gets the document.
+            'role_mode' => $options->isEmpty() ? 'standard' : 'dynamic',
+            'hand_to_options' => $options->all(),
+        ];
+    }
+
+    /** The configured step behind a board list, by workspace and title. */
+    private function stepConfig(Task $task, BoardList $list): ?EdocWorkflowRole
+    {
+        $workspaceId = optional($task->project)->workspace_id;
+
+        if (empty($workspaceId)) {
+            return null;
+        }
+
+        return EdocWorkflowRole::where('workspace_id', $workspaceId)
+            ->where('list_title', $list->title)
+            ->first();
+    }
+
+    /**
+     * Who a dynamic step can be handed to: the responsibilities sitting under
+     * the one it names - D1 through D5 under នាយកដ្ឋាន D1-D5.
+     *
+     * Empty for a standard step, and equally empty for a step marked dynamic
+     * whose responsibility stands for nobody. Both cases mean the same thing to
+     * the caller: there is no choice to make, assign the step's own role.
+     */
+    private function handToOptions(?EdocWorkflowRole $step): Collection
+    {
+        if (empty($step) || $step->role_mode !== 'dynamic' || empty($step->responsible_role)) {
+            return collect();
+        }
+
+        $parent = WorkflowSubRole::where('code', $step->responsible_role)->first();
+
+        if (empty($parent)) {
+            return collect();
+        }
+
+        return WorkflowSubRole::where('parent_id', $parent->id)
+            ->ordered()
+            ->get()
+            ->map(fn (WorkflowSubRole $child) => [
+                'code' => $child->code,
+                'name' => $child->name,
+            ]);
     }
 
     /**
@@ -821,7 +915,7 @@ class DocumentSubmissionController extends Controller
 
         // Who is meant to act at each step, where the workspace has a workflow.
         $roles = EdocWorkflowRole::where('workspace_id', $workspace->id)
-            ->get(['list_title', 'responsible_role', 'requires_signature', 'is_terminal'])
+            ->get(['list_title', 'responsible_role', 'requires_signature', 'requires_attachment', 'attachment_mode', 'is_terminal'])
             ->keyBy('list_title');
 
         $currentOrder = optional($task->list)->order;
@@ -841,6 +935,8 @@ class DocumentSubmissionController extends Controller
                 'actor' => $arrival['by'] ?? null,
                 'responsible_role' => optional($role)->responsible_role,
                 'requires_signature' => (bool) optional($role)->requires_signature,
+                'requires_attachment' => (bool) optional($role)->requires_attachment,
+                'attachment_mode' => optional($role)->attachment_mode ?: 'standard',
                 'is_terminal' => (bool) optional($role)->is_terminal,
             ];
         })->values()->all();

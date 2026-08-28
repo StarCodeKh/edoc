@@ -363,6 +363,13 @@
                                                             <span v-if="step.requires_signature" class="step-chip">
                                                                 {{ $t('Signature required') }}
                                                             </span>
+                                                            <span v-if="step.requires_attachment" class="step-chip">
+                                                                {{
+                                                                    step.attachment_mode === 'dynamic'
+                                                                        ? $t('Dynamic attachment required')
+                                                                        : $t('Standard attachment required')
+                                                                }}
+                                                            </span>
                                                             <span v-if="step.is_terminal" class="step-chip">
                                                                 {{ $t('Final step') }}
                                                             </span>
@@ -450,6 +457,29 @@
                                                     :placeholder="$t('Write a comment...')"
                                                 ></textarea>
 
+                                                <!-- The next step names a group rather than one
+                                                     responsibility, so it cannot be forwarded until
+                                                     the department that gets it is named. -->
+                                                <div v-if="mustChooseHandTo" class="mt-2">
+                                                    <label
+                                                        class="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-gray-400"
+                                                    >
+                                                        {{ $t('Hand to') }}
+                                                    </label>
+                                                    <select v-model="hand_to" class="form-select w-full text-sm">
+                                                        <option :value="null" disabled>
+                                                            {{ $t('Choose a responsibility') }}
+                                                        </option>
+                                                        <option
+                                                            v-for="option in next_step.hand_to_options"
+                                                            :key="option.code"
+                                                            :value="option.code"
+                                                        >
+                                                            {{ option.name }}
+                                                        </option>
+                                                    </select>
+                                                </div>
+
                                                 <div class="mt-2">
                                                     <!-- Hands the document to the next board. Anything
                                                          typed above rides along as the note. There is
@@ -457,7 +487,7 @@
                                                     <button
                                                         type="button"
                                                         class="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
-                                                        :disabled="forwarding || links.blocks_forward"
+                                                        :disabled="forwarding || links.blocks_forward || !handToChosen"
                                                         :title="
                                                             links.blocks_forward
                                                                 ? $t(
@@ -477,7 +507,13 @@
                                                 </div>
 
                                                 <p
-                                                    v-if="links.blocks_forward"
+                                                    v-if="!links.blocks_forward && !handToChosen"
+                                                    class="mt-1.5 text-center text-[11px] font-medium text-amber-600"
+                                                >
+                                                    {{ $t('Choose who it goes to first.') }}
+                                                </p>
+                                                <p
+                                                    v-else-if="links.blocks_forward"
                                                     class="mt-1.5 text-center text-[11px] font-medium text-amber-600"
                                                 >
                                                     {{
@@ -629,6 +665,8 @@ export default {
         comments: { type: Array, default: () => [] },
         neighbours: { type: Object, default: () => ({ previous: null, next: null, position: 0, total: 0 }) },
         next_step: { type: Object, default: null },
+        // next_step carries role_mode and hand_to_options: a 'dynamic' step
+        // names a group, and the forwarder says which of its members gets it.
         can: { type: Object, default: () => ({ attach: false, forward: false }) },
         links: {
             type: Object,
@@ -652,6 +690,9 @@ export default {
             new_comment: '',
             uploading: false,
             forwarding: false,
+            // Only ever set for a step that names a group; a standard step
+            // sends null and the server assigns its role as before.
+            hand_to: null,
             notice: '',
         };
     },
@@ -713,6 +754,17 @@ export default {
         },
         canForward() {
             return !!(this.can.forward && this.next_step);
+        },
+        /** A dynamic next step that actually has members to choose between. */
+        mustChooseHandTo() {
+            return !!(
+                this.next_step &&
+                this.next_step.role_mode === 'dynamic' &&
+                (this.next_step.hand_to_options || []).length
+            );
+        },
+        handToChosen() {
+            return !this.mustChooseHandTo || !!this.hand_to;
         },
         /**
          * Raising internal work is the administration's move, and only from a
@@ -794,7 +846,7 @@ export default {
             return this.route('workspace.documents.show', [this.workspace.slug || this.workspace.id, neighbour.uid]);
         },
         forward() {
-            if (!this.canForward || this.forwarding) return;
+            if (!this.canForward || this.forwarding || !this.handToChosen) return;
 
             this.forwarding = true;
 
@@ -805,7 +857,7 @@ export default {
                     this.workspace.slug || this.workspace.id,
                     this.document.slug || this.document.id,
                 ]),
-                { note: this.new_comment.trim() || null },
+                { note: this.new_comment.trim() || null, hand_to: this.mustChooseHandTo ? this.hand_to : null },
                 {
                     onFinish: () => {
                         this.forwarding = false;
