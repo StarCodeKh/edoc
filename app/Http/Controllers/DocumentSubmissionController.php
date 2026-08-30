@@ -250,6 +250,9 @@ class DocumentSubmissionController extends Controller
             'comments' => $this->commentThread($task),
             'neighbours' => $this->neighbours($task, $workspace),
             'next_step' => $this->nextStepPayload($task),
+            // Whether the board it is on is ជំហានចុងក្រោយ, so the page knows the
+            // action closes the document rather than moving it.
+            'finishes_here' => WorkflowStep::isTerminal($task->list),
             'can' => $this->pageAbilities($task),
             'links' => $this->linksPayload($task),
         ]);
@@ -336,6 +339,20 @@ class DocumentSubmissionController extends Controller
             'hand_to' => 'nullable|string|max:255',
         ]);
 
+        if ((bool) $task->is_done) {
+            return Redirect::back()->with('error', __('This document is already finished.'));
+        }
+
+        $current = $task->relationLoaded('list') ? $task->list : $task->list()->first();
+
+        // ជំហានចុងក្រោយ. The step is where the document stops, so the button on
+        // it closes the document instead of moving it to another board - even
+        // where a later board exists. Which of the two it is is configuration,
+        // not code: Settings → Workflow Roles.
+        if (WorkflowStep::isTerminal($current)) {
+            return $this->finishHere($task, $current, $validated['note'] ?? null);
+        }
+
         $next = $this->nextStep($task);
 
         if (empty($next)) {
@@ -368,16 +385,8 @@ class DocumentSubmissionController extends Controller
         // A step that asks for a document does not pass it on without one. The
         // check is scoped to this step's own files: the document almost always
         // arrives carrying the original scan, and that is not this step's work.
-        $current = $task->relationLoaded('list') ? $task->list : $task->list()->first();
-
-        if (WorkflowStep::requiresAttachment($current)) {
-            $filed = Attachment::where('task_id', $task->id)
-                ->where('list_id', optional($current)->id)
-                ->exists();
-
-            if (!$filed) {
-                return Redirect::back()->with('error', __('Attach the document this step produces before sending it on.'));
-            }
+        if ($this->stepIsMissingItsDocument($task, $current)) {
+            return Redirect::back()->with('error', __('Attach the document this step produces before sending it on.'));
         }
 
         // An external document is not finished until the internal work it
@@ -478,7 +487,9 @@ class DocumentSubmissionController extends Controller
             // Taking a file off stops when the document is finished, which is
             // its own rule rather than part of `attach`.
             'detach' => $holds && $this->userCan('detach', $task),
-            'forward' => $holds && $this->userCan('move', $task),
+            // Nothing more to do with a document that is finished: the button
+            // that closed it must not still be offering to close it again.
+            'forward' => $holds && !$task->is_done && $this->userCan('move', $task),
             // Signing has its own rule - the step has to ask for a signature and
             // this has to be the person holding it. See TaskAbility::canSign.
             'sign' => $this->userCan('sign', $task),
@@ -553,6 +564,61 @@ class DocumentSubmissionController extends Controller
         }
 
         return $owners;
+    }
+
+    /** Has this step failed to file the document it is configured to produce? */
+    private function stepIsMissingItsDocument(Task $task, ?BoardList $current): bool
+    {
+        if (!WorkflowStep::requiresAttachment($current)) {
+            return false;
+        }
+
+        return !Attachment::where('task_id', $task->id)
+            ->where('list_id', optional($current)->id)
+            ->exists();
+    }
+
+    /**
+     * Close the document where it stands.
+     *
+     * A terminal step has nowhere to send anything, so the same button that
+     * forwards elsewhere finishes here: the note is filed, is_done is set, and
+     * the document leaves everyone's plate. The board it sits on does not
+     * change - that is the record of where it ended.
+     */
+    private function finishHere(Task $task, ?BoardList $current, ?string $note)
+    {
+        if ($this->stepIsMissingItsDocument($task, $current)) {
+            return Redirect::back()->with('error', __('Attach the document this step produces before sending it on.'));
+        }
+
+        // Closing is exactly the move the chain hold protects: an external
+        // document is not finished until the internal work it raised is.
+        $pending = DocumentChain::pendingChildren($task);
+
+        if ($pending->isNotEmpty()) {
+            return Redirect::back()->with('error', DocumentChain::heldMessage($pending));
+        }
+
+        if (!empty($note) && $this->userCan('comment', $task)) {
+            $comment = Comment::create([
+                'task_id' => $task->id,
+                'user_id' => auth()->id(),
+                'details' => $note,
+            ]);
+
+            event(new NewCommentAdded($comment));
+        }
+
+        $task->update(['is_done' => 1]);
+
+        // Finishing this document may be the last thing an external document
+        // was waiting on, which closes that one in turn.
+        DocumentChain::releaseParents($task->fresh(['list']), auth()->user());
+
+        return Redirect::back()->with('success', __('Document finished at :step.', [
+            'step' => optional($current)->title,
+        ]));
     }
 
     /** The readable name of the responsibility a step names, for messages. */

@@ -522,16 +522,26 @@
                                                                   ? $t(
                                                                         'Waiting on the internal document(s) raised from this one.'
                                                                     )
-                                                                  : $t('Forward to :step', { step: next_step.title })
+                                                                  : finishes_here
+                                                                    ? $t(
+                                                                          'This is the last step — finish the document here.'
+                                                                      )
+                                                                    : $t('Forward to :step', { step: next_step.title })
                                                         "
                                                         @click="forward"
                                                     >
                                                         <icon
-                                                            :name="forwarding ? 'spinner' : 'send'"
+                                                            :name="
+                                                                forwarding
+                                                                    ? 'spinner'
+                                                                    : finishes_here
+                                                                      ? 'tick_check'
+                                                                      : 'send'
+                                                            "
                                                             class="h-4 w-4"
                                                             :class="{ 'animate-spin': forwarding }"
                                                         />
-                                                        {{ $t('Forward') }}
+                                                        {{ forwardLabel }}
                                                     </button>
                                                 </div>
 
@@ -560,6 +570,12 @@
                                                     }}
                                                 </p>
                                                 <p
+                                                    v-else-if="finishes_here"
+                                                    class="mt-1.5 text-center text-[11px] text-gray-400"
+                                                >
+                                                    {{ $t('This is the last step — finish the document here.') }}
+                                                </p>
+                                                <p
                                                     v-else-if="canForward"
                                                     class="mt-1.5 text-center text-[11px] text-gray-400"
                                                 >
@@ -569,6 +585,17 @@
                                                     {{ $t('This document is already at the last step.') }}
                                                 </p>
                                             </div>
+
+                                            <!-- Closed. The note box goes with the button:
+                                                 it is only ever posted as the note that
+                                                 rides along with the move. -->
+                                            <p
+                                                v-else-if="document.is_done"
+                                                class="mt-4 flex items-center justify-center gap-1.5 border-t border-gray-100 pt-3 text-center text-[11px] font-medium text-emerald-600"
+                                            >
+                                                <icon name="tick_check" class="h-3.5 w-3.5 shrink-0" />
+                                                {{ $t('This document is finished.') }}
+                                            </p>
                                         </template>
                                     </div>
                                 </div>
@@ -718,6 +745,9 @@ export default {
         comments: { type: Array, default: () => [] },
         neighbours: { type: Object, default: () => ({ previous: null, next: null, position: 0, total: 0 }) },
         next_step: { type: Object, default: null },
+        // The board it sits on is ជំហានចុងក្រោយ: the action closes the document
+        // where it stands instead of sending it to another board.
+        finishes_here: { type: Boolean, default: false },
         // next_step carries role_mode and hand_to_options: a 'dynamic' step
         // names a group, and the forwarder says which of its members gets it.
         can: { type: Object, default: () => ({ attach: false, forward: false }) },
@@ -815,11 +845,19 @@ export default {
             ];
         },
         canForward() {
-            return !!(this.can.forward && this.next_step);
+            // A terminal step has no next board and still needs its button.
+            return !!(this.can.forward && (this.next_step || this.finishes_here));
+        },
+
+        /** Label, icon and hint all follow from which of the two this is. */
+        forwardLabel() {
+            return this.finishes_here ? this.$t('Finish') : this.$t('Forward');
         },
         /** A dynamic next step that actually has members to choose between. */
         mustChooseHandTo() {
+            // Nothing to hand to when the document stops here.
             return !!(
+                !this.finishes_here &&
                 this.next_step &&
                 this.next_step.role_mode === 'dynamic' &&
                 (this.next_step.hand_to_options || []).length

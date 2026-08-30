@@ -890,5 +890,10 @@
     "This step has filed its document.": "此步骤已归档其文件。",
     "This step must file its document before it can be sent on.": "此步骤必须先归档其文件，才能继续传送。",
     "Attach the document this step produces before sending it on.": "请先附上此步骤产生的文件，再继续传送。",
-    "Open comments": "打开评论"
+    "Open comments": "打开评论",
+    "Finish": "完成",
+    "This is the last step — finish the document here.": "这是最后一个步骤——请在此完成文件。",
+    "Document finished at :step.": "文件已在 :step 完成。",
+    "This document is finished.": "此文件已完成。",
+    "This document is already finished.": "此文件已经完成。"
 }
