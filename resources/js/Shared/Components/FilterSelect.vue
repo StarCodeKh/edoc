@@ -306,6 +306,24 @@ export default {
     border-color: #ef4444;
 }
 
+/* Settings rows put this next to a checkbox, where the form-sized trigger above
+   is too tall to sit on the same line. Declared after --block so the two can be
+   combined and this one wins. */
+.filter-select--xs .filter-select__trigger {
+    height: 1.75rem;
+    padding: 2px 8px;
+    border-radius: 0.5rem;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+@media (max-width: 640px) {
+    .filter-select--xs .filter-select__trigger {
+        height: 2rem;
+        font-size: 13px;
+    }
+}
+
 .filter-select__trigger:disabled {
     opacity: 0.6;
     cursor: not-allowed;

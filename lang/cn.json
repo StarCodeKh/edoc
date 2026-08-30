@@ -882,5 +882,7 @@
     "A responsibility cannot sit under itself.": "职责不能隶属于自身。",
     "That responsibility no longer exists.": "该职责已不存在。",
     "Responsibilities only nest one level deep.": "职责只能嵌套一层。",
-    "A responsibility that stands for others cannot be moved under another.": "代表其他职责的职责不能移到另一个职责之下。"
+    "A responsibility that stands for others cannot be moved under another.": "代表其他职责的职责不能移到另一个职责之下。",
+    "Open to sign": "打开以签名",
+    "View only": "仅供查看"
 }

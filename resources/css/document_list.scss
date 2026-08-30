@@ -20,6 +20,33 @@
     transform: translateX(2px);
 }
 
+/* Printing the tracking slip straight from the row. Kept quiet until the row
+   is hovered - it is an action on one document, not a column of the table. */
+.doc-row__print {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    color: #cbd5e1;
+    transition:
+        background-color 0.12s ease,
+        color 0.12s ease;
+}
+.doc-row:hover .doc-row__print {
+    color: #6574cd;
+}
+.doc-row__print:hover {
+    background: #e0e7ff;
+    color: #4338ca;
+}
+.doc-row__print-icon {
+    width: 16px;
+    height: 16px;
+}
+
 .doc-row__icon {
     width: 22px;
     height: 22px;

@@ -20,6 +20,7 @@ use App\Models\TeamMember;
 use App\Models\Timer;
 use App\Models\UserGroup;
 use App\Models\WorkspaceType;
+use App\Support\TaskAbility;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -455,7 +456,10 @@ class TasksController extends Controller
 
     public function addAttachment($id, Request $request)
     {
-        $this->authorizeTask($id, 'attach');
+        // A plain upload is an attach. Saving a drawn-on copy back is the
+        // reviewer's act on the document itself, so the annotator says so and
+        // is held to the stricter rule.
+        $task = $this->authorizeTask($id, $request->boolean('annotated') ? 'sign' : 'attach');
 
         $attachment = [];
 
@@ -515,11 +519,16 @@ class TasksController extends Controller
      */
     public function viewAttachment($taskUid, $attachmentId)
     {
-        [, $attachment] = $this->resolveAttachment($taskUid, $attachmentId);
+        [$task, $attachment] = $this->resolveAttachment($taskUid, $attachmentId);
 
         return Inertia::render('Attachments/View', [
             'taskUid' => $taskUid,
             'attachmentId' => $attachment->id,
+            // The viewer doubles as the annotator, so it has to know which of
+            // the two it is before it draws a toolbar. `sign` is the whole
+            // answer: no signature step, or not this user's step, means the
+            // file opens read-only.
+            'can' => TaskAbility::summary(auth()->user(), $task),
         ]);
     }
 

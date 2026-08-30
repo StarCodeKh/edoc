@@ -6,12 +6,26 @@ use App\Models\EdocWorkflowRole;
 use App\Models\User;
 use App\Models\WorkflowSubRole;
 use App\Models\Workspace;
+use App\Support\WorkflowStep;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class WorkflowRoleController extends Controller
 {
     const WORKFLOW_TYPES = ['external_ministry', 'casino_operator', 'internal_cgmc'];
+
+    /**
+     * The two ways a step can be qualified: 'standard' is the fixed thing the
+     * step always expects, 'dynamic' is decided per document as it passes.
+     *
+     * Served to the page rather than written into the template so the choices,
+     * their order and their wording live in one place - the settings screen and
+     * the validation rules can no longer drift apart.
+     */
+    const STEP_MODES = [
+        ['value' => 'standard', 'label' => 'Standard'],
+        ['value' => 'dynamic', 'label' => 'Dynamic'],
+    ];
 
     public function index()
     {
@@ -30,6 +44,7 @@ class WorkflowRoleController extends Controller
             'workflow_types' => $workflowTypes,
             'workspaces' => $workspaces,
             'sub_roles' => WorkflowSubRole::ordered()->get(['id', 'parent_id', 'code', 'name', 'order']),
+            'step_modes' => self::STEP_MODES,
         ]);
     }
 
@@ -64,6 +79,7 @@ class WorkflowRoleController extends Controller
 
         $updated = EdocWorkflowRole::where('workflow_type', $validated['workflow_type'])
             ->update(['workspace_id' => $validated['workspace_id']]);
+        WorkflowStep::flush();
 
         return response()->json(['success' => true, 'updated' => $updated]);
     }
@@ -203,6 +219,12 @@ class WorkflowRoleController extends Controller
         return response()->json(['workflow_types' => $summary]);
     }
 
+    /** The validation twin of STEP_MODES, so the two cannot drift apart. */
+    private function stepModeRule(): string
+    {
+        return 'nullable|in:'.implode(',', array_column(self::STEP_MODES, 'value'));
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -210,10 +232,10 @@ class WorkflowRoleController extends Controller
             'list_title' => 'required|string|max:255',
             'workspace_id' => 'nullable|integer|exists:workspaces,id',
             'responsible_role' => 'nullable|string|max:100',
-            'role_mode' => 'nullable|in:standard,dynamic',
+            'role_mode' => $this->stepModeRule(),
             'requires_signature' => 'boolean',
             'requires_attachment' => 'boolean',
-            'attachment_mode' => 'nullable|in:standard,dynamic',
+            'attachment_mode' => $this->stepModeRule(),
             'is_terminal' => 'boolean',
         ]);
 
@@ -224,6 +246,7 @@ class WorkflowRoleController extends Controller
         $validated['order'] = ($maxOrder ?? -1) + 1;
 
         $role = EdocWorkflowRole::create($validated);
+        WorkflowStep::flush();
 
         return response()->json($role);
     }
@@ -236,10 +259,10 @@ class WorkflowRoleController extends Controller
             'list_title' => 'required|string|max:255',
             'workspace_id' => 'nullable|integer|exists:workspaces,id',
             'responsible_role' => 'required|string|max:50',
-            'role_mode' => 'nullable|in:standard,dynamic',
+            'role_mode' => $this->stepModeRule(),
             'requires_signature' => 'boolean',
             'requires_attachment' => 'boolean',
-            'attachment_mode' => 'nullable|in:standard,dynamic',
+            'attachment_mode' => $this->stepModeRule(),
             'is_terminal' => 'boolean',
         ]);
 
@@ -253,6 +276,7 @@ class WorkflowRoleController extends Controller
             'attachment_mode' => $request->input('attachment_mode') ?: 'standard',
             'is_terminal' => (bool) $request->input('is_terminal', false),
         ]);
+        WorkflowStep::flush();
 
         return response()->json($role);
     }
@@ -278,6 +302,7 @@ class WorkflowRoleController extends Controller
     public function destroy($id)
     {
         EdocWorkflowRole::findOrFail($id)->delete();
+        WorkflowStep::flush();
 
         return response()->json(['success' => true]);
     }

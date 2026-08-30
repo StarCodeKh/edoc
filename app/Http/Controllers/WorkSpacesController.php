@@ -18,6 +18,8 @@ use App\Models\Timer;
 use App\Models\User;
 use App\Models\Workspace;
 use App\Models\WorkspaceType;
+use App\Support\TaskAbility;
+use App\Support\WorkflowStep;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
@@ -459,7 +461,7 @@ class WorkSpacesController extends Controller
             ->latest('created_at')
             ->paginate(20)
             ->withQueryString()
-            ->through(fn (Task $task) => $this->documentListRow($task));
+            ->through(fn (Task $task) => $this->documentListRow($task, (int) $workspace->id));
 
         $uploaderIds = (clone $base)->distinct()->pluck('user_id')->filter()->values();
 
@@ -521,7 +523,7 @@ class WorkSpacesController extends Controller
             ->latest('created_at')
             ->paginate(20)
             ->withQueryString()
-            ->through(fn (Task $task) => $this->documentListRow($task));
+            ->through(fn (Task $task) => $this->documentListRow($task, (int) $workspace->id));
 
         return Inertia::render('Workspaces/MyTasksDocuments', [
             'title' => 'My Documents | '.$workspace->name,
@@ -563,9 +565,15 @@ class WorkSpacesController extends Controller
         return [
             'user:id,first_name,last_name,photo_path',
             'project:id,title,slug',
-            'documentSource:id,name',
+            // The parent is the department above the office; the printed
+            // tracking slip names both.
+            'documentSource:id,name,parent_id',
+            'documentSource.parent:id,name',
             'list:id,title',
             'type:id,name',
+            // Loaded for TaskAbility, which reads it off the model rather than
+            // asking the database once per row.
+            'assignees:id,task_id,user_id',
             'attachments' => fn ($query) => $query
                 ->select('id', 'task_id', 'name', 'path', 'size', 'created_at')
                 ->orderByDesc('created_at')
@@ -574,8 +582,21 @@ class WorkSpacesController extends Controller
     }
 
     /** One row of the document register, in the shape both listings render. */
-    private function documentListRow(Task $task): array
+    private function documentListRow(Task $task, ?int $workspaceId = null): array
     {
+        $user = auth()->user();
+
+        // Whether this row is signable is worked out from the workspace id the
+        // caller already has, not through TaskAbility::canSign - that resolves
+        // the step from $task->list->project, which would load a project per
+        // row just to arrive back at the workspace we are listing.
+        $requiresSignature = WorkflowStep::requiresSignatureForTitle($workspaceId, optional($task->list)->title);
+
+        $canSign = $user
+            && $requiresSignature
+            && !$task->is_done
+            && ($user->isAdmin() || TaskAbility::isResponsibleForItsBoard($user, $task));
+
         return [
             'id' => $task->id,
             'code' => $task->task_code,
@@ -602,6 +623,31 @@ class WorkSpacesController extends Controller
                 'name' => trim($task->user->first_name.' '.$task->user->last_name),
                 'photo' => $task->user->photo_path,
             ] : null,
+            // Everything the printed tracking slip needs, in the shape
+            // DocumentReceipt.vue reads - it is fed a task, not a register row.
+            'receipt' => [
+                'id' => $task->id,
+                'task_code' => $task->task_code,
+                'title' => $task->title,
+                'qr_code' => $task->qr_code,
+                'bar_code' => $task->bar_code,
+                'merged_history' => $task->merged_history,
+                'list_id' => $task->list_id,
+                'list' => $task->list ? ['id' => $task->list->id, 'title' => $task->list->title] : null,
+                'type' => $task->type ? ['name' => $task->type->name] : null,
+                'document_source' => $task->documentSource ? [
+                    'name' => $task->documentSource->name,
+                    'parent' => optional($task->documentSource->parent)->name
+                        ? ['name' => $task->documentSource->parent->name]
+                        : null,
+                ] : null,
+                'project' => $task->project ? ['id' => $task->project->id, 'title' => $task->project->title] : null,
+            ],
+            'requires_signature' => $requiresSignature,
+            'can' => [
+                'attach' => (bool) ($user && TaskAbility::canAttach($user, $task)),
+                'sign' => (bool) $canSign,
+            ],
         ];
     }
 

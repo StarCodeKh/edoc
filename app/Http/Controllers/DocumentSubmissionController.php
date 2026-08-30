@@ -438,6 +438,9 @@ class DocumentSubmissionController extends Controller
         return [
             'attach' => $holds && $this->userCan('attach', $task),
             'forward' => $holds && $this->userCan('move', $task),
+            // Signing has its own rule - the step has to ask for a signature and
+            // this has to be the person holding it. See TaskAbility::canSign.
+            'sign' => $this->userCan('sign', $task),
         ];
     }
 
@@ -692,6 +695,24 @@ class DocumentSubmissionController extends Controller
             'exit_date' => $this->isoOrNull($task->exit_date),
             'created_at' => $this->isoOrNull($task->created_at),
             'qr_code' => $task->qr_code,
+            // The printed tracking slip is fed a task, not this payload, so the
+            // fields it reads travel alongside in the shape it expects.
+            'receipt' => [
+                'id' => $task->id,
+                'task_code' => $task->task_code,
+                'title' => $task->title,
+                'qr_code' => $task->qr_code,
+                'bar_code' => $task->bar_code,
+                'merged_history' => $task->merged_history,
+                'list_id' => $task->list_id,
+                'list' => $task->list ? ['id' => $task->list->id, 'title' => $task->list->title] : null,
+                'type' => $task->type ? ['name' => $task->type->name] : null,
+                'document_source' => $source ? [
+                    'name' => $source->name,
+                    'parent' => optional($source->parent)->name ? ['name' => $source->parent->name] : null,
+                ] : null,
+                'project' => $task->project ? ['id' => $task->project->id, 'title' => $task->project->title] : null,
+            ],
             'submitted_by' => $task->user ? $this->personPayload($task->user) : null,
             'assignees' => $task->assignees
                 ->map(fn ($assignee) => $assignee->user ? $this->personPayload($assignee->user) : null)

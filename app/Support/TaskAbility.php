@@ -139,6 +139,32 @@ class TaskAbility
         return self::canAttach($user, $task);
     }
 
+    /**
+     * Drawing on a document and signing it are the same permission: both mark
+     * the file as having been through a reviewer, so both are the act of the
+     * step's reviewer and nobody else.
+     *
+     * It takes the board's own workflow step as the first condition - a step
+     * without ហត្ថលេខា ticked in Settings → Workflow Roles is never signable,
+     * whoever is looking at it - and then asks whether this user is the one
+     * holding that step. Admin keeps it, as it keeps every other ability here.
+     * Everyone else opens the file read-only.
+     */
+    public static function canSign(User $user, Task $task): bool
+    {
+        if ($task->is_done) {
+            return false;
+        }
+
+        $list = $task->relationLoaded('list') ? $task->list : $task->list()->first();
+
+        if (!WorkflowStep::requiresSignature($list)) {
+            return false;
+        }
+
+        return $user->isAdmin() || self::isResponsibleForItsBoard($user, $task);
+    }
+
     /** The whole answer, in the shape the front end consumes. */
     public static function summary(User $user, Task $task): array
     {
@@ -149,6 +175,7 @@ class TaskAbility
             'delete' => self::canDelete($user, $task),
             'attach' => self::canAttach($user, $task),
             'comment' => self::canComment($user, $task),
+            'sign' => self::canSign($user, $task),
         ];
     }
 }

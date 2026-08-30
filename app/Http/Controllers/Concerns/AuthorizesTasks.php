@@ -57,6 +57,7 @@ trait AuthorizesTasks
             'delete' => 'You are not allowed to delete this document.',
             'attach' => 'You are not allowed to attach files to this document.',
             'comment' => 'You are not allowed to comment on this document.',
+            'sign' => 'This document is open to you for reading only - signing it belongs to the reviewer responsible for its current step.',
             default => 'You do not have access to this document.',
         };
     }

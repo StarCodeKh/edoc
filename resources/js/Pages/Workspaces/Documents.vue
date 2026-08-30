@@ -141,12 +141,18 @@
                          attachments no longer owns half the page. -->
                     <div class="mt-4 overflow-hidden rounded-2xl border border-gray-200/70 bg-white shadow-sm">
                         <div v-if="documents.data.length" class="divide-y divide-gray-100">
-                            <button
+                            <!-- A div rather than a button: the print control sits
+                                 inside the row, and a button inside a button is
+                                 not something a browser will render. -->
+                            <div
                                 v-for="doc in documents.data"
                                 :key="doc.id"
-                                type="button"
                                 class="doc-row"
+                                role="button"
+                                tabindex="0"
                                 @click="openDetail(doc)"
+                                @keydown.enter.prevent="openDetail(doc)"
+                                @keydown.space.prevent="openDetail(doc)"
                             >
                                 <icon :name="docIcon(doc)" class="doc-row__icon" />
 
@@ -176,8 +182,21 @@
                                     {{ doc.is_done ? $t('Done') : doc.status || $t('Active') }}
                                 </span>
 
+                                <!-- The tracking slip, printable straight from the
+                                     register - the row already carries everything
+                                     the slip prints. -->
+                                <button
+                                    type="button"
+                                    class="doc-row__print"
+                                    @click.stop="openReceiptModal(doc, $event)"
+                                    :title="$t('Print tracking document')"
+                                    :aria-label="$t('Print tracking document')"
+                                >
+                                    <printer-icon class="doc-row__print-icon" />
+                                </button>
+
                                 <icon name="chevron-right" class="doc-row__chevron" />
-                            </button>
+                            </div>
                         </div>
 
                         <!-- Empty state -->
@@ -264,25 +283,64 @@
                             {{ $t('Attachments') }} · {{ khNum(detail.attachments_count) }}
                         </div>
 
+                        <!-- At a signature step the file is not something to read
+                             but something waiting on you, and the row says so. -->
+                        <p
+                            v-if="detail.can && detail.can.sign && detail.files && detail.files.length"
+                            class="doc-panel__sign-hint"
+                        >
+                            <icon name="edit" class="h-3.5 w-3.5 shrink-0" />
+                            {{ $t('This step needs a signature — open the file to draw or type on it.') }}
+                        </p>
+
                         <ul v-if="detail.files && detail.files.length" class="doc-panel__files">
                             <li v-for="file in detail.files" :key="file.id" class="doc-panel__file">
                                 <icon :name="fileIcon(file.ext)" class="h-6 w-6 flex-shrink-0" />
-                                <span class="doc-panel__file-name" :title="file.name">{{ file.name }}</span>
-                                <span class="doc-panel__file-size">{{ fileSize(file.size) }}</span>
+                                <span class="doc-panel__file-text">
+                                    <span class="doc-panel__file-name" :title="file.name">{{ file.name }}</span>
+                                    <span class="doc-panel__file-size">{{ fileSize(file.size) }}</span>
+                                </span>
                                 <a
-                                    :href="file.path"
-                                    :download="file.name"
+                                    :href="annotatorUrl(detail, file)"
+                                    target="_blank"
+                                    rel="noopener"
                                     class="doc-panel__file-btn"
-                                    :title="$t('Download')"
+                                    :title="detail.can && detail.can.sign ? $t('Open to sign') : $t('View')"
                                 >
-                                    <icon name="download" class="h-3.5 w-3.5" />
+                                    <icon name="eye" class="h-4 w-4" />
                                 </a>
+                                <button
+                                    v-if="detail.can && detail.can.attach"
+                                    type="button"
+                                    class="doc-panel__file-btn is-danger"
+                                    :disabled="removingFileId === file.id"
+                                    :title="$t('Delete')"
+                                    @click="removeFile(detail, file)"
+                                >
+                                    <icon
+                                        :name="removingFileId === file.id ? 'spinner' : 'trash'"
+                                        class="h-4 w-4"
+                                        :class="{ 'animate-spin': removingFileId === file.id }"
+                                    />
+                                </button>
                             </li>
                         </ul>
                         <p v-else class="doc-panel__empty">{{ $t('This document has no attached file yet.') }}</p>
+
+                        <p v-if="fileNotice" class="doc-panel__notice">{{ fileNotice }}</p>
                     </div>
 
                     <div class="doc-panel__foot">
+                        <!-- The tracking slip, as it prints: what it is, and the
+                             code it is filed under. -->
+                        <button type="button" class="doc-track" @click="openReceiptModal(detail, $event)">
+                            <printer-icon class="doc-track__icon" />
+                            <span class="doc-track__text">
+                                <span class="doc-track__label">{{ $t('Tracking Document') }}</span>
+                                <span class="doc-track__code">{{ detail.code }}</span>
+                            </span>
+                        </button>
+
                         <button type="button" class="doc-btn doc-btn--ghost" @click="closeDetail">
                             {{ $t('Close') }}
                         </button>
@@ -312,6 +370,8 @@
                 </div>
             </div>
         </transition>
+
+        <DocumentReceipt v-if="receiptModalOpen" :task="selectedReceiptTask" @close="closeReceiptModal" />
     </div>
 </template>
 
@@ -322,6 +382,9 @@ import Icon from '@/Shared/Icon.vue';
 import Pagination from '@/Shared/Pagination.vue';
 import FilterSelect from '@/Shared/Components/FilterSelect.vue';
 import DatePicker from '@/Shared/Components/DatePicker.vue';
+import PrinterIcon from '@/Shared/Components/PrinterIcon.vue';
+import DocumentReceipt from '@/Shared/Modals/DocumentReceipt.vue';
+import axios from 'axios';
 import pickBy from 'lodash/pickBy';
 import throttle from 'lodash/throttle';
 import moment_timezone from 'moment-timezone';
@@ -362,7 +425,7 @@ export default {
     metaInfo: { title: 'Documents' },
     layout: Layout,
     mixins: [khmerCalendarMixin],
-    components: { Head, Link, Icon, Pagination, FilterSelect, DatePicker },
+    components: { Head, Link, Icon, Pagination, FilterSelect, DatePicker, PrinterIcon, DocumentReceipt },
     props: {
         title: String,
         workspace: Object,
@@ -385,6 +448,14 @@ export default {
             ],
             // The document whose detail panel is open, or null.
             detail: null,
+
+            // The tracking slip, and the document it is being printed for.
+            receiptModalOpen: false,
+            selectedReceiptTask: null,
+
+            // Which attachment is mid-delete, and what went wrong if it did.
+            removingFileId: null,
+            fileNotice: '',
 
             form: {
                 uploader: this.filters.uploader || null,
@@ -455,9 +526,55 @@ export default {
         },
         openDetail(doc) {
             this.detail = doc;
+            this.fileNotice = '';
         },
         closeDetail() {
             this.detail = null;
+        },
+
+        /**
+         * The annotator, not the raw file: for a PDF it is the viewer, and it is
+         * the only place a signature can be drawn onto one. What it lets the
+         * reader do once it opens is the server's call, not this link's.
+         */
+        annotatorUrl(doc, file) {
+            return this.route('task.attachment.view', { taskUid: doc.id, attachmentId: file.id });
+        },
+
+        openReceiptModal(doc, event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            // The slip is printed from the receipt-shaped payload the row
+            // carries, so no round trip is needed to open it.
+            this.selectedReceiptTask = doc.receipt || doc;
+            this.receiptModalOpen = true;
+        },
+        closeReceiptModal() {
+            this.receiptModalOpen = false;
+            this.selectedReceiptTask = null;
+        },
+
+        /**
+         * Remove an attachment, then keep the row's own count in step - the
+         * register is not reloaded, so nothing else would correct it.
+         */
+        async removeFile(doc, file) {
+            if (this.removingFileId) return;
+
+            this.fileNotice = '';
+            this.removingFileId = file.id;
+
+            try {
+                await axios.post(this.route('task.attachment.delete', file.id));
+                doc.files = (doc.files || []).filter((item) => item.id !== file.id);
+                doc.attachments_count = doc.files.length;
+            } catch (error) {
+                this.fileNotice = error?.response?.data?.message || this.$t('Failed to remove the attachment.');
+            } finally {
+                this.removingFileId = null;
+            }
         },
         fileSize(bytes) {
             const size = Number(bytes) || 0;
@@ -604,8 +721,14 @@ export default {
 .doc-panel__file:hover {
     background: rgba(238, 242, 255, 0.5);
 }
-.doc-panel__file-name {
+/* Name over size, the way the file rows read on the document page. */
+.doc-panel__file-text {
+    display: flex;
     flex: 1;
+    min-width: 0;
+    flex-direction: column;
+}
+.doc-panel__file-name {
     min-width: 0;
     font-size: 12px;
     font-weight: 500;
@@ -615,9 +738,64 @@ export default {
     white-space: nowrap;
 }
 .doc-panel__file-size {
-    flex-shrink: 0;
     font-size: 11px;
     color: #9ca3af;
+}
+
+.doc-panel__sign-hint {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    background: #eef2ff;
+    font-size: 12px;
+    font-weight: 500;
+    color: #4338ca;
+}
+
+.doc-panel__notice {
+    margin-top: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #dc2626;
+}
+
+/* The tracking slip button: what it is, then the code it is filed under. */
+.doc-track {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-right: auto;
+    padding: 6px 12px;
+    border-radius: 12px;
+    background: #eef2ff;
+    color: #4338ca;
+    transition: background-color 0.12s ease;
+}
+.doc-track:hover {
+    background: #e0e7ff;
+}
+.doc-track__icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+.doc-track__text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    line-height: 1.2;
+}
+.doc-track__label {
+    font-size: 10px;
+    font-weight: 600;
+}
+.doc-track__code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 13px;
+    font-weight: 700;
 }
 .doc-panel__file-btn {
     display: flex;
@@ -632,6 +810,14 @@ export default {
 .doc-panel__file-btn:hover {
     background: #e0e7ff;
     color: #4338ca;
+}
+.doc-panel__file-btn.is-danger:hover {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+.doc-panel__file-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .doc-panel__empty {

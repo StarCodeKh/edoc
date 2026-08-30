@@ -635,6 +635,15 @@
                                     <p v-if="document.code" class="mt-2 text-xs font-semibold text-gray-500">
                                         {{ document.code }}
                                     </p>
+
+                                    <!-- The slip that travels with the paper. -->
+                                    <button type="button" class="doc-track" @click="openReceiptModal">
+                                        <printer-icon class="doc-track__icon" />
+                                        <span class="doc-track__text">
+                                            <span class="doc-track__label">{{ $t('Tracking Document') }}</span>
+                                            <span class="doc-track__code">{{ document.code }}</span>
+                                        </span>
+                                    </button>
                                 </div>
                             </div>
                         </aside>
@@ -642,6 +651,8 @@
                 </div>
             </div>
         </div>
+
+        <DocumentReceipt v-if="receiptModalOpen" :task="document.receipt || document" @close="closeReceiptModal" />
     </div>
 </template>
 
@@ -651,11 +662,13 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import Icon from '@/Shared/Icon.vue';
 import moment from 'moment';
 import axios from 'axios';
+import PrinterIcon from '@/Shared/Components/PrinterIcon.vue';
+import DocumentReceipt from '@/Shared/Modals/DocumentReceipt.vue';
 
 export default {
     metaInfo: { title: 'Document' },
     layout: Layout,
-    components: { Head, Link, Icon },
+    components: { Head, Link, Icon, PrinterIcon, DocumentReceipt },
     props: {
         title: String,
         workspace: Object,
@@ -683,6 +696,8 @@ export default {
     data() {
         return {
             active_tab: 'summary',
+            // The printed tracking slip.
+            receiptModalOpen: false,
             // Server props are the starting point; both lists grow in place as
             // the page is used, so nothing here waits on a round trip.
             thread: [...this.comments],
@@ -799,12 +814,12 @@ export default {
         },
         /**
          * A signature step turns the attachment list into something to act on
-         * rather than read. Gated on can.attach because signing means saving an
-         * annotated copy back, which is an attach - the server holds the same
-         * line, so this only decides whether the button is worth showing.
+         * rather than read. The answer comes from the server now - TaskAbility
+         * checks the step and the responsibility together, so the button here
+         * and the rule the annotator enforces cannot disagree.
          */
         canSign() {
-            return !!(this.currentStep && this.currentStep.requires_signature && this.can.attach);
+            return !!this.can.sign;
         },
         sourceLabel() {
             if (this.document.department && this.document.office) {
@@ -822,6 +837,12 @@ export default {
         linkedHref(doc) {
             if (!doc.workspace_uid) return '#';
             return this.route('workspace.documents.show', [doc.workspace_uid, doc.uid]);
+        },
+        openReceiptModal() {
+            this.receiptModalOpen = true;
+        },
+        closeReceiptModal() {
+            this.receiptModalOpen = false;
         },
         annotatorUrl(file) {
             return this.route('task.attachment.view', {
@@ -923,6 +944,44 @@ export default {
 </script>
 
 <style scoped>
+/* The tracking slip button, as it reads on the register too. */
+.doc-track {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    margin-top: 12px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    background: #eef2ff;
+    color: #4338ca;
+    transition: background-color 0.12s ease;
+}
+.doc-track:hover {
+    background: #e0e7ff;
+}
+.doc-track__icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+.doc-track__text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    line-height: 1.2;
+}
+.doc-track__label {
+    font-size: 10px;
+    font-weight: 600;
+}
+.doc-track__code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 13px;
+    font-weight: 700;
+}
+
 /* Segmented tab bar. Khmer labels are wide, so each tab takes an equal share
    and truncates rather than wrapping the row onto two lines. */
 .doc-tabs {

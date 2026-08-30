@@ -210,11 +210,7 @@
 
         <!-- ================= Image preview ================= -->
         <div v-else-if="isImage(attachment.name)" class="flex-1 overflow-auto flex items-center justify-center p-6">
-            <img
-                :src="fileUrl"
-                :alt="attachment.name"
-                class="max-w-full max-h-full object-contain rounded shadow-lg"
-            />
+            <img :src="fileUrl" :alt="attachment.name" class="max-w-full max-h-full object-contain rounded shadow-lg" />
         </div>
 
         <!-- ================= Anything we cannot preview ================= -->
@@ -257,6 +253,7 @@
                         <span class="hidden sm:inline">{{ $t('Read') }}</span>
                     </button>
                     <button
+                        v-if="canAnnotate"
                         type="button"
                         @click="toggleSketch"
                         :class="
@@ -276,6 +273,7 @@
                         <span class="hidden sm:inline">{{ $t('Sketch') }}</span>
                     </button>
                     <button
+                        v-if="canAnnotate"
                         type="button"
                         @click="toggleTextTool"
                         :class="drawTool === 'text' ? 'bg-white text-gray-900' : 'text-white/70 hover:bg-white/10'"
@@ -290,49 +288,61 @@
                     </button>
                 </div>
 
-                <span class="w-px h-6 bg-white/10 flex-shrink-0"></span>
-
-                <button
-                    type="button"
-                    @click="undoDraw"
-                    :disabled="!historyStack.length"
-                    class="w-8 h-8 rounded-full flex items-center justify-center text-white/70 hover:bg-white/10 disabled:opacity-30 disabled:hover:bg-transparent flex-shrink-0"
-                    :title="$t('Undo')"
-                >
-                    <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4">
-                        <path
-                            d="M9 7 4 12l5 5M4 12h10a6 6 0 010 12h-1"
-                            stroke="currentColor"
-                            stroke-width="1.8"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                        />
+                <!-- Read-only is the ordinary case, not an error: most people
+                     opening a document are not the reviewer it is waiting on. -->
+                <span v-if="!canAnnotate" class="viewer-readonly" :title="$t('View only')">
+                    <svg viewBox="0 0 24 24" fill="none" class="w-3.5 h-3.5">
+                        <rect x="5" y="10.5" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.7" />
+                        <path d="M8.5 10.5V7.5a3.5 3.5 0 017 0v3" stroke="currentColor" stroke-width="1.7" />
                     </svg>
-                </button>
-                <button
-                    type="button"
-                    @click="redoDraw"
-                    :disabled="!redoStack.length"
-                    class="w-8 h-8 rounded-full flex items-center justify-center text-white/70 hover:bg-white/10 disabled:opacity-30 disabled:hover:bg-transparent flex-shrink-0"
-                    :title="$t('Redo')"
-                >
-                    <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4">
-                        <path
-                            d="M15 7l5 5-5 5M20 12H10a6 6 0 000 12h1"
-                            stroke="currentColor"
-                            stroke-width="1.8"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                        />
-                    </svg>
-                </button>
+                    <span class="hidden sm:inline">{{ $t('View only') }}</span>
+                </span>
 
-                <p
-                    class="hidden lg:block ml-2 min-w-0 text-[11px] truncate"
-                    :class="drawTool === 'view' && hasUnsavedAnnotations ? 'text-blue-300' : 'text-white/40'"
-                >
-                    {{ annotationHint }}
-                </p>
+                <template v-if="canAnnotate">
+                    <span class="w-px h-6 bg-white/10 flex-shrink-0"></span>
+
+                    <button
+                        type="button"
+                        @click="undoDraw"
+                        :disabled="!historyStack.length"
+                        class="w-8 h-8 rounded-full flex items-center justify-center text-white/70 hover:bg-white/10 disabled:opacity-30 disabled:hover:bg-transparent flex-shrink-0"
+                        :title="$t('Undo')"
+                    >
+                        <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4">
+                            <path
+                                d="M9 7 4 12l5 5M4 12h10a6 6 0 010 12h-1"
+                                stroke="currentColor"
+                                stroke-width="1.8"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            />
+                        </svg>
+                    </button>
+                    <button
+                        type="button"
+                        @click="redoDraw"
+                        :disabled="!redoStack.length"
+                        class="w-8 h-8 rounded-full flex items-center justify-center text-white/70 hover:bg-white/10 disabled:opacity-30 disabled:hover:bg-transparent flex-shrink-0"
+                        :title="$t('Redo')"
+                    >
+                        <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4">
+                            <path
+                                d="M15 7l5 5-5 5M20 12H10a6 6 0 000 12h1"
+                                stroke="currentColor"
+                                stroke-width="1.8"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            />
+                        </svg>
+                    </button>
+
+                    <p
+                        class="hidden lg:block ml-2 min-w-0 text-[11px] truncate"
+                        :class="drawTool === 'view' && hasUnsavedAnnotations ? 'text-blue-300' : 'text-white/40'"
+                    >
+                        {{ annotationHint }}
+                    </p>
+                </template>
 
                 <div class="flex items-center gap-2 ml-auto flex-shrink-0 sticky right-0 pl-3 bg-gray-900">
                     <button
@@ -375,7 +385,7 @@
                         }}
                     </button>
                     <button
-                        v-else-if="drawTool !== 'view' || hasUnsavedAnnotations"
+                        v-else-if="canAnnotate && (drawTool !== 'view' || hasUnsavedAnnotations)"
                         type="button"
                         @click="manualSaveAnnotation"
                         :disabled="autoSaving"
@@ -838,6 +848,12 @@ export default {
     props: {
         taskUid: { required: true },
         attachmentId: { required: true },
+        /**
+         * TaskAbility::summary for this document. `sign` is the one that decides
+         * what this page is: the annotator, or a reader. The server holds the
+         * same line on save, so this only decides what is worth drawing.
+         */
+        can: { type: Object, default: () => ({}) },
     },
 
     data() {
@@ -918,6 +934,15 @@ export default {
         /** May this document be approved & signed from here, right now? */
         canApproveAndSign() {
             return !!(this.signatureContext && this.signatureContext.eligible);
+        },
+
+        /**
+         * Drawing on the document and signing it are one permission: the file is
+         * only marked up by the reviewer whose step asks for a signature. For
+         * everyone else this page is a reader with no pen in it.
+         */
+        canAnnotate() {
+            return !!this.can.sign;
         },
 
         backUrl() {
@@ -1910,6 +1935,8 @@ export default {
 
         // --- Bottom-bar tool toggles (Sketch groups Pen/Highlight/Eraser) ---
         toggleSketch() {
+            if (!this.canAnnotate) return;
+
             if (['pen', 'highlighter', 'eraser'].includes(this.drawTool)) {
                 this.drawTool = 'view';
             } else {
@@ -1918,6 +1945,8 @@ export default {
         },
 
         toggleTextTool() {
+            if (!this.canAnnotate) return;
+
             this.drawTool = this.drawTool === 'text' ? 'view' : 'text';
         },
 
@@ -2046,6 +2075,10 @@ export default {
         async saveAnnotatedImage() {
             const canvas = this.$refs.drawCanvas;
             if (!canvas || !this.attachment) return;
+            // Belt and braces with the toolbar: the tools are not rendered for a
+            // reader, and a reader's save is refused here as well as on the
+            // server, which is the one that actually holds the rule.
+            if (!this.canAnnotate) return;
 
             // Make sure the page you're currently on is captured too.
             this.saveCurrentPageAnnotationState();
@@ -2087,6 +2120,9 @@ export default {
 
                 const formData = new FormData();
                 formData.append('file', blob, savedFileName);
+                // Tells the server this is a drawn-on copy rather than a plain
+                // upload, so it can hold it to the stricter 'sign' rule.
+                formData.append('annotated', '1');
 
                 const res = await axios.post(this.route('task.attachment.add', this.task.id), formData);
                 if (res.data && !res.data.error) {
@@ -2133,6 +2169,20 @@ export default {
 </script>
 
 <style scoped>
+/* Says why the pen is missing, so a reader is not left looking for it. */
+.viewer-readonly {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    padding: 5px 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.65);
+    font-size: 11px;
+    font-weight: 600;
+}
+
 /* "Approve & Sign from Secretariat General" — stands in for Save & Close
        while the document is at a signature step. */
 .approve-sign-btn {

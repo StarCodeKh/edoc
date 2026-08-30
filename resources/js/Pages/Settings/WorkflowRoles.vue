@@ -293,7 +293,7 @@
                 <span></span>
             </div>
 
-            <div class="divide-y divide-gray-100 dark:divide-gray-700">
+            <div class="wr-scroll divide-y divide-gray-100 dark:divide-gray-700">
                 <div v-for="role in groupedRoles[type]" :key="role.id" class="wr-row px-4 sm:px-6 lg:px-8 py-3">
                     <span
                         class="col-span-2 lg:col-span-1 w-auto lg:w-6 text-xs font-semibold text-gray-400 dark:text-gray-500 flex-shrink-0"
@@ -334,19 +334,20 @@
                             icon="users"
                             class="w-full filter-select--block"
                         />
-                        <select
+                        <filter-select
                             v-if="roleStandsForOthers(role.responsible_role)"
                             v-model="role.role_mode"
+                            :options="stepModeOptions"
+                            :show-all="false"
+                            :placeholder="$t('Standard')"
                             :title="
                                 $t(
                                     'Standard assigns everyone in this responsibility; dynamic asks the forwarder which one it goes to.'
                                 )
                             "
-                            class="w-full min-w-0 bg-gray-50 dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-xs rounded-lg px-1.5 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                            <option value="standard">{{ $t('Standard') }}</option>
-                            <option value="dynamic">{{ $t('Dynamic') }}</option>
-                        </select>
+                            icon="users"
+                            class="w-full filter-select--block filter-select--xs"
+                        />
                     </div>
 
                     <label
@@ -383,19 +384,20 @@
                             />
                             {{ $t('Attachment') }}
                         </label>
-                        <select
+                        <filter-select
                             v-model="role.attachment_mode"
+                            :options="stepModeOptions"
+                            :show-all="false"
                             :disabled="!role.requires_attachment"
+                            :placeholder="$t('Standard')"
                             :title="
                                 $t(
                                     'Standard is the form this step always expects; dynamic is whatever the case produces.'
                                 )
                             "
-                            class="min-w-0 flex-1 bg-gray-50 dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-xs rounded-lg px-1.5 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-                        >
-                            <option value="standard">{{ $t('Standard') }}</option>
-                            <option value="dynamic">{{ $t('Dynamic') }}</option>
-                        </select>
+                            icon="attachment"
+                            class="min-w-0 flex-1 filter-select--block filter-select--xs"
+                        />
                     </div>
 
                     <button
@@ -463,14 +465,20 @@
                         icon="users"
                         class="w-full filter-select--block"
                     />
-                    <select
+                    <filter-select
                         v-if="roleStandsForOthers(newRoleForms[type].responsible_role)"
                         v-model="newRoleForms[type].role_mode"
-                        class="w-full min-w-0 bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-xs rounded-lg px-1.5 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                        <option value="standard">{{ $t('Standard') }}</option>
-                        <option value="dynamic">{{ $t('Dynamic') }}</option>
-                    </select>
+                        :options="stepModeOptions"
+                        :show-all="false"
+                        :placeholder="$t('Standard')"
+                        :title="
+                            $t(
+                                'Standard assigns everyone in this responsibility; dynamic asks the forwarder which one it goes to.'
+                            )
+                        "
+                        icon="users"
+                        class="w-full filter-select--block filter-select--xs"
+                    />
                 </div>
                 <label class="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300 flex-shrink-0 py-1">
                     <input
@@ -497,17 +505,18 @@
                         />
                         {{ $t('Attachment') }}
                     </label>
-                    <select
+                    <filter-select
                         v-model="newRoleForms[type].attachment_mode"
+                        :options="stepModeOptions"
+                        :show-all="false"
                         :disabled="!newRoleForms[type].requires_attachment"
+                        :placeholder="$t('Standard')"
                         :title="
                             $t('Standard is the form this step always expects; dynamic is whatever the case produces.')
                         "
-                        class="min-w-0 flex-1 bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-xs rounded-lg px-1.5 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-                    >
-                        <option value="standard">{{ $t('Standard') }}</option>
-                        <option value="dynamic">{{ $t('Dynamic') }}</option>
-                    </select>
+                        icon="attachment"
+                        class="min-w-0 flex-1 filter-select--block filter-select--xs"
+                    />
                 </div>
 
                 <button
@@ -588,6 +597,14 @@ export default {
         workflow_types: { type: Array, default: () => ['external_ministry', 'casino_operator', 'internal_cgmc'] },
         workspaces: { type: Array, default: () => [] },
         sub_roles: { type: Array, default: () => [] },
+        /** [{ value, label }] from WorkflowRoleController::STEP_MODES. */
+        step_modes: {
+            type: Array,
+            default: () => [
+                { value: 'standard', label: 'Standard' },
+                { value: 'dynamic', label: 'Dynamic' },
+            ],
+        },
     },
     data() {
         const builtInLabels = {
@@ -676,6 +693,15 @@ export default {
         },
 
         /** The dropdown the steps pick from, straight off the managed list. */
+        /** The step modes as FilterSelect wants them, translated here so the
+            server can keep sending plain English keys. */
+        stepModeOptions() {
+            return (this.step_modes || []).map((mode) => ({
+                value: mode.value,
+                label: this.$t(mode.label),
+            }));
+        },
+
         subRoleOptions() {
             return this.localSubRoles.map((r) => ({
                 value: r.code,
@@ -1092,6 +1118,46 @@ export default {
         text-transform: uppercase;
         color: #94a3b8;
         border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+    }
+}
+
+/* A long workflow scrolls in its own pane instead of pushing the add-step row
+   off the bottom of the page. max-height rather than height, so a short list
+   still ends where its last step does and shows no scrollbar at all.
+
+   The column header sits above this element and the add-step row below it, so
+   both stay put while the steps move. FilterSelect teleports its panel to
+   <body> and repositions on capture-phase scroll, so an open dropdown follows
+   its row rather than being clipped here. */
+.wr-scroll {
+    max-height: 60vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(100, 116, 139, 0.35) transparent;
+}
+.wr-scroll::-webkit-scrollbar {
+    width: 8px;
+}
+.wr-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+.wr-scroll::-webkit-scrollbar-thumb {
+    background: rgba(100, 116, 139, 0.28);
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background-clip: content-box;
+}
+.wr-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 116, 139, 0.5);
+    background-clip: content-box;
+}
+
+/* Phone rows are stacked cards several times the height of a desktop line;
+   capping at 60vh there would show barely two of them. */
+@media (max-width: 1023px) {
+    .wr-scroll {
+        max-height: none;
+        overflow-y: visible;
     }
 }
 

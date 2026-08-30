@@ -21,6 +21,26 @@ class WorkflowStep
     /** @var array<int|string, Collection> */
     private static array $cache = [];
 
+    /**
+     * Forget the cached step sets.
+     *
+     * The cache exists so a page of documents costs one query rather than one
+     * per row, which is right within a request. It is wrong the moment the
+     * steps themselves change, or the process outlives the request - a queue
+     * worker, or a test run where workspace ids repeat - so anything that
+     * writes to edoc_workflow_roles clears it, and so does each test.
+     */
+    public static function flush(?int $workspaceId = null): void
+    {
+        if ($workspaceId === null) {
+            self::$cache = [];
+
+            return;
+        }
+
+        unset(self::$cache[$workspaceId]);
+    }
+
     /** Every configured step for a workspace, keyed by normalised title. */
     public static function forWorkspace(?int $workspaceId): Collection
     {
@@ -81,6 +101,19 @@ class WorkflowStep
     public static function requiresSignature(?BoardList $list): bool
     {
         return (bool) (self::forList($list)->requires_signature ?? false);
+    }
+
+    /**
+     * The same answer from a workspace id and a board title, for listings that
+     * hold many rows and must not load each one's project to find its
+     * workspace. The per-workspace step set is cached, so a page of documents
+     * costs one query however many rows it has.
+     */
+    public static function requiresSignatureForTitle(?int $workspaceId, ?string $title): bool
+    {
+        $step = self::forWorkspace($workspaceId)->get(self::key($title));
+
+        return (bool) ($step->requires_signature ?? false);
     }
 
     /** Whether the step refuses to be passed on without a document on it. */
