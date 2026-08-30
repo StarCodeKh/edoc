@@ -247,7 +247,14 @@ class Task extends Model
     {
         $user = $user ?: Auth::user();
 
-        if (!$user || $user->isAdmin()) {
+        // A guest is nobody, not everybody. This used to share an arm with the
+        // admin case and return the query unfiltered, so any endpoint that lost
+        // its `auth` middleware handed the whole register to anonymous callers.
+        if (!$user) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        if ($user->isAdmin()) {
             return $query;
         }
 

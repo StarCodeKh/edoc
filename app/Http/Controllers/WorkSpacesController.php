@@ -301,7 +301,12 @@ class WorkSpacesController extends Controller
 
     public function jsonAddMember(Request $request)
     {
-        $requestData = $request->all();
+        $requestData = $request->validate([
+            'workspace_id' => ['required', 'integer'],
+            'user_id' => ['required', 'integer'],
+            'role' => ['sometimes', 'nullable', 'string', 'max:50'],
+        ]);
+
         $teamMember = TeamMember::where(['workspace_id' => $requestData['workspace_id'], 'user_id' => $requestData['user_id']])->first();
         if (!empty($teamMember)) {
             $teamMember->delete();

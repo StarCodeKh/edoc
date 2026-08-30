@@ -11,11 +11,15 @@ class ListsController extends Controller
 {
     public function update($id, Request $request)
     {
-        $board = BoardList::whereId($id)->first();
-        $requestData = $request->all();
-        foreach ($requestData as $itemKey => $itemValue) {
-            $board->{$itemKey} = $itemValue;
-        }
+        $board = BoardList::findOrFail($id);
+
+        // project_id and user_id are not editable here - a board rename must not
+        // be able to re-parent the board or change who owns it.
+        $board->fill($request->validate([
+            'title' => ['sometimes', 'string', 'max:255'],
+            'is_archive' => ['sometimes', 'boolean'],
+            'order' => ['sometimes', 'integer'],
+        ]));
         $board->save();
 
         return response()->json($board);
@@ -30,7 +34,14 @@ class ListsController extends Controller
 
     public function orderList(Request $request)
     {
-        $requestData = $request->all();
+        // Batch::update writes whatever columns it is handed, so the rows are
+        // stripped to the two this endpoint exists to change.
+        $requestData = collect($request->all())
+            ->map(fn ($row) => array_intersect_key((array) $row, array_flip(['id', 'order'])))
+            ->filter(fn ($row) => isset($row['id'], $row['order']))
+            ->values()
+            ->all();
+
         $result = \Batch::update(new BoardList, $requestData, 'id');
 
         return response()->json($result);

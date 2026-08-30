@@ -82,7 +82,7 @@ Route::get('/home', function () {
 })->name('home')->middleware('auth');
 
 // Main Dashboard
-Route::get('/workspace/{uid}/main-dashboard', [WorkSpacesController::class, 'viewMainDashboard'])->name('workspace.view.maindashboard');
+Route::get('/workspace/{uid}/main-dashboard', [WorkSpacesController::class, 'viewMainDashboard'])->name('workspace.view.maindashboard')->middleware('auth');
 
 Route::get('json/workspaces/mine', [WorkSpacesController::class, 'jsonMineAll'])->name('json.workspaces.mine')->middleware('auth');
 Route::get('json/workspaces/all', [WorkSpacesController::class, 'jsonAll'])->name('json.workspaces.all')->middleware('auth');
@@ -308,7 +308,7 @@ Route::get('project/excel/export/{project_id}', [ProjectsController::class, 'exc
 
 // IMAP Custom
 Route::get('/cron/queue_work', [CronJobsController::class, 'queueWork'])->name('cron.queue_work');
-Route::post('/json/task/search', [TasksController::class, 'jsonTaskSearch'])->name('json.task.search');
+Route::post('/json/task/search', [TasksController::class, 'jsonTaskSearch'])->name('json.task.search')->middleware('auth');
 
 // New code for installer
 Route::group(['prefix' => 'install', 'as' => 'LaravelInstaller::', 'middleware' => ['web', 'install']], function () {

@@ -117,29 +117,26 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request)
     {
-        $credentials = $request->only('email', 'password');
-        $remember = $request->has('remember');
+        // LoginRequest::authenticate() is what carries the rate limiting. Calling
+        // Auth::attempt() here instead left five-tries-per-minute as dead code
+        // and the login form open to unlimited password guessing.
+        $request->authenticate();
 
-        if (Auth::attempt($credentials, $remember)) {
-            $request->session()->regenerate();
+        $request->session()->regenerate();
 
-            $user = Auth::user();
-            $workspace = Workspace::where('user_id', $user->id)
-                ->orWhereHas('member', function ($q) use ($user) {
-                    $q->where('user_id', $user->id);
-                })
-                ->first();
+        $user = Auth::user();
 
-            if ($workspace) {
-                return redirect()->route('workspace.view.maindashboard', $workspace->slug ?? $workspace->id);
-            }
+        $workspace = Workspace::where('user_id', $user->id)
+            ->orWhereHas('member', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            })
+            ->first();
 
-            return redirect()->intended(RouteServiceProvider::DASHBOARD);
+        if ($workspace) {
+            return redirect()->route('workspace.view.maindashboard', $workspace->slug ?? $workspace->id);
         }
 
-        return back()->withErrors([
-            'email' => 'Invalid credentials.',
-        ]);
+        return redirect()->intended(RouteServiceProvider::DASHBOARD);
     }
 
     public function registerStore(Request $request)

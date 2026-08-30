@@ -193,11 +193,16 @@ class ProjectsController extends Controller
 
     public function update($id, Request $request)
     {
-        $project = Project::whereId($id)->first();
-        $requestData = $request->all();
-        foreach ($requestData as $itemKey => $itemValue) {
-            $project->{$itemKey} = $itemValue;
-        }
+        $project = Project::findOrFail($id);
+
+        // workspace_id and user_id stay out: renaming a project must not move it
+        // into another workspace or hand it to another owner.
+        $project->fill($request->validate([
+            'title' => ['sometimes', 'string', 'max:255'],
+            'description' => ['sometimes', 'nullable', 'string'],
+            'is_private' => ['sometimes', 'boolean'],
+            'background_id' => ['sometimes', 'nullable', 'integer'],
+        ]));
 
         $slug = $this->clean($project->title);
         $existingItem = Project::where('id', '!=', $project->id)->where('slug', $slug)->first();

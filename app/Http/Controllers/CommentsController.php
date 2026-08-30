@@ -7,6 +7,7 @@ use App\Http\Controllers\Concerns\AuthorizesTasks;
 use App\Models\Activity;
 use App\Models\Comment;
 use Illuminate\Http\Request;
+use Stevebauman\Purify\Facades\Purify;
 
 class CommentsController extends Controller
 {
@@ -14,11 +15,17 @@ class CommentsController extends Controller
 
     public function saveNew(Request $request)
     {
-        $requestData = $request->all();
+        $requestData = $request->validate([
+            'task_id' => ['required', 'integer'],
+            'details' => ['nullable', 'string'],
+        ]);
 
-        if (!empty($requestData['task_id'])) {
-            $this->authorizeTask($requestData['task_id'], 'comment');
-        }
+        $this->authorizeTask($requestData['task_id'], 'comment');
+
+        // The comment is rendered with v-html on the document page, so the
+        // markup is cleaned on the way in rather than trusted on the way out.
+        $requestData['details'] = Purify::clean($requestData['details'] ?? '');
+        $requestData['user_id'] = auth()->id();
 
         $comment = Comment::create($requestData);
         event(new NewCommentAdded($comment));
@@ -29,16 +36,17 @@ class CommentsController extends Controller
 
     public function update($id, Request $request)
     {
-        $comment = Comment::whereId($id)->first();
+        $comment = Comment::findOrFail($id);
 
-        if (!empty($comment->task_id)) {
-            $this->authorizeTask($comment->task_id, 'comment');
-        }
+        $this->authorizeTask($comment->task_id, 'comment');
 
-        $requestData = $request->all();
-        foreach ($requestData as $itemKey => $itemValue) {
-            $comment->{$itemKey} = $itemValue;
-        }
+        // Only the text may change. Anything else posted - user_id above all,
+        // which would re-attribute the comment to another person - is dropped.
+        $requestData = $request->validate([
+            'details' => ['nullable', 'string'],
+        ]);
+
+        $comment->details = Purify::clean($requestData['details'] ?? '');
         $comment->save();
 
         return response()->json($comment);

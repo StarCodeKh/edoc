@@ -12,16 +12,16 @@ class CheckListsController extends Controller
 
     public function update($id, Request $request)
     {
-        $checklist = CheckList::whereId($id)->first();
+        $checklist = CheckList::findOrFail($id);
 
-        if (!empty($checklist->task_id)) {
-            $this->authorizeTask($checklist->task_id, 'edit');
-        }
+        $this->authorizeTask($checklist->task_id, 'edit');
 
-        $requestData = $request->all();
-        foreach ($requestData as $itemKey => $itemValue) {
-            $checklist->{$itemKey} = $itemValue;
-        }
+        // task_id is deliberately absent: an item may be renamed or ticked, not
+        // moved onto another document.
+        $checklist->fill($request->validate([
+            'title' => ['sometimes', 'string', 'max:255'],
+            'is_done' => ['sometimes', 'boolean'],
+        ]));
         $checklist->save();
 
         return response()->json($checklist);
@@ -29,11 +29,13 @@ class CheckListsController extends Controller
 
     public function saveNew(Request $request)
     {
-        $requestData = $request->all();
+        $requestData = $request->validate([
+            'task_id' => ['required', 'integer'],
+            'title' => ['required', 'string', 'max:255'],
+            'is_done' => ['sometimes', 'boolean'],
+        ]);
 
-        if (!empty($requestData['task_id'])) {
-            $this->authorizeTask($requestData['task_id'], 'edit');
-        }
+        $this->authorizeTask($requestData['task_id'], 'edit');
 
         $checklist = CheckList::create($requestData);
 

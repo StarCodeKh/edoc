@@ -25,6 +25,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Inertia\Inertia;
+use Stevebauman\Purify\Facades\Purify;
 
 class TasksController extends Controller
 {
@@ -180,7 +181,22 @@ class TasksController extends Controller
             })
             ->select('id', 'project_id', 'title')->get();
 
+        // Projects were never scoped here - the task arm filtered but this one
+        // returned every project title in the system to whoever asked.
+        $user = auth()->user();
+
         $result['projects'] = Project::where('title', 'like', '%'.$search.'%')
+            ->when($user && !$user->isAdmin(), function ($query) use ($user) {
+                $query->where(function ($scoped) use ($user) {
+                    $scoped->where('user_id', $user->id)
+                        ->orWhereHas('workspace.members', function ($members) use ($user) {
+                            $members->where('user_id', $user->id);
+                        });
+                });
+            })
+            ->when(!$user, function ($query) {
+                $query->whereRaw('1 = 0');
+            })
             ->select('id', 'title')->get();
 
         return response()->json($result);
@@ -192,6 +208,33 @@ class TasksController extends Controller
      * "Invalid date" - and that reaches Carbon as a date it cannot read.
      */
     private const DATE_FIELDS = ['due_date', 'entry_date', 'exit_date'];
+
+    /**
+     * The columns a document edit is allowed to touch. Everything else a client
+     * posts is dropped: `Model::unguard()` is on application-wide, so without
+     * this list a plain task update could write user_id, task_code, slug,
+     * timestamps - any column on the row.
+     */
+    private const EDITABLE_FIELDS = [
+        'title', 'description', 'is_done', 'is_archive', 'priority_id',
+        'type_id', 'document_source_id', 'list_id', 'project_id', 'order',
+        'cover_id', 'origin_list_id', 'due_date', 'entry_date', 'exit_date',
+    ];
+
+    /**
+     * Keep only the columns above, and clean the one field that reaches the
+     * page through v-html.
+     */
+    private function editableOnly(array $data): array
+    {
+        $data = array_intersect_key($data, array_flip(self::EDITABLE_FIELDS));
+
+        if (array_key_exists('description', $data)) {
+            $data['description'] = Purify::clean((string) $data['description']);
+        }
+
+        return $data;
+    }
 
     /**
      * Turn anything unreadable in a date field into null. Clearing a date is a
@@ -223,16 +266,14 @@ class TasksController extends Controller
 
     public function updateTask($taskId, Request $request)
     {
-        $requestData = $this->normalizeDateFields($request->all());
+        $requestData = $this->editableOnly($this->normalizeDateFields($request->all()));
 
         // Changing which board a document sits on is the one edit a Normal User
         // loses first, so it is checked as its own ability.
         $isMove = array_key_exists('list_id', $requestData) || array_key_exists('project_id', $requestData);
         $task = $this->authorizeTask($taskId, $isMove ? 'move' : 'edit');
 
-        foreach ($requestData as $itemKey => $itemValue) {
-            $task->{$itemKey} = $itemValue;
-        }
+        $task->fill($requestData);
         $task->save();
         $task->load('list')->load('taskLabels.label')->load('project.background')->load('assignees')->load('timer')->load('documentSource.parent')->load('priority');
 
@@ -296,7 +337,7 @@ class TasksController extends Controller
     public function newTask(Request $request)
     {
         $user_id = auth()->id();
-        $requestData = $this->normalizeDateFields($request->all());
+        $requestData = $this->editableOnly($this->normalizeDateFields($request->all()));
         $requestData['user_id'] = $user_id;
         $task = Task::create($requestData);
 

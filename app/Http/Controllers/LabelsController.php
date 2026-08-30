@@ -28,11 +28,12 @@ class LabelsController extends Controller
 
     public function addLabelToTask(Request $request)
     {
-        $requestData = $request->all();
+        $requestData = $request->validate([
+            'task_id' => ['required', 'integer'],
+            'label_id' => ['required', 'integer'],
+        ]);
 
-        if (!empty($requestData['task_id'])) {
-            $this->authorizeTask($requestData['task_id'], 'edit');
-        }
+        $this->authorizeTask($requestData['task_id'], 'edit');
 
         $taskLabel = TaskLabel::where($requestData)->first();
         if (!empty($taskLabel)) {
@@ -48,15 +49,22 @@ class LabelsController extends Controller
 
     public function saveLabel(Request $request)
     {
-        $requestData = $request->all();
-        if (isset($requestData['id']) && !empty($requestData['id'])) {
-            $label = Label::whereId($requestData['id'])->first();
-            foreach ($requestData as $itemKey => $itemValue) {
-                $label->{$itemKey} = $itemValue;
-            }
+        $requestData = $request->validate([
+            'id' => ['nullable', 'integer'],
+            'project_id' => ['nullable', 'integer'],
+            'name' => ['nullable', 'string', 'max:255'],
+            'color' => ['nullable', 'string', 'max:50'],
+            'color_name' => ['nullable', 'string', 'max:50'],
+        ]);
+
+        $attributes = collect($requestData)->except('id')->all();
+
+        if (!empty($requestData['id'])) {
+            $label = Label::findOrFail($requestData['id']);
+            $label->fill($attributes);
             $label->save();
         } else {
-            $label = Label::create($requestData);
+            $label = Label::create($attributes);
         }
 
         return response()->json($label);
