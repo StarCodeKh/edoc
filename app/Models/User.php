@@ -104,13 +104,35 @@ class User extends Authenticatable
             return $this->responsibleTitlesCache = [];
         }
 
-        $code = WorkflowSubRole::whereKey($this->workflow_sub_role_id)->value('code');
+        $role = WorkflowSubRole::find($this->workflow_sub_role_id);
 
-        if (empty($code)) {
+        if (empty($role) || empty($role->code)) {
             return $this->responsibleTitlesCache = [];
         }
 
-        return $this->responsibleTitlesCache = EdocWorkflowRole::where('responsible_role', $code)
+        $parentCode = $role->parent_id
+            ? WorkflowSubRole::whereKey($role->parent_id)->value('code')
+            : null;
+
+        return $this->responsibleTitlesCache = EdocWorkflowRole::where(function ($query) use ($role, $parentCode) {
+            // The responsibility this user actually carries.
+            $query->where('responsible_role', $role->code);
+
+            // ...and the group it sits under, but only where that step is
+            // standard. A standard step names the group and means all of it, so
+            // a D1 officer holds a "នាយកដ្ឋាន D1-D5" step like everyone else
+            // under it. A dynamic step is handed to one member as it is
+            // forwarded, and only that member should carry it - they get an
+            // assignee row, which is what puts it on their plate instead.
+            if ($parentCode) {
+                $query->orWhere(function ($group) use ($parentCode) {
+                    $group->where('responsible_role', $parentCode)
+                        ->where(function ($mode) {
+                            $mode->where('role_mode', '!=', 'dynamic')->orWhereNull('role_mode');
+                        });
+                });
+            }
+        })
             ->pluck('list_title')
             ->filter()
             ->unique()

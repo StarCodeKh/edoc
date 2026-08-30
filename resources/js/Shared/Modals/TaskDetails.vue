@@ -715,7 +715,7 @@
                                                             )
                                                         }}
                                                     </span>
-                                                    <template v-if="can.attach">
+                                                    <template v-if="can.detach">
                                                         <span class="text-gray-300 dark:text-gray-600">·</span>
                                                         <button
                                                             type="button"

@@ -140,6 +140,20 @@ class TaskAbility
     }
 
     /**
+     * Taking a file back off a document.
+     *
+     * The same people who may attach, right up until the document is finished.
+     * A closed document keeps the record it was closed with: whatever was on it
+     * at the end is what the file says happened, so nothing comes off it
+     * afterwards. Attaching is deliberately not held to this - that is the
+     * step's own rule, in WorkflowStep::acceptsAttachment.
+     */
+    public static function canDetach(User $user, Task $task): bool
+    {
+        return !$task->is_done && self::canAttach($user, $task);
+    }
+
+    /**
      * Drawing on a document and signing it are the same permission: both mark
      * the file as having been through a reviewer, so both are the act of the
      * step's reviewer and nobody else.
@@ -175,6 +189,7 @@ class TaskAbility
             'delete' => self::canDelete($user, $task),
             'attach' => self::canAttach($user, $task),
             'comment' => self::canComment($user, $task),
+            'detach' => self::canDetach($user, $task),
             'sign' => self::canSign($user, $task),
         ];
     }

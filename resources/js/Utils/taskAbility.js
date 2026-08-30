@@ -52,6 +52,14 @@ export function canAttach(user, task) {
 
 export const canComment = canAttach;
 
+/**
+ * Taking a file back off. The same people who may attach, until the document is
+ * finished - a closed document keeps the record it was closed with.
+ */
+export function canDetach(user, task) {
+    return !(task && task.is_done) && canAttach(user, task);
+}
+
 export function abilities(user, task) {
     return {
         view: canView(user, task),
@@ -60,5 +68,6 @@ export function abilities(user, task) {
         delete: canDelete(user, task),
         attach: canAttach(user, task),
         comment: canComment(user, task),
+        detach: canDetach(user, task),
     };
 }

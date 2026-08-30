@@ -256,7 +256,7 @@
                                                 <icon name="eye" class="h-4 w-4" />
                                             </a>
                                             <button
-                                                v-if="can.attach"
+                                                v-if="can.detach"
                                                 type="button"
                                                 class="rounded-lg p-1.5 text-gray-400 hover:bg-rose-50 hover:text-rose-600"
                                                 :title="$t('Remove')"
@@ -482,18 +482,22 @@
                                                     >
                                                         {{ $t('Hand to') }}
                                                     </label>
-                                                    <select v-model="hand_to" class="form-select w-full text-sm">
-                                                        <option :value="null" disabled>
-                                                            {{ $t('Choose a responsibility') }}
-                                                        </option>
-                                                        <option
-                                                            v-for="option in next_step.hand_to_options"
-                                                            :key="option.code"
-                                                            :value="option.code"
-                                                        >
-                                                            {{ option.name }}
-                                                        </option>
-                                                    </select>
+                                                    <!-- Several at once: one document
+                                                         commonly goes to D1 through D5
+                                                         together. -->
+                                                    <filter-select
+                                                        v-model="hand_to"
+                                                        multiple
+                                                        :options="handToOptions"
+                                                        :show-all="false"
+                                                        :placeholder="$t('Choose a responsibility')"
+                                                        :search-placeholder="$t('Search') + '…'"
+                                                        :empty-label="$t('No matches')"
+                                                        :count-label="$t(':count selected', { count: handToCount })"
+                                                        :clear-label="$t('Clear All')"
+                                                        icon="users"
+                                                        class="w-full filter-select--block"
+                                                    />
                                                 </div>
 
                                                 <div class="mt-2">
@@ -699,11 +703,12 @@ import moment from 'moment';
 import axios from 'axios';
 import PrinterIcon from '@/Shared/Components/PrinterIcon.vue';
 import DocumentReceipt from '@/Shared/Modals/DocumentReceipt.vue';
+import FilterSelect from '@/Shared/Components/FilterSelect.vue';
 
 export default {
     metaInfo: { title: 'Document' },
     layout: Layout,
-    components: { Head, Link, Icon, PrinterIcon, DocumentReceipt },
+    components: { Head, Link, Icon, PrinterIcon, DocumentReceipt, FilterSelect },
     props: {
         title: String,
         workspace: Object,
@@ -821,7 +826,21 @@ export default {
             );
         },
         handToChosen() {
-            return !this.mustChooseHandTo || !!this.hand_to;
+            return !this.mustChooseHandTo || this.handToCount > 0;
+        },
+
+        /** FilterSelect wants [{ value, label }] and returns them comma-joined. */
+        handToOptions() {
+            return ((this.next_step && this.next_step.hand_to_options) || []).map((option) => ({
+                value: option.code,
+                label: option.name,
+            }));
+        },
+
+        handToCount() {
+            return String(this.hand_to || '')
+                .split(',')
+                .filter(Boolean).length;
         },
         /**
          * Raising internal work is the administration's move, and only from a

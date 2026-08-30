@@ -321,7 +321,7 @@
                                     <icon name="eye" class="h-4 w-4" />
                                 </a>
                                 <button
-                                    v-if="detail.can && detail.can.attach"
+                                    v-if="detail.can && detail.can.detach"
                                     type="button"
                                     class="doc-panel__file-btn is-danger"
                                     :disabled="removingFileId === file.id"

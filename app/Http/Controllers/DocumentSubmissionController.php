@@ -331,7 +331,9 @@ class DocumentSubmissionController extends Controller
 
         $validated = $request->validate([
             'note' => 'nullable|string',
-            'hand_to' => 'nullable|string|max:50',
+            // One or several responsibility codes, comma-joined - which is what
+            // the multi-select posts. A single code is just a list of one.
+            'hand_to' => 'nullable|string|max:255',
         ]);
 
         $next = $this->nextStep($task);
@@ -343,19 +345,24 @@ class DocumentSubmissionController extends Controller
         // A dynamic step names a group, not a person's responsibility. Refuse
         // rather than guess: forwarding without a choice would either assign
         // every department at once or nobody at all.
-        $handTo = $validated['hand_to'] ?? null;
+        $handTo = collect(explode(',', (string) ($validated['hand_to'] ?? '')))
+            ->map(fn ($code) => trim($code))
+            ->filter()
+            ->unique()
+            ->values();
+
         $options = $this->handToOptions($this->stepConfig($task, $next));
 
         if ($options->isNotEmpty()) {
-            if (empty($handTo)) {
+            if ($handTo->isEmpty()) {
                 return Redirect::back()->with('error', __('Choose who :step goes to.', ['step' => $next->title]));
             }
 
-            if (!$options->pluck('code')->contains($handTo)) {
+            if ($handTo->diff($options->pluck('code'))->isNotEmpty()) {
                 return Redirect::back()->with('error', __(':step cannot be handed to that responsibility.', ['step' => $next->title]));
             }
         } else {
-            $handTo = null;
+            $handTo = collect();
         }
 
         // A step that asks for a document does not pass it on without one. The
@@ -406,8 +413,14 @@ class DocumentSubmissionController extends Controller
         // responsibility, as configured in Settings > Workflow Roles.
         $handedTo = $this->assignStepOwners($task, $workspace, $next, $handTo);
 
+        // Landing on nobody's plate is a dead end: the document sits on the
+        // board and shows in no one's My Documents until somebody is given the
+        // responsibility. Say so rather than reporting a clean hand-off.
         $message = $handedTo->isEmpty()
-            ? __('Forwarded to :step.', ['step' => $next->title])
+            ? __('Forwarded to :step, but nobody carries :role yet — assign it in Settings → Workflow Roles.', [
+                'step' => $next->title,
+                'role' => $this->stepResponsibilityName($task, $next),
+            ])
             : __('Forwarded to :step, assigned to :count person(s).', [
                 'step' => $next->title,
                 'count' => $handedTo->count(),
@@ -462,6 +475,9 @@ class DocumentSubmissionController extends Controller
             'upload' => $holds
                 && $this->userCan('attach', $task)
                 && WorkflowStep::acceptsAttachment($list),
+            // Taking a file off stops when the document is finished, which is
+            // its own rule rather than part of `attach`.
+            'detach' => $holds && $this->userCan('detach', $task),
             'forward' => $holds && $this->userCan('move', $task),
             // Signing has its own rule - the step has to ask for a signature and
             // this has to be the person holding it. See TaskAbility::canSign.
@@ -482,10 +498,11 @@ class DocumentSubmissionController extends Controller
      * they have just handed the document on, and putting it straight back on
      * their list would make the hand-off look like it had not happened.
      *
-     * $handTo is the responsibility chosen while forwarding into a dynamic
-     * step, already checked by the caller against what that step offers.
+     * $handTo holds the responsibilities chosen while forwarding into a dynamic
+     * step, already checked by the caller against what that step offers. It may
+     * name several: one document often goes to D1 through D5 at once.
      */
-    private function assignStepOwners(Task $task, Workspace $workspace, BoardList $step, ?string $handTo = null)
+    private function assignStepOwners(Task $task, Workspace $workspace, BoardList $step, ?Collection $handTo = null)
     {
         $code = EdocWorkflowRole::where('workspace_id', $workspace->id)
             ->where('list_title', $step->title)
@@ -501,7 +518,9 @@ class DocumentSubmissionController extends Controller
             return collect();
         }
 
-        $chosen = $handTo ? WorkflowSubRole::where('code', $handTo)->first() : null;
+        $chosen = $handTo && $handTo->isNotEmpty()
+            ? WorkflowSubRole::whereIn('code', $handTo->all())->get()
+            : collect();
 
         $alreadyOn = Assignee::where('task_id', $task->id)->pluck('user_id')->all();
 
@@ -512,7 +531,12 @@ class DocumentSubmissionController extends Controller
                 ->get();
         };
 
-        $owners = $chosen ? $holders($chosen) : collect();
+        // Several departments can be picked at once, and one person can only be
+        // put on the document once however many of them they carry.
+        $owners = $chosen
+            ->flatMap(fn (WorkflowSubRole $role) => $holders($role))
+            ->unique('id')
+            ->values();
 
         // Nobody carries the chosen department yet - people may still be filed
         // under the group it sits in. Falling back to the group beats handing
@@ -529,6 +553,20 @@ class DocumentSubmissionController extends Controller
         }
 
         return $owners;
+    }
+
+    /** The readable name of the responsibility a step names, for messages. */
+    private function stepResponsibilityName(Task $task, BoardList $step): string
+    {
+        $code = EdocWorkflowRole::where('workspace_id', $task->project?->workspace_id)
+            ->where('list_title', $step->title)
+            ->value('responsible_role');
+
+        if (empty($code)) {
+            return __('a responsibility');
+        }
+
+        return WorkflowSubRole::where('code', $code)->value('name') ?: $code;
     }
 
     /** The next board along, or null when the document is at the last one. */

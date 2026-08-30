@@ -666,13 +666,15 @@ class TasksController extends Controller
 
     public function removeAttachment($id)
     {
-        $attachment = Attachment::find($id);
+        // findOrFail rather than find: the old form carried on with a null model
+        // and fell over on ->delete() when the id did not exist.
+        $attachment = Attachment::findOrFail($id);
 
-        if (!empty($attachment) && !empty($attachment->task_id)) {
-            $this->authorizeTask($attachment->task_id, 'attach');
+        if (!empty($attachment->task_id)) {
+            $this->authorizeTask($attachment->task_id, 'detach');
         }
 
-        if (!empty($attachment) && !empty($attachment->path) && File::exists(public_path($attachment->path))) {
+        if (!empty($attachment->path) && File::exists(public_path($attachment->path))) {
             File::delete(public_path($attachment->path));
         }
         $result = $attachment->delete();

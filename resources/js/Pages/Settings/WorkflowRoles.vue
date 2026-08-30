@@ -52,16 +52,17 @@
                                 class="flex-1 min-w-0 bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 :placeholder="$t('Name')"
                             />
-                            <select
+                            <filter-select
                                 v-model="subRole.parent_id"
+                                :options="parentSelectOptions(subRole)"
+                                :show-all="false"
+                                :placeholder="$t('Stands on its own')"
+                                :search-placeholder="$t('Search') + '…'"
+                                :empty-label="$t('No matches')"
                                 :title="$t('The responsibility this one sits under')"
-                                class="w-48 min-w-0 bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            >
-                                <option :value="null">{{ $t('Stands on its own') }}</option>
-                                <option v-for="p in parentOptions(subRole)" :key="p.id" :value="p.id">
-                                    {{ $t('Under') }} {{ p.name }}
-                                </option>
-                            </select>
+                                icon="users"
+                                class="w-48 min-w-0 filter-select--block"
+                            />
                             <button
                                 type="button"
                                 class="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
@@ -126,16 +127,17 @@
                         class="flex-1 min-w-0 bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         :placeholder="$t('Name')"
                     />
-                    <select
+                    <filter-select
                         v-model="newSubRole.parent_id"
+                        :options="parentSelectOptions(null)"
+                        :show-all="false"
+                        :placeholder="$t('Stands on its own')"
+                        :search-placeholder="$t('Search') + '…'"
+                        :empty-label="$t('No matches')"
                         :title="$t('The responsibility this one sits under')"
-                        class="w-48 min-w-0 bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 text-sm rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    >
-                        <option :value="null">{{ $t('Stands on its own') }}</option>
-                        <option v-for="p in parentOptions(null)" :key="p.id" :value="p.id">
-                            {{ $t('Under') }} {{ p.name }}
-                        </option>
-                    </select>
+                        icon="users"
+                        class="w-48 min-w-0 filter-select--block"
+                    />
                     <button
                         type="button"
                         class="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
@@ -766,6 +768,21 @@ export default {
          * so only responsibilities that stand on their own are offered, and
          * one that already stands for others cannot be moved beneath another.
          */
+        /**
+         * parentOptions in the shape FilterSelect wants. The null row is what the
+         * old <select> had as its first option: a responsibility that stands on
+         * its own rather than under another.
+         */
+        parentSelectOptions(subRole) {
+            return [
+                { value: null, label: this.$t('Stands on its own') },
+                ...this.parentOptions(subRole).map((p) => ({
+                    value: p.id,
+                    label: `${this.$t('Under')} ${p.name}`,
+                })),
+            ];
+        },
+
         parentOptions(subject) {
             if (subject && this.childCount(subject.id)) return [];
 

@@ -172,6 +172,39 @@ class StepAttachmentRuleTest extends TestCase
         $this->assertSame(2, Attachment::where('task_id', $task->id)->count());
     }
 
+    public function test_a_file_can_be_removed_while_the_document_is_open(): void
+    {
+        $task = $this->documentOn($this->drafting);
+        $this->upload($task)->assertOk();
+
+        $file = Attachment::where('task_id', $task->id)->firstOrFail();
+
+        $this->actingAs($this->officer)
+            ->post("/task/attachment/delete/{$file->id}")
+            ->assertOk();
+
+        $this->assertDatabaseMissing('attachments', ['id' => $file->id]);
+    }
+
+    /**
+     * A finished document keeps the record it was closed with, so nothing comes
+     * off it - however much of it the person could otherwise touch.
+     */
+    public function test_a_file_cannot_be_removed_once_the_document_is_done(): void
+    {
+        $task = $this->documentOn($this->drafting);
+        $this->upload($task)->assertOk();
+
+        $file = Attachment::where('task_id', $task->id)->firstOrFail();
+
+        $this->actingAs($this->officer);
+        $task->update(['is_done' => 1]);
+
+        $this->post("/task/attachment/delete/{$file->id}")->assertForbidden();
+
+        $this->assertDatabaseHas('attachments', ['id' => $file->id]);
+    }
+
     public function test_a_step_that_needs_a_document_will_not_be_forwarded_without_one(): void
     {
         $task = $this->documentOn($this->drafting);

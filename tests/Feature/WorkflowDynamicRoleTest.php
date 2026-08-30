@@ -291,6 +291,100 @@ class WorkflowDynamicRoleTest extends TestCase
     }
 
     /**
+     * One document commonly goes to D1 through D5 at once, so the choice is a
+     * list rather than a single department.
+     */
+    public function test_several_departments_can_be_chosen_at_once(): void
+    {
+        $this->departmentGroup();
+        $this->makeBoard();
+        $task = $this->makeTask();
+
+        $inD1 = User::factory()->create([
+            'role_id' => $this->role->id,
+            'workflow_sub_role_id' => WorkflowSubRole::where('code', 'd1')->value('id'),
+        ]);
+        $inD2 = User::factory()->create([
+            'role_id' => $this->role->id,
+            'workflow_sub_role_id' => WorkflowSubRole::where('code', 'd2')->value('id'),
+        ]);
+
+        // The picker posts its codes comma-joined.
+        $this->forward($task, ['hand_to' => 'd1,d2']);
+
+        $assigned = Assignee::where('task_id', $task->id)->pluck('user_id')->all();
+
+        $this->assertContains($inD1->id, $assigned);
+        $this->assertContains($inD2->id, $assigned);
+    }
+
+    public function test_someone_carrying_two_of_the_chosen_departments_is_assigned_once(): void
+    {
+        $this->departmentGroup();
+        $this->makeBoard();
+        $task = $this->makeTask();
+
+        $inD1 = User::factory()->create([
+            'role_id' => $this->role->id,
+            'workflow_sub_role_id' => WorkflowSubRole::where('code', 'd1')->value('id'),
+        ]);
+
+        $this->forward($task, ['hand_to' => 'd1,d1,d2']);
+
+        $this->assertSame(
+            1,
+            Assignee::where('task_id', $task->id)->where('user_id', $inD1->id)->count()
+        );
+    }
+
+    public function test_one_bad_code_in_the_list_refuses_the_whole_forward(): void
+    {
+        $this->departmentGroup();
+        $this->makeBoard();
+        $task = $this->makeTask();
+
+        $this->forward($task, ['hand_to' => 'd1,not-a-department'])
+            ->assertSessionHas('error');
+
+        $this->assertSame($this->lists[0]->id, $task->fresh()->list_id);
+    }
+
+    /**
+     * A standard step names the group and means all of it, so everyone filed
+     * under the group carries it - not only whoever is filed under the group
+     * row itself.
+     */
+    public function test_a_member_carries_a_standard_step_named_for_its_group(): void
+    {
+        $this->departmentGroup();
+        $this->makeBoard('standard');
+
+        $inD1 = User::factory()->create([
+            'role_id' => $this->role->id,
+            'workflow_sub_role_id' => WorkflowSubRole::where('code', 'd1')->value('id'),
+        ]);
+
+        $this->assertContains($this->lists[1]->title, $inD1->responsibleListTitles());
+    }
+
+    /**
+     * A dynamic step is handed to one member as it is forwarded, so the others
+     * must not pick it up simply by being under the same group.
+     */
+    public function test_a_member_does_not_carry_a_dynamic_step_named_for_its_group(): void
+    {
+        $this->departmentGroup();
+        $this->makeBoard();
+
+        $inD1 = User::factory()->create([
+            'role_id' => $this->role->id,
+            'workflow_sub_role_id' => WorkflowSubRole::where('code', 'd1')->value('id'),
+        ]);
+
+        $this->assertNotContains($this->lists[1]->title, $inD1->responsibleListTitles());
+    }
+
+    /**
      * People may still be filed under the group rather than one of its members.
      * Falling back to the group beats handing the document to nobody.
      */

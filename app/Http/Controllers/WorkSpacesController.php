@@ -649,6 +649,7 @@ class WorkSpacesController extends Controller
             'requires_signature' => $requiresSignature,
             'can' => [
                 'attach' => (bool) ($user && TaskAbility::canAttach($user, $task)),
+                'detach' => (bool) ($user && TaskAbility::canDetach($user, $task)),
                 'sign' => (bool) $canSign,
             ],
         ];
