@@ -575,7 +575,7 @@ class WorkSpacesController extends Controller
             // asking the database once per row.
             'assignees:id,task_id,user_id',
             'attachments' => fn ($query) => $query
-                ->select('id', 'task_id', 'name', 'path', 'size', 'created_at')
+                ->select('id', 'task_id', 'list_id', 'name', 'path', 'size', 'created_at')
                 ->orderByDesc('created_at')
                 ->orderByDesc('id'),
         ];
@@ -613,6 +613,9 @@ class WorkSpacesController extends Controller
                 'path' => $file->path,
                 'size' => (int) $file->size,
                 'ext' => strtolower(pathinfo($file->name, PATHINFO_EXTENSION)),
+                // Which board filed it, so this listing reads the same shape the
+                // document page does.
+                'list_id' => $file->list_id,
             ])->values(),
             'project' => $task->project ? ['id' => $task->project->id, 'title' => $task->project->title, 'slug' => $task->project->slug] : null,
             'source' => optional($task->documentSource)->name,

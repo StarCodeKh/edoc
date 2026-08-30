@@ -15,9 +15,12 @@ class CreateLabelsTable extends Migration
     {
         Schema::create('labels', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('project_id')->nullable();
             $table->string('name', 100);
             $table->string('color', 20)->default('lightgray');
             $table->string('color_name', 100)->default(null)->nullable();
+
+            $table->foreign('project_id')->references('id')->on('projects')->onDelete('cascade');
         });
     }
 

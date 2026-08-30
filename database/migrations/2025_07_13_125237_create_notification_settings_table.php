@@ -19,6 +19,10 @@ return new class extends Migration
             $table->boolean('is_active')->default(true)->comment('Master switch for this notification type');
             $table->boolean('can_be_emailed')->default(true)->comment('Whether this type supports email');
             $table->boolean('email_is_active')->default(true)->comment('Master switch for email delivery');
+            $table->boolean('can_be_slacked')->default(true)->comment('Whether this type can be sent to Slack');
+            $table->boolean('can_be_telegrammed')->default(true)->comment('Whether this type supports Telegram');
+            $table->boolean('slack_is_active')->default(true)->comment('Master switch for Slack notifications');
+            $table->boolean('telegram_is_active')->default(false)->comment('Master switch for Telegram delivery');
         });
     }
 

@@ -858,7 +858,7 @@
                                                     <label class="cursor-pointer">
                                                         <input
                                                             :accept="allowed_file_types"
-                                                            :disabled="!can.attach"
+                                                            :disabled="!canUpload"
                                                             class="hidden"
                                                             type="file"
                                                             multiple
@@ -1917,7 +1917,7 @@
                                     >
                                         <input
                                             :accept="allowed_file_types"
-                                            :disabled="!can.attach"
+                                            :disabled="!canUpload"
                                             @change="uploadAttachment($event)"
                                             class="hidden"
                                             type="file"
@@ -2262,6 +2262,16 @@ export default {
          */
         can() {
             return taskAbilities(this.$page.props.auth.user, this.task || {});
+        },
+
+        /**
+         * Attaching is the person's right and the step's business both. A board
+         * whose workflow step has no ឯកសារភ្ជាប់ takes no document, so the card
+         * does not offer to file one. Deleting stays on can.attach - a file put
+         * somewhere by mistake still has to come off.
+         */
+        canUpload() {
+            return this.can.attach && this.task?.accepts_attachment !== false;
         },
 
         // Real ceiling PHP will accept (upload_max_filesize / post_max_size), capped at 50MB.

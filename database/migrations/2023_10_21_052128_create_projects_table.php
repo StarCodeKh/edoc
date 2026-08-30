@@ -22,6 +22,7 @@ class CreateProjectsTable extends Migration
             $table->integer('workspace_id')->nullable();
             $table->text('description')->default(null)->nullable();
             $table->timestamps();
+            $table->integer('is_private')->default(0)->nullable();
         });
     }
 

@@ -19,6 +19,8 @@ class CreateUsersTable extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('role_id')->default(null)->nullable()->index();
+            // The workflow responsibility this user carries, if any.
+            $table->unsignedBigInteger('workflow_sub_role_id')->nullable()->index();
             $table->string('edoc_role', 20)->nullable();
             $table->string('locale', 5)->default('en');
             $table->string('address', 200)->default(null)->nullable();

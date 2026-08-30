@@ -19,6 +19,8 @@ class CreateTimersTable extends Migration
             $table->integer('user_id');
             $table->integer('task_id');
             $table->integer('duration')->default(0);
+            $table->integer('duration_seconds')->default(0);
+            $table->text('memo')->nullable();
             $table->timestamp('started_at')->default(null)->nullable();
             $table->timestamp('stopped_at')->default(null)->nullable();
             $table->timestamps();

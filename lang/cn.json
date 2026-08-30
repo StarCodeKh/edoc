@@ -884,5 +884,10 @@
     "Responsibilities only nest one level deep.": "职责只能嵌套一层。",
     "A responsibility that stands for others cannot be moved under another.": "代表其他职责的职责不能移到另一个职责之下。",
     "Open to sign": "打开以签名",
-    "View only": "仅供查看"
+    "View only": "仅供查看",
+    "Replace": "替换",
+    "This step holds one document — a new file replaces it.": "此步骤仅保留一份文件——新文件将替换旧文件。",
+    "This step has filed its document.": "此步骤已归档其文件。",
+    "This step must file its document before it can be sent on.": "此步骤必须先归档其文件，才能继续传送。",
+    "Attach the document this step produces before sending it on.": "请先附上此步骤产生的文件，再继续传送。"
 }

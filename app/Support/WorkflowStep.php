@@ -128,6 +128,29 @@ class WorkflowStep
         return self::forList($list)->attachment_mode ?? 'standard';
     }
 
+    /**
+     * Whether a file may be filed against the step at all.
+     *
+     * A step that does not ask for a document has no reason to take one: it is
+     * a review, and the document it reviews arrived with it. So the flag reads
+     * both ways - it opens the upload, and it holds the step shut until the
+     * upload happens.
+     *
+     * The one thing it does not govern is a signature. Saving a drawn-on copy
+     * back is what `requires_signature` asks for, and it goes through the same
+     * upload endpoint, so it is exempted there rather than here.
+     */
+    public static function acceptsAttachment(?BoardList $list): bool
+    {
+        return self::requiresAttachment($list);
+    }
+
+    /** 'standard' steps hold one document; a new upload replaces the old one. */
+    public static function holdsOneAttachment(?BoardList $list): bool
+    {
+        return self::requiresAttachment($list) && self::attachmentMode($list) !== 'dynamic';
+    }
+
     /** The step a document finishes on, where the workflow marks one. */
     public static function isTerminal(?BoardList $list): bool
     {

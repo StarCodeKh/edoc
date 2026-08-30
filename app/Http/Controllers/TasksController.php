@@ -21,6 +21,7 @@ use App\Models\Timer;
 use App\Models\UserGroup;
 use App\Models\WorkspaceType;
 use App\Support\TaskAbility;
+use App\Support\WorkflowStep;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -403,6 +404,10 @@ class TasksController extends Controller
 
         $this->authorizeTaskModel($task->loadMissing('assignees'), 'view');
 
+        // Whether the board it is sitting on takes a document at all, so the
+        // card's own upload control follows the same rule the page does rather
+        // than offering an action the server will refuse.
+        $task->accepts_attachment = WorkflowStep::acceptsAttachment($task->list);
         $task->is_demo = (int) config('app.demo');
         $task->load('watchers');
         $task->is_watched_by_user = $task->watchers->contains(auth()->user());
@@ -459,7 +464,20 @@ class TasksController extends Controller
         // A plain upload is an attach. Saving a drawn-on copy back is the
         // reviewer's act on the document itself, so the annotator says so and
         // is held to the stricter rule.
-        $task = $this->authorizeTask($id, $request->boolean('annotated') ? 'sign' : 'attach');
+        $annotated = $request->boolean('annotated');
+        $task = $this->authorizeTask($id, $annotated ? 'sign' : 'attach');
+
+        $list = $task->relationLoaded('list') ? $task->list : $task->list()->first();
+
+        // A signature is not an attachment: the annotated copy comes back
+        // through here, but what permits it is the step's ហត្ថលេខា box, already
+        // checked above. Only a manual upload answers to ឯកសារភ្ជាប់.
+        if (!$annotated && !WorkflowStep::acceptsAttachment($list)) {
+            return response()->json([
+                'error' => true,
+                'message' => 'This step does not take a document. Tick ឯកសារភ្ជាប់ for it in Settings → Workflow Roles to allow one.',
+            ], 422);
+        }
 
         $attachment = [];
 
@@ -506,10 +524,44 @@ class TasksController extends Controller
             $file_name = uniqid().'-'.$this->clean(pathinfo($file_name_origin, PATHINFO_FILENAME)).'.'.$file->getClientOriginalExtension();
             $size = $file->getSize();
             $file_path = '/files/'.$file->storeAs('tasks', $file_name, ['disk' => 'file_uploads']);
-            $attachment = Attachment::create(['task_id' => $id, 'name' => $file_name_origin, 'user_id' => auth()->id(), 'size' => $size, 'path' => $file_path, 'width' => $width, 'height' => $height]);
+
+            // A 'standard' step holds one document, so a second upload replaces
+            // the first. Scoped to this step's own files: the scan the document
+            // arrived with belongs to an earlier board and is never touched.
+            // Annotated copies are version history and are left alone too.
+            if (!$annotated && $list && WorkflowStep::holdsOneAttachment($list)) {
+                $this->clearStepAttachments($task, $list);
+            }
+
+            $attachment = Attachment::create([
+                'task_id' => $id,
+                'list_id' => $annotated ? null : optional($list)->id,
+                'name' => $file_name_origin,
+                'user_id' => auth()->id(),
+                'size' => $size,
+                'path' => $file_path,
+                'width' => $width,
+                'height' => $height,
+            ]);
         }
 
         return response()->json($attachment);
+    }
+
+    /** Drop the files this step is already holding, on disk and in the table. */
+    private function clearStepAttachments(Task $task, BoardList $list): void
+    {
+        $existing = Attachment::where('task_id', $task->id)
+            ->where('list_id', $list->id)
+            ->get();
+
+        foreach ($existing as $old) {
+            if (!empty($old->path) && File::exists(public_path($old->path))) {
+                File::delete(public_path($old->path));
+            }
+
+            $old->delete();
+        }
     }
 
     /**

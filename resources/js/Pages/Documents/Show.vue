@@ -168,10 +168,15 @@
                                             {{ $t('Attachments') }} · {{ attachments.length }}
                                         </div>
                                         <button
-                                            v-if="can.attach"
+                                            v-if="can.upload"
                                             type="button"
                                             class="flex items-center gap-1.5 rounded-xl border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
                                             :disabled="uploading"
+                                            :title="
+                                                replacesOnUpload
+                                                    ? $t('This step holds one document — a new file replaces it.')
+                                                    : ''
+                                            "
                                             @click="$refs.fileInput.click()"
                                         >
                                             <icon
@@ -179,13 +184,13 @@
                                                 class="h-3.5 w-3.5"
                                                 :class="{ 'animate-spin': uploading }"
                                             />
-                                            {{ uploading ? $t('Submitting...') : $t('Add') }}
+                                            {{ uploading ? $t('Submitting...') : addLabel }}
                                         </button>
                                         <input
                                             ref="fileInput"
                                             type="file"
                                             class="hidden"
-                                            multiple
+                                            :multiple="!replacesOnUpload"
                                             accept="application/pdf,.pdf"
                                             @change="uploadFiles"
                                         />
@@ -196,6 +201,17 @@
                                     <!-- The step itself is the instruction: at a signature
                                          step the file is not just readable, it is waiting to
                                          be signed, and the row says so. -->
+                                    <!-- The step is the instruction here too: it either
+                                         wants a document from this desk or it does not. -->
+                                    <p v-if="stepWantsDocument" class="doc-step-note">
+                                        <icon name="attachment" class="h-3.5 w-3.5 shrink-0" />
+                                        {{
+                                            stepFiles.length
+                                                ? $t('This step has filed its document.')
+                                                : $t('This step must file its document before it can be sent on.')
+                                        }}
+                                    </p>
+
                                     <p
                                         v-if="canSign && attachments.length"
                                         class="mt-2 flex items-center gap-1.5 rounded-xl bg-indigo-50 px-3 py-2 text-xs font-medium text-indigo-700"
@@ -487,13 +503,22 @@
                                                     <button
                                                         type="button"
                                                         class="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
-                                                        :disabled="forwarding || links.blocks_forward || !handToChosen"
+                                                        :disabled="
+                                                            forwarding ||
+                                                            links.blocks_forward ||
+                                                            needsDocumentFirst ||
+                                                            !handToChosen
+                                                        "
                                                         :title="
-                                                            links.blocks_forward
+                                                            needsDocumentFirst
                                                                 ? $t(
-                                                                      'Waiting on the internal document(s) raised from this one.'
+                                                                      'This step must file its document before it can be sent on.'
                                                                   )
-                                                                : $t('Forward to :step', { step: next_step.title })
+                                                                : links.blocks_forward
+                                                                  ? $t(
+                                                                        'Waiting on the internal document(s) raised from this one.'
+                                                                    )
+                                                                  : $t('Forward to :step', { step: next_step.title })
                                                         "
                                                         @click="forward"
                                                     >
@@ -507,7 +532,17 @@
                                                 </div>
 
                                                 <p
-                                                    v-if="!links.blocks_forward && !handToChosen"
+                                                    v-if="needsDocumentFirst"
+                                                    class="mt-1.5 text-center text-[11px] font-medium text-amber-600"
+                                                >
+                                                    {{
+                                                        $t(
+                                                            'Attach the document this step produces before sending it on.'
+                                                        )
+                                                    }}
+                                                </p>
+                                                <p
+                                                    v-else-if="!links.blocks_forward && !handToChosen"
                                                     class="mt-1.5 text-center text-[11px] font-medium text-amber-600"
                                                 >
                                                     {{ $t('Choose who it goes to first.') }}
@@ -821,6 +856,40 @@ export default {
         canSign() {
             return !!this.can.sign;
         },
+
+        /** True where the current step is configured to produce a document. */
+        stepWantsDocument() {
+            return !!(this.currentStep && this.currentStep.requires_attachment);
+        },
+
+        /**
+         * The files this step filed itself, as opposed to the ones the document
+         * arrived carrying. A row from before attachments recorded their board
+         * has no list_id and counts as inherited.
+         */
+        stepFiles() {
+            if (!this.document.list_id) return [];
+
+            return this.attachments.filter((file) => file.list_id && file.list_id === this.document.list_id);
+        },
+
+        /**
+         * The step is configured to produce a document and has not filed one
+         * yet. Mirrors the server gate in DocumentSubmissionController::forward,
+         * so the button says no for the same reason the server would.
+         */
+        needsDocumentFirst() {
+            return this.stepWantsDocument && !this.stepFiles.length;
+        },
+
+        /** A 'standard' step holds one document, so the next upload replaces it. */
+        replacesOnUpload() {
+            return !!(this.stepWantsDocument && this.currentStep.attachment_mode !== 'dynamic');
+        },
+
+        addLabel() {
+            return this.replacesOnUpload && this.stepFiles.length ? this.$t('Replace') : this.$t('Add');
+        },
         sourceLabel() {
             if (this.document.department && this.document.office) {
                 return this.document.department + ' / ' + this.document.office;
@@ -868,6 +937,7 @@ export default {
         },
         forward() {
             if (!this.canForward || this.forwarding || !this.handToChosen) return;
+            if (this.needsDocumentFirst) return;
 
             this.forwarding = true;
 
@@ -905,6 +975,15 @@ export default {
                     .post(this.route('task.attachment.add', this.document.id), data)
                     .then((response) => {
                         if (response.data && response.data.id) {
+                            // On a 'standard' step the server has just replaced
+                            // this step's previous file, so drop it here too
+                            // rather than leaving a row pointing at a deleted
+                            // file until the next reload.
+                            if (this.replacesOnUpload) {
+                                const filed = this.stepFiles.map((file) => file.id);
+                                this.attachments = this.attachments.filter((file) => !filed.includes(file.id));
+                            }
+
                             this.attachments.unshift(response.data);
                         } else if (response.data && response.data.message) {
                             this.notice = response.data.message;
@@ -944,6 +1023,21 @@ export default {
 </script>
 
 <style scoped>
+/* What the step is asking of this desk, in the same register as the signature
+   hint beside it. */
+.doc-step-note {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    background: #f1f5f9;
+    font-size: 12px;
+    font-weight: 500;
+    color: #475569;
+}
+
 /* The tracking slip button, as it reads on the register too. */
 .doc-track {
     display: inline-flex;

@@ -20,7 +20,10 @@ class CreateEmailTemplatesTable extends Migration
             $table->increments('id');
             $table->string('name', 50);
             $table->string('details', 200)->nullable()->default(null);
+            $table->string('subject', 255)->nullable();
             $table->string('slug', 50)->nullable();
+            $table->string('channel', 20)->default('email')->index()
+                ->comment('Delivery channel this template belongs to: email, telegram');
             $table->string('language', 10)->default('en')->nullable();
             $table->text('html')->nullable();
         });

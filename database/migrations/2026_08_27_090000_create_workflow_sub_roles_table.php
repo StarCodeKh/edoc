@@ -11,6 +11,9 @@ return new class extends Migration
     {
         Schema::create('workflow_sub_roles', function (Blueprint $table) {
             $table->id();
+            // A responsibility can stand under another one, which is what makes
+            // a 'dynamic' step have something to choose between.
+            $table->unsignedBigInteger('parent_id')->nullable()->index();
             $table->string('code', 50)->unique();
             $table->string('name');
             $table->unsignedSmallInteger('order')->default(0);

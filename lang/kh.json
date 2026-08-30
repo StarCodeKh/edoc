@@ -902,5 +902,10 @@
     "Responsibilities only nest one level deep.": "ការទទួលខុសត្រូវអាចដាក់ជាន់គ្នាបានតែមួយកម្រិតប៉ុណ្ណោះ។",
     "A responsibility that stands for others cannot be moved under another.": "ការទទួលខុសត្រូវដែលតំណាងឲ្យអ្នកដទៃ មិនអាចផ្លាស់ទៅក្រោមមួយផ្សេងបានទេ។",
     "Open to sign": "បើកដើម្បីចុះហត្ថលេខា",
-    "View only": "មើលតែប៉ុណ្ណោះ"
+    "View only": "មើលតែប៉ុណ្ណោះ",
+    "Replace": "ជំនួស",
+    "This step holds one document — a new file replaces it.": "ជំហាននេះទុកឯកសារតែមួយ — ឯកសារថ្មីនឹងជំនួសឯកសារចាស់។",
+    "This step has filed its document.": "ជំហាននេះបានដាក់ឯកសាររបស់ខ្លួនរួចរាល់។",
+    "This step must file its document before it can be sent on.": "ជំហាននេះត្រូវដាក់ឯកសាររបស់ខ្លួនជាមុនសិន មុននឹងបញ្ជូនបន្ត។",
+    "Attach the document this step produces before sending it on.": "សូមភ្ជាប់ឯកសារដែលជំហាននេះបង្កើត មុននឹងបញ្ជូនបន្ត។"
 }

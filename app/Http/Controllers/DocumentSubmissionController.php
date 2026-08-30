@@ -23,6 +23,7 @@ use App\Models\Workspace;
 use App\Models\WorkspaceType;
 use App\Support\DocumentChain;
 use App\Support\TaskAbility;
+use App\Support\WorkflowStep;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -357,6 +358,21 @@ class DocumentSubmissionController extends Controller
             $handTo = null;
         }
 
+        // A step that asks for a document does not pass it on without one. The
+        // check is scoped to this step's own files: the document almost always
+        // arrives carrying the original scan, and that is not this step's work.
+        $current = $task->relationLoaded('list') ? $task->list : $task->list()->first();
+
+        if (WorkflowStep::requiresAttachment($current)) {
+            $filed = Attachment::where('task_id', $task->id)
+                ->where('list_id', optional($current)->id)
+                ->exists();
+
+            if (!$filed) {
+                return Redirect::back()->with('error', __('Attach the document this step produces before sending it on.'));
+            }
+        }
+
         // An external document is not finished until the internal work it
         // raised is. Only the step that would finish it is held - everything
         // before that moves normally.
@@ -435,8 +451,17 @@ class DocumentSubmissionController extends Controller
         $user = auth()->user();
         $holds = TaskAbility::isAssigned($user, $task) || TaskAbility::isResponsibleForItsBoard($user, $task);
 
+        $list = $task->relationLoaded('list') ? $task->list : $task->list()->first();
+
         return [
+            // Who may touch the document's files at all - this still governs
+            // deleting one that was filed by mistake.
             'attach' => $holds && $this->userCan('attach', $task),
+            // Whether a new file may be added here, which is the step's call as
+            // well as the person's. See WorkflowStep::acceptsAttachment.
+            'upload' => $holds
+                && $this->userCan('attach', $task)
+                && WorkflowStep::acceptsAttachment($list),
             'forward' => $holds && $this->userCan('move', $task),
             // Signing has its own rule - the step has to ask for a signature and
             // this has to be the person holding it. See TaskAbility::canSign.
@@ -718,11 +743,16 @@ class DocumentSubmissionController extends Controller
                 ->map(fn ($assignee) => $assignee->user ? $this->personPayload($assignee->user) : null)
                 ->filter()
                 ->values(),
+            // The board a document sits on, and the board each file was filed
+            // against: together they let the page say which files are this
+            // step's own work rather than what it inherited.
+            'list_id' => $task->list_id,
             'files' => $task->attachments->map(fn ($file) => [
                 'id' => $file->id,
                 'name' => $file->name,
                 'path' => $file->path,
                 'size' => (int) $file->size,
+                'list_id' => $file->list_id,
             ])->values(),
         ];
     }
