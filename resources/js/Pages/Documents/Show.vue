@@ -730,7 +730,9 @@ export default {
     },
     data() {
         return {
-            active_tab: 'summary',
+            // The first tab, and the one with the note box and បញ្ជូនបន្ត in it.
+            // ?tab= and the tab remembered across a forward both override this.
+            active_tab: 'comments',
             // The printed tracking slip.
             receiptModalOpen: false,
             // Server props are the starting point; both lists grow in place as
@@ -747,12 +749,17 @@ export default {
         };
     },
     computed: {
+        /**
+         * Comments comes first because it is the only tab you act from - the
+         * note box and បញ្ជូនបន្ត both live in it. Opening a document should
+         * land on the thing there is to do with it, not on a read-only summary.
+         */
         tabs() {
             return [
+                { key: 'comments', label: 'Comments', icon: 'comments', count: this.thread.length },
                 { key: 'summary', label: 'Summary', icon: 'details', count: 0 },
                 { key: 'tracking', label: 'Tracking', icon: 'timeline', count: this.steps.length },
                 { key: 'activity', label: 'Activity', icon: 'time', count: this.activities.length },
-                { key: 'comments', label: 'Comments', icon: 'comments', count: this.thread.length },
             ];
         },
         currentStepNumber() {
@@ -857,6 +864,11 @@ export default {
             return !!this.can.sign;
         },
 
+        /** Where the panel's chosen tab is parked across a forward. */
+        tabMemoryKey() {
+            return `edoc:doc-tab:${this.document.id}`;
+        },
+
         /** True where the current step is configured to produce a document. */
         stepWantsDocument() {
             return !!(this.currentStep && this.currentStep.requires_attachment);
@@ -897,7 +909,51 @@ export default {
             return this.document.office || this.document.department || '';
         },
     },
+    mounted() {
+        // Forwarding is a full Inertia visit, so this component is rebuilt and
+        // active_tab falls back to 'summary' - dropping the reader on Summary
+        // right after they wrote a note in Comments and pressed បញ្ជូនបន្ត.
+        // The tab it was sent from is parked before the visit and picked up
+        // here, so the note they just wrote is the first thing they see.
+        // ?tab=comments wins: it is an explicit request from whoever built the
+        // link, where the remembered tab is only a convenience.
+        const requested = this.requestedTab() || this.readRememberedTab();
+
+        if (requested && this.tabs.some((tab) => tab.key === requested)) {
+            this.active_tab = requested;
+        }
+    },
     methods: {
+        /** The tab named in the URL, for links that open the page on one. */
+        requestedTab() {
+            try {
+                return new URL(window.location.href).searchParams.get('tab');
+            } catch (error) {
+                return null;
+            }
+        },
+
+        readRememberedTab() {
+            try {
+                const value = window.sessionStorage.getItem(this.tabMemoryKey);
+                window.sessionStorage.removeItem(this.tabMemoryKey);
+
+                return value;
+            } catch (error) {
+                // Private browsing can refuse sessionStorage; the tab simply is
+                // not remembered, which is what happened before this existed.
+                return null;
+            }
+        },
+
+        rememberTab() {
+            try {
+                window.sessionStorage.setItem(this.tabMemoryKey, this.active_tab);
+            } catch (error) {
+                // As above - not remembering is an acceptable outcome.
+            }
+        },
+
         /**
          * The annotator, not the raw file: it is the viewer for a PDF here, and
          * the only place a signature can be drawn onto one.
@@ -940,6 +996,7 @@ export default {
             if (this.needsDocumentFirst) return;
 
             this.forwarding = true;
+            this.rememberTab();
 
             // A full visit, not axios: the move rewrites the tracker, the trail
             // and the neighbours, so the page is re-fetched rather than patched.

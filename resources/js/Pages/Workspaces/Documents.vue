@@ -195,7 +195,18 @@
                                     <printer-icon class="doc-row__print-icon" />
                                 </button>
 
-                                <icon name="chevron-right" class="doc-row__chevron" />
+                                <!-- A real href, so the row can still be opened in
+                                     a new tab; the click itself is handled so it
+                                     does not also open the detail panel behind. -->
+                                <a
+                                    :href="commentsHref(doc)"
+                                    class="doc-row__open"
+                                    :title="$t('Open comments')"
+                                    :aria-label="$t('Open comments')"
+                                    @click.stop.prevent="openComments(doc)"
+                                >
+                                    <icon name="chevron-right" class="doc-row__chevron" />
+                                </a>
                             </div>
                         </div>
 
@@ -377,7 +388,7 @@
 
 <script>
 import Layout from '@/Shared/Layout.vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import Icon from '@/Shared/Icon.vue';
 import Pagination from '@/Shared/Pagination.vue';
 import FilterSelect from '@/Shared/Components/FilterSelect.vue';
@@ -539,6 +550,20 @@ export default {
          */
         annotatorUrl(doc, file) {
             return this.route('task.attachment.view', { taskUid: doc.id, attachmentId: file.id });
+        },
+
+        /** The document's own page, opened straight onto its comment thread. */
+        commentsHref(doc) {
+            const base = this.route('workspace.documents.show', [
+                this.workspace.slug || this.workspace.id,
+                doc.slug || doc.id,
+            ]);
+
+            return `${base}?tab=comments`;
+        },
+
+        openComments(doc) {
+            router.visit(this.commentsHref(doc));
         },
 
         openReceiptModal(doc, event) {
@@ -742,6 +767,27 @@ export default {
     color: #9ca3af;
 }
 
+/* The chevron is the row's way out to the document itself. It sits inside the
+   row, which is itself clickable, so it needs its own hit area and hover. */
+.doc-row__open {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    color: #cbd5e1;
+}
+.doc-row__open:hover {
+    background: #e0e7ff;
+    color: #4338ca;
+}
+.doc-row__open:focus-visible {
+    outline: 2px solid #6366f1;
+    outline-offset: 1px;
+}
+
 .doc-panel__sign-hint {
     display: flex;
     align-items: center;
@@ -926,10 +972,12 @@ export default {
         margin-left: auto;
         text-align: right;
     }
-    .doc-row__chevron {
+    /* The link is what gets pinned to the edge now, not the glyph inside it -
+       otherwise the hit area and the arrow end up in different places. */
+    .doc-row__open {
         position: absolute;
         top: 50%;
-        right: 6px;
+        right: 2px;
         transform: translateY(-50%);
     }
 }
