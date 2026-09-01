@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -75,6 +76,12 @@ class User extends Authenticatable
     }
 
     /**
+     * The responsibility code the registry office carries in
+     * workflow_sub_roles - the row seeded as ការិយាល័យ រដ្ឋបាល.
+     */
+    public const REGISTRY_SUB_ROLE_CODE = 'admin';
+
+    /**
      * Roles, as the ministry defines them:
      *   Super Admin - everything in the system   (roles.id 1)
      *   Admin       - everything on every board  (roles.id 2)
@@ -96,25 +103,54 @@ class User extends Authenticatable
      */
     public function responsibleListTitles(): array
     {
-        if ($this->responsibleTitlesCache !== null) {
-            return $this->responsibleTitlesCache;
+        return $this->responsibleTitlesCache ??= $this->pluckFromResponsibleSteps('list_title');
+    }
+
+    /**
+     * The workspaces those steps are configured in.
+     *
+     * This is how a Normal User reaches a workspace at all. Team membership is
+     * the other way in, and in practice the administration never creates those
+     * rows - people are given a responsibility instead, and the responsibility
+     * is what says which flow they work in.
+     */
+    public function responsibleWorkspaceIds(): array
+    {
+        return $this->responsibleWorkspacesCache ??= array_map(
+            'intval',
+            $this->pluckFromResponsibleSteps('workspace_id')
+        );
+    }
+
+    /** One column of the steps this user's responsibility covers. */
+    private function pluckFromResponsibleSteps(string $column): array
+    {
+        $query = $this->responsibleStepsQuery();
+
+        if (empty($query)) {
+            return [];
         }
 
-        if (empty($this->workflow_sub_role_id)) {
-            return $this->responsibleTitlesCache = [];
-        }
+        return $query->pluck($column)->filter()->unique()->values()->all();
+    }
 
-        $role = WorkflowSubRole::find($this->workflow_sub_role_id);
+    /**
+     * The workflow steps this user's responsibility covers, or null when they
+     * carry no responsibility at all.
+     */
+    private function responsibleStepsQuery(): ?Builder
+    {
+        $role = $this->workflowSubRoleRecord();
 
         if (empty($role) || empty($role->code)) {
-            return $this->responsibleTitlesCache = [];
+            return null;
         }
 
         $parentCode = $role->parent_id
             ? WorkflowSubRole::whereKey($role->parent_id)->value('code')
             : null;
 
-        return $this->responsibleTitlesCache = EdocWorkflowRole::where(function ($query) use ($role, $parentCode) {
+        return EdocWorkflowRole::where(function ($query) use ($role, $parentCode) {
             // The responsibility this user actually carries.
             $query->where('responsible_role', $role->code);
 
@@ -132,20 +168,62 @@ class User extends Authenticatable
                         });
                 });
             }
-        })
-            ->pluck('list_title')
-            ->filter()
-            ->unique()
-            ->values()
-            ->all();
+        });
     }
 
     /** The workflow responsibility this user carries, if any. */
     private ?array $responsibleTitlesCache = null;
 
+    private ?array $responsibleWorkspacesCache = null;
+
+    private ?WorkflowSubRole $workflowSubRoleCache = null;
+
+    private bool $workflowSubRoleLoaded = false;
+
     public function workflowSubRole()
     {
         return $this->belongsTo(WorkflowSubRole::class, 'workflow_sub_role_id');
+    }
+
+    /**
+     * The responsibility row itself, read once per user.
+     *
+     * Both the titles this user is responsible for and whether they are the
+     * registry office are answered from it, and both are asked per document in
+     * the register loops.
+     */
+    private function workflowSubRoleRecord(): ?WorkflowSubRole
+    {
+        if ($this->workflowSubRoleLoaded) {
+            return $this->workflowSubRoleCache;
+        }
+
+        $this->workflowSubRoleLoaded = true;
+
+        return $this->workflowSubRoleCache = empty($this->workflow_sub_role_id)
+            ? null
+            : WorkflowSubRole::find($this->workflow_sub_role_id);
+    }
+
+    /**
+     * The registry office (ការិយាល័យ រដ្ឋបាល): every document passes through it
+     * on the way in and on the way out, and it has to be able to find any of
+     * them at any point in any flow to answer for the register.
+     *
+     * So it reads the whole register, across every workspace - and reads it
+     * only. Acting on a document is unchanged: the step the document is
+     * waiting on has to be one of theirs, which responsibleListTitles()
+     * answers, for a standard step and a dynamic one alike.
+     */
+    public function isRegistryOffice(): bool
+    {
+        return optional($this->workflowSubRoleRecord())->code === self::REGISTRY_SUB_ROLE_CODE;
+    }
+
+    /** Sees every document, whether by permission role or by responsibility. */
+    public function seesEveryDocument(): bool
+    {
+        return $this->isAdmin() || $this->isRegistryOffice();
     }
 
     public function isSuperAdmin(): bool

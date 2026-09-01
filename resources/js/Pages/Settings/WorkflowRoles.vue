@@ -246,15 +246,16 @@
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2 flex-wrap">
                         <div class="font-bold text-gray-900 dark:text-gray-100">{{ workflowMeta(type).label }}</div>
-                        <!-- Shows which workspace this workflow is currently
-                             linked to, if all its steps agree on one — same
-                             workspace_id every step in this group shares. -->
+                        <!-- The heading above is the workspace this workflow is
+                             linked to, so this keeps the flow's own name next to
+                             it. Hidden when the two are already the same, which
+                             is what a workflow with no single workspace shows. -->
                         <span
-                            v-if="groupWorkspaceId(type)"
+                            v-if="workflowMeta(type).own !== workflowMeta(type).label"
                             class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300"
                         >
-                            <Icon name="briefcase" class="w-3 h-3" />
-                            {{ workspaceLabel(groupWorkspaceId(type)) }}
+                            <Icon :name="workflowMeta(type).icon || 'briefcase'" class="w-3 h-3" />
+                            {{ workflowMeta(type).own }}
                         </span>
                         <span
                             v-else-if="groupHasMixedWorkspaces(type)"
@@ -922,12 +923,21 @@ export default {
             }
             return hash;
         },
+        /** The flow's own name - the built-in or renamed label, translated. */
+        workflowTypeLabel(type) {
+            return this.$t(this.typeLabels[type] || this.titleCase(type) || type);
+        },
         workflowMeta(type) {
-            const label = this.typeLabels[type] || this.titleCase(type) || type;
+            // A flow is shown under the name of the workspace it runs in, so
+            // renaming that workspace renames the tab with it. Its own label is
+            // what shows while its steps name no workspace, or disagree on one.
+            const own = this.workflowTypeLabel(type);
+            const workspaceId = this.groupWorkspaceId(type);
+            const label = workspaceId ? this.workspaceLabel(workspaceId) : own;
             const idx = this.allWorkflowTypes.indexOf(type);
             const color =
                 this.colorPalette[(idx > -1 ? idx : Math.abs(this.hashType(type))) % this.colorPalette.length];
-            return { label, icon: this.builtInIcons[type] || null, color };
+            return { label, own, icon: this.builtInIcons[type] || null, color };
         },
         hexToRgba(hex, alpha) {
             const clean = (hex || '').replace('#', '');

@@ -53,13 +53,6 @@ class DocumentSubmissionController extends Controller
     private const MAX_FILES = 10;
 
     /**
-     * The workspace that runs the internal document flow, as seeded by
-     * WorkspacesInsertSeeder. Only its form asks which department a document
-     * came from.
-     */
-    private const INTERNAL_WORKSPACE_NAME = 'ឯកសារផ្ទៃក្នុង';
-
-    /**
      * How many external documents the link picker offers. Searching is
      * client-side, so this bounds the payload rather than the choice.
      */
@@ -67,7 +60,7 @@ class DocumentSubmissionController extends Controller
 
     public function create($uid, Request $request)
     {
-        $workspace = $this->resolveWorkspace($uid);
+        $workspace = $this->resolveWorkspaceForFiling($uid);
 
         // Raised from an external document: the form is pre-filled from it and
         // the two are linked on save. Read through the same 'view' rule as the
@@ -299,17 +292,17 @@ class DocumentSubmissionController extends Controller
     }
 
     /**
-     * Whether this workspace is the internal-document one (ឯកសារផ្ទៃក្នុង), the
-     * only board whose documents are routed by department.
+     * Whether this workspace runs the internal CGMC flow (ឯកសារផ្ទៃក្នុង), the
+     * only one whose documents are routed by department.
      *
-     * Matched on the seeded name, not on the internal_cgmc workflow role:
-     * EdocWorkflowRoleSeeder binds that role to a hardcoded workspace id, and
-     * in the current data it lands on ឯកសារក្រុមហ៊ុន instead. Once those ids
-     * line up with the names, this is one query away from asking the workflow.
+     * Read from Settings -> Workflow Roles rather than matched on the name, so
+     * a renamed workspace keeps its behaviour.
      */
     private function routesByDepartment(Workspace $workspace): bool
     {
-        return trim((string) $workspace->name) === self::INTERNAL_WORKSPACE_NAME;
+        return EdocWorkflowRole::where('workflow_type', 'internal_cgmc')
+            ->where('workspace_id', $workspace->id)
+            ->exists();
     }
 
     /**
@@ -333,7 +326,7 @@ class DocumentSubmissionController extends Controller
         }
 
         $workspace = Workspace::where('id', $workspaceIds->first())
-            ->whereHas('member')
+            ->accessibleTo()
             ->first();
 
         return $workspace ? (string) ($workspace->slug ?: $workspace->id) : null;
@@ -907,7 +900,7 @@ class DocumentSubmissionController extends Controller
 
     public function store($uid, Request $request)
     {
-        $workspace = $this->resolveWorkspace($uid);
+        $workspace = $this->resolveWorkspaceForFiling($uid);
 
         $validated = $request->validate([
             'title' => 'required|string|max:200',
@@ -1143,11 +1136,46 @@ class DocumentSubmissionController extends Controller
             ->all();
     }
 
+    /**
+     * The workspace a document route is addressed to.
+     *
+     * No access check of its own: on these routes it is the document that
+     * decides, through TaskAbility, and a document you may not read answers 403
+     * rather than pretending its workspace does not exist. What used to stand
+     * here looked like a membership gate and was not one - written as
+     * `where('id', $uid)->orWhere('slug', $uid)->whereHas('member')`, SQL binds
+     * the AND tighter than the OR, so the check only ever applied to the slug
+     * arm and every workspace addressed by its id walked straight past it.
+     */
     private function resolveWorkspace($uid): Workspace
     {
-        $workspace = Workspace::where('id', $uid)
-            ->orWhere('slug', $uid)
-            ->whereHas('member')
+        $workspace = Workspace::where(function ($query) use ($uid) {
+            $query->where('id', $uid)->orWhere('slug', $uid);
+        })
+            ->with('member')
+            ->first();
+
+        if (empty($workspace)) {
+            abort(404);
+        }
+
+        return $workspace;
+    }
+
+    /**
+     * The workspace a document is being filed into.
+     *
+     * Filing is the one thing here that is not answered by a document that
+     * already exists, so this is where access is actually decided: the
+     * administration, the registry office, and whoever owns, belongs to or
+     * carries a responsibility in the workspace (Workspace::scopeAccessibleTo).
+     */
+    private function resolveWorkspaceForFiling($uid): Workspace
+    {
+        $workspace = Workspace::where(function ($query) use ($uid) {
+            $query->where('id', $uid)->orWhere('slug', $uid);
+        })
+            ->accessibleTo()
             ->with('member')
             ->first();
 

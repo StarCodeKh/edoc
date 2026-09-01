@@ -254,7 +254,12 @@ class Task extends Model
             return $query->whereRaw('1 = 0');
         }
 
-        if ($user->isAdmin()) {
+        // Admins by permission, and the registry office by responsibility -
+        // ការិយាល័យ រដ្ឋបាល numbers every document in every flow, so it reads
+        // the whole register. Reading is all it gets from here: the abilities
+        // in Support\TaskAbility still ask whether the step the document is
+        // waiting on is one of theirs before offering any action on it.
+        if ($user->seesEveryDocument()) {
             return $query;
         }
 

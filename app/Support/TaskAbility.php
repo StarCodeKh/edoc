@@ -11,6 +11,9 @@ use App\Models\User;
  * The rules, as given:
  *   Super Admin - everything in the system.
  *   Admin       - everything on every board flow.
+ *   Registry    - ការិយាល័យ រដ្ឋបាល reads every document in every flow, and
+ *                 acts on one only while it waits on a step of theirs, which
+ *                 is the same rule every other responsibility is held to.
  *   Normal User  - sees documents assigned to them or created by them;
  *                 may review / edit / delete a document they created only while
  *                 it still sits in the board it was created in; once it moves on
@@ -43,7 +46,7 @@ class TaskAbility
     /** May the user open the document at all? */
     public static function canView(User $user, Task $task): bool
     {
-        return $user->isAdmin()
+        return $user->seesEveryDocument()
             || self::isOwner($user, $task)
             || self::isAssigned($user, $task)
             || self::isResponsibleForItsBoard($user, $task)

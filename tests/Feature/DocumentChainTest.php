@@ -9,6 +9,7 @@ use App\Models\EdocWorkflowRole;
 use App\Models\Project;
 use App\Models\Role;
 use App\Models\Task;
+use App\Models\TeamMember;
 use App\Models\User;
 use App\Models\Workspace;
 use App\Support\DocumentChain;
@@ -68,6 +69,29 @@ class DocumentChainTest extends TestCase
         }
 
         $this->actingAs($this->admin);
+    }
+
+    /**
+     * A Normal User who belongs to the internal workspace and nothing else.
+     *
+     * The membership is the point: without it the workspace does not open at
+     * all, and these tests would pass on a 404 rather than on the guard they
+     * are actually about.
+     */
+    private function makeInternalMember(): User
+    {
+        $normal = User::factory()->create([
+            'role_id' => Role::create(['name' => 'User', 'slug' => 'user', 'access' => json_encode([])])->id,
+        ]);
+
+        TeamMember::create([
+            'workspace_id' => $this->internal->id,
+            'user_id' => $normal->id,
+            'added_by' => $this->admin->id,
+            'role' => 'member',
+        ]);
+
+        return $normal;
     }
 
     /** A workspace with a three-step board: Registry -> Review -> Closed. */
@@ -313,10 +337,7 @@ class DocumentChainTest extends TestCase
     {
         $parent = $this->makeTask($this->externalProject, $this->externalLists[0], 'Secret');
 
-        $normal = User::factory()->create([
-            'role_id' => Role::create(['name' => 'User', 'slug' => 'user', 'access' => json_encode([])])->id,
-        ]);
-        $this->actingAs($normal);
+        $this->actingAs($this->makeInternalMember());
 
         $url = route('workspace.documents.submit', [
             'uid' => $this->internal->slug ?: $this->internal->id,
@@ -408,10 +429,7 @@ class DocumentChainTest extends TestCase
     {
         $external = $this->makeTask($this->externalProject, $this->externalLists[0], 'Secret');
 
-        $normal = User::factory()->create([
-            'role_id' => Role::create(['name' => 'User', 'slug' => 'user', 'access' => json_encode([])])->id,
-        ]);
-        $this->actingAs($normal);
+        $this->actingAs($this->makeInternalMember());
 
         $this->post(route('workspace.documents.submit.store', [
             'uid' => $this->internal->slug ?: $this->internal->id,

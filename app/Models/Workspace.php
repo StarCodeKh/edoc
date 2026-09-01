@@ -29,19 +29,30 @@ class Workspace extends Model
 
     /**
      * Workspaces a user may open. Admins (and Super Admins) run every board flow,
-     * so they are not held to workspace membership; everyone else sees the ones
-     * they own or belong to.
+     * and the registry office answers for the register across all of them, so
+     * neither is held to workspace membership; everyone else sees the ones they
+     * own, belong to, or carry a workflow responsibility in.
+     *
+     * That last arm is what a Normal User actually reaches a workspace by. The
+     * administration gives people a responsibility, not a team_members row, so
+     * a rule written on membership alone left them with nothing at all.
      */
     public function scopeAccessibleTo($query, $user = null)
     {
         $user = $user ?: Auth::user();
 
-        if ($user && $user->isAdmin()) {
+        if ($user && $user->seesEveryDocument()) {
             return $query;
         }
 
-        return $query->where(function ($query) use ($user) {
+        $responsibleFor = $user ? $user->responsibleWorkspaceIds() : [];
+
+        return $query->where(function ($query) use ($user, $responsibleFor) {
             $query->where('user_id', $user->id ?? null)->orWhereHas('member');
+
+            if (!empty($responsibleFor)) {
+                $query->orWhereIn('id', $responsibleFor);
+            }
         });
     }
 

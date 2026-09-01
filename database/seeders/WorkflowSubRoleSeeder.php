@@ -28,15 +28,22 @@ class WorkflowSubRoleSeeder extends Seeder
         // step names; 'under' says which group a row belongs to, and a step
         // marked dynamic is handed to exactly one of them when forwarded.
         ['code' => 'dpt', 'name' => 'នាយកដ្ឋាន D1-D5'],
-        ['code' => 'd1', 'name' => 'នាយកដ្ឋាន D1', 'under' => 'dpt'],
-        ['code' => 'd2', 'name' => 'នាយកដ្ឋាន D2', 'under' => 'dpt'],
-        ['code' => 'd3', 'name' => 'នាយកដ្ឋាន D3', 'under' => 'dpt'],
-        ['code' => 'd4', 'name' => 'នាយកដ្ឋាន D4', 'under' => 'dpt'],
-        ['code' => 'd5', 'name' => 'នាយកដ្ឋាន D5', 'under' => 'dpt'],
-        ['code' => 'iau', 'name' => 'IAU'],
+        ['code' => 'd1', 'name' => 'មន្ត្រីបង្គោល D1', 'under' => 'dpt'],
+        ['code' => 'd2', 'name' => 'មន្ត្រីបង្គោល D2', 'under' => 'dpt'],
+        ['code' => 'd3', 'name' => 'មន្ត្រីបង្គោល D3', 'under' => 'dpt'],
+        ['code' => 'd4', 'name' => 'មន្ត្រីបង្គោល D4', 'under' => 'dpt'],
+        ['code' => 'd5', 'name' => 'មន្ត្រីបង្គោល D5', 'under' => 'dpt'],
+        ['code' => 'iau', 'name' => 'មន្ត្រីបង្គោល IAU'],
         // Not on either chart, but the casino-operator steps and existing user
-        // records still name it.
+        // records still name it. It stands for the five heads the same way
+        // 'dpt' stands for the five departments, so a step naming 'hd' can be
+        // marked dynamic and handed to exactly one of them when forwarded.
         ['code' => 'hd', 'name' => 'ប្រធាននាយកដ្ឋាន'],
+        ['code' => 'hd1', 'name' => 'ប្រធាននាយកដ្ឋាន D1', 'under' => 'hd'],
+        ['code' => 'hd2', 'name' => 'ប្រធាននាយកដ្ឋាន D2', 'under' => 'hd'],
+        ['code' => 'hd3', 'name' => 'ប្រធាននាយកដ្ឋាន D3', 'under' => 'hd'],
+        ['code' => 'hd4', 'name' => 'ប្រធាននាយកដ្ឋាន D4', 'under' => 'hd'],
+        ['code' => 'hd5', 'name' => 'ប្រធាននាយកដ្ឋាន D5', 'under' => 'hd'],
     ];
 
     public function run(): void

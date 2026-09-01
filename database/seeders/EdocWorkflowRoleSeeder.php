@@ -77,10 +77,16 @@ class EdocWorkflowRoleSeeder extends Seeder
         ],
     ];
 
-    private const WORKSPACE_ID_BY_TYPE = [
-        'external_ministry' => 1,
-        'casino_operator' => 3,
-        'internal_cgmc' => 2,
+    /**
+     * The workspace each flow runs in, by the name WorkspacesInsertSeeder gives
+     * it. Held by name rather than by id: the ids depend on the order the
+     * workspaces happened to be created in, and hardcoding them is what put
+     * every flow on the wrong workspace before.
+     */
+    public const WORKSPACE_NAME_BY_TYPE = [
+        'external_ministry' => 'ឯកសារក្រសួង-ស្ថាប័ន',
+        'casino_operator' => 'ឯកសារក្រុមហ៊ុន',
+        'internal_cgmc' => 'ឯកសារផ្ទៃក្នុង',
     ];
 
     public function run(): void
@@ -96,9 +102,15 @@ class EdocWorkflowRoleSeeder extends Seeder
             return;
         }
 
+        $workspaceIds = $this->workspaceIdsByType();
+
         foreach (self::DEFINITIONS as $workflowType => $columns) {
-            $workspaceId = self::WORKSPACE_ID_BY_TYPE[$workflowType] ?? null;
+            $workspaceId = $workspaceIds[$workflowType] ?? null;
             $orders = array_column($columns, 'order');
+
+            if (empty($workspaceId)) {
+                $this->command->warn("[{$workflowType}] No workspace named '".self::WORKSPACE_NAME_BY_TYPE[$workflowType]."' — its steps are seeded unlinked. Run WorkspacesInsertSeeder first.");
+            }
 
             foreach ($columns as $col) {
                 $order = $col['order'];
@@ -149,5 +161,25 @@ class EdocWorkflowRoleSeeder extends Seeder
         }
 
         $this->command->info('Workflow role config seeded.');
+    }
+
+    /** Resolves WORKSPACE_NAME_BY_TYPE to ids, dropping the names that no workspace carries. */
+    private function workspaceIdsByType(): array
+    {
+        if (!Schema::hasTable('workspaces')) {
+            return [];
+        }
+
+        $idsByName = DB::table('workspaces')
+            ->whereIn('name', array_values(self::WORKSPACE_NAME_BY_TYPE))
+            ->pluck('id', 'name');
+
+        $resolved = [];
+
+        foreach (self::WORKSPACE_NAME_BY_TYPE as $workflowType => $name) {
+            $resolved[$workflowType] = $idsByName[$name] ?? null;
+        }
+
+        return $resolved;
     }
 }
