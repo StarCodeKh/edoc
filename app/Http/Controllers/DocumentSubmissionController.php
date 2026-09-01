@@ -53,6 +53,13 @@ class DocumentSubmissionController extends Controller
     private const MAX_FILES = 10;
 
     /**
+     * The workspace that runs the internal document flow, as seeded by
+     * WorkspacesInsertSeeder. Only its form asks which department a document
+     * came from.
+     */
+    private const INTERNAL_WORKSPACE_NAME = 'ឯកសារផ្ទៃក្នុង';
+
+    /**
      * How many external documents the link picker offers. Searching is
      * client-side, so this bounds the payload rather than the choice.
      */
@@ -78,12 +85,17 @@ class DocumentSubmissionController extends Controller
             ->orderByOrder()
             ->get(['id', 'title', 'project_id', 'order']);
 
-        $documentSources = DocumentSource::departments()
-            ->select('id', 'name')
-            ->with(['children' => function ($query) {
-                $query->select('id', 'name', 'parent_id')->orderBy('order');
-            }])
-            ->get();
+        // Department -> sub-office is the internal flow's own routing, so the
+        // pair is only offered there. Everywhere else the list is sent empty
+        // and the form drops the whole row rather than showing it disabled.
+        $documentSources = $this->routesByDepartment($workspace)
+            ? DocumentSource::departments()
+                ->select('id', 'name')
+                ->with(['children' => function ($query) {
+                    $query->select('id', 'name', 'parent_id')->orderBy('order');
+                }])
+                ->get()
+            : collect();
 
         $teamMembers = TeamMember::with('user:id,first_name,last_name,email,photo_path')
             ->where('workspace_id', $workspace->id)
@@ -284,6 +296,20 @@ class DocumentSubmissionController extends Controller
             // running the internal workflow is not configured or not reachable.
             'internal_workspace_uid' => $this->internalWorkspaceUid(),
         ];
+    }
+
+    /**
+     * Whether this workspace is the internal-document one (ឯកសារផ្ទៃក្នុង), the
+     * only board whose documents are routed by department.
+     *
+     * Matched on the seeded name, not on the internal_cgmc workflow role:
+     * EdocWorkflowRoleSeeder binds that role to a hardcoded workspace id, and
+     * in the current data it lands on ឯកសារក្រុមហ៊ុន instead. Once those ids
+     * line up with the names, this is one query away from asking the workflow.
+     */
+    private function routesByDepartment(Workspace $workspace): bool
+    {
+        return trim((string) $workspace->name) === self::INTERNAL_WORKSPACE_NAME;
     }
 
     /**

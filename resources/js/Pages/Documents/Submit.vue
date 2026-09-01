@@ -211,41 +211,17 @@
                                     </div>
                                 </div>
 
-                                <!-- Filing: project narrows the status list. -->
-                                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                    <div>
-                                        <label class="form-label">
-                                            {{ $t('Project') }} <span class="text-rose-500">*</span>
-                                        </label>
-                                        <select-input
-                                            v-model="form.project_id"
-                                            :placeholder="$t('Select project')"
-                                            :search-placeholder="$t('Search projects')"
-                                            :error="fieldError('project_id')"
-                                        >
-                                            <option v-for="project in projects" :key="project.id" :value="project.id">
-                                                {{ project.title }}
-                                            </option>
-                                        </select-input>
-                                    </div>
-
-                                    <div>
-                                        <label class="form-label">
-                                            {{ $t('Status') }} <span class="text-rose-500">*</span>
-                                        </label>
-                                        <select-input
-                                            v-model="form.list_id"
-                                            :disabled="!projectLists.length"
-                                            :placeholder="statusPlaceholder"
-                                            :search-placeholder="$t('Search…')"
-                                            :error="fieldError('list_id')"
-                                        >
-                                            <option v-for="list in projectLists" :key="list.id" :value="list.id">
-                                                {{ list.title }}
-                                            </option>
-                                        </select-input>
-                                    </div>
-                                </div>
+                                <!-- Filing is no longer picked by hand: the document
+                                     goes onto this workspace's own board, at its first
+                                     open column. Said here only when there is none, so
+                                     a board that cannot take the document explains
+                                     itself instead of just blocking the step. -->
+                                <p
+                                    v-if="!form.project_id || !form.list_id"
+                                    class="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-700"
+                                >
+                                    {{ $t('This workspace has no open board to file a document into yet.') }}
+                                </p>
                             </section>
 
                             <!-- STEP 2 - Dates & routing -->
@@ -696,11 +672,6 @@ export default {
             if (!this.offices.length) return this.$t('No sub-office in this department');
             return this.$t('Select sub-office');
         },
-        statusPlaceholder() {
-            if (!this.form.project_id) return this.$t('Select a project first');
-            if (!this.projectLists.length) return this.$t('This project has no open list');
-            return this.$t('Select status');
-        },
         currentUserId() {
             return this.$page.props.auth?.user?.id ?? null;
         },
@@ -756,9 +727,9 @@ export default {
             return [
                 { label: 'Title', value: this.form.title },
                 { label: 'Document Type', value: this.nameOf(this.document_types, this.form.type_id) },
-                { label: 'Source', value: this.sourceLabel },
-                { label: 'Project', value: this.titleOf(this.projects, this.form.project_id) },
-                { label: 'Status', value: this.titleOf(this.lists, this.form.list_id) },
+                // Only the workspaces that route by department carry a source,
+                // so elsewhere the row would always read "not set".
+                ...(this.document_sources.length ? [{ label: 'Source', value: this.sourceLabel }] : []),
                 { label: 'Entry date', value: this.formatDate(this.form.entry_date) },
                 { label: 'Due date', value: this.formatDate(this.form.due_date) },
                 { label: 'Exit date', value: this.formatDate(this.form.exit_date) },
@@ -848,11 +819,28 @@ export default {
         if (!this.form.entry_date) {
             this.form.entry_date = new Date();
         }
-        if (!this.form.project_id && this.projects.length === 1) {
-            this.form.project_id = this.projects[0].id;
-        }
+        // The project/status pair is no longer asked for, so it is resolved
+        // here: the workspace's own board, at its first open column. A restored
+        // draft keeps what it was filed against, as long as it still exists.
+        this.resolveBoard();
     },
     methods: {
+        /**
+         * Picks the board the document is filed onto. Falls back to the first
+         * project only when the draft did not name a usable one - the watcher
+         * on project_id then lands list_id on that board's first open column.
+         */
+        resolveBoard() {
+            const known = this.projects.some((project) => Number(project.id) === Number(this.form.project_id));
+
+            if (!known) {
+                this.form.project_id = this.projects.length ? this.projects[0].id : null;
+            }
+
+            if (!this.projectLists.some((list) => Number(list.id) === Number(this.form.list_id))) {
+                this.form.list_id = this.projectLists.length ? this.projectLists[0].id : null;
+            }
+        },
         stepIsValid(index) {
             if (index === 0) {
                 if (!this.form.title.trim() || !this.form.project_id || !this.form.list_id) return false;
@@ -964,10 +952,6 @@ export default {
             const found = collection.find((item) => Number(item.id) === Number(id));
             return found ? found.name : '';
         },
-        titleOf(collection, id) {
-            const found = collection.find((item) => Number(item.id) === Number(id));
-            return found ? found.title : '';
-        },
         formatDate(value) {
             if (!value) return '';
             const parsed = moment(value);
@@ -1045,6 +1029,7 @@ export default {
             this.form.reset();
             this.department_id = null;
             this.form.entry_date = new Date();
+            this.resolveBoard();
             if (this.currentUserId) this.assignToMe = true;
             this.draft_restored = false;
             this.step = 0;
