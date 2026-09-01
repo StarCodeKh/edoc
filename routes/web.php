@@ -132,6 +132,7 @@ Route::get('w/{uid}/documents/submit', [DocumentSubmissionController::class, 'cr
 Route::post('w/{uid}/documents/submit', [DocumentSubmissionController::class, 'store'])->name('workspace.documents.submit.store')->middleware('auth');
 Route::get('w/{uid}/documents/{taskUid}', [DocumentSubmissionController::class, 'show'])->name('workspace.documents.show')->middleware('auth');
 Route::post('w/{uid}/documents/{taskUid}/forward', [DocumentSubmissionController::class, 'forward'])->name('workspace.documents.forward')->middleware('auth');
+Route::post('w/{uid}/documents/{taskUid}/merge', [DocumentSubmissionController::class, 'merge'])->name('workspace.documents.merge')->middleware('auth');
 
 Route::get('w/{uid}/my-tasks/count', [WorkSpacesController::class, 'jsonMyTasksCount'])->name('json.workspace.my-tasks.count')->middleware('auth');
 Route::get('w/{uid}/tasks/my-tasks/board', [WorkSpacesController::class, 'workspaceMyTasksBoard'])->name('workspace.view.my-tasks.board')->middleware('auth');

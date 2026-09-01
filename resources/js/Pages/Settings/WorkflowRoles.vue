@@ -291,6 +291,7 @@
                 <span>{{ $t('Role') }}</span>
                 <span>{{ $t('Signature') }}</span>
                 <span>{{ $t('Terminal') }}</span>
+                <span>{{ $t('Merge documents') }}</span>
                 <span>{{ $t('Attachment') }}</span>
                 <span></span>
                 <span></span>
@@ -373,6 +374,20 @@
                             class="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 dark:border-gray-600"
                         />
                         {{ $t('Terminal') }}
+                    </label>
+
+                    <!-- Whether this step may combine the documents linked to
+                         the one it is holding into a single PDF. -->
+                    <label
+                        class="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300 flex-shrink-0 py-1"
+                        :title="$t('This step may combine the documents linked to the one it holds into one PDF.')"
+                    >
+                        <input
+                            type="checkbox"
+                            v-model="role.allows_merge"
+                            class="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 dark:border-gray-600"
+                        />
+                        {{ $t('Merge documents') }}
                     </label>
 
                     <!-- Whether the step expects a document, and which kind: a
@@ -498,6 +513,17 @@
                         class="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 dark:border-gray-600"
                     />
                     {{ $t('Terminal') }}
+                </label>
+                <label
+                    class="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300 flex-shrink-0 py-1"
+                    :title="$t('This step may combine the documents linked to the one it holds into one PDF.')"
+                >
+                    <input
+                        type="checkbox"
+                        v-model="newRoleForms[type].allows_merge"
+                        class="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 dark:border-gray-600"
+                    />
+                    {{ $t('Merge documents') }}
                 </label>
                 <div class="col-span-2 flex items-center gap-1.5 flex-shrink-0 py-1">
                     <label class="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300">
@@ -637,6 +663,7 @@ export default {
         }));
         const roles = (this.roles || []).map((r) => ({
             ...r,
+            allows_merge: !!r.allows_merge,
             requires_attachment: !!r.requires_attachment,
             attachment_mode: r.attachment_mode || 'standard',
             role_mode: r.role_mode || 'standard',
@@ -655,6 +682,7 @@ export default {
                 requires_attachment: false,
                 attachment_mode: 'standard',
                 is_terminal: false,
+                allows_merge: false,
                 workspace_id: null,
             };
         });
@@ -1006,6 +1034,7 @@ export default {
                     requires_attachment: false,
                     attachment_mode: 'standard',
                     is_terminal: false,
+                    allows_merge: false,
                     workspace_id: null,
                 };
             }
@@ -1047,6 +1076,7 @@ export default {
                     requires_attachment: !!role.requires_attachment,
                     attachment_mode: role.attachment_mode || 'standard',
                     is_terminal: !!role.is_terminal,
+                    allows_merge: !!role.allows_merge,
                 })
                 .then(() => {
                     this.showToast(this.$t('Step saved.'));
@@ -1090,6 +1120,7 @@ export default {
                     requires_attachment: !!form.requires_attachment,
                     attachment_mode: form.attachment_mode || 'standard',
                     is_terminal: !!form.is_terminal,
+                    allows_merge: !!form.allows_merge,
                 })
                 .then((response) => {
                     if (response.data) {
@@ -1102,6 +1133,7 @@ export default {
                             requires_attachment: false,
                             attachment_mode: 'standard',
                             is_terminal: false,
+                            allows_merge: false,
                             workspace_id: null,
                         };
                         this.showToast(this.$t('Step added.'));
@@ -1131,7 +1163,7 @@ export default {
 }
 @media (min-width: 1024px) {
     .wr-row {
-        grid-template-columns: 2.5rem minmax(150px, 1fr) 9.5rem 6.5rem auto auto 12rem auto auto;
+        grid-template-columns: 2.5rem minmax(150px, 1fr) 9.5rem 6.5rem auto auto auto 12rem auto auto;
     }
     /* the col-span-* the stacked layout needs must not survive up here */
     .wr-row > * {

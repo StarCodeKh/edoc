@@ -399,6 +399,89 @@
                                         </template>
 
                                         <!-- Activity -->
+                                        <!-- Merge: the step asks for it, so the tab
+                                             is only here for whoever holds that step.
+                                             Only documents already linked to this one
+                                             can be drawn on. -->
+                                        <template v-else-if="active_tab === 'merge'">
+                                            <p class="text-xs text-gray-500">
+                                                {{
+                                                    $t(
+                                                        'Combines the PDFs of the documents chosen below into one file on this document. Each of them keeps its own files.'
+                                                    )
+                                                }}
+                                            </p>
+
+                                            <ul v-if="mergeCandidates.length" class="mt-3 space-y-1">
+                                                <li v-for="doc in mergeCandidates" :key="doc.id">
+                                                    <label
+                                                        class="flex cursor-pointer items-start gap-3 rounded-lg px-2 py-2 hover:bg-gray-50"
+                                                        :class="{ 'opacity-50': !doc.file_count }"
+                                                    >
+                                                        <input
+                                                            v-model="merge_ids"
+                                                            type="checkbox"
+                                                            class="mt-0.5 h-4 w-4 rounded border-gray-300 text-indigo-600"
+                                                            :value="doc.id"
+                                                            :disabled="!doc.file_count"
+                                                        />
+                                                        <span class="min-w-0 flex-1">
+                                                            <span class="block truncate text-sm text-gray-800">
+                                                                {{ doc.code ? doc.code + ' · ' : '' }}{{ doc.title }}
+                                                            </span>
+                                                            <span class="block truncate text-xs text-gray-400">
+                                                                {{ doc.status }}
+                                                            </span>
+                                                        </span>
+                                                        <span class="shrink-0 text-[11px] font-medium text-gray-400">
+                                                            {{
+                                                                doc.file_count
+                                                                    ? $t(':count files', { count: doc.file_count })
+                                                                    : $t('No PDF')
+                                                            }}
+                                                        </span>
+                                                    </label>
+                                                </li>
+                                            </ul>
+                                            <p v-else class="mt-3 text-sm text-gray-400">
+                                                {{ $t('Nothing is linked to this document yet.') }}
+                                            </p>
+
+                                            <div
+                                                v-if="mergeCandidates.length"
+                                                class="mt-4 border-t border-gray-100 pt-3"
+                                            >
+                                                <textarea
+                                                    v-model="merge_note"
+                                                    rows="3"
+                                                    class="form-textarea"
+                                                    :placeholder="$t('Write a comment...')"
+                                                ></textarea>
+
+                                                <button
+                                                    type="button"
+                                                    class="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+                                                    :disabled="merging || !merge_ids.length || !mergeFileCount"
+                                                    @click="mergeDocuments"
+                                                >
+                                                    <icon
+                                                        :name="merging ? 'spinner' : 'attachment'"
+                                                        class="h-4 w-4"
+                                                        :class="{ 'animate-spin': merging }"
+                                                    />
+                                                    {{
+                                                        mergeFileCount
+                                                            ? $t('Merge :count file(s)', { count: mergeFileCount })
+                                                            : $t('Merge documents')
+                                                    }}
+                                                </button>
+
+                                                <p class="mt-1.5 text-center text-[11px] text-gray-400">
+                                                    {{ $t('The merged file is filed here, then sent on as usual.') }}
+                                                </p>
+                                            </div>
+                                        </template>
+
                                         <template v-else-if="active_tab === 'activity'">
                                             <ol v-if="activities.length" class="space-y-0">
                                                 <li v-for="(entry, index) in activities" :key="entry.id" class="trail">
@@ -760,6 +843,7 @@ export default {
                 pending_count: 0,
                 blocks_forward: false,
                 internal_workspace_uid: null,
+                mergeable: [],
             }),
         },
     },
@@ -781,6 +865,12 @@ export default {
             // sends null and the server assigns its role as before.
             hand_to: null,
             notice: '',
+            // The merge tab: which linked documents are ticked, and the note
+            // filed with the merge. Kept apart from new_comment so a note typed
+            // for a forward is not sent with a merge instead.
+            merge_ids: [],
+            merge_note: '',
+            merging: false,
         };
     },
     computed: {
@@ -792,10 +882,33 @@ export default {
         tabs() {
             return [
                 { key: 'comments', label: 'Comments', icon: 'comments', count: this.thread.length },
+                // Only where the step asks for it and this is the person
+                // holding that step - everywhere else the tab is not there to
+                // be clicked. See TaskAbility::canMerge.
+                ...(this.can.merge
+                    ? [
+                          {
+                              key: 'merge',
+                              label: 'Merge documents',
+                              icon: 'attachment',
+                              count: this.mergeCandidates.length,
+                          },
+                      ]
+                    : []),
                 { key: 'summary', label: 'Summary', icon: 'details', count: 0 },
                 { key: 'tracking', label: 'Tracking', icon: 'timeline', count: this.steps.length },
                 { key: 'activity', label: 'Activity', icon: 'time', count: this.activities.length },
             ];
+        },
+        /** The documents linked to this one, which is all a merge may draw on. */
+        mergeCandidates() {
+            return this.links.mergeable || [];
+        },
+        /** Pages a merge would produce, so the button can say what it will do. */
+        mergeFileCount() {
+            return this.mergeCandidates
+                .filter((doc) => this.merge_ids.includes(doc.id))
+                .reduce((total, doc) => total + (doc.file_count || 0), 0);
         },
         currentStepNumber() {
             const index = this.steps.findIndex((step) => step.state === 'current');
@@ -1066,6 +1179,36 @@ export default {
                 {
                     onFinish: () => {
                         this.forwarding = false;
+                    },
+                }
+            );
+        },
+        /**
+         * Combine the ticked documents' PDFs into one file on this document.
+         *
+         * A full visit like forward(): the merged file has to appear in the
+         * attachments panel and the act has to appear in the trail, so the page
+         * is re-fetched rather than patched.
+         */
+        mergeDocuments() {
+            if (!this.can.merge || this.merging || !this.merge_ids.length || !this.mergeFileCount) return;
+
+            this.merging = true;
+            this.rememberTab();
+
+            router.post(
+                this.route('workspace.documents.merge', [
+                    this.workspace.slug || this.workspace.id,
+                    this.document.slug || this.document.id,
+                ]),
+                { task_ids: this.merge_ids, note: this.merge_note.trim() || null },
+                {
+                    onFinish: () => {
+                        this.merging = false;
+                    },
+                    onSuccess: () => {
+                        this.merge_ids = [];
+                        this.merge_note = '';
                     },
                 }
             );

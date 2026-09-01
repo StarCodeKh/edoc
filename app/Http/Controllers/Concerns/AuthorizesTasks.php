@@ -59,6 +59,7 @@ trait AuthorizesTasks
             'detach' => 'This document is finished - the files it was closed with stay on it.',
             'comment' => 'You are not allowed to comment on this document.',
             'sign' => 'This document is open to you for reading only - signing it belongs to the reviewer responsible for its current step.',
+            'merge' => 'This step does not combine documents, or it is not the step you are holding.',
             default => 'You do not have access to this document.',
         };
     }

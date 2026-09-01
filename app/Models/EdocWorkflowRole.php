@@ -19,12 +19,14 @@ class EdocWorkflowRole extends Model
         'requires_attachment',
         'attachment_mode',
         'is_terminal',
+        'allows_merge',
     ];
 
     protected $casts = [
         'requires_signature' => 'boolean',
         'requires_attachment' => 'boolean',
         'is_terminal' => 'boolean',
+        'allows_merge' => 'boolean',
         'order' => 'integer',
     ];
 }

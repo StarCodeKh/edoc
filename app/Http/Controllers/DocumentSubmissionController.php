@@ -22,6 +22,8 @@ use App\Models\WorkflowSubRole;
 use App\Models\Workspace;
 use App\Models\WorkspaceType;
 use App\Support\DocumentChain;
+use App\Support\DocumentMerge;
+use App\Support\DocumentMergeException;
 use App\Support\TaskAbility;
 use App\Support\WorkflowStep;
 use Carbon\Carbon;
@@ -196,6 +198,18 @@ class DocumentSubmissionController extends Controller
         ];
     }
 
+    /** The linked documents the merge tab lists, with what each brings to it. */
+    private function mergeablePayload(Task $task): array
+    {
+        return $this->linkedDocuments($task)
+            ->filter(fn (Task $source) => $this->userCan('view', $source->loadMissing('assignees')))
+            ->map(fn (Task $source) => $this->linkedDocumentPayload($source) + [
+                'file_count' => DocumentMerge::countFor($source),
+            ])
+            ->values()
+            ->all();
+    }
+
     /** The workspace slug a linked document lives in, for its page link. */
     private function workspaceUidFor(Task $task): ?string
     {
@@ -288,6 +302,10 @@ class DocumentSubmissionController extends Controller
             // Where "raise an internal document" goes. Null when the workspace
             // running the internal workflow is not configured or not reachable.
             'internal_workspace_uid' => $this->internalWorkspaceUid(),
+            // What the merge tab offers, with the page count each contributes -
+            // a linked document holding no PDF is shown, and shown as empty,
+            // rather than quietly left out of a list the reader expects.
+            'mergeable' => $this->mergeablePayload($task),
         ];
     }
 
@@ -475,6 +493,92 @@ class DocumentSubmissionController extends Controller
     }
 
     /**
+     * Combine the documents linked to this one into a single PDF filed here.
+     *
+     * The sources are copied from, never emptied: each keeps its own files and
+     * its own trail, and this document gains one attachment holding all of
+     * their pages. Which is why the step has to ask for it - see
+     * WorkflowStep::allowsMerge - and why only what is already linked can be
+     * chosen. A document is not merged with whatever the merger can find.
+     */
+    public function merge($uid, $taskUid, Request $request)
+    {
+        $workspace = $this->resolveWorkspace($uid);
+        $task = $this->authorizeTask($taskUid, 'merge');
+
+        $task->loadMissing('project');
+
+        if (empty($task->project) || (int) $task->project->workspace_id !== (int) $workspace->id) {
+            abort(404, 'Document not found.');
+        }
+
+        $validated = $request->validate([
+            'task_ids' => 'required|array|min:1',
+            'task_ids.*' => 'integer|exists:tasks,id',
+            'note' => 'nullable|string',
+        ]);
+
+        // Only what this document is already linked to, and only what the
+        // merger may read: an id posted by hand cannot pull in a document from
+        // somewhere else in the register.
+        $linked = $this->linkedDocuments($task)->keyBy('id');
+        $chosen = collect($validated['task_ids'])
+            ->unique()
+            ->map(fn ($id) => $linked->get((int) $id))
+            ->filter()
+            ->filter(fn (Task $source) => $this->userCan('view', $source->loadMissing('assignees')))
+            ->values();
+
+        if ($chosen->isEmpty()) {
+            return Redirect::back()->with('error', __('None of the documents chosen are linked to this one.'));
+        }
+
+        try {
+            $attachment = DocumentMerge::run($task, $chosen, auth()->id());
+        } catch (DocumentMergeException $e) {
+            return Redirect::back()->with('error', $e->getMessage());
+        }
+
+        // The note is filed the same way forwarding files one, so the trail
+        // reads as one act: what was merged, and what the merger said about it.
+        if (!empty($validated['note']) && $this->userCan('comment', $task)) {
+            $comment = Comment::create([
+                'task_id' => $task->id,
+                'user_id' => auth()->id(),
+                'details' => $validated['note'],
+            ]);
+
+            event(new NewCommentAdded($comment));
+        }
+
+        Activity::create([
+            'task_id' => $task->id,
+            'user_id' => auth()->id(),
+            'field_changed' => 'merged_documents',
+            'old_value' => 'merged '.$chosen->count().' linked document(s) into',
+            'new_value' => $attachment->name,
+        ]);
+
+        return Redirect::back()->with('success', __(':count document(s) merged into one file.', [
+            'count' => $chosen->count(),
+        ]));
+    }
+
+    /**
+     * Everything this document is linked to, either way along the chain - the
+     * internal documents raised off it and the external ones it answers.
+     *
+     * @return Collection<int, Task>
+     */
+    private function linkedDocuments(Task $task)
+    {
+        return $task->childDocuments()->get()
+            ->concat($task->parentDocuments()->get())
+            ->unique('id')
+            ->values();
+    }
+
+    /**
      * What this page offers, which is narrower than what the abilities allow.
      *
      * Everything here hangs off holding the document - being one of its
@@ -512,6 +616,9 @@ class DocumentSubmissionController extends Controller
             // Signing has its own rule - the step has to ask for a signature and
             // this has to be the person holding it. See TaskAbility::canSign.
             'sign' => $this->userCan('sign', $task),
+            // Merging has the step's own flag behind it as well as the person's
+            // standing, the same shape as signing. See TaskAbility::canMerge.
+            'merge' => $this->userCan('merge', $task),
         ];
     }
 

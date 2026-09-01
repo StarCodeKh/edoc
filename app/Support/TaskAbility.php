@@ -182,6 +182,29 @@ class TaskAbility
         return $user->isAdmin() || self::isResponsibleForItsBoard($user, $task);
     }
 
+    /**
+     * Combining the documents linked to this one into a single file.
+     *
+     * The step asks for it first - a step without បញ្ចូលឯកសារ ticked in
+     * Settings → Workflow Roles never merges, whoever is looking at it - and
+     * then it is the person holding that step, exactly as signing is. A
+     * finished document is left as it was closed.
+     */
+    public static function canMerge(User $user, Task $task): bool
+    {
+        if ($task->is_done) {
+            return false;
+        }
+
+        $list = $task->relationLoaded('list') ? $task->list : $task->list()->first();
+
+        if (!WorkflowStep::allowsMerge($list)) {
+            return false;
+        }
+
+        return $user->isAdmin() || self::isResponsibleForItsBoard($user, $task);
+    }
+
     /** The whole answer, in the shape the front end consumes. */
     public static function summary(User $user, Task $task): array
     {
@@ -194,6 +217,7 @@ class TaskAbility
             'comment' => self::canComment($user, $task),
             'detach' => self::canDetach($user, $task),
             'sign' => self::canSign($user, $task),
+            'merge' => self::canMerge($user, $task),
         ];
     }
 }

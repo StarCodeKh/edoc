@@ -78,6 +78,7 @@ class WorkflowStep
             $lists[$index]['requires_attachment'] = (bool) ($step->requires_attachment ?? false);
             $lists[$index]['attachment_mode'] = $step->attachment_mode ?? 'standard';
             $lists[$index]['is_terminal'] = (bool) ($step->is_terminal ?? false);
+            $lists[$index]['allows_merge'] = (bool) ($step->allows_merge ?? false);
             $lists[$index]['responsible_role'] = $step->responsible_role ?? null;
         }
 
@@ -149,6 +150,18 @@ class WorkflowStep
     public static function holdsOneAttachment(?BoardList $list): bool
     {
         return self::requiresAttachment($list) && self::attachmentMode($list) !== 'dynamic';
+    }
+
+    /**
+     * Whether the step may combine the documents linked to the one it holds.
+     *
+     * Set per step rather than per person: gathering several files into one is
+     * something a particular point in the flow does - the registry pulling a
+     * case together before it goes up - not a right somebody carries around.
+     */
+    public static function allowsMerge(?BoardList $list): bool
+    {
+        return (bool) (self::forList($list)->allows_merge ?? false);
     }
 
     /** The step a document finishes on, where the workflow marks one. */

@@ -237,6 +237,7 @@ class WorkflowRoleController extends Controller
             'requires_attachment' => 'boolean',
             'attachment_mode' => $this->stepModeRule(),
             'is_terminal' => 'boolean',
+            'allows_merge' => 'boolean',
         ]);
 
         $validated['attachment_mode'] = $validated['attachment_mode'] ?? 'standard';
@@ -264,6 +265,7 @@ class WorkflowRoleController extends Controller
             'requires_attachment' => 'boolean',
             'attachment_mode' => $this->stepModeRule(),
             'is_terminal' => 'boolean',
+            'allows_merge' => 'boolean',
         ]);
 
         $role->update([
@@ -275,6 +277,7 @@ class WorkflowRoleController extends Controller
             'requires_attachment' => (bool) $request->input('requires_attachment', false),
             'attachment_mode' => $request->input('attachment_mode') ?: 'standard',
             'is_terminal' => (bool) $request->input('is_terminal', false),
+            'allows_merge' => (bool) $request->input('allows_merge', false),
         ]);
         WorkflowStep::flush();
 
