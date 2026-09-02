@@ -345,7 +345,10 @@
                                                             v-if="step.responsible_role"
                                                             class="text-[11px] text-gray-500"
                                                         >
-                                                            {{ step.responsible_role }}
+                                                            {{
+                                                                step.responsible_role_name ||
+                                                                step.responsible_role
+                                                            }}
                                                         </div>
 
                                                         <div v-if="step.actor" class="mt-1.5 flex items-center gap-1.5">

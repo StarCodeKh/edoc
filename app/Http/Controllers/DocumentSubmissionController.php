@@ -1199,9 +1199,14 @@ class DocumentSubmissionController extends Controller
             ->get(['list_title', 'responsible_role', 'requires_signature', 'requires_attachment', 'attachment_mode', 'is_terminal'])
             ->keyBy('list_title');
 
+        // The step carries the responsibility's code; the trail reads better
+        // with its name, so the codes in play are looked up in one query.
+        $roleNames = WorkflowSubRole::whereIn('code', $roles->pluck('responsible_role')->filter()->unique()->all())
+            ->pluck('name', 'code');
+
         $currentOrder = optional($task->list)->order;
 
-        return $lists->map(function (BoardList $list) use ($arrivals, $roles, $task, $currentOrder) {
+        return $lists->map(function (BoardList $list) use ($arrivals, $roles, $roleNames, $task, $currentOrder) {
             $arrival = $arrivals[$list->title] ?? null;
             $role = $roles->get($list->title);
 
@@ -1215,6 +1220,9 @@ class DocumentSubmissionController extends Controller
                 'entered_at' => $arrival['at'] ?? null,
                 'actor' => $arrival['by'] ?? null,
                 'responsible_role' => optional($role)->responsible_role,
+                'responsible_role_name' => optional($role)->responsible_role
+                    ? ($roleNames[$role->responsible_role] ?? $role->responsible_role)
+                    : null,
                 'requires_signature' => (bool) optional($role)->requires_signature,
                 'requires_attachment' => (bool) optional($role)->requires_attachment,
                 'attachment_mode' => optional($role)->attachment_mode ?: 'standard',
