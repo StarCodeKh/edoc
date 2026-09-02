@@ -211,11 +211,28 @@
                                     </div>
                                 </div>
 
-                                <!-- Filing is no longer picked by hand: the document
-                                     goes onto this workspace's own board, at its first
-                                     open column. Said here only when there is none, so
-                                     a board that cannot take the document explains
-                                     itself instead of just blocking the step. -->
+                                <!-- Filing: the project is picked by hand again, but
+                                     the column is not - the watcher on project_id lands
+                                     list_id on that board's first open column. -->
+                                <div>
+                                    <label class="form-label">
+                                        {{ $t('Project') }} <span class="text-rose-500">*</span>
+                                    </label>
+                                    <select-input
+                                        v-model="form.project_id"
+                                        :placeholder="$t('Select project')"
+                                        :search-placeholder="$t('Search projects')"
+                                        :error="fieldError('project_id')"
+                                    >
+                                        <option v-for="project in projects" :key="project.id" :value="project.id">
+                                            {{ project.title }}
+                                        </option>
+                                    </select-input>
+                                </div>
+
+                                <!-- Said only when the pick cannot land anywhere, so a
+                                     board that cannot take the document explains itself
+                                     instead of just blocking the step. -->
                                 <p
                                     v-if="!form.project_id || !form.list_id"
                                     class="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-700"
