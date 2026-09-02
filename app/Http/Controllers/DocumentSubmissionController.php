@@ -92,7 +92,10 @@ class DocumentSubmissionController extends Controller
                 ->get()
             : collect();
 
-        $teamMembers = TeamMember::with('user:id,first_name,last_name,email,photo_path')
+        $teamMembers = TeamMember::with([
+            'user:id,first_name,last_name,email,photo_path,document_source_id',
+            'user.documentSource:id,parent_id',
+        ])
             ->where('workspace_id', $workspace->id)
             ->get()
             ->pluck('user')
@@ -100,12 +103,21 @@ class DocumentSubmissionController extends Controller
             ->unique('id')
             ->sortBy('first_name')
             ->values()
-            ->map(fn (User $user) => [
-                'id' => $user->id,
-                'name' => trim($user->first_name.' '.$user->last_name) ?: $user->email,
-                'email' => $user->email,
-                'photo' => $user->photo_path,
-            ]);
+            ->map(fn (User $user) => $this->memberPayload($user));
+
+        // People filed under an office, offered on top of the workspace's own
+        // team so that picking a department actually reaches that department -
+        // its officers are rarely members of the workspace being filed into.
+        // Only where the form asks for a source at all; nowhere else is there
+        // anything to narrow by.
+        $sourceMembers = $this->routesByDepartment($workspace)
+            ? User::whereNotNull('document_source_id')
+                ->whereNotIn('id', $teamMembers->pluck('id'))
+                ->with('documentSource:id,parent_id')
+                ->orderBy('first_name')
+                ->get(['id', 'first_name', 'last_name', 'email', 'photo_path', 'document_source_id'])
+                ->map(fn (User $user) => $this->memberPayload($user))
+            : collect();
 
         return Inertia::render('Documents/Submit', [
             'title' => 'Submit Document | '.$workspace->name,
@@ -116,6 +128,7 @@ class DocumentSubmissionController extends Controller
             'document_types' => WorkspaceType::select('id', 'name', 'code')->orderBy('name')->get(),
             'priorities' => Priority::orderBy('order')->get(['id', 'name', 'color']),
             'team_members' => $teamMembers,
+            'source_members' => $sourceMembers,
             'limits' => [
                 'max_files' => self::MAX_FILES,
                 'max_file_mb' => (int) (self::MAX_FILE_KB / 1024),
@@ -123,6 +136,22 @@ class DocumentSubmissionController extends Controller
             'parent_document' => $parent ? $this->linkedDocumentPayload($parent) : null,
             'linkable_documents' => $this->linkableDocuments($workspace),
         ]);
+    }
+
+    /**
+     * One person in the assignee picker, carrying where they are filed so the
+     * form can narrow the list to the department and sub-office being picked.
+     */
+    private function memberPayload(User $user): array
+    {
+        return [
+            'id' => $user->id,
+            'name' => trim($user->first_name.' '.$user->last_name) ?: $user->email,
+            'email' => $user->email,
+            'photo' => $user->photo_path,
+            'office_id' => $user->document_source_id,
+            'department_id' => optional($user->documentSource)->parent_id,
+        ];
     }
 
     /**

@@ -931,5 +931,7 @@
     "This is the last step — finish the document here.": "នេះជាជំហានចុងក្រោយ — សូមបញ្ចប់ឯកសារនៅទីនេះ។",
     "Document finished at :step.": "ឯកសារត្រូវបានបញ្ចប់នៅ :step ។",
     "This document is finished.": "ឯកសារនេះបានបញ្ចប់ហើយ។",
-    "This document is already finished.": "ឯកសារនេះបានបញ្ចប់រួចហើយ។"
+    "This document is already finished.": "ឯកសារនេះបានបញ្ចប់រួចហើយ។",
+    "Nobody is filed under this office yet - showing the whole team.": "មិនទាន់មានបុគ្គលិកចុះក្នុងការិយាល័យនេះទេ — កំពុងបង្ហាញសមាជិកទាំងអស់។",
+    "People in :source": "បុគ្គលិកនៅ :source"
 }

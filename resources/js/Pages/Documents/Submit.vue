@@ -327,6 +327,22 @@
                                                 />
                                             </div>
                                         </div>
+                                        <!-- The list follows the department/sub-office
+                                             picked in step 1; this says so when the
+                                             pick reaches nobody and the whole team is
+                                             shown instead. -->
+                                        <p
+                                            v-if="membersFellBack"
+                                            class="border-b border-gray-100 px-3 py-2 text-xs text-amber-600"
+                                        >
+                                            {{ $t('Nobody is filed under this office yet - showing the whole team.') }}
+                                        </p>
+                                        <p
+                                            v-else-if="department_id"
+                                            class="border-b border-gray-100 px-3 py-2 text-xs text-gray-400"
+                                        >
+                                            {{ $t('People in :source', { source: sourceLabel || departmentLabel }) }}
+                                        </p>
                                         <ul class="max-h-56 overflow-y-auto p-1">
                                             <li v-for="member in filteredMembers" :key="member.id">
                                                 <label
@@ -623,6 +639,9 @@ export default {
         document_types: { type: Array, default: () => [] },
         priorities: { type: Array, default: () => [] },
         team_members: { type: Array, default: () => [] },
+        // People filed under a department/sub-office, offered once one is
+        // picked - they are rarely members of this workspace themselves.
+        source_members: { type: Array, default: () => [] },
         limits: { type: Object, default: () => ({ max_files: 10, max_file_mb: 50 }) },
         // Set when the form was opened from an external document to raise
         // internal work off it. The two are linked on save.
@@ -716,10 +735,43 @@ export default {
                     .some((field) => String(field).toLowerCase().includes(query))
             );
         },
+        /** The workspace's own people, minus the pinned "me" row. */
+        workspaceMembers() {
+            return this.team_members.filter((member) => member.id !== this.currentUserId);
+        },
+        /**
+         * Everyone the department/sub-office pick reaches: whoever is filed
+         * under it, from either list. Empty until a department is picked.
+         */
+        sourceMatches() {
+            if (!this.department_id) return [];
+
+            const seen = new Set();
+
+            return [...this.workspaceMembers, ...this.source_members]
+                .filter((member) => member.id !== this.currentUserId)
+                .filter((member) => {
+                    if (seen.has(member.id) || !this.sitsInPick(member)) return false;
+                    seen.add(member.id);
+                    return true;
+                });
+        },
+        /**
+         * The list the picker offers. It follows the source pick while that
+         * pick reaches somebody; an office nobody is filed under falls back to
+         * the workspace's own team rather than to an empty list, so filing is
+         * never blocked by a directory that is not filled in yet.
+         */
+        assignableMembers() {
+            return this.sourceMatches.length ? this.sourceMatches : this.workspaceMembers;
+        },
+        /** Said under the search box: the list is not the one that was asked for. */
+        membersFellBack() {
+            return Boolean(this.department_id) && !this.sourceMatches.length;
+        },
         filteredMembers() {
             const query = this.member_search.trim().toLowerCase();
-            // "Me" has its own pinned row, so it is not repeated in the list.
-            const members = this.team_members.filter((member) => member.id !== this.currentUserId);
+            const members = this.assignableMembers;
             if (!query) return members;
             return members.filter(
                 (member) =>
@@ -762,6 +814,11 @@ export default {
                     value: this.form.files.length ? this.$t(':count files', { count: this.form.files.length }) : '',
                 },
             ];
+        },
+        /** The department on its own, for when no sub-office is picked yet. */
+        departmentLabel() {
+            const dept = this.document_sources.find((item) => Number(item.id) === Number(this.department_id));
+            return dept ? dept.name : '';
         },
         sourceLabel() {
             if (!this.form.document_source_id) return '';
@@ -857,6 +914,22 @@ export default {
             if (!this.projectLists.some((list) => Number(list.id) === Number(this.form.list_id))) {
                 this.form.list_id = this.projectLists.length ? this.projectLists[0].id : null;
             }
+        },
+        /**
+         * Is this person filed under the department - and, once a sub-office is
+         * picked, under that office? Someone filed on the department itself is
+         * kept either way: they are that department's own staff, not any one
+         * office's, so an office pick should not hide them.
+         */
+        sitsInPick(member) {
+            const department = Number(this.department_id);
+            const office = Number(member.office_id);
+            const inDepartment = Number(member.department_id) === department || office === department;
+
+            if (!inDepartment) return false;
+            if (!this.form.document_source_id) return true;
+
+            return office === Number(this.form.document_source_id) || office === department;
         },
         stepIsValid(index) {
             if (index === 0) {

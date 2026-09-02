@@ -186,6 +186,16 @@ class User extends Authenticatable
     }
 
     /**
+     * The sub-office this person works in, from the same department tree the
+     * intake form's source pair is built from. The department is its parent,
+     * so filing a user under an office files them under both.
+     */
+    public function documentSource()
+    {
+        return $this->belongsTo(DocumentSource::class, 'document_source_id');
+    }
+
+    /**
      * The responsibility row itself, read once per user.
      *
      * Both the titles this user is responsible for and whether they are the

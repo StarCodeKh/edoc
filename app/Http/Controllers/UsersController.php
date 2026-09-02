@@ -8,6 +8,7 @@ use App\Models\Assignee;
 use App\Models\Attachment;
 use App\Models\BoardList;
 use App\Models\Comment;
+use App\Models\DocumentSource;
 use App\Models\Project;
 use App\Models\RecentProject;
 use App\Models\Role;
@@ -66,7 +67,22 @@ class UsersController extends Controller
                 ->map
                 ->only('id', 'name'),
             'sub_roles' => WorkflowSubRole::ordered()->get(['id', 'code', 'name']),
+            'document_sources' => $this->departmentTree(),
         ]);
+    }
+
+    /**
+     * Departments with their sub-offices, for the pair that files a user into
+     * an office. Same shape the intake form reads, so the two stay in step.
+     */
+    private function departmentTree()
+    {
+        return DocumentSource::departments()
+            ->select('id', 'name')
+            ->with(['children' => function ($query) {
+                $query->select('id', 'name', 'parent_id')->orderBy('order');
+            }])
+            ->get();
     }
 
     public function store()
@@ -80,6 +96,7 @@ class UsersController extends Controller
             'address' => ['nullable'],
             'role_id' => ['nullable'],
             'workflow_sub_role_id' => ['nullable', 'integer', 'exists:workflow_sub_roles,id'],
+            'document_source_id' => ['nullable', 'integer', 'exists:document_sources,id'],
             'title' => ['nullable', 'max:100'],
         ]);
 
@@ -93,6 +110,12 @@ class UsersController extends Controller
         }
 
         $user = User::create($userRequest);
+
+        // Neither column is mass assignable, so both are written explicitly.
+        $user->update([
+            'workflow_sub_role_id' => $userRequest['workflow_sub_role_id'] ?? null,
+            'document_source_id' => $userRequest['document_source_id'] ?? null,
+        ]);
 
         //        event(new UserCreated(['id' => $user->id, 'password' => $userRequest['password']]));
 
@@ -121,6 +144,7 @@ class UsersController extends Controller
                 ->map
                 ->only('id', 'name'),
             'sub_roles' => WorkflowSubRole::ordered()->get(['id', 'code', 'name']),
+            'document_sources' => $this->departmentTree(),
             'user' => [
                 'id' => $user->id,
                 'first_name' => $user->first_name,
@@ -131,6 +155,7 @@ class UsersController extends Controller
                 'role' => $user->role,
                 'role_id' => $user->role_id,
                 'workflow_sub_role_id' => $user->workflow_sub_role_id,
+                'document_source_id' => $user->document_source_id,
                 'address' => $user->address,
                 'photo' => $user->photo_path ?? null,
                 'photo_path' => $user->photo_path ?? null,
@@ -163,13 +188,17 @@ class UsersController extends Controller
             'locale' => ['nullable', 'max:5'],
             'title' => ['nullable', 'max:100'],
             'workflow_sub_role_id' => ['nullable', 'integer', 'exists:workflow_sub_roles,id'],
+            'document_source_id' => ['nullable', 'integer', 'exists:document_sources,id'],
         ]);
 
         $user->update(Request::only(['first_name', 'last_name', 'phone', 'email', 'address', 'locale', 'title']));
 
         // Sent on every save, and clearing it is a real choice - so unlike
         // role_id it is written even when empty.
-        $user->update(['workflow_sub_role_id' => Request::get('workflow_sub_role_id') ?: null]);
+        $user->update([
+            'workflow_sub_role_id' => Request::get('workflow_sub_role_id') ?: null,
+            'document_source_id' => Request::get('document_source_id') ?: null,
+        ]);
 
         if (!empty(Request::get('role_id'))) {
             $user->update(['role_id' => Request::get('role_id')]);

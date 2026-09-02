@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 /**
  * The configured steps of a workflow: Settings → Workflow Roles.
  *
- * The three later ALTERs are folded in. `sla_hours` is not: it was created here
+ * The four later ALTERs are folded in. `sla_hours` is not: it was created here
  * and dropped again without ever being read, so a fresh install has no reason
  * to build it only to throw it away.
  */
@@ -28,6 +28,10 @@ return new class extends Migration
             $table->boolean('requires_signature')->default(false);
             $table->boolean('requires_attachment')->default(false);
             $table->string('attachment_mode', 20)->default('standard');
+            // Whether the step may combine the documents linked to the one it
+            // is holding - another thing the step asks for or does not, rather
+            // than a permission on a person.
+            $table->boolean('allows_merge')->default(false);
             $table->boolean('is_terminal')->default(false);
             $table->timestamps();
             $table->unique(['workflow_type', 'order']);

@@ -21,6 +21,11 @@ class CreateUsersTable extends Migration
             $table->integer('role_id')->default(null)->nullable()->index();
             // The workflow responsibility this user carries, if any.
             $table->unsignedBigInteger('workflow_sub_role_id')->nullable()->index();
+            // The sub-office this user works in, from the document_sources
+            // tree. Not constrained here: that table is created long after
+            // this one, so the reference is held the same way the line above
+            // holds its own.
+            $table->unsignedBigInteger('document_source_id')->nullable()->index();
             $table->string('edoc_role', 20)->nullable();
             $table->string('locale', 5)->default('en');
             $table->string('address', 200)->default(null)->nullable();

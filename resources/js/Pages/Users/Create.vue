@@ -63,6 +63,27 @@
                             {{ sub.name && sub.name !== sub.code ? sub.name + ' (' + sub.code + ')' : sub.code }}
                         </option>
                     </select-input>
+                    <!-- Which office this person works in. The department is
+                         only the narrowing pick - what is saved is the
+                         sub-office, and its parent is the department. -->
+                    <select-input v-model="department_id" class="pb-8 pr-6 w-full lg:w-1/3" :label="$t('Department')">
+                        <option :value="null">{{ $t('None') }}</option>
+                        <option v-for="dept in document_sources" :key="dept.id" :value="dept.id">
+                            {{ dept.name }}
+                        </option>
+                    </select-input>
+                    <select-input
+                        v-model="form.document_source_id"
+                        :error="form.errors.document_source_id"
+                        :disabled="!offices.length"
+                        class="pb-8 pr-6 w-full lg:w-1/3"
+                        :label="$t('Sub-office')"
+                    >
+                        <option :value="null">{{ $t('None') }}</option>
+                        <option v-for="office in offices" :key="office.id" :value="office.id">
+                            {{ office.name }}
+                        </option>
+                    </select-input>
                     <text-input
                         v-model="form.password"
                         :error="form.errors.password"
@@ -114,10 +135,13 @@ export default {
         title: String,
         roles: Array,
         sub_roles: { type: Array, default: () => [] },
+        document_sources: { type: Array, default: () => [] },
     },
     remember: 'form',
     data() {
         return {
+            // Only narrows the sub-office list; the user carries the office.
+            department_id: null,
             form: useForm({
                 first_name: '',
                 last_name: '',
@@ -127,13 +151,28 @@ export default {
                 title: '',
                 role_id: null,
                 workflow_sub_role_id: null,
+                document_source_id: null,
                 password: '',
                 photo: null,
             }),
         };
     },
+    computed: {
+        offices() {
+            const dept = this.document_sources.find((item) => Number(item.id) === Number(this.department_id));
+            return dept ? dept.children || [] : [];
+        },
+    },
     created() {
         // this.setDefaultValue(this.countries, 'country_id', 'United States')
+    },
+    watch: {
+        // A department change drops an office that no longer belongs to it.
+        department_id() {
+            if (!this.offices.some((office) => Number(office.id) === Number(this.form.document_source_id))) {
+                this.form.document_source_id = null;
+            }
+        },
     },
     methods: {
         setDefaultValue(arr, key, value) {

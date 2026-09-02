@@ -19,6 +19,10 @@ class CreateAttachmentsTable extends Migration
         Schema::create('attachments', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('task_id')->nullable()->index();
+            // Which board the document was sitting on when the file was
+            // attached - without it "this step has produced its document"
+            // cannot be answered, since the attachment list is otherwise flat.
+            $table->unsignedBigInteger('list_id')->nullable();
             $table->integer('comment_id')->nullable()->index();
             $table->string('name', 150)->nullable();
             $table->integer('user_id')->nullable()->index();
@@ -27,6 +31,7 @@ class CreateAttachmentsTable extends Migration
             $table->integer('height')->nullable();
             $table->string('path', 250);
             $table->timestamps();
+            $table->index(['task_id', 'list_id']);
         });
     }
 

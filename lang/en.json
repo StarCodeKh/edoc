@@ -900,5 +900,7 @@
     "A responsibility cannot sit under itself.": "A responsibility cannot sit under itself.",
     "That responsibility no longer exists.": "That responsibility no longer exists.",
     "Responsibilities only nest one level deep.": "Responsibilities only nest one level deep.",
-    "A responsibility that stands for others cannot be moved under another.": "A responsibility that stands for others cannot be moved under another."
+    "A responsibility that stands for others cannot be moved under another.": "A responsibility that stands for others cannot be moved under another.",
+    "Nobody is filed under this office yet - showing the whole team.": "Nobody is filed under this office yet - showing the whole team.",
+    "People in :source": "People in :source"
 }

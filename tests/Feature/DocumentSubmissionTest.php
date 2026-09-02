@@ -6,6 +6,7 @@ use App\Models\Assignee;
 use App\Models\Attachment;
 use App\Models\BoardList;
 use App\Models\DocumentSource;
+use App\Models\EdocWorkflowRole;
 use App\Models\Project;
 use App\Models\Role;
 use App\Models\Task;
@@ -95,6 +96,36 @@ class DocumentSubmissionTest extends TestCase
                 ->has('document_sources.0.children', 1)
                 ->where('limits.max_files', 10)
                 ->where('limits.max_file_mb', 50)
+            );
+    }
+
+    public function test_the_form_offers_the_people_filed_under_each_office(): void
+    {
+        // The source pair is only asked for where the flow routes by
+        // department, and so is the directory the form narrows against.
+        EdocWorkflowRole::create([
+            'workflow_type' => 'internal_cgmc',
+            'workspace_id' => $this->workspace->id,
+            'list_title' => 'To do',
+            'order' => 1,
+            'responsible_role' => 'admin',
+        ]);
+
+        $department = DocumentSource::create(['name' => 'Finance', 'order' => 1]);
+        $office = DocumentSource::create(['name' => 'Accounting', 'parent_id' => $department->id, 'order' => 1]);
+
+        $officer = User::factory()->create(['role_id' => $this->user->role_id]);
+        $officer->update(['document_source_id' => $office->id]);
+
+        $this->get(route('workspace.documents.submit', $this->workspace->slug ?: $this->workspace->id))
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->has('source_members', 1)
+                ->where('source_members.0.id', $officer->id)
+                ->where('source_members.0.office_id', $office->id)
+                // The department comes from the office's parent, which is what
+                // lets the picker narrow on either half of the pair.
+                ->where('source_members.0.department_id', $department->id)
             );
     }
 

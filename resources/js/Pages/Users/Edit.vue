@@ -72,6 +72,27 @@
                             {{ sub.name && sub.name !== sub.code ? sub.name + ' (' + sub.code + ')' : sub.code }}
                         </option>
                     </select-input>
+                    <!-- Which office this person works in. The department is
+                         only the narrowing pick - what is saved is the
+                         sub-office, and its parent is the department. -->
+                    <select-input v-model="department_id" class="pb-8 pr-6 w-full lg:w-1/3" :label="$t('Department')">
+                        <option :value="null">{{ $t('None') }}</option>
+                        <option v-for="dept in document_sources" :key="dept.id" :value="dept.id">
+                            {{ dept.name }}
+                        </option>
+                    </select-input>
+                    <select-input
+                        v-model="form.document_source_id"
+                        :error="form.errors.document_source_id"
+                        :disabled="!offices.length"
+                        class="pb-8 pr-6 w-full lg:w-1/3"
+                        :label="$t('Sub-office')"
+                    >
+                        <option :value="null">{{ $t('None') }}</option>
+                        <option v-for="office in offices" :key="office.id" :value="office.id">
+                            {{ office.name }}
+                        </option>
+                    </select-input>
                     <file-input
                         v-model="form.photo"
                         :error="form.errors.photo"
@@ -127,12 +148,15 @@ export default {
         countries: Array,
         roles: Array,
         sub_roles: { type: Array, default: () => [] },
+        document_sources: { type: Array, default: () => [] },
         cities: Array,
         title: String,
     },
     remember: 'form',
     data() {
         return {
+            // Only narrows the sub-office list; the user carries the office.
+            department_id: this.departmentOf(this.user.document_source_id),
             form: useForm({
                 _method: 'put',
                 first_name: this.user.first_name,
@@ -146,14 +170,37 @@ export default {
                 role: this.user.role,
                 role_id: this.user.role_id,
                 workflow_sub_role_id: this.user.workflow_sub_role_id,
+                document_source_id: this.user.document_source_id,
                 photo: null,
             }),
         };
     },
+    computed: {
+        offices() {
+            const dept = this.document_sources.find((item) => Number(item.id) === Number(this.department_id));
+            return dept ? dept.children || [] : [];
+        },
+    },
     async created() {
         // this.setDefaultValue(this.countries, 'country_id', 'United States')
     },
+    watch: {
+        // A department change drops an office that no longer belongs to it.
+        department_id() {
+            if (!this.offices.some((office) => Number(office.id) === Number(this.form.document_source_id))) {
+                this.form.document_source_id = null;
+            }
+        },
+    },
     methods: {
+        /** The department a saved office sits under, so editing opens on it. */
+        departmentOf(officeId) {
+            if (!officeId) return null;
+            const dept = this.document_sources.find((item) =>
+                (item.children || []).some((office) => Number(office.id) === Number(officeId))
+            );
+            return dept ? dept.id : null;
+        },
         setDefaultValue(arr, key, value) {
             const find = arr.find((i) => i.name.match(new RegExp(value + '.*')));
             if (find) {
