@@ -46,26 +46,34 @@ use Illuminate\Support\Facades\Schema;
 class EdocWorkflowRoleSeeder extends Seeder
 {
     /**
-     * The four steps an outside document passes before it reaches anybody who
-     * acts on it: it arrives, it is read, អគ្គលេខាធិការ writes the ចំណារ, and
-     * it is handed out along that ចំណារ. A document raised inside អ.គ.ល.ក has
-     * none of this to do, which is the whole difference between the flows.
+     * ឯកសារក្រសួង-ស្ថាប័ន and ឯកសារក្រុមហ៊ុន, which run the same thirteen
+     * steps: the document arrives from outside, អគ្គលេខាធិការ writes the ចំណារ,
+     * it is handed out along that ចំណារ, and from the department it climbs back
+     * up for the សម្រេច and goes out.
      */
-    private const EXTERNAL_INTAKE = [
+    private const EXTERNAL_FLOW = [
         ['order' => 1, 'title' => 'ឯកសារចូល (មកពីក្រៅ)', 'role' => 'lobby', 'requires_signature' => false, 'attachment' => 'standard', 'is_terminal' => false],
         ['order' => 2, 'title' => 'ជំនួយការ អគ្គលេខាធិការ ពិនិត្យឯកសារចូល', 'role' => 'asg', 'requires_signature' => false, 'attachment' => null, 'is_terminal' => false],
         ['order' => 3, 'title' => 'អគ្គលេខាធិការ ពិនិត្យ និងផ្តល់ចំណារ', 'role' => 'sg', 'requires_signature' => true, 'attachment' => null, 'is_terminal' => false],
         ['order' => 4, 'title' => 'ជំនួយការ អគ្គលេខាធិការ បែងចែកឯកសារតាមចំណារ', 'role' => 'asg', 'requires_signature' => false, 'attachment' => 'standard', 'is_terminal' => false],
+        ['order' => 6, 'title' => 'នាយកដ្ឋាន / អង្គភាព / បុគ្គល', 'role' => 'hd', 'requires_signature' => false, 'attachment' => 'standard', 'is_terminal' => false],
+        ['order' => 9, 'title' => 'ការិយាល័យ រដ្ឋបាល ពិនិត្យ និងបញ្ជូនឯកសារ', 'role' => 'admin', 'requires_signature' => false, 'attachment' => null, 'is_terminal' => false],
+        ['order' => 10, 'title' => 'ជំនួយការ អគ្គលេខាធិការរង ពិនិត្យ និងបញ្ជូនឯកសារ', 'role' => 'adsg', 'requires_signature' => false, 'attachment' => null, 'is_terminal' => false],
+        ['order' => 11, 'title' => 'អគ្គលេខាធិការរង ពិនិត្យ និងផ្តល់យោបល់', 'role' => 'dsg', 'requires_signature' => false, 'attachment' => null, 'is_terminal' => false],
+        ['order' => 13, 'title' => 'ជំនួយការ អគ្គលេខាធិការ ពិនិត្យ និងបញ្ជូនឯកសារ', 'role' => 'asg', 'requires_signature' => false, 'attachment' => null, 'is_terminal' => false],
+        ['order' => 14, 'title' => 'អគ្គលេខាធិការ ពិនិត្យ និងសម្រេច', 'role' => 'sg', 'requires_signature' => true, 'attachment' => null, 'is_terminal' => false],
+        ['order' => 15, 'title' => 'ជំនួយការ អគ្គលេខាធិការ បញ្ជូនឯកសារ', 'role' => 'asg', 'requires_signature' => false, 'attachment' => null, 'is_terminal' => false],
+        ['order' => 16, 'title' => 'ការិយាល័យ រដ្ឋបាល ពិនិត្យ និងមុខការ', 'role' => 'admin', 'requires_signature' => false, 'attachment' => 'standard', 'is_terminal' => true],
+        ['order' => 17, 'title' => 'នាយកដ្ឋាន / អង្គភាព / បុគ្គល ទទួលដំណឹងបញ្ចប់', 'role' => 'dpt', 'mode' => 'dynamic', 'requires_signature' => false, 'attachment' => null, 'is_terminal' => false],
     ];
 
     /**
-     * What every document does from the department onwards, wherever it came
-     * from: it is worked, it climbs to អគ្គលេខាធិការ for the decision, it comes
-     * back down, and the department is told it is finished. All three flows
-     * share these steps - the internal one is nothing but these steps, which is
-     * why it opens at 6 rather than 1.
+     * ឯកសារផ្ទៃក្នុង. The department raises the document itself, so there is
+     * nothing to arrive and nothing to hand out: the flow opens where the
+     * external one reaches step 6 and is otherwise the same steps under the
+     * same numbers.
      */
-    private const CIRCULATION = [
+    private const INTERNAL_FLOW = [
         ['order' => 1, 'title' => 'នាយកដ្ឋាន / អង្គភាព / បុគ្គល', 'role' => 'hd', 'requires_signature' => false, 'attachment' => 'standard', 'is_terminal' => false],
         ['order' => 2, 'title' => 'ការិយាល័យ រដ្ឋបាល ពិនិត្យ និងបញ្ជូនឯកសារ', 'role' => 'admin', 'requires_signature' => false, 'attachment' => null, 'is_terminal' => false],
         ['order' => 3, 'title' => 'ជំនួយការ អគ្គលេខាធិការរង ពិនិត្យ និងបញ្ជូនឯកសារ', 'role' => 'adsg', 'requires_signature' => false, 'attachment' => null, 'is_terminal' => false],
@@ -81,12 +89,10 @@ class EdocWorkflowRoleSeeder extends Seeder
         // Both start outside អ.គ.ល.ក and enter through the LOBBY, which is what
         // the chart titled "ក្រសួង/ស្ថាប័ន ក្រុមហ៊ុន" covers, so they run the
         // same path against their own workspace.
-        'external_ministry' => [...self::EXTERNAL_INTAKE, ...self::CIRCULATION],
-        'casino_operator' => [...self::EXTERNAL_INTAKE, ...self::CIRCULATION],
+        'external_ministry' => self::EXTERNAL_FLOW,
+        'casino_operator' => self::EXTERNAL_FLOW,
 
-        // The internal document is raised by the department itself, so it has
-        // nothing to arrive from and starts where the others reach step 6.
-        'internal_cgmc' => self::CIRCULATION,
+        'internal_cgmc' => self::INTERNAL_FLOW,
     ];
 
     /**
