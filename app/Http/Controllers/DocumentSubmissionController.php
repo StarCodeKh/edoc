@@ -75,10 +75,19 @@ class DocumentSubmissionController extends Controller
 
         // Every board column for those projects, sent in one payload so the
         // project -> status pair narrows client-side without another round trip.
+        // Each carries what the workflow step behind it expects of the document,
+        // so the review the form shows before saving can say so.
         $lists = BoardList::whereIn('project_id', $projects->pluck('id'))
             ->isOpen()
             ->orderByOrder()
-            ->get(['id', 'title', 'project_id', 'order']);
+            ->get(['id', 'title', 'project_id', 'order'])
+            ->map(fn (BoardList $list) => [
+                'id' => $list->id,
+                'title' => $list->title,
+                'project_id' => $list->project_id,
+                'order' => $list->order,
+                'attachment_mode' => WorkflowStep::attachmentModeForTitle($workspace->id, $list->title),
+            ]);
 
         // Department -> sub-office is the internal flow's own routing, so the
         // pair is only offered there. Everywhere else the list is sent empty

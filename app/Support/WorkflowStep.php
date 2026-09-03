@@ -117,6 +117,25 @@ class WorkflowStep
         return (bool) ($step->requires_signature ?? false);
     }
 
+    /**
+     * What a step expects of the document, by workspace and board title:
+     * null when it asks for none, otherwise 'standard' or 'dynamic'.
+     *
+     * The by-title form again, for the pages that hold a board column without
+     * having loaded the BoardList behind it - the submit form knows the column
+     * it is filing into and needs to say what that column will want.
+     */
+    public static function attachmentModeForTitle(?int $workspaceId, ?string $title): ?string
+    {
+        $step = self::forWorkspace($workspaceId)->get(self::key($title));
+
+        if (!$step || !$step->requires_attachment) {
+            return null;
+        }
+
+        return $step->attachment_mode ?: 'standard';
+    }
+
     /** Whether the step refuses to be passed on without a document on it. */
     public static function requiresAttachment(?BoardList $list): bool
     {

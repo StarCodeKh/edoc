@@ -581,7 +581,7 @@
                                     >
                                         <icon v-if="form.processing" name="spinner" class="h-4 w-4 animate-spin" />
                                         <icon v-else name="send" class="h-4 w-4" />
-                                        {{ form.processing ? $t('Submitting...') : $t('Submit') }}
+                                        {{ form.processing ? $t('Submitting...') : $t('Review & submit') }}
                                     </button>
                                 </div>
                             </div>
@@ -614,6 +614,158 @@
                 </div>
             </div>
         </div>
+
+        <!-- Final review. Submit opens this instead of posting: the document is
+             read once more whole - the PDF beside the fields it will be filed
+             under - and only Save files it. Editing happens back in the form,
+             so nothing here is a second copy of a field that can drift. -->
+        <Teleport to="body">
+            <transition name="review-fade">
+                <div
+                    v-if="preview_open"
+                    class="fixed inset-0 z-[10050] flex items-end justify-center bg-black/50 p-4 backdrop-blur-[2px] sm:items-center"
+                    @click.self="closePreview"
+                >
+                    <div
+                        class="flex max-h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-gray-200/60 bg-white shadow-2xl"
+                        role="dialog"
+                        aria-modal="true"
+                        :aria-label="$t('Review before saving')"
+                    >
+                        <div class="flex items-start justify-between gap-4 border-b border-gray-100 px-5 py-4">
+                            <div>
+                                <h2 class="text-base font-bold text-gray-900">{{ $t('Review before saving') }}</h2>
+                                <p class="mt-0.5 text-sm text-gray-500">{{ $t('Nothing is filed until you save.') }}</p>
+                            </div>
+                            <button
+                                type="button"
+                                class="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                                :aria-label="$t('Close')"
+                                @click="closePreview"
+                            >
+                                <icon name="close" class="h-4 w-4" />
+                            </button>
+                        </div>
+
+                        <div class="grid min-h-0 flex-1 grid-cols-1 overflow-hidden lg:grid-cols-5">
+                            <!-- The document itself -->
+                            <div
+                                class="flex min-h-0 flex-col border-b border-gray-100 bg-gray-50 p-4 lg:col-span-3 lg:border-b-0 lg:border-r"
+                            >
+                                <div class="mb-3 flex flex-wrap items-center gap-2">
+                                    <span
+                                        class="rounded-lg bg-white px-2.5 py-1 text-xs font-semibold text-gray-600 ring-1 ring-gray-200"
+                                    >
+                                        {{ attachmentModeLabel }}
+                                    </span>
+                                    <p v-if="attachmentNote" class="text-xs text-rose-600">{{ attachmentNote }}</p>
+                                </div>
+
+                                <div
+                                    v-if="preview_urls.length"
+                                    class="min-h-0 flex-1 overflow-hidden rounded-xl border border-gray-200 bg-white"
+                                >
+                                    <iframe
+                                        :src="preview_urls[preview_index]"
+                                        class="h-full min-h-[45vh] w-full"
+                                        :title="activeFileName"
+                                    ></iframe>
+                                </div>
+                                <div
+                                    v-else
+                                    class="flex min-h-[45vh] flex-1 flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 bg-white text-center"
+                                >
+                                    <icon name="file-pdf" class="h-7 w-7 text-gray-300" />
+                                    <p class="mt-2 text-sm text-gray-500">{{ $t('No document attached') }}</p>
+                                    <button
+                                        type="button"
+                                        class="mt-2 text-xs font-semibold text-indigo-600 hover:underline"
+                                        @click="editFrom(2)"
+                                    >
+                                        {{ $t('Attach one') }}
+                                    </button>
+                                </div>
+
+                                <!-- A dynamic step carries several files; the tabs
+                                     are what makes each of them readable here. -->
+                                <ul v-if="form.files.length > 1" class="mt-3 flex flex-wrap gap-2">
+                                    <li v-for="(file, index) in form.files" :key="index">
+                                        <button
+                                            type="button"
+                                            class="flex max-w-[16rem] items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs"
+                                            :class="
+                                                index === preview_index
+                                                    ? 'border-indigo-300 bg-indigo-50 text-indigo-700'
+                                                    : 'border-gray-200 bg-white text-gray-600 hover:border-indigo-200'
+                                            "
+                                            @click="preview_index = index"
+                                        >
+                                            <icon name="file-pdf" class="h-3.5 w-3.5 shrink-0 text-rose-500" />
+                                            <span class="truncate">{{ file.name }}</span>
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!-- What it will be filed as -->
+                            <div class="min-h-0 overflow-y-auto p-5 lg:col-span-2">
+                                <div v-for="section in reviewSections" :key="section.step" class="mb-6 last:mb-0">
+                                    <div class="flex items-center justify-between gap-3">
+                                        <h3 class="text-sm font-bold text-gray-900">{{ $t(section.label) }}</h3>
+                                        <button
+                                            type="button"
+                                            class="text-xs font-semibold text-indigo-600 hover:underline"
+                                            @click="editFrom(section.step)"
+                                        >
+                                            {{ $t('Edit') }}
+                                        </button>
+                                    </div>
+                                    <dl class="mt-2 space-y-2.5">
+                                        <div v-for="row in section.rows" :key="row.label">
+                                            <dt class="text-[11px] font-medium uppercase tracking-wide text-gray-400">
+                                                {{ $t(row.label) }}
+                                            </dt>
+                                            <dd
+                                                v-if="row.html && row.value"
+                                                class="mt-0.5 break-words text-sm text-gray-800"
+                                                v-html="row.value"
+                                            ></dd>
+                                            <dd
+                                                v-else
+                                                class="mt-0.5 break-words text-sm"
+                                                :class="row.value ? 'text-gray-800' : 'text-gray-300'"
+                                            >
+                                                {{ row.value || $t('Not set') }}
+                                            </dd>
+                                        </div>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-wrap items-center justify-end gap-2 border-t border-gray-100 px-5 py-4">
+                            <button
+                                type="button"
+                                class="rounded-xl border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
+                                @click="closePreview"
+                            >
+                                {{ $t('Back to editing') }}
+                            </button>
+                            <button
+                                type="button"
+                                class="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+                                :disabled="form.processing"
+                                @click="save"
+                            >
+                                <icon v-if="form.processing" name="spinner" class="h-4 w-4 animate-spin" />
+                                <icon v-else name="check" class="h-4 w-4" />
+                                {{ form.processing ? $t('Submitting...') : $t('Save & submit') }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </transition>
+        </Teleport>
     </div>
 </template>
 
@@ -667,6 +819,12 @@ export default {
             draft_restored: false,
             draft_saved: false,
             show_blocking_hint: false,
+            // The review popup, and the object URLs the PDF viewer inside it
+            // reads. They are made when it opens and revoked when it closes -
+            // a File has no address of its own for an iframe to load.
+            preview_open: false,
+            preview_index: 0,
+            preview_urls: [],
             form: useForm({
                 title: '',
                 project_id: null,
@@ -815,6 +973,100 @@ export default {
                 },
             ];
         },
+        /** The board column the document is being filed into. */
+        selectedList() {
+            return this.lists.find((list) => Number(list.id) === Number(this.form.list_id)) || null;
+        },
+        /**
+         * What the column expects of the document: null when the step asks for
+         * none, 'standard' when it always carries the same one document, and
+         * 'dynamic' when it carries whatever the case produced. Configured on
+         * Settings -> Workflow Roles and sent with each column.
+         */
+        attachmentMode() {
+            return this.selectedList ? this.selectedList.attachment_mode || null : null;
+        },
+        attachmentModeLabel() {
+            if (this.attachmentMode === 'dynamic') return this.$t('This step takes the documents the case produces');
+            if (this.attachmentMode === 'standard') return this.$t('This step takes one document');
+            return this.$t('This step asks for no document');
+        },
+        /** Said in red beside the label, where what is attached does not fit it. */
+        attachmentNote() {
+            if (this.attachmentMode && !this.form.files.length) {
+                return this.$t('This step expects a document, and none is attached.');
+            }
+            if (this.attachmentMode === 'standard' && this.form.files.length > 1) {
+                return this.$t('This step holds one document, but :count are attached.', {
+                    count: this.form.files.length,
+                });
+            }
+            return '';
+        },
+        activeFileName() {
+            const file = this.form.files[this.preview_index];
+            return file ? file.name : '';
+        },
+        assigneeNames() {
+            const pool = [...this.team_members, ...this.source_members];
+            return this.form.assignees
+                .map((id) => (pool.find((member) => Number(member.id) === Number(id)) || {}).name)
+                .filter(Boolean)
+                .join(', ');
+        },
+        linkedTitles() {
+            const pool = this.parent_document
+                ? [...this.linkable_documents, this.parent_document]
+                : this.linkable_documents;
+            return this.form.parent_task_ids
+                .map((id) => (pool.find((doc) => Number(doc.id) === Number(id)) || {}).title)
+                .filter(Boolean)
+                .join(', ');
+        },
+        fileSummary() {
+            return this.form.files.map((file) => file.name + ' (' + this.fileSize(file.size) + ')').join(', ');
+        },
+        /**
+         * The review, grouped the way the form is. Each section carries the step
+         * that owns it, so Edit reopens the document where the field lives
+         * rather than making the popup a second form.
+         */
+        reviewSections() {
+            return [
+                {
+                    step: 0,
+                    label: 'Document Info',
+                    rows: [
+                        { label: 'Title', value: this.form.title },
+                        { label: 'Document Type', value: this.nameOf(this.document_types, this.form.type_id) },
+                        ...(this.document_sources.length ? [{ label: 'Source', value: this.sourceLabel }] : []),
+                        { label: 'Status', value: this.selectedList ? this.selectedList.title : '' },
+                    ],
+                },
+                {
+                    step: 1,
+                    label: 'Dates & Routing',
+                    rows: [
+                        { label: 'Entry date', value: this.formatDate(this.form.entry_date) },
+                        { label: 'Due date', value: this.formatDate(this.form.due_date) },
+                        { label: 'Exit date', value: this.formatDate(this.form.exit_date) },
+                        { label: 'Priority', value: this.nameOf(this.priorities, this.form.priority_id) },
+                        { label: 'Assign to', value: this.assigneeNames },
+                        ...(this.form.parent_task_ids.length
+                            ? [{ label: 'Linked documents', value: this.linkedTitles }]
+                            : []),
+                    ],
+                },
+                {
+                    step: 2,
+                    label: 'Content & Files',
+                    rows: [
+                        { label: 'Description', value: this.form.description, html: true },
+                        { label: 'Attachments', value: this.fileSummary },
+                    ],
+                },
+            ];
+        },
         /** The department on its own, for when no sub-office is picked yet. */
         departmentLabel() {
             const dept = this.document_sources.find((item) => Number(item.id) === Number(this.department_id));
@@ -897,6 +1149,12 @@ export default {
         // here: the workspace's own board, at its first open column. A restored
         // draft keeps what it was filed against, as long as it still exists.
         this.resolveBoard();
+
+        window.addEventListener('keydown', this.onKeydown);
+    },
+    beforeUnmount() {
+        window.removeEventListener('keydown', this.onKeydown);
+        this.revokePreviewUrls();
     },
     methods: {
         /**
@@ -1124,6 +1382,10 @@ export default {
             this.draft_restored = false;
             this.step = 0;
         },
+        /**
+         * Submitting no longer files the document - it opens the review. The
+         * form is only posted from there, by save().
+         */
         submit() {
             if (!this.allStepsValid) {
                 this.show_blocking_hint = true;
@@ -1132,6 +1394,37 @@ export default {
                 return;
             }
 
+            this.show_blocking_hint = false;
+            this.openPreview();
+        },
+        onKeydown(event) {
+            if (event.key === 'Escape' && this.preview_open) this.closePreview();
+        },
+        openPreview() {
+            this.revokePreviewUrls();
+            this.preview_urls = this.form.files.map((file) => URL.createObjectURL(file));
+            this.preview_index = 0;
+            this.preview_open = true;
+        },
+        closePreview() {
+            this.preview_open = false;
+            this.revokePreviewUrls();
+        },
+        /**
+         * The popup holds the only reference to these URLs, so they are dropped
+         * with it - left behind, each one pins its PDF in memory for the life of
+         * the tab.
+         */
+        revokePreviewUrls() {
+            this.preview_urls.forEach((url) => URL.revokeObjectURL(url));
+            this.preview_urls = [];
+        },
+        /** Edit goes back to the form, at the step that owns the field. */
+        editFrom(step) {
+            this.closePreview();
+            this.step = step;
+        },
+        save() {
             this.form
                 .transform((data) => ({
                     ...data,
@@ -1142,6 +1435,8 @@ export default {
                 .post(this.route('workspace.documents.submit.store', this.workspace.slug || this.workspace.id), {
                     forceFormData: true,
                     onSuccess: () => {
+                        this.closePreview();
+
                         try {
                             window.localStorage.removeItem(this.draftKey);
                         } catch (error) {
@@ -1149,7 +1444,9 @@ export default {
                         }
                     },
                     onError: () => {
-                        // Server-side failures point back at the step that owns them.
+                        // Server-side failures point back at the step that owns
+                        // them, which means leaving the review to get there.
+                        this.closePreview();
                         const errors = Object.keys(this.form.errors);
                         const stepOne = ['title', 'project_id', 'list_id', 'type_id', 'document_source_id'];
                         const stepTwo = ['entry_date', 'due_date', 'exit_date', 'assignees'];
