@@ -11,6 +11,7 @@ use App\Models\Task;
 use App\Models\User;
 use App\Models\WorkflowSubRole;
 use App\Models\Workspace;
+use App\Support\TaskAbility;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia;
 use Tests\TestCase;
@@ -382,6 +383,84 @@ class WorkflowDynamicRoleTest extends TestCase
         ]);
 
         $this->assertNotContains($this->lists[1]->title, $inD1->responsibleListTitles());
+    }
+
+    /**
+     * The doer of a dynamic step reaches the board the document sits on.
+     *
+     * They get there by holding the document and nothing else: a dynamic step
+     * is handed to one member as it is forwarded, so it never becomes part of
+     * their responsibility (see the test above), and the administration gives
+     * nobody a team_members row. Workspace access read on membership and
+     * responsibility alone therefore 404'd the very person the document had
+     * just been handed to, while My Tasks went on listing it.
+     */
+    public function test_the_doer_of_a_dynamic_step_can_open_the_board(): void
+    {
+        $this->departmentGroup();
+        $this->makeBoard();
+        $task = $this->makeTask();
+
+        $normal = Role::create(['name' => 'Normal User', 'slug' => 'normal', 'access' => json_encode([])]);
+
+        $inD1 = User::factory()->create([
+            'role_id' => $normal->id,
+            'workflow_sub_role_id' => WorkflowSubRole::where('code', 'd1')->value('id'),
+        ]);
+
+        // Nothing but the responsibility yet, and a dynamic step is not part of
+        // it - so the board is not theirs to open.
+        $this->actingAs($inD1);
+        $this->get(route('projects.view.board', $this->project->slug ?: $this->project->id))
+            ->assertNotFound();
+
+        // The administration hands the document to D1.
+        $this->actingAs($this->admin);
+        $this->forward($task, ['hand_to' => 'd1']);
+
+        $this->assertContains($inD1->id, Assignee::where('task_id', $task->id)->pluck('user_id')->all());
+
+        $this->actingAs($inD1->fresh());
+        $this->get(route('projects.view.board', $this->project->slug ?: $this->project->id))
+            ->assertOk();
+    }
+
+    /**
+     * ...and sends it on from there.
+     *
+     * canMove asks who is responsible for the board the document sits on, and a
+     * dynamic step is the one case where responsibility cannot answer: the
+     * hand-off named the doer instead. Without that arm the person the document
+     * was handed to could open it and do nothing with it, which leaves the flow
+     * stuck on the step it was just forwarded into.
+     */
+    public function test_the_doer_of_a_dynamic_step_can_send_it_on(): void
+    {
+        $this->departmentGroup();
+        $this->makeBoard();
+        $task = $this->makeTask();
+
+        $normal = Role::create(['name' => 'Normal User', 'slug' => 'normal', 'access' => json_encode([])]);
+
+        $inD1 = User::factory()->create([
+            'role_id' => $normal->id,
+            'workflow_sub_role_id' => WorkflowSubRole::where('code', 'd1')->value('id'),
+        ]);
+
+        $this->forward($task, ['hand_to' => 'd1']);
+
+        // The document is now on the dynamic step, with D1 holding it.
+        $task->refresh();
+        $this->assertSame($this->lists[1]->id, $task->list_id);
+
+        $inD1 = $inD1->fresh();
+
+        $this->assertTrue(TaskAbility::canMove($inD1, $task));
+        // Still not theirs to rewrite - holding a step never was.
+        $this->assertFalse(TaskAbility::canEdit($inD1, $task));
+
+        $this->actingAs($inD1);
+        $this->forward($task)->assertRedirect();
     }
 
     /**

@@ -93,6 +93,32 @@ class TaskAbility
     }
 
     /**
+     * Is the user the person a dynamic step was handed to?
+     *
+     * A dynamic step is the one case where responsibility cannot answer who
+     * holds the document. It names a group, and whoever forwards into it picks
+     * which member does the work - so the holder is recorded as an assignees
+     * row, and User::responsibleStepsQuery() deliberately leaves the step out
+     * of everyone else's responsibility.
+     *
+     * Which left the doer able to open the document and unable to send it on:
+     * canMove asks isResponsibleForItsBoard, and that is exactly the answer a
+     * dynamic step withholds. This supplies it, and only for the step the
+     * document is actually sitting on - being assigned somewhere else in the
+     * flow is not licence to move it.
+     */
+    public static function holdsDynamicStep(User $user, Task $task): bool
+    {
+        if (!self::isAssigned($user, $task)) {
+            return false;
+        }
+
+        $list = $task->relationLoaded('list') ? $task->list : $task->list()->first();
+
+        return (WorkflowStep::forList($list)->role_mode ?? null) === 'dynamic';
+    }
+
+    /**
      * May the user change the document itself - title, description, priority,
      * due date, labels, checklists, assignees, and moving it between boards?
      */
@@ -113,10 +139,15 @@ class TaskAbility
      * onward - that is the job. It deliberately does not extend to canEdit:
      * being the reviewer of a step is not licence to rewrite the document's
      * title, dates or priority, and canDelete stays narrower still.
+     *
+     * The doer of a dynamic step is the same job by a different record: the
+     * hand-off named them instead of their responsibility naming the step.
      */
     public static function canMove(User $user, Task $task): bool
     {
-        return self::canEdit($user, $task) || self::isResponsibleForItsBoard($user, $task);
+        return self::canEdit($user, $task)
+            || self::isResponsibleForItsBoard($user, $task)
+            || self::holdsDynamicStep($user, $task);
     }
 
     /** Deleting is only ever the administration's or the untouched creator's. */

@@ -78,9 +78,7 @@ class WorkSpacesController extends Controller
     public function jsonAssignedTasksCount($uid)
     {
         $user = auth()->user();
-        $workspace = Workspace::where('id', $uid)->orWhere('slug', $uid)
-            ->whereHas('member')
-            ->first();
+        $workspace = $this->findWorkspace($uid);
 
         if (empty($workspace)) {
             return response()->json(['count' => 0]);
@@ -102,9 +100,7 @@ class WorkSpacesController extends Controller
     public function jsonProjectsTaskCounts($uid)
     {
         $auth_id = auth()->id();
-        $workspace = Workspace::where('id', $uid)->orWhere('slug', $uid)
-            ->whereHas('member')
-            ->first();
+        $workspace = $this->findWorkspace($uid);
 
         if (empty($workspace)) {
             return response()->json([]);
@@ -132,7 +128,7 @@ class WorkSpacesController extends Controller
     public function viewMainDashboard($uid, Request $request)
     {
         $requests = $request->all();
-        $workspace = Workspace::where('id', $uid)->orWhere('slug', $uid)->whereHas('member')->with('member')->first();
+        $workspace = $this->findWorkspace($uid);
         if (empty($workspace)) {
             return abort(404);
         }
@@ -326,7 +322,7 @@ class WorkSpacesController extends Controller
 
     public function workspaceView($uid)
     {
-        $workspace = Workspace::whereId($uid)->orWhere('slug', $uid)->whereHas('member')->with('member')->first();
+        $workspace = $this->findWorkspace($uid);
         if (empty($workspace)) {
             return abort(404);
         }
@@ -341,7 +337,7 @@ class WorkSpacesController extends Controller
 
     public function workspaceMembers($uid, Request $request)
     {
-        $workspace = Workspace::whereId($uid)->orWhere('slug', $uid)->whereHas('member')->with('member')->first();
+        $workspace = $this->findWorkspace($uid);
         if ($workspace->member->role != 'admin') {
             return Redirect::route('workspace.view', $workspace->id);
         }
@@ -383,7 +379,7 @@ class WorkSpacesController extends Controller
             return abort(404);
         }
 
-        $workspace = Workspace::where('id', $uid)->orWhere('slug', $uid)->whereHas('member')->with('member')->first();
+        $workspace = $this->findWorkspace($uid);
         if (empty($workspace)) {
             return abort(404);
         }
@@ -440,7 +436,7 @@ class WorkSpacesController extends Controller
      */
     public function workspaceDocuments($uid, Request $request)
     {
-        $workspace = Workspace::where('id', $uid)->orWhere('slug', $uid)->whereHas('member')->with('member')->first();
+        $workspace = $this->findWorkspace($uid);
         if (empty($workspace)) {
             return abort(404);
         }
@@ -493,7 +489,7 @@ class WorkSpacesController extends Controller
      */
     public function workspaceMyTasksDocuments($uid, Request $request)
     {
-        $workspace = Workspace::where('id', $uid)->orWhere('slug', $uid)->whereHas('member')->with('member')->first();
+        $workspace = $this->findWorkspace($uid);
         if (empty($workspace)) {
             return abort(404);
         }
@@ -542,6 +538,34 @@ class WorkSpacesController extends Controller
      * The listing and the sidebar badge both build on this, so the number on
      * the menu and the number of rows cannot disagree.
      */
+    /**
+     * The workspace a menu, dashboard or My Tasks route is addressed to.
+     *
+     * Every one of these used to resolve it with
+     * `where('id', $uid)->orWhere('slug', $uid)->whereHas('member')`, which is
+     * two faults in one line.
+     *
+     * SQL binds the AND tighter than the OR, so the membership check only ever
+     * applied to the slug arm - a workspace addressed by its id walked straight
+     * past it. And where it did apply it asked the wrong question: the
+     * administration hands out a responsibility rather than a team_members row,
+     * and a dynamic step is handed over as an assignees row, so the very person
+     * holding a document was counted in the sidebar badge and then met a 404 on
+     * the page that badge links to.
+     *
+     * Workspace::scopeAccessibleTo is the one answer to "may this user open
+     * this workspace", and it is asked here for both arms at once.
+     */
+    private function findWorkspace($uid): ?Workspace
+    {
+        return Workspace::where(function ($query) use ($uid) {
+            $query->where('id', $uid)->orWhere('slug', $uid);
+        })
+            ->accessibleTo()
+            ->with('member')
+            ->first();
+    }
+
     private function onMyPlate($query, ?User $user)
     {
         if (empty($user)) {
@@ -695,7 +719,7 @@ class WorkSpacesController extends Controller
 
         $list_index = [];
         $board_lists = BoardList::orderByOrder()->get();
-        $workspace = Workspace::where('id', $uid)->orWhere('slug', $uid)->whereHas('member')->with('member')->first();
+        $workspace = $this->findWorkspace($uid);
         if (empty($workspace)) {
             return abort(404);
         }
@@ -726,7 +750,7 @@ class WorkSpacesController extends Controller
         $requests = $request->all();
         $requests['user'] = $user->id;
 
-        $workspace = Workspace::where('id', $uid)->orWhere('slug', $uid)->whereHas('member')->with('member')->first();
+        $workspace = $this->findWorkspace($uid);
         if (empty($workspace)) {
             return abort(404);
         }
@@ -823,7 +847,7 @@ class WorkSpacesController extends Controller
     public function jsonMyTasksCount($uid)
     {
         $user = auth()->user();
-        $workspace = Workspace::where('id', $uid)->orWhere('slug', $uid)->whereHas('member')->first();
+        $workspace = $this->findWorkspace($uid);
         if (empty($workspace)) {
             return response()->json(['count' => 0]);
         }
@@ -848,7 +872,7 @@ class WorkSpacesController extends Controller
         // Force filter to current user
         $requests['user'] = $user->id;
 
-        $workspace = Workspace::where('id', $uid)->orWhere('slug', $uid)->whereHas('member')->with('member')->first();
+        $workspace = $this->findWorkspace($uid);
         if (empty($workspace)) {
             return abort(404);
         }
@@ -903,7 +927,7 @@ class WorkSpacesController extends Controller
         // Force filter to current user
         $requests['user'] = $user->id;
 
-        $workspace = Workspace::where('id', $uid)->orWhere('slug', $uid)->whereHas('member')->with('member')->first();
+        $workspace = $this->findWorkspace($uid);
         if (empty($workspace)) {
             return abort(404);
         }
@@ -962,7 +986,7 @@ class WorkSpacesController extends Controller
             return abort(404);
         }
 
-        $workspace = Workspace::where('id', $uid)->orWhere('slug', $uid)->whereHas('member')->with('member')->first();
+        $workspace = $this->findWorkspace($uid);
         if (empty($workspace)) {
             return abort(404);
         }
@@ -1051,7 +1075,7 @@ class WorkSpacesController extends Controller
             return abort(404);
         }
 
-        $workspace = Workspace::where('id', $uid)->orWhere('slug', $uid)->whereHas('member')->with('member')->first();
+        $workspace = $this->findWorkspace($uid);
         if (empty($workspace)) {
             return abort(404);
         }
@@ -1113,7 +1137,7 @@ class WorkSpacesController extends Controller
             return abort(404);
         }
 
-        $workspace = Workspace::where('id', $uid)->orWhere('slug', $uid)->whereHas('member')->with('member')->first();
+        $workspace = $this->findWorkspace($uid);
         if (empty($workspace)) {
             return abort(404);
         }

@@ -37,7 +37,15 @@ class MyTasksDocumentsTest extends TestCase
 
         $role = Role::create(['name' => 'Admin', 'slug' => 'admin', 'access' => json_encode([])]);
         $this->user = User::factory()->create(['role_id' => $role->id]);
-        $this->workspace = Workspace::factory()->create(['user_id' => $this->user->id, 'type_id' => null]);
+        // Addressed by slug, the way the menu links to it. Without one the
+        // route falls back to the id, and the membership gate this suite covers
+        // used to be skipped entirely for an id - see
+        // WorkSpacesController::findWorkspace().
+        $this->workspace = Workspace::factory()->create([
+            'user_id' => $this->user->id,
+            'type_id' => null,
+            'slug' => 'registry-flow',
+        ]);
         $this->project = Project::factory()->create([
             'user_id' => $this->user->id,
             'workspace_id' => $this->workspace->id,
@@ -73,6 +81,48 @@ class MyTasksDocumentsTest extends TestCase
     private function url(): string
     {
         return route('workspace.view.my-tasks.documents', $this->workspace->slug ?: $this->workspace->id);
+    }
+
+    /**
+     * The page opens for the doer of a document, member of the workspace or not.
+     *
+     * The administration hands out a responsibility rather than a team_members
+     * row, and a dynamic step is handed over as an assignees row - so the badge
+     * on the menu counted the document (onMyPlate asks assignees and
+     * responsibility) while the page behind it resolved its workspace on
+     * membership alone and answered 404. The two now ask the same question.
+     */
+    public function test_the_page_opens_for_a_doer_who_is_not_a_team_member(): void
+    {
+        $normal = Role::create(['name' => 'Normal User', 'slug' => 'normal', 'access' => json_encode([])]);
+        $doer = User::factory()->create(['role_id' => $normal->id]);
+
+        $this->makeDocument('Handed over', $doer);
+
+        $this->assertDatabaseMissing('team_members', ['user_id' => $doer->id]);
+
+        $this->actingAs($doer);
+
+        $this->get($this->url())
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('Workspaces/MyTasksDocuments')
+                ->has('documents.data', 1)
+                ->where('documents.data.0.title', 'Handed over')
+            );
+    }
+
+    /** Someone with no connection to the workspace at all still gets nothing. */
+    public function test_the_page_stays_shut_for_a_stranger(): void
+    {
+        $normal = Role::create(['name' => 'Normal User', 'slug' => 'normal', 'access' => json_encode([])]);
+        $stranger = User::factory()->create(['role_id' => $normal->id]);
+
+        $this->makeDocument('Not theirs', $this->user);
+
+        $this->actingAs($stranger);
+
+        $this->get($this->url())->assertNotFound();
     }
 
     public function test_it_lists_only_documents_assigned_to_the_signed_in_user(): void
