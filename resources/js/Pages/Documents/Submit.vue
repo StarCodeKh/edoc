@@ -304,11 +304,26 @@
                                                 <icon name="user" class="h-3.5 w-3.5" />
                                             </span>
                                             <span class="min-w-0">
-                                                <span class="block truncate text-sm font-medium text-gray-800">
-                                                    {{ $t('Assign this document to me') }}
+                                                <span class="flex items-center gap-2">
+                                                    <span class="truncate text-sm font-medium text-gray-800">
+                                                        {{ $t('Assign this document to me') }}
+                                                    </span>
+                                                    <!-- The responsibility the document would land on,
+                                                         named where the workflow actually carries one. -->
+                                                    <span
+                                                        v-if="myRoleLabel"
+                                                        class="shrink-0 rounded-full bg-indigo-50 px-2 py-0.5 text-[11px] font-medium text-indigo-700"
+                                                    >
+                                                        {{ myRoleLabel }}
+                                                    </span>
                                                 </span>
-                                                <span class="block truncate text-xs text-gray-400">
+                                                <span v-if="canAssignToMe" class="block truncate text-xs text-gray-400">
                                                     {{ $t('Shows it in My Tasks') }}
+                                                </span>
+                                                <!-- No step in this flow is ever handed to them, so filing
+                                                     it to themselves would park it where nothing moves it on. -->
+                                                <span v-else class="block truncate text-xs text-amber-600">
+                                                    {{ $t('No workflow step reaches you here - pick someone below.') }}
                                                 </span>
                                             </span>
                                         </label>
@@ -331,11 +346,42 @@
                                              picked in step 1; this says so when the
                                              pick reaches nobody and the whole team is
                                              shown instead. -->
+                                        <!-- The step this document lands on names who it is
+                                             for, so the list is that and nothing else. -->
                                         <p
-                                            v-if="membersFellBack"
+                                            v-if="membersAreStepDoers"
+                                            class="border-b border-gray-100 px-3 py-2 text-xs text-gray-400"
+                                        >
+                                            {{ $t('Doers for :step', { step: stepRoleName || selectedList.title }) }}
+                                        </p>
+                                        <p
+                                            v-else-if="stepHasNoDoers"
+                                            class="border-b border-gray-100 px-3 py-2 text-xs text-amber-600"
+                                        >
+                                            {{
+                                                $t(
+                                                    'Nobody carries :role yet - the step this document lands on has no doer.',
+                                                    {
+                                                        role: stepRoleName || stepRoleCode,
+                                                    }
+                                                )
+                                            }}
+                                        </p>
+                                        <p
+                                            v-else-if="membersFellBack"
                                             class="border-b border-gray-100 px-3 py-2 text-xs text-amber-600"
                                         >
                                             {{ $t('Nobody is filed under this office yet - showing the whole team.') }}
+                                        </p>
+                                        <p
+                                            v-else-if="membersFromRoles"
+                                            class="border-b border-gray-100 px-3 py-2 text-xs text-amber-600"
+                                        >
+                                            {{
+                                                $t(
+                                                    'Nobody is on this workspace team yet - showing people by workflow responsibility.'
+                                                )
+                                            }}
                                         </p>
                                         <p
                                             v-else-if="department_id"
@@ -372,6 +418,8 @@
                                                         </span>
                                                         <span class="block truncate text-xs text-gray-400">
                                                             {{ member.email }}
+                                                            <span v-if="member.role" class="text-gray-300">·</span>
+                                                            <span v-if="member.role">{{ member.role }}</span>
                                                         </span>
                                                     </span>
                                                 </label>
@@ -794,6 +842,14 @@ export default {
         // People filed under a department/sub-office, offered once one is
         // picked - they are rarely members of this workspace themselves.
         source_members: { type: Array, default: () => [] },
+        // People the workspace's workflow steps reach through the
+        // responsibility they carry, offered when neither list above has
+        // anybody to show.
+        role_members: { type: Array, default: () => [] },
+        // The filer's own standing: the responsibility they carry, and whether
+        // this workspace's workflow names it. The pinned "assign to me" row
+        // reads both.
+        me: { type: Object, default: () => ({ id: null, role: null, is_doer: false, is_registry: false }) },
         limits: { type: Object, default: () => ({ max_files: 10, max_file_mb: 50 }) },
         // Set when the form was opened from an external document to raise
         // internal work off it. The two are linked on save.
@@ -813,6 +869,10 @@ export default {
             // sub-office id, exactly as the task modal stores it.
             department_id: null,
             member_search: '',
+            // Set once the form has settled. The step's own people are ticked
+            // when the column changes, and this keeps that from firing on the
+            // column mounted() resolves - a restored draft keeps what it had.
+            picker_ready: false,
             link_search: '',
             dragging: false,
             file_error: '',
@@ -915,17 +975,112 @@ export default {
                 });
         },
         /**
-         * The list the picker offers. It follows the source pick while that
-         * pick reaches somebody; an office nobody is filed under falls back to
-         * the workspace's own team rather than to an empty list, so filing is
-         * never blocked by a directory that is not filled in yet.
+         * The responsibility the step this document lands on is handed to,
+         * where it names one. The column itself is selectedList, below.
+         */
+        stepRoleCode() {
+            return this.selectedList ? this.selectedList.responsible_role || null : null;
+        },
+        stepRoleName() {
+            return this.selectedList ? this.selectedList.responsible_role_name || '' : '';
+        },
+        /** Every person the form knows of, from all three pools, listed once. */
+        knownMembers() {
+            const seen = new Set();
+
+            return [...this.workspaceMembers, ...this.source_members, ...this.roleMembers]
+                .filter((member) => member.id !== this.currentUserId)
+                .filter((member) => {
+                    if (seen.has(member.id)) return false;
+                    seen.add(member.id);
+                    return true;
+                });
+        },
+        /**
+         * The people the step this document lands on is actually handed to.
+         *
+         * Anyone else is dropped rather than offered: the picker's whole job is
+         * to name the next doer, and a person no step reaches would hold a
+         * document nothing moves on. A step naming a group means all of it,
+         * the same rule the forward itself falls back on.
+         */
+        stepDoers() {
+            if (!this.stepRoleCode) return [];
+
+            return this.knownMembers.filter(
+                (member) => member.role_code === this.stepRoleCode || member.role_parent_code === this.stepRoleCode
+            );
+        },
+        /** Does the filer carry the responsibility this step is handed to? */
+        meIsStepDoer() {
+            if (!this.stepRoleCode) return Boolean(this.me.is_doer);
+
+            return this.me.role_code === this.stepRoleCode || this.me.role_parent_code === this.stepRoleCode;
+        },
+        /**
+         * May the filer put this document on their own plate?
+         *
+         * The landing step's own people - and the registry office whatever the
+         * step says. Every document passes through the registry on the way in
+         * and on the way out, so one it has just filed sitting on its own list
+         * is the ordinary case, not a document parked where nothing reaches it.
+         */
+        canAssignToMe() {
+            return Boolean(this.me.is_registry) || this.meIsStepDoer;
+        },
+        /** The filer's own responsibility, named on the pinned row when they carry one. */
+        myRoleLabel() {
+            return this.me && this.me.role ? this.me.role : '';
+        },
+        /** People reached by workflow responsibility, minus the pinned "me" row. */
+        roleMembers() {
+            return this.role_members.filter((member) => member.id !== this.currentUserId);
+        },
+        /**
+         * The list the picker offers.
+         *
+         * Where the step this document lands on names a responsibility, that
+         * settles it: the people carrying it, and nobody else. Only where the
+         * step names none does the older order apply - whoever the
+         * department/sub-office reaches, else the workspace's own team, else
+         * whoever the workflow reaches by responsibility - each tier skipped
+         * when empty, so filing is never blocked by a directory that is not
+         * filled in yet.
          */
         assignableMembers() {
-            return this.sourceMatches.length ? this.sourceMatches : this.workspaceMembers;
+            // A step that names its own responsibility settles the question:
+            // those people, and nobody else. An empty result is the honest
+            // answer - the step has nobody to hand the document to yet - and
+            // showing unrelated people in its place would only hide that.
+            if (this.stepRoleCode) {
+                const narrowed = this.stepDoers.filter((member) => this.sitsInPick(member));
+
+                return this.department_id && narrowed.length ? narrowed : this.stepDoers;
+            }
+
+            if (this.sourceMatches.length) return this.sourceMatches;
+            if (this.workspaceMembers.length) return this.workspaceMembers;
+            return this.roleMembers;
         },
         /** Said under the search box: the list is not the one that was asked for. */
         membersFellBack() {
-            return Boolean(this.department_id) && !this.sourceMatches.length;
+            if (this.stepRoleCode) return false;
+
+            return Boolean(this.department_id) && !this.sourceMatches.length && this.workspaceMembers.length > 0;
+        },
+        /** Said in its place when the fallback went all the way to responsibilities. */
+        membersFromRoles() {
+            if (this.stepRoleCode) return false;
+
+            return !this.sourceMatches.length && !this.workspaceMembers.length && this.roleMembers.length > 0;
+        },
+        /** The step names a responsibility, and somebody carries it. */
+        membersAreStepDoers() {
+            return Boolean(this.stepRoleCode) && this.stepDoers.length > 0;
+        },
+        /** The step names a responsibility nobody carries - so nobody is offered. */
+        stepHasNoDoers() {
+            return Boolean(this.stepRoleCode) && !this.stepDoers.length;
         },
         filteredMembers() {
             const query = this.member_search.trim().toLowerCase();
@@ -934,7 +1089,8 @@ export default {
             return members.filter(
                 (member) =>
                     (member.name || '').toLowerCase().includes(query) ||
-                    (member.email || '').toLowerCase().includes(query)
+                    (member.email || '').toLowerCase().includes(query) ||
+                    (member.role || '').toLowerCase().includes(query)
             );
         },
         /**
@@ -1008,7 +1164,7 @@ export default {
             return file ? file.name : '';
         },
         assigneeNames() {
-            const pool = [...this.team_members, ...this.source_members];
+            const pool = [...this.team_members, ...this.source_members, ...this.role_members];
             return this.form.assignees
                 .map((id) => (pool.find((member) => Number(member.id) === Number(id)) || {}).name)
                 .filter(Boolean)
@@ -1118,6 +1274,28 @@ export default {
 
             this.form.list_id = lists.length ? lists[0].id : null;
         },
+        /**
+         * Changing the column changes who the document is for, so picks the new
+         * step is not handed to are dropped rather than carried over. Leaving
+         * them would file the document to people that step never reaches, which
+         * is exactly what the picker exists to prevent.
+         *
+         * Only where the step names a responsibility - a flow that names none
+         * has nothing to judge a pick against, and the picks stand.
+         */
+        'form.list_id'() {
+            if (!this.stepRoleCode) return;
+
+            const doers = new Set(this.stepDoers.map((member) => member.id));
+
+            this.form.assignees = this.form.assignees.filter((id) =>
+                id === this.currentUserId ? this.canAssignToMe : doers.has(id)
+            );
+
+            // Not on the column mounted() resolves: a restored draft keeps
+            // whatever it was saved with, which is what picker_ready guards.
+            if (this.picker_ready) this.tickStepDoers();
+        },
     },
     mounted() {
         const hadDraft = this.restoreDraft();
@@ -1135,20 +1313,37 @@ export default {
             }
         }
 
-        // A document you file is yours unless you say otherwise - without this
-        // it never reaches My Tasks, which filters on assignee. A restored
-        // draft keeps whatever was ticked when it was saved.
-        if (!hadDraft && this.currentUserId) {
-            this.assignToMe = true;
-        }
-
         if (!this.form.entry_date) {
             this.form.entry_date = new Date();
         }
         // The project/status pair is no longer asked for, so it is resolved
         // here: the workspace's own board, at its first open column. A restored
         // draft keeps what it was filed against, as long as it still exists.
+        //
+        // Before the default assignee below, not after: that default asks which
+        // step the document lands on, and this is what answers it.
         this.resolveBoard();
+
+        // A document you file is yours unless you say otherwise - without this
+        // it never reaches My Tasks, which filters on assignee. A restored
+        // draft keeps whatever was ticked when it was saved.
+        //
+        // Not pre-ticked for somebody the landing step is not handed to - the
+        // document would sit on their plate with nothing to move it on, so the
+        // pick is left to them and the row says why.
+        if (!hadDraft && this.currentUserId && this.canAssignToMe) {
+            this.assignToMe = true;
+        }
+
+        if (!hadDraft) {
+            this.tickStepDoers();
+        }
+
+        // After the watcher on the column mounted() just resolved has run, so
+        // that one does not tick over a restored draft.
+        this.$nextTick(() => {
+            this.picker_ready = true;
+        });
 
         window.addEventListener('keydown', this.onKeydown);
     },
@@ -1172,6 +1367,25 @@ export default {
             if (!this.projectLists.some((list) => Number(list.id) === Number(this.form.list_id))) {
                 this.form.list_id = this.projectLists.length ? this.projectLists[0].id : null;
             }
+        },
+        /**
+         * Tick the people the step this document lands on is handed to.
+         *
+         * Filing a document is handing it to whoever does the next step, and
+         * the workflow already says who that is - so the pick is made rather
+         * than merely offered. It mirrors what forwarding does at every later
+         * step: assignStepOwners() puts the document on all of the
+         * responsibility's holders, not one of them.
+         *
+         * The filer's own row is left alone either way: it is pinned above the
+         * list and has its own rule, the registry exemption included.
+         */
+        tickStepDoers() {
+            if (!this.stepRoleCode) return;
+
+            const mine = this.form.assignees.filter((id) => id === this.currentUserId);
+
+            this.form.assignees = [...mine, ...this.stepDoers.map((member) => member.id)];
         },
         /**
          * Is this person filed under the department - and, once a sub-office is
@@ -1378,7 +1592,8 @@ export default {
             this.department_id = null;
             this.form.entry_date = new Date();
             this.resolveBoard();
-            if (this.currentUserId) this.assignToMe = true;
+            if (this.currentUserId && this.canAssignToMe) this.assignToMe = true;
+            this.tickStepDoers();
             this.draft_restored = false;
             this.step = 0;
         },

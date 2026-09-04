@@ -11,6 +11,7 @@ use App\Models\Project;
 use App\Models\Role;
 use App\Models\Task;
 use App\Models\User;
+use App\Models\WorkflowSubRole;
 use App\Models\Workspace;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -126,6 +127,137 @@ class DocumentSubmissionTest extends TestCase
                 // The department comes from the office's parent, which is what
                 // lets the picker narrow on either half of the pair.
                 ->where('source_members.0.department_id', $department->id)
+            );
+    }
+
+    public function test_the_form_falls_back_to_the_people_the_workflow_reaches(): void
+    {
+        // Nobody is on the workspace team and nobody is filed under an office:
+        // the only people this document can land on are the ones carrying a
+        // responsibility one of its steps names.
+        $group = WorkflowSubRole::create(['code' => 'dpt', 'name' => 'Departments D1-D5', 'order' => 1]);
+        $office = WorkflowSubRole::create(['code' => 'd1', 'name' => 'D1', 'order' => 2, 'parent_id' => $group->id]);
+
+        EdocWorkflowRole::create([
+            'workflow_type' => 'internal_cgmc',
+            'workspace_id' => $this->workspace->id,
+            'list_title' => 'To do',
+            'order' => 1,
+            'responsible_role' => $group->code,
+            'role_mode' => 'dynamic',
+        ]);
+
+        $officer = User::factory()->create(['role_id' => $this->user->role_id]);
+        $officer->update(['workflow_sub_role_id' => $office->id]);
+
+        $this->get(route('workspace.documents.submit', $this->workspace->slug ?: $this->workspace->id))
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->has('team_members', 0)
+                ->has('source_members', 0)
+                // Reached through the group the step names, which a dynamic
+                // step names just as a standard one does.
+                ->has('role_members', 1)
+                ->where('role_members.0.id', $officer->id)
+                ->where('role_members.0.role', 'D1')
+            );
+    }
+
+    public function test_the_form_says_whether_the_filer_is_a_doer_in_this_flow(): void
+    {
+        $role = WorkflowSubRole::create(['code' => 'admin', 'name' => 'Registry Office', 'order' => 1]);
+        $this->user->update(['workflow_sub_role_id' => $role->id]);
+
+        // No step names their responsibility yet, so nothing in this flow would
+        // ever hand them the document.
+        $this->get(route('workspace.documents.submit', $this->workspace->slug ?: $this->workspace->id))
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('me.role', 'Registry Office')
+                ->where('me.is_doer', false)
+            );
+
+        EdocWorkflowRole::create([
+            'workflow_type' => 'internal_cgmc',
+            'workspace_id' => $this->workspace->id,
+            'list_title' => 'To do',
+            'order' => 1,
+            'responsible_role' => $role->code,
+        ]);
+
+        // Re-authenticated on a fresh instance: the responsibility a user
+        // carries is memoised per model, and actingAs() holds the same one
+        // across both requests where a real one is resolved per request.
+        $this->actingAs($this->user->fresh());
+
+        $this->get(route('workspace.documents.submit', $this->workspace->slug ?: $this->workspace->id))
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page->where('me.is_doer', true));
+    }
+
+    public function test_each_column_names_the_responsibility_its_step_is_handed_to(): void
+    {
+        // What the picker matches against: the column the document lands on
+        // says who it is for, so unrelated people can be left off entirely.
+        $role = WorkflowSubRole::create(['code' => 'dpt', 'name' => 'Departments D1-D5', 'order' => 1]);
+
+        EdocWorkflowRole::create([
+            'workflow_type' => 'internal_cgmc',
+            'workspace_id' => $this->workspace->id,
+            'list_title' => 'To do',
+            'order' => 1,
+            'responsible_role' => $role->code,
+        ]);
+
+        $office = WorkflowSubRole::create(['code' => 'd1', 'name' => 'D1', 'order' => 2, 'parent_id' => $role->id]);
+        $officer = User::factory()->create(['role_id' => $this->user->role_id]);
+        $officer->update(['workflow_sub_role_id' => $office->id]);
+
+        $this->get(route('workspace.documents.submit', $this->workspace->slug ?: $this->workspace->id))
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('lists.0.responsible_role', 'dpt')
+                ->where('lists.0.responsible_role_name', 'Departments D1-D5')
+                // The group the officer sits under is carried too: a step
+                // naming a group is handed to all of it.
+                ->where('role_members.0.role_code', 'd1')
+                ->where('role_members.0.role_parent_code', 'dpt')
+            );
+    }
+
+    public function test_the_registry_office_is_exempt_from_the_doer_gate(): void
+    {
+        // Every document passes through the registry on the way in and on the
+        // way out, so it keeps one it has just filed whatever the landing step
+        // says - the form is told so, and the pinned row reads it.
+        $registry = WorkflowSubRole::create([
+            'code' => User::REGISTRY_SUB_ROLE_CODE,
+            'name' => 'Registry Office',
+            'order' => 1,
+        ]);
+
+        $this->user->update(['workflow_sub_role_id' => $registry->id]);
+
+        // A step handed to somebody else entirely: the gate would close here
+        // for anyone but the registry.
+        EdocWorkflowRole::create([
+            'workflow_type' => 'internal_cgmc',
+            'workspace_id' => $this->workspace->id,
+            'list_title' => 'To do',
+            'order' => 1,
+            'responsible_role' => 'dpt',
+        ]);
+
+        $this->actingAs($this->user->fresh());
+
+        $this->get(route('workspace.documents.submit', $this->workspace->slug ?: $this->workspace->id))
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('me.is_registry', true)
+                // Their own responsibility is not the one the step names, so
+                // the exemption is the only thing carrying them through.
+                ->where('me.role_code', User::REGISTRY_SUB_ROLE_CODE)
+                ->where('lists.0.responsible_role', 'dpt')
             );
     }
 

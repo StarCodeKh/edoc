@@ -183,6 +183,20 @@ class WorkflowStep
         return (bool) (self::forList($list)->allows_merge ?? false);
     }
 
+    /**
+     * The responsibility code the step behind a board title is handed to, in
+     * the same title-keyed shape as the helpers above.
+     *
+     * This is who a document lands on when it reaches that column, which is
+     * what the intake form's assignee picker offers.
+     */
+    public static function responsibleRoleForTitle(?int $workspaceId, ?string $title): ?string
+    {
+        $role = self::forWorkspace($workspaceId)->get(self::key($title))->responsible_role ?? null;
+
+        return $role !== '' ? $role : null;
+    }
+
     /** The step a document finishes on, where the workflow marks one. */
     public static function isTerminal(?BoardList $list): bool
     {

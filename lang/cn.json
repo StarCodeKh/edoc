@@ -897,5 +897,9 @@
     "This document is finished.": "此文件已完成。",
     "This document is already finished.": "此文件已经完成。",
     "Nobody is filed under this office yet - showing the whole team.": "该办公室尚未登记人员 — 显示全部成员。",
+    "Nobody is on this workspace team yet - showing people by workflow responsibility.": "该工作区尚无成员 — 按工作流职责显示人员。",
+    "Doers for :step": ":step 的承办人",
+    "Nobody carries :role yet - the step this document lands on has no doer.": "目前无人担任 :role — 该文件所到达的步骤没有承办人。",
+    "No workflow step reaches you here - pick someone below.": "此处没有工作流步骤会指派给您 — 请从下方选择人员。",
     "People in :source": ":source 的人员"
 }

@@ -73,6 +73,10 @@ class DocumentSubmissionController extends Controller
             ->orderBy('title')
             ->get(['id', 'title', 'slug']);
 
+        // Responsibility names, by the code the steps carry, so a column can
+        // say whose step it is rather than showing a bare code.
+        $stepRoles = WorkflowSubRole::pluck('name', 'code');
+
         // Every board column for those projects, sent in one payload so the
         // project -> status pair narrows client-side without another round trip.
         // Each carries what the workflow step behind it expects of the document,
@@ -81,13 +85,22 @@ class DocumentSubmissionController extends Controller
             ->isOpen()
             ->orderByOrder()
             ->get(['id', 'title', 'project_id', 'order'])
-            ->map(fn (BoardList $list) => [
-                'id' => $list->id,
-                'title' => $list->title,
-                'project_id' => $list->project_id,
-                'order' => $list->order,
-                'attachment_mode' => WorkflowStep::attachmentModeForTitle($workspace->id, $list->title),
-            ]);
+            ->map(function (BoardList $list) use ($workspace, $stepRoles) {
+                $code = WorkflowStep::responsibleRoleForTitle($workspace->id, $list->title);
+
+                return [
+                    'id' => $list->id,
+                    'title' => $list->title,
+                    'project_id' => $list->project_id,
+                    'order' => $list->order,
+                    'attachment_mode' => WorkflowStep::attachmentModeForTitle($workspace->id, $list->title),
+                    // Who the document is for once it lands here. The picker
+                    // offers exactly these people, so a document is never
+                    // handed to somebody the step will not reach.
+                    'responsible_role' => $code,
+                    'responsible_role_name' => $code ? ($stepRoles[$code] ?? null) : null,
+                ];
+            });
 
         // Department -> sub-office is the internal flow's own routing, so the
         // pair is only offered there. Everywhere else the list is sent empty
@@ -102,8 +115,10 @@ class DocumentSubmissionController extends Controller
             : collect();
 
         $teamMembers = TeamMember::with([
-            'user:id,first_name,last_name,email,photo_path,document_source_id',
+            'user:id,first_name,last_name,email,photo_path,document_source_id,workflow_sub_role_id',
             'user.documentSource:id,parent_id',
+            'user.workflowSubRole:id,name,code,parent_id',
+            'user.workflowSubRole.parent:id,code',
         ])
             ->where('workspace_id', $workspace->id)
             ->get()
@@ -122,14 +137,24 @@ class DocumentSubmissionController extends Controller
         $sourceMembers = $this->routesByDepartment($workspace)
             ? User::whereNotNull('document_source_id')
                 ->whereNotIn('id', $teamMembers->pluck('id'))
-                ->with('documentSource:id,parent_id')
+                ->with(['documentSource:id,parent_id', 'workflowSubRole:id,name,code,parent_id', 'workflowSubRole.parent:id,code'])
                 ->orderBy('first_name')
-                ->get(['id', 'first_name', 'last_name', 'email', 'photo_path', 'document_source_id'])
+                ->get(['id', 'first_name', 'last_name', 'email', 'photo_path', 'document_source_id', 'workflow_sub_role_id'])
                 ->map(fn (User $user) => $this->memberPayload($user))
             : collect();
 
+        // Last resort for the picker: the people this workspace's workflow
+        // actually reaches. An administration that hands out a responsibility
+        // instead of a team-member row leaves both lists above empty, and the
+        // picker would have nobody to offer at all.
+        $roleMembers = $this->membersByResponsibility(
+            $workspace,
+            $teamMembers->pluck('id')->merge($sourceMembers->pluck('id'))
+        );
+
         return Inertia::render('Documents/Submit', [
             'title' => 'Submit Document | '.$workspace->name,
+            'me' => $this->filerStanding($workspace, $request->user()),
             'workspace' => $workspace,
             'projects' => $projects,
             'lists' => $lists,
@@ -138,6 +163,7 @@ class DocumentSubmissionController extends Controller
             'priorities' => Priority::orderBy('order')->get(['id', 'name', 'color']),
             'team_members' => $teamMembers,
             'source_members' => $sourceMembers,
+            'role_members' => $roleMembers,
             'limits' => [
                 'max_files' => self::MAX_FILES,
                 'max_file_mb' => (int) (self::MAX_FILE_KB / 1024),
@@ -160,7 +186,112 @@ class DocumentSubmissionController extends Controller
             'photo' => $user->photo_path,
             'office_id' => $user->document_source_id,
             'department_id' => optional($user->documentSource)->parent_id,
+            // Shown in place of the office when someone is reached by their
+            // workflow responsibility rather than by where they are filed.
+            'role' => optional($user->workflowSubRole)->name,
+            // The codes the picker matches a step against. The group is
+            // carried too: a step naming a group means all of it, which is the
+            // same rule assignStepOwners() falls back on when it hands a
+            // document over.
+            'role_code' => optional($user->workflowSubRole)->code,
+            'role_parent_code' => optional(optional($user->workflowSubRole)->parent)->code,
         ];
+    }
+
+    /**
+     * The filer's own standing in this workflow, for the pinned "assign this
+     * to me" row.
+     *
+     * That row is how a document reaches My Tasks, so it is worth saying who
+     * it would actually reach. Someone carrying a responsibility this
+     * workspace's steps name is a doer here, and the row names the
+     * responsibility. Someone carrying none is not: nothing in this flow would
+     * ever hand them the document, so the row is left unticked and points at
+     * the list below instead of quietly filing the document to a plate the
+     * workflow does not reach.
+     *
+     * It stays a suggestion rather than a rule - keeping your own document is
+     * still allowed, the same as it always was - and the registry office is
+     * exempt from it outright.
+     */
+    private function filerStanding(Workspace $workspace, ?User $user): array
+    {
+        if (empty($user)) {
+            return [
+                'id' => null,
+                'role' => null,
+                'role_code' => null,
+                'role_parent_code' => null,
+                'is_doer' => false,
+                'is_registry' => false,
+            ];
+        }
+
+        $role = $user->workflowSubRole;
+
+        return [
+            'id' => $user->id,
+            'role' => optional($role)->name,
+            // Matched against the step the document lands on, the same way
+            // every other row in the picker is.
+            'role_code' => optional($role)->code,
+            'role_parent_code' => optional(optional($role)->parent)->code,
+            // The broader answer, for a flow whose steps name no responsibility
+            // at all: does any step here reach them?
+            'is_doer' => in_array($workspace->id, $user->responsibleWorkspaceIds(), true),
+            // The registry office is exempt from that match. Every document
+            // passes through it on the way in and on the way out, so keeping
+            // one it has just filed is its ordinary work rather than a
+            // mis-file - see User::isRegistryOffice().
+            'is_registry' => $user->isRegistryOffice(),
+        ];
+    }
+
+    /**
+     * Everyone this workspace's workflow can put a document on, by
+     * responsibility rather than by team membership.
+     *
+     * The chain is the same one a forward walks - workflow step ->
+     * responsible_role code -> sub-role -> the users holding it - read across
+     * every step of the workspace at once instead of just the next one.
+     * Standard and dynamic steps alike: both name a responsibility, and the
+     * difference between them is only how many of its holders end up on the
+     * document, which is the filer's choice to make here.
+     *
+     * A step naming a group (នាយកដ្ឋាន D1-D5) means all of it, so the offices
+     * filed under that group are named too - the same rule
+     * User::responsibleStepsQuery() reads from the other end.
+     */
+    private function membersByResponsibility(Workspace $workspace, Collection $exclude): Collection
+    {
+        $codes = EdocWorkflowRole::where('workspace_id', $workspace->id)
+            ->whereNotNull('responsible_role')
+            ->where('responsible_role', '!=', '')
+            ->pluck('responsible_role')
+            ->unique();
+
+        if ($codes->isEmpty()) {
+            return collect();
+        }
+
+        $roleIds = WorkflowSubRole::whereIn('code', $codes)->pluck('id');
+
+        if ($roleIds->isEmpty()) {
+            return collect();
+        }
+
+        $roleIds = $roleIds
+            ->merge(WorkflowSubRole::whereIn('parent_id', $roleIds)->pluck('id'))
+            ->unique()
+            ->values();
+
+        return User::whereIn('workflow_sub_role_id', $roleIds)
+            ->whereNotIn('id', $exclude)
+            ->with(['documentSource:id,parent_id', 'workflowSubRole:id,name,code,parent_id', 'workflowSubRole.parent:id,code'])
+            ->orderBy('first_name')
+            ->get(['id', 'first_name', 'last_name', 'email', 'photo_path', 'document_source_id', 'workflow_sub_role_id'])
+            ->map(fn (User $user) => $this->memberPayload($user))
+            ->values();
     }
 
     /**

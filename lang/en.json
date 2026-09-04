@@ -902,5 +902,9 @@
     "Responsibilities only nest one level deep.": "Responsibilities only nest one level deep.",
     "A responsibility that stands for others cannot be moved under another.": "A responsibility that stands for others cannot be moved under another.",
     "Nobody is filed under this office yet - showing the whole team.": "Nobody is filed under this office yet - showing the whole team.",
+    "Nobody is on this workspace team yet - showing people by workflow responsibility.": "Nobody is on this workspace team yet - showing people by workflow responsibility.",
+    "Doers for :step": "Doers for :step",
+    "Nobody carries :role yet - the step this document lands on has no doer.": "Nobody carries :role yet - the step this document lands on has no doer.",
+    "No workflow step reaches you here - pick someone below.": "No workflow step reaches you here - pick someone below.",
     "People in :source": "People in :source"
 }

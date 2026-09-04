@@ -945,5 +945,9 @@
     "This document is finished.": "ឯកសារនេះបានបញ្ចប់ហើយ។",
     "This document is already finished.": "ឯកសារនេះបានបញ្ចប់រួចហើយ។",
     "Nobody is filed under this office yet - showing the whole team.": "មិនទាន់មានបុគ្គលិកចុះក្នុងការិយាល័យនេះទេ — កំពុងបង្ហាញសមាជិកទាំងអស់។",
+    "Nobody is on this workspace team yet - showing people by workflow responsibility.": "មិនទាន់មានសមាជិកក្នុងកន្លែងធ្វើការនេះទេ — កំពុងបង្ហាញបុគ្គលិកតាមតួនាទីលំហូរការងារ។",
+    "Doers for :step": "អ្នកទទួលបន្ទុកសម្រាប់ :step",
+    "Nobody carries :role yet - the step this document lands on has no doer.": "មិនទាន់មានបុគ្គលិកកាន់តួនាទី :role ទេ — ជំហានដែលឯកសារនេះទៅដល់គ្មានអ្នកទទួលបន្ទុកទេ។",
+    "No workflow step reaches you here - pick someone below.": "គ្មានជំហានលំហូរការងារណាមួយមកដល់អ្នកនៅទីនេះទេ — សូមជ្រើសរើសបុគ្គលិកខាងក្រោម។",
     "People in :source": "បុគ្គលិកនៅ :source"
 }
