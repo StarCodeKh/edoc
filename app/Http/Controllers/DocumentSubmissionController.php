@@ -543,6 +543,10 @@ class DocumentSubmissionController extends Controller
             // One or several responsibility codes, comma-joined - which is what
             // the multi-select posts. A single code is just a list of one.
             'hand_to' => 'nullable|string|max:255',
+            // Named people, where the forwarder picked them rather than leaving
+            // the step's responsibility to answer for itself.
+            'assign_to' => 'nullable|array',
+            'assign_to.*' => 'integer|exists:users,id',
         ]);
 
         if ((bool) $task->is_done) {
@@ -574,9 +578,17 @@ class DocumentSubmissionController extends Controller
             ->unique()
             ->values();
 
+        $assignTo = collect($validated['assign_to'] ?? [])
+            ->map(fn ($id) => (int) $id)
+            ->filter()
+            ->unique()
+            ->values();
+
         $options = $this->handToOptions($this->stepConfig($task, $next));
 
-        if ($options->isNotEmpty()) {
+        // Naming people outright answers the same question the department
+        // choice does, and more precisely - so it stands in for it.
+        if ($options->isNotEmpty() && $assignTo->isEmpty()) {
             if ($handTo->isEmpty()) {
                 return Redirect::back()->with('error', __('Choose who :step goes to.', ['step' => $next->title]));
             }
@@ -584,7 +596,7 @@ class DocumentSubmissionController extends Controller
             if ($handTo->diff($options->pluck('code'))->isNotEmpty()) {
                 return Redirect::back()->with('error', __(':step cannot be handed to that responsibility.', ['step' => $next->title]));
             }
-        } else {
+        } elseif ($options->isEmpty()) {
             $handTo = collect();
         }
 
@@ -626,7 +638,7 @@ class DocumentSubmissionController extends Controller
 
         // ...and puts it on the plate of whoever carries the next step's
         // responsibility, as configured in Settings > Workflow Roles.
-        $handedTo = $this->assignStepOwners($task, $workspace, $next, $handTo);
+        $handedTo = $this->assignStepOwners($task, $workspace, $next, $handTo, $assignTo);
 
         // Landing on nobody's plate is a dead end: the document sits on the
         // board and shows in no one's My Documents until somebody is given the
@@ -807,9 +819,32 @@ class DocumentSubmissionController extends Controller
      * $handTo holds the responsibilities chosen while forwarding into a dynamic
      * step, already checked by the caller against what that step offers. It may
      * name several: one document often goes to D1 through D5 at once.
+     *
+     * $assignTo is the forwarder naming people outright. Where it is given it
+     * settles the question - the responsibility decided who *could* receive the
+     * document, and this says who does. It is the only arm that works on a step
+     * carrying no responsibility at all, which is how a document moves through
+     * a flow whose steps have not been configured yet.
      */
-    private function assignStepOwners(Task $task, Workspace $workspace, BoardList $step, ?Collection $handTo = null)
-    {
+    private function assignStepOwners(
+        Task $task,
+        Workspace $workspace,
+        BoardList $step,
+        ?Collection $handTo = null,
+        ?Collection $assignTo = null
+    ) {
+        $alreadyOn = Assignee::where('task_id', $task->id)->pluck('user_id')->all();
+
+        if ($assignTo && $assignTo->isNotEmpty()) {
+            return $this->putOnPlates(
+                $task,
+                User::whereIn('id', $assignTo->all())
+                    ->where('id', '!=', auth()->id())
+                    ->whereNotIn('id', $alreadyOn)
+                    ->get()
+            );
+        }
+
         $code = EdocWorkflowRole::where('workspace_id', $workspace->id)
             ->where('list_title', $step->title)
             ->value('responsible_role');
@@ -827,8 +862,6 @@ class DocumentSubmissionController extends Controller
         $chosen = $handTo && $handTo->isNotEmpty()
             ? WorkflowSubRole::whereIn('code', $handTo->all())->get()
             : collect();
-
-        $alreadyOn = Assignee::where('task_id', $task->id)->pluck('user_id')->all();
 
         $holders = function (WorkflowSubRole $role) use ($alreadyOn) {
             return User::where('workflow_sub_role_id', $role->id)
@@ -851,6 +884,12 @@ class DocumentSubmissionController extends Controller
             $owners = $holders($subRole);
         }
 
+        return $this->putOnPlates($task, $owners);
+    }
+
+    /** Files the assignee rows and tells each person, in one place. */
+    private function putOnPlates(Task $task, Collection $owners): Collection
+    {
         $assigner = auth()->user();
 
         foreach ($owners as $owner) {
@@ -964,15 +1003,68 @@ class DocumentSubmissionController extends Controller
         $step = $this->stepConfig($task, $next);
         $options = $this->handToOptions($step);
 
+        $workspaceId = optional($task->project)->workspace_id;
+
         return [
             'id' => $next->id,
             'title' => $next->title,
             'responsible_role' => $step->responsible_role ?? null,
+            'responsible_role_name' => $this->stepResponsibilityName($task, $next),
             // 'dynamic' means the step names a group and the forwarder has to
             // say which of its members actually gets the document.
             'role_mode' => $options->isEmpty() ? 'standard' : 'dynamic',
             'hand_to_options' => $options->all(),
+            // Who the step reaches, by name. A hand-off used to be described
+            // only by the responsibility it named, which meant the forwarder
+            // pressed the button without being told who would actually receive
+            // the document.
+            'people' => $this->stepCandidates($step, $workspaceId)->all(),
         ];
+    }
+
+    /**
+     * The people a step can be handed to, named.
+     *
+     * The responsibility the step carries, plus every responsibility filed
+     * under it - the same reach assignStepOwners() has when it hands the
+     * document over, so the names shown before the button is pressed are the
+     * people who will actually receive it.
+     *
+     * Each carries the responsibility code it was reached by, which is what
+     * lets the forward panel narrow the list as a dynamic step's departments
+     * are chosen.
+     */
+    private function stepCandidates(?EdocWorkflowRole $step, ?int $workspaceId): Collection
+    {
+        if (empty($step) || empty($step->responsible_role)) {
+            return collect();
+        }
+
+        $role = WorkflowSubRole::where('code', $step->responsible_role)->first();
+
+        if (empty($role)) {
+            return collect();
+        }
+
+        $roleIds = collect([$role->id])
+            ->merge(WorkflowSubRole::where('parent_id', $role->id)->pluck('id'))
+            ->unique()
+            ->values();
+
+        return User::whereIn('workflow_sub_role_id', $roleIds)
+            ->where('id', '!=', auth()->id())
+            ->with('workflowSubRole:id,name,code')
+            ->orderBy('first_name')
+            ->get(['id', 'first_name', 'last_name', 'email', 'photo_path', 'workflow_sub_role_id'])
+            ->map(fn (User $user) => [
+                'id' => $user->id,
+                'name' => trim($user->first_name.' '.$user->last_name) ?: $user->email,
+                'email' => $user->email,
+                'photo' => $user->photo_path,
+                'role' => optional($user->workflowSubRole)->name,
+                'role_code' => optional($user->workflowSubRole)->code,
+            ])
+            ->values();
     }
 
     /** The configured step behind a board list, by workspace and title. */

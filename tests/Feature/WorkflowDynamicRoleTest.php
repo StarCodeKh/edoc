@@ -464,6 +464,94 @@ class WorkflowDynamicRoleTest extends TestCase
     }
 
     /**
+     * The forward panel names who the next step reaches, rather than only the
+     * responsibility it carries. Pressing the button used to be the first time
+     * anyone found out who the document had gone to.
+     */
+    public function test_the_next_step_carries_the_people_it_reaches(): void
+    {
+        $this->departmentGroup();
+        $this->makeBoard();
+        $task = $this->makeTask();
+
+        $inD1 = User::factory()->create([
+            'role_id' => $this->role->id,
+            'workflow_sub_role_id' => WorkflowSubRole::where('code', 'd1')->value('id'),
+        ]);
+
+        $this->get(route('workspace.documents.show', [
+            'uid' => $this->workspace->slug ?: $this->workspace->id,
+            'taskUid' => $task->slug ?: $task->id,
+        ]))
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('next_step.role_mode', 'dynamic')
+                ->where('next_step.responsible_role_name', 'Departments D1-D5')
+                ->has('next_step.people', 1)
+                ->where('next_step.people.0.id', $inD1->id)
+                // The code it was reached by, so the panel can narrow the list
+                // as departments are chosen.
+                ->where('next_step.people.0.role_code', 'd1')
+            );
+    }
+
+    /**
+     * Naming people outright settles who gets the document, and stands in for
+     * the department choice a dynamic step would otherwise demand.
+     */
+    public function test_forwarding_can_name_the_people_outright(): void
+    {
+        $this->departmentGroup();
+        $this->makeBoard();
+        $task = $this->makeTask();
+
+        $one = User::factory()->create([
+            'role_id' => $this->role->id,
+            'workflow_sub_role_id' => WorkflowSubRole::where('code', 'd1')->value('id'),
+        ]);
+        $two = User::factory()->create([
+            'role_id' => $this->role->id,
+            'workflow_sub_role_id' => WorkflowSubRole::where('code', 'd1')->value('id'),
+        ]);
+
+        // No hand_to at all - the named people answer the same question.
+        $this->forward($task, ['assign_to' => [$one->id]]);
+
+        $on = Assignee::where('task_id', $task->id)->pluck('user_id')->all();
+
+        $this->assertContains($one->id, $on);
+        $this->assertNotContains($two->id, $on, 'only the person named should be on it');
+    }
+
+    /**
+     * A standard step gets the same choice. It assigns every holder of its
+     * responsibility by default, and that default is now something the
+     * forwarder can narrow rather than the only outcome available.
+     */
+    public function test_a_standard_step_can_be_narrowed_to_one_person(): void
+    {
+        WorkflowSubRole::create(['code' => 'dpt', 'name' => 'Departments D1-D5', 'order' => 0]);
+        $this->makeBoard('standard');
+        $task = $this->makeTask();
+
+        $one = User::factory()->create([
+            'role_id' => $this->role->id,
+            'workflow_sub_role_id' => WorkflowSubRole::where('code', 'dpt')->value('id'),
+        ]);
+        $two = User::factory()->create([
+            'role_id' => $this->role->id,
+            'workflow_sub_role_id' => WorkflowSubRole::where('code', 'dpt')->value('id'),
+        ]);
+
+        $this->forward($task, ['assign_to' => [$two->id]]);
+
+        $on = Assignee::where('task_id', $task->id)->pluck('user_id')->all();
+
+        $this->assertContains($two->id, $on);
+        $this->assertNotContains($one->id, $on);
+    }
+
+    /**
      * People may still be filed under the group rather than one of its members.
      * Falling back to the group beats handing the document to nobody.
      */

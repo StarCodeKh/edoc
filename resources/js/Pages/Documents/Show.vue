@@ -345,10 +345,7 @@
                                                             v-if="step.responsible_role"
                                                             class="text-[11px] text-gray-500"
                                                         >
-                                                            {{
-                                                                step.responsible_role_name ||
-                                                                step.responsible_role
-                                                            }}
+                                                            {{ step.responsible_role_name || step.responsible_role }}
                                                         </div>
 
                                                         <div v-if="step.actor" class="mt-1.5 flex items-center gap-1.5">
@@ -586,6 +583,67 @@
                                                     />
                                                 </div>
 
+                                                <!-- Who it reaches, by name. Forwarding used to name
+                                                     only the responsibility, so the button was pressed
+                                                     without knowing who would receive the document.
+                                                     Left alone this is a statement; opened, it is the
+                                                     place to hand it to somebody else. -->
+                                                <div v-if="!finishes_here && nextStepPeople.length" class="mt-2">
+                                                    <div class="flex items-center justify-between gap-2">
+                                                        <span
+                                                            class="text-[11px] font-semibold uppercase tracking-wide text-gray-400"
+                                                        >
+                                                            {{ $t('Goes to') }}
+                                                        </span>
+                                                        <button
+                                                            type="button"
+                                                            class="text-[11px] font-medium text-indigo-600 hover:underline"
+                                                            @click="show_assignees = !show_assignees"
+                                                        >
+                                                            {{ show_assignees ? $t('Done') : $t('Change') }}
+                                                        </button>
+                                                    </div>
+
+                                                    <p v-if="!show_assignees" class="mt-0.5 text-sm text-gray-700">
+                                                        {{ nextStepSummary }}
+                                                    </p>
+
+                                                    <ul
+                                                        v-else
+                                                        class="mt-1 max-h-40 overflow-y-auto rounded-xl border border-gray-200 p-1"
+                                                    >
+                                                        <li v-for="person in nextStepPeople" :key="person.id">
+                                                            <label
+                                                                class="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-gray-50"
+                                                            >
+                                                                <input
+                                                                    type="checkbox"
+                                                                    class="h-4 w-4 rounded border-gray-300 text-indigo-600"
+                                                                    :value="person.id"
+                                                                    v-model="assign_to"
+                                                                />
+                                                                <span class="min-w-0">
+                                                                    <span
+                                                                        class="block truncate text-sm text-gray-800"
+                                                                        >{{ person.name }}</span
+                                                                    >
+                                                                    <span
+                                                                        v-if="person.role"
+                                                                        class="block truncate text-[11px] text-gray-400"
+                                                                        >{{ person.role }}</span
+                                                                    >
+                                                                </span>
+                                                            </label>
+                                                        </li>
+                                                    </ul>
+
+                                                    <!-- Ticking nobody is not "send it to nobody": it is
+                                                         the default, which is everybody the step reaches. -->
+                                                    <p v-if="show_assignees" class="mt-1 text-[11px] text-gray-400">
+                                                        {{ $t('Tick nobody to send it to everyone listed.') }}
+                                                    </p>
+                                                </div>
+
                                                 <div class="mt-2">
                                                     <!-- Hands the document to the next board. Anything
                                                          typed above rides along as the note. There is
@@ -666,6 +724,15 @@
                                                     class="mt-1.5 text-center text-[11px] text-gray-400"
                                                 >
                                                     {{ $t('Next: :step', { step: next_step.title }) }}
+                                                    <template v-if="nextStepSummary"> — {{ nextStepSummary }}</template>
+                                                    <template v-else-if="next_step.responsible_role_name">
+                                                        —
+                                                        {{
+                                                            $t('nobody carries :role yet', {
+                                                                role: next_step.responsible_role_name,
+                                                            })
+                                                        }}
+                                                    </template>
                                                 </p>
                                                 <p v-else class="mt-1.5 text-center text-[11px] text-gray-400">
                                                     {{ $t('This document is already at the last step.') }}
@@ -867,6 +934,11 @@ export default {
             // Only ever set for a step that names a group; a standard step
             // sends null and the server assigns its role as before.
             hand_to: null,
+            // People named outright for the next step. Empty means "whoever the
+            // step's responsibility reaches", which is what forwarding has
+            // always done; naming anybody narrows it to exactly them.
+            assign_to: [],
+            show_assignees: false,
             notice: '',
             // The merge tab: which linked documents are ticked, and the note
             // filed with the merge. Kept apart from new_comment so a note typed
@@ -996,6 +1068,51 @@ export default {
                 .split(',')
                 .filter(Boolean).length;
         },
+        /** The codes chosen on a dynamic step, as a list. */
+        handToCodes() {
+            return String(this.hand_to || '')
+                .split(',')
+                .filter(Boolean);
+        },
+        /**
+         * Who the next step reaches, narrowed to the departments chosen where
+         * the step is dynamic and one has been. Someone filed on the group
+         * itself is kept whatever is chosen - they are the group's own staff.
+         */
+        nextStepPeople() {
+            const people = (this.next_step && this.next_step.people) || [];
+            const codes = this.handToCodes;
+
+            if (!this.mustChooseHandTo || !codes.length) return people;
+
+            const groupCode = this.next_step.responsible_role;
+
+            return people.filter((person) => codes.includes(person.role_code) || person.role_code === groupCode);
+        },
+        /** Named on the panel, so the button says who it is about to reach. */
+        nextStepNames() {
+            const chosen = this.assign_to.length
+                ? this.nextStepPeople.filter((person) => this.assign_to.includes(person.id))
+                : this.nextStepPeople;
+
+            return chosen.map((person) => person.name);
+        },
+        /**
+         * The one line under the button. Naming people beats naming a
+         * responsibility: "Next: With the department" says nothing about who
+         * has to act, and that is the only thing the forwarder needs to check.
+         */
+        nextStepSummary() {
+            const names = this.nextStepNames;
+
+            if (!names.length) return '';
+            if (names.length <= 3) return names.join(', ');
+
+            return this.$t(':names and :count more', {
+                names: names.slice(0, 3).join(', '),
+                count: names.length - 3,
+            });
+        },
         /**
          * Raising internal work is the administration's move, and only from a
          * document that is not itself internal - a document cannot be raised
@@ -1096,6 +1213,21 @@ export default {
             this.active_tab = requested;
         }
     },
+    watch: {
+        /**
+         * Choosing a different department changes who the step reaches, so
+         * anyone named from the old choice is dropped. Left in, they would be
+         * posted as assign_to and receive a document their department was not
+         * chosen for.
+         */
+        hand_to() {
+            if (!this.assign_to.length) return;
+
+            const reachable = new Set(this.nextStepPeople.map((person) => person.id));
+
+            this.assign_to = this.assign_to.filter((id) => reachable.has(id));
+        },
+    },
     methods: {
         /** The tab named in the URL, for links that open the page on one. */
         requestedTab() {
@@ -1178,7 +1310,13 @@ export default {
                     this.workspace.slug || this.workspace.id,
                     this.document.slug || this.document.id,
                 ]),
-                { note: this.new_comment.trim() || null, hand_to: this.mustChooseHandTo ? this.hand_to : null },
+                {
+                    note: this.new_comment.trim() || null,
+                    hand_to: this.mustChooseHandTo ? this.hand_to : null,
+                    // Sent only where the forwarder actually narrowed it; an
+                    // empty list leaves the step's responsibility to answer.
+                    assign_to: this.assign_to.length ? this.assign_to : null,
+                },
                 {
                     onFinish: () => {
                         this.forwarding = false;
