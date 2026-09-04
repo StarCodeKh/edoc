@@ -125,9 +125,13 @@ class DocumentRelatedVisibilityTest extends TestCase
         $this->assertFalse(TaskAbility::canView($this->normal, $task));
         $this->get($this->showUrl($task))->assertForbidden();
 
-        $this->get($this->listingUrl())->assertInertia(
-            fn (AssertableInertia $page) => $page->where('documents.data', [])
-        );
+        // Nothing in this workspace is theirs to read, so the register it would
+        // have listed in is not theirs to open either - see
+        // Workspace::scopeAccessibleTo. This used to render an empty page, but
+        // only by accident: the workspace here carries no slug, and the old
+        // membership gate was written so that addressing one by its id skipped
+        // the check altogether.
+        $this->get($this->listingUrl())->assertNotFound();
     }
 
     public static function relationProvider(): array
