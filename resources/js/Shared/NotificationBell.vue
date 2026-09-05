@@ -118,7 +118,7 @@ onUnmounted(() => document.removeEventListener('keydown', closeOnEscape));
 </script>
 
 <template>
-    <div class="relative">
+    <div class="relative" v-click-outside="closeAll">
         <!-- The Bell Icon Button -->
         <button
             @click="isOpen = !isOpen"
@@ -147,7 +147,6 @@ onUnmounted(() => document.removeEventListener('keydown', closeOnEscape));
         >
             <div
                 v-show="isOpen"
-                @click.away="isOpen = false"
                 class="absolute top-5 right-0 mt-3 w-80 sm:w-96 origin-top-right rounded-md shadow-lg bg-gray-100 dark:bg-gray-800 ring-1 ring-black dark:ring-white ring-opacity-5 z-50"
             >
                 <!-- Dropdown Header with 3-Dot Menu -->
@@ -155,7 +154,7 @@ onUnmounted(() => document.removeEventListener('keydown', closeOnEscape));
                     <h3 class="font-semibold text-gray-700 dark:text-white">Notifications</h3>
 
                     <!-- 3-Dot Menu Button and its own dropdown -->
-                    <div class="relative">
+                    <div class="relative" v-click-outside="() => (isMenuOpen = false)">
                         <button
                             @click.stop="isMenuOpen = !isMenuOpen"
                             class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400"
@@ -181,7 +180,6 @@ onUnmounted(() => document.removeEventListener('keydown', closeOnEscape));
                         >
                             <div
                                 v-if="isMenuOpen"
-                                @click.away="isMenuOpen = false"
                                 class="absolute right-0 mt-1 w-48 origin-top-right rounded-md shadow-lg bg-gray-100 dark:bg-gray-800 ring-1 ring-black dark:ring-white ring-opacity-5 z-10"
                             >
                                 <div class="py-1">

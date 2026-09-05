@@ -656,8 +656,8 @@ export default {
     display: flex;
     align-items: center;
     padding: 0.5rem 0.75rem;
-    background: #f9fafb;
-    border: 1px solid #d1d5db;
+    background: var(--surface-sunken);
+    border: 1px solid var(--line-strong);
     border-radius: 0.375rem;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -666,7 +666,7 @@ export default {
 
 .datetime-picker-trigger:hover {
     border-color: #9ca3af;
-    background: #f3f4f6;
+    background: var(--surface-raised);
 }
 
 .datetime-picker-trigger:focus {
@@ -685,15 +685,15 @@ export default {
 .trigger-text {
     flex: 1;
     text-align: left;
-    color: #374151;
+    color: var(--ink);
     font-size: 0.875rem;
 }
 
 .datetime-picker-dropdown {
     /* position / top / left / width all come from dropdownStyle. */
     position: fixed;
-    background: white;
-    border: 1px solid #e5e7eb;
+    background: var(--surface);
+    border: 1px solid var(--line);
     border-radius: 0.5rem;
     box-shadow:
         0 10px 25px -5px rgba(0, 0, 0, 0.1),
@@ -713,15 +713,15 @@ export default {
     justify-content: space-between;
     align-items: center;
     padding: 1rem;
-    border-bottom: 1px solid #e5e7eb;
-    background: #f9fafb;
+    border-bottom: 1px solid var(--line);
+    background: var(--surface-sunken);
 }
 
 .datetime-picker-title {
     margin: 0;
     font-size: 1rem;
     font-weight: 600;
-    color: #111827;
+    color: var(--ink);
 }
 
 .header-actions {
@@ -732,26 +732,26 @@ export default {
 .format-toggle,
 .mode-toggle {
     padding: 0.25rem 0.75rem;
-    border: 1px solid #d1d5db;
-    background: white;
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
     border-radius: 0.375rem;
     cursor: pointer;
     transition: all 0.2s ease;
     font-size: 0.75rem;
     font-weight: 600;
-    color: #374151;
+    color: var(--ink);
 }
 
 .format-toggle:hover,
 .mode-toggle:hover {
-    background: #f3f4f6;
+    background: var(--surface-raised);
     border-color: #9ca3af;
 }
 
 .mode-tabs {
     display: flex;
-    border-bottom: 1px solid #e5e7eb;
-    background: white;
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
 }
 
 .mode-tab {
@@ -766,13 +766,13 @@ export default {
     cursor: pointer;
     transition: all 0.2s ease;
     font-size: 0.875rem;
-    color: #6b7280;
+    color: var(--ink-muted);
     border-bottom: 2px solid transparent;
 }
 
 .mode-tab:hover {
-    background: #f3f4f6;
-    color: #374151;
+    background: var(--surface-raised);
+    color: var(--ink);
 }
 
 .mode-tab.is-active {
@@ -803,7 +803,7 @@ export default {
     width: 2rem;
     height: 2rem;
     border: none;
-    background: #f3f4f6;
+    background: var(--surface-raised);
     border-radius: 0.375rem;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -823,7 +823,7 @@ export default {
     border: none;
     font-size: 1rem;
     font-weight: 600;
-    color: #111827;
+    color: var(--ink);
     cursor: pointer;
     padding: 0.5rem;
     border-radius: 0.375rem;
@@ -831,7 +831,7 @@ export default {
 }
 
 .month-year-button:hover {
-    background: #f3f4f6;
+    background: var(--surface-raised);
 }
 
 .year-picker {
@@ -847,8 +847,8 @@ export default {
 
 .year-button {
     padding: 0.5rem;
-    border: 1px solid #e5e7eb;
-    background: white;
+    border: 1px solid var(--line);
+    background: var(--surface);
     border-radius: 0.375rem;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -856,13 +856,13 @@ export default {
 }
 
 .year-button:hover {
-    background: #f3f4f6;
-    border-color: #d1d5db;
+    background: var(--surface-raised);
+    border-color: var(--line-strong);
 }
 
 .year-button.is-selected {
     background: #3b82f6;
-    color: white;
+    color: var(--accent-on);
     border-color: #3b82f6;
 }
 
@@ -887,7 +887,7 @@ export default {
     text-align: center;
     font-size: 0.75rem;
     font-weight: 600;
-    color: #6b7280;
+    color: var(--ink-muted);
     padding: 0.5rem 0;
 }
 
@@ -904,32 +904,32 @@ export default {
     width: 2rem;
     height: 2rem;
     border: none;
-    background: white;
+    background: var(--surface);
     border-radius: 0.375rem;
     cursor: pointer;
     transition: all 0.2s ease;
     font-size: 0.875rem;
-    color: #374151;
+    color: var(--ink);
     margin: 0 auto;
 }
 
 .calendar-day:hover {
-    background: #f3f4f6;
+    background: var(--surface-raised);
 }
 
 .calendar-day.is-today {
-    background: #dbeafe;
-    color: #1d4ed8;
+    background: var(--tint-info-bg);
+    color: var(--tint-info-ink);
     font-weight: 600;
 }
 
 .calendar-day.is-selected {
     background: #3b82f6;
-    color: white;
+    color: var(--accent-on);
 }
 
 .calendar-day.is-other-month {
-    color: #9ca3af;
+    color: var(--ink-subtle);
 }
 
 .calendar-day.is-disabled {
@@ -938,7 +938,7 @@ export default {
 }
 
 .calendar-day.is-disabled:hover {
-    background: white;
+    background: var(--surface);
 }
 
 /* Time Section Styles */
@@ -958,7 +958,7 @@ export default {
 .time-label {
     font-size: 0.75rem;
     font-weight: 600;
-    color: #6b7280;
+    color: var(--ink-muted);
     margin-bottom: 0.5rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -968,9 +968,9 @@ export default {
     width: 100%;
     max-height: 120px;
     overflow-y: auto;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--line);
     border-radius: 0.375rem;
-    background: #f9fafb;
+    background: var(--surface-sunken);
 }
 
 .time-scroll-list {
@@ -985,7 +985,7 @@ export default {
     cursor: pointer;
     transition: all 0.2s ease;
     font-size: 0.875rem;
-    color: #374151;
+    color: var(--ink);
     text-align: center;
     min-height: 2rem;
     display: flex;
@@ -999,11 +999,11 @@ export default {
 
 .time-option.is-selected {
     background: #3b82f6;
-    color: white;
+    color: var(--accent-on);
 }
 
 .time-presets {
-    border-top: 1px solid #e5e7eb;
+    border-top: 1px solid var(--line);
     padding-top: 1rem;
 }
 
@@ -1011,7 +1011,7 @@ export default {
     margin: 0 0 0.75rem 0;
     font-size: 0.875rem;
     font-weight: 600;
-    color: #374151;
+    color: var(--ink);
 }
 
 .presets-grid {
@@ -1022,17 +1022,17 @@ export default {
 
 .preset-button {
     padding: 0.5rem;
-    border: 1px solid #d1d5db;
-    background: white;
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
     border-radius: 0.375rem;
     cursor: pointer;
     transition: all 0.2s ease;
     font-size: 0.75rem;
-    color: #374151;
+    color: var(--ink);
 }
 
 .preset-button:hover {
-    background: #f3f4f6;
+    background: var(--surface-raised);
     border-color: #9ca3af;
 }
 
@@ -1040,16 +1040,16 @@ export default {
     display: flex;
     justify-content: space-between;
     padding: 1rem;
-    border-top: 1px solid #e5e7eb;
-    background: white;
+    border-top: 1px solid var(--line);
+    background: var(--surface);
 }
 
 .now-button,
 .clear-button,
 .confirm-button {
     padding: 0.5rem 1rem;
-    border: 1px solid #d1d5db;
-    background: white;
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
     border-radius: 0.375rem;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -1058,23 +1058,23 @@ export default {
 
 .now-button:hover,
 .clear-button:hover {
-    background: #f3f4f6;
+    background: var(--surface-raised);
     border-color: #9ca3af;
 }
 
 .clear-button {
-    color: #dc2626;
-    border-color: #fecaca;
+    color: var(--tint-bad-ink);
+    border-color: var(--tint-bad-border);
 }
 
 .clear-button:hover {
-    background: #fef2f2;
-    border-color: #fca5a5;
+    background: var(--tint-bad-bg);
+    border-color: var(--tint-bad-border);
 }
 
 .confirm-button {
     background: #3b82f6;
-    color: white;
+    color: var(--accent-on);
     border-color: #3b82f6;
 }
 

@@ -2317,17 +2317,17 @@ export default {
 <style scoped>
 .custom-editor {
     position: relative;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--line);
     border-radius: 0.5rem;
-    background: white;
+    background: var(--surface);
     transition:
         border-color 0.2s,
         box-shadow 0.2s;
 }
 
 .custom-editor--focused {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    border-color: var(--accent-ink);
+    box-shadow: 0 0 0 3px rgba(var(--accent-fill-rgb), 0.15);
 }
 
 .custom-editor__toolbar {
@@ -2335,8 +2335,8 @@ export default {
     align-items: center;
     gap: 0.5rem;
     padding: 0.75rem;
-    border-bottom: 1px solid #e5e7eb;
-    background: #f9fafb;
+    border-bottom: 1px solid var(--line);
+    background: var(--surface-sunken);
     border-radius: 0.5rem 0.5rem 0 0;
     flex-wrap: wrap;
 }
@@ -2350,7 +2350,7 @@ export default {
 .toolbar-separator {
     width: 1px;
     height: 1.5rem;
-    background: #d1d5db;
+    background: var(--line-strong);
     margin: 0 0.25rem;
 }
 
@@ -2363,7 +2363,7 @@ export default {
     border: 1px solid transparent;
     border-radius: 0.375rem;
     background: transparent;
-    color: #6b7280;
+    color: var(--ink-muted);
     cursor: pointer;
     transition: all 0.15s ease;
     position: relative;
@@ -2377,36 +2377,36 @@ export default {
 }
 
 .toolbar-btn:hover {
-    background: #e5e7eb;
-    color: #374151;
+    background: var(--line);
+    color: var(--ink);
 }
 
 .toolbar-btn.active {
-    background: #3b82f6;
-    color: white;
-    border-color: #2563eb;
+    background: var(--accent-fill);
+    color: var(--accent-on);
+    border-color: var(--accent-ink);
     box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
 }
 
 .toolbar-btn.active:hover {
-    background: #2563eb;
+    background: var(--accent-fill-hover);
     box-shadow: 0 2px 6px rgba(59, 130, 246, 0.4);
 }
 
 .toolbar-select {
     padding: 0.25rem 0.5rem;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--line-strong);
     border-radius: 0.375rem;
-    background: white;
-    color: #374151;
+    background: var(--surface);
+    color: var(--ink);
     font-size: 0.875rem;
     cursor: pointer;
 }
 
 .toolbar-select:focus {
     outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+    border-color: var(--accent-ink);
+    box-shadow: 0 0 0 2px rgba(var(--accent-fill-rgb), 0.15);
 }
 
 .custom-editor__content {
@@ -2414,7 +2414,7 @@ export default {
     padding: 1rem;
     outline: none;
     line-height: 1.6;
-    color: #374151;
+    color: var(--ink);
     position: relative;
 }
 
@@ -2451,15 +2451,15 @@ export default {
 }
 
 .custom-editor__content blockquote {
-    border-left: 4px solid #d1d5db;
+    border-left: 4px solid var(--line-strong);
     padding-left: 1rem;
     margin: 1rem 0;
-    color: #6b7280;
+    color: var(--ink-muted);
     font-style: italic;
 }
 
 .custom-editor__content code {
-    background: #f3f4f6;
+    background: var(--surface-raised);
     padding: 0.125rem 0.25rem;
     border-radius: 0.25rem;
     font-family: ui-monospace, SFMono-Regular, 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
@@ -2467,7 +2467,7 @@ export default {
 }
 
 .custom-editor__content pre {
-    background: #f3f4f6;
+    background: var(--surface-raised);
     padding: 1rem;
     border-radius: 0.5rem;
     overflow-x: auto;
@@ -2475,13 +2475,13 @@ export default {
 }
 
 .custom-editor__content a {
-    color: #3b82f6;
+    color: var(--accent-ink);
     text-decoration: underline;
 }
 
 .custom-editor__content .mention {
-    background: #dbeafe;
-    color: #1d4ed8;
+    background: var(--tint-info-bg);
+    color: var(--tint-info-ink);
     padding: 0.125rem 0.25rem;
     border-radius: 0.25rem;
     font-weight: 500;
@@ -2490,14 +2490,14 @@ export default {
 }
 
 .custom-editor__content .mention:hover {
-    background: #bfdbfe;
+    background: var(--tint-info-bg);
     transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .custom-editor__preview .mention {
-    background: #dbeafe;
-    color: #1d4ed8;
+    background: var(--tint-info-bg);
+    color: var(--tint-info-ink);
     padding: 0.125rem 0.25rem;
     border-radius: 0.25rem;
     font-weight: 500;
@@ -2506,7 +2506,7 @@ export default {
 }
 
 .custom-editor__preview .mention:hover {
-    background: #bfdbfe;
+    background: var(--tint-info-bg);
     transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -2516,8 +2516,8 @@ export default {
     top: 100%;
     left: 0;
     right: 0;
-    background: white;
-    border: 1px solid #e5e7eb;
+    background: var(--surface);
+    border: 1px solid var(--line);
     border-radius: 0.5rem;
     box-shadow:
         0 20px 25px -5px rgba(0, 0, 0, 0.1),
@@ -2538,20 +2538,20 @@ export default {
     justify-content: space-between;
     align-items: center;
     padding: 0.75rem 1rem 0.5rem;
-    border-bottom: 1px solid #f3f4f6;
+    border-bottom: 1px solid var(--line);
     background: #fafafa;
 }
 
 .mentions-title {
     font-weight: 600;
-    color: #374151;
+    color: var(--ink);
     font-size: 0.875rem;
 }
 
 .mentions-count {
-    color: #6b7280;
+    color: var(--ink-muted);
     font-size: 0.75rem;
-    background: #e5e7eb;
+    background: var(--line);
     padding: 0.125rem 0.5rem;
     border-radius: 0.75rem;
 }
@@ -2572,8 +2572,8 @@ export default {
 
 .mention-item:hover,
 .mention-item.active {
-    background: linear-gradient(90deg, #f0f9ff 0%, #e0f2fe 100%);
-    border-left: 3px solid #0ea5e9;
+    background: linear-gradient(90deg, var(--tint-info-bg) 0%, var(--tint-info-bg) 100%);
+    border-left: 3px solid var(--tint-info-ink);
 }
 
 .mention-avatar-container {
@@ -2586,7 +2586,7 @@ export default {
     height: 2.5rem;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid #e5e7eb;
+    border: 2px solid var(--line);
 }
 
 .mention-avatar-placeholder {
@@ -2597,10 +2597,10 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
+    color: var(--accent-on);
     font-weight: 600;
     font-size: 0.875rem;
-    border: 2px solid #e5e7eb;
+    border: 2px solid var(--line);
 }
 
 .mention-info {
@@ -2610,7 +2610,7 @@ export default {
 
 .mention-name {
     font-weight: 600;
-    color: #1f2937;
+    color: var(--ink);
     font-size: 0.875rem;
     margin-bottom: 0.125rem;
     white-space: nowrap;
@@ -2619,7 +2619,7 @@ export default {
 }
 
 .mention-email {
-    color: #6b7280;
+    color: var(--ink-muted);
     font-size: 0.75rem;
     white-space: nowrap;
     overflow: hidden;
@@ -2627,7 +2627,7 @@ export default {
 }
 
 .mention-selected {
-    color: #0ea5e9;
+    color: var(--tint-info-ink);
     margin-left: 0.5rem;
 }
 
@@ -2648,7 +2648,7 @@ export default {
     align-items: center;
     justify-content: center;
     padding: 2rem 1rem;
-    color: #6b7280;
+    color: var(--ink-muted);
     font-size: 0.875rem;
 }
 
@@ -2659,7 +2659,7 @@ export default {
 
 /* Mention spans in editor content */
 .custom-editor__content .mention {
-    background-color: #e0f2fe;
+    background-color: var(--tint-info-bg);
     color: #0369a1;
     padding: 2px 6px;
     border-radius: 4px;
@@ -2673,7 +2673,7 @@ export default {
 
 .custom-editor__content .mention:hover {
     background-color: #bae6fd;
-    color: #0c4a6e;
+    color: var(--tint-info-ink);
 }
 
 /* Content Wrapper */
@@ -2685,12 +2685,12 @@ export default {
 .custom-editor__preview {
     min-height: 120px;
     padding: 1rem;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--line);
     border-radius: 0.375rem;
-    background: #f9fafb;
+    background: var(--surface-sunken);
     font-size: 0.875rem;
     line-height: 1.6;
-    color: #374151;
+    color: var(--ink);
     overflow-y: auto;
     max-height: 400px;
 }
@@ -2703,7 +2703,7 @@ export default {
 .custom-editor__preview h6 {
     margin: 0.5rem 0;
     font-weight: 600;
-    color: #1f2937;
+    color: var(--ink);
 }
 
 .custom-editor__preview h1 {
@@ -2742,15 +2742,15 @@ export default {
 .custom-editor__preview blockquote {
     margin: 0.5rem 0;
     padding: 0.5rem 1rem;
-    border-left: 4px solid #e5e7eb;
-    background: #f3f4f6;
+    border-left: 4px solid var(--line);
+    background: var(--surface-raised);
     font-style: italic;
-    color: #6b7280;
+    color: var(--ink-muted);
 }
 
 .custom-editor__preview code {
     padding: 0.125rem 0.25rem;
-    background: #f3f4f6;
+    background: var(--surface-raised);
     border-radius: 0.25rem;
     font-family: ui-monospace, SFMono-Regular, 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
     font-size: 0.875em;
@@ -2759,7 +2759,7 @@ export default {
 .custom-editor__preview pre {
     margin: 0.5rem 0;
     padding: 1rem;
-    background: #f3f4f6;
+    background: var(--surface-raised);
     border-radius: 0.375rem;
     overflow-x: auto;
 }
@@ -2789,16 +2789,16 @@ export default {
 }
 
 .custom-editor__preview a {
-    color: #3b82f6;
+    color: var(--accent-ink);
     text-decoration: underline;
 }
 
 .custom-editor__preview a:hover {
-    color: #1d4ed8;
+    color: var(--tint-info-ink);
 }
 
 .custom-editor__preview .mention {
-    background-color: #e0f2fe;
+    background-color: var(--tint-info-bg);
     color: #0369a1;
     padding: 2px 6px;
     border-radius: 4px;
@@ -2809,7 +2809,7 @@ export default {
 
 .custom-editor__preview .mention:hover {
     background-color: #bae6fd;
-    color: #0c4a6e;
+    color: var(--tint-info-ink);
 }
 
 /* Mobile responsive */
@@ -2840,10 +2840,10 @@ export default {
     justify-content: space-between;
     align-items: center;
     padding: 0.5rem 1rem;
-    background-color: #f8fafc;
-    border-top: 1px solid #e2e8f0;
+    background-color: var(--surface-sunken);
+    border-top: 1px solid var(--line);
     font-size: 0.75rem;
-    color: #64748b;
+    color: var(--ink-muted);
 }
 
 .status-left {
@@ -2867,18 +2867,18 @@ export default {
     display: flex;
     align-items: center;
     gap: 0.25rem;
-    color: #0ea5e9;
+    color: var(--tint-info-ink);
 }
 
 .last-saved {
-    color: #10b981;
+    color: var(--tint-good-ink);
 }
 
 /* Emoji Picker Styles */
 .emoji-picker {
     position: absolute;
-    background: white;
-    border: 1px solid #e2e8f0;
+    background: var(--surface);
+    border: 1px solid var(--line);
     border-radius: 8px;
     box-shadow:
         0 10px 25px -5px rgba(0, 0, 0, 0.1),
@@ -2894,8 +2894,8 @@ export default {
     position: absolute;
     top: 100%;
     right: 0;
-    background: white;
-    border: 1px solid #e2e8f0;
+    background: var(--surface);
+    border: 1px solid var(--line);
     border-radius: 8px;
     box-shadow:
         0 10px 25px -5px rgba(0, 0, 0, 0.1),
@@ -2910,14 +2910,14 @@ export default {
     justify-content: space-between;
     align-items: center;
     padding: 0.75rem 1rem;
-    border-bottom: 1px solid #e2e8f0;
-    background-color: #f8fafc;
+    border-bottom: 1px solid var(--line);
+    background-color: var(--surface-sunken);
 }
 
 .export-menu__close {
     background: none;
     border: none;
-    color: #64748b;
+    color: var(--ink-muted);
     cursor: pointer;
     padding: 0.25rem;
     border-radius: 4px;
@@ -2925,7 +2925,7 @@ export default {
 }
 
 .export-menu__close:hover {
-    background-color: #e2e8f0;
+    background-color: var(--surface-raised);
 }
 
 .export-menu__content {
@@ -2945,11 +2945,11 @@ export default {
     border-radius: 4px;
     transition: background-color 0.2s;
     font-size: 0.875rem;
-    color: #374151;
+    color: var(--ink);
 }
 
 .export-btn:hover {
-    background-color: #f1f5f9;
+    background-color: var(--surface-raised);
 }
 
 /* Keyboard Shortcuts Overlay */
@@ -2968,7 +2968,7 @@ export default {
 }
 
 .keyboard-shortcuts-modal {
-    background: white;
+    background: var(--surface);
     border-radius: 12px;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     max-width: 600px;
@@ -2983,21 +2983,21 @@ export default {
     justify-content: space-between;
     align-items: center;
     padding: 1.5rem 2rem;
-    border-bottom: 1px solid #e2e8f0;
-    background: #f8fafc;
+    border-bottom: 1px solid var(--line);
+    background: var(--surface-sunken);
 }
 
 .keyboard-shortcuts__header h3 {
     margin: 0;
     font-size: 1.25rem;
     font-weight: 600;
-    color: #111827;
+    color: var(--ink);
 }
 
 .keyboard-shortcuts__close {
     background: none;
     border: none;
-    color: #64748b;
+    color: var(--ink-muted);
     cursor: pointer;
     padding: 0.5rem;
     border-radius: 6px;
@@ -3005,7 +3005,7 @@ export default {
 }
 
 .keyboard-shortcuts__close:hover {
-    background-color: #e2e8f0;
+    background-color: var(--surface-raised);
 }
 
 .keyboard-shortcuts__content {
@@ -3021,8 +3021,8 @@ export default {
     margin: 0 0 1rem 0;
     font-size: 1rem;
     font-weight: 600;
-    color: #374151;
-    border-bottom: 1px solid #e5e7eb;
+    color: var(--ink);
+    border-bottom: 1px solid var(--line);
     padding-bottom: 0.5rem;
 }
 
@@ -3031,7 +3031,7 @@ export default {
     justify-content: space-between;
     align-items: center;
     padding: 0.5rem 0;
-    border-bottom: 1px solid #f3f4f6;
+    border-bottom: 1px solid var(--line);
 }
 
 .shortcut-item:last-child {
@@ -3039,19 +3039,19 @@ export default {
 }
 
 .shortcut-item span {
-    color: #6b7280;
+    color: var(--ink-muted);
     font-size: 0.875rem;
 }
 
 kbd {
     display: inline-block;
     padding: 0.25rem 0.5rem;
-    background: #f3f4f6;
-    border: 1px solid #d1d5db;
+    background: var(--surface-raised);
+    border: 1px solid var(--line-strong);
     border-radius: 4px;
     font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
     font-size: 0.75rem;
-    color: #374151;
+    color: var(--ink);
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
@@ -3080,14 +3080,14 @@ kbd {
     justify-content: space-between;
     align-items: center;
     padding: 0.75rem 1rem;
-    border-bottom: 1px solid #e2e8f0;
-    background-color: #f8fafc;
+    border-bottom: 1px solid var(--line);
+    background-color: var(--surface-sunken);
 }
 
 .emoji-picker__close {
     background: none;
     border: none;
-    color: #64748b;
+    color: var(--ink-muted);
     cursor: pointer;
     padding: 0.25rem;
     border-radius: 4px;
@@ -3095,7 +3095,7 @@ kbd {
 }
 
 .emoji-picker__close:hover {
-    background-color: #e2e8f0;
+    background-color: var(--surface-raised);
 }
 
 .emoji-picker__content {
@@ -3120,7 +3120,7 @@ kbd {
 }
 
 .emoji-item:hover {
-    background-color: #f1f5f9;
+    background-color: var(--surface-raised);
 }
 
 /* Fullscreen Styles */
@@ -3131,7 +3131,7 @@ kbd {
     right: 0 !important;
     bottom: 0 !important;
     z-index: 99999 !important;
-    background: white !important;
+    background: var(--surface) !important;
     height: 100vh !important;
     width: 100vw !important;
     margin: 0 !important;
@@ -3148,8 +3148,8 @@ kbd {
     position: sticky !important;
     top: 0 !important;
     z-index: 100000 !important;
-    background: #f9fafb !important;
-    border-bottom: 2px solid #e5e7eb !important;
+    background: var(--surface-sunken) !important;
+    border-bottom: 2px solid var(--line) !important;
     padding: 1rem !important;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
     visibility: visible !important;
@@ -3174,8 +3174,8 @@ kbd {
     position: sticky;
     bottom: 0;
     z-index: 100000;
-    background: #f8fafc;
-    border-top: 2px solid #e2e8f0;
+    background: var(--surface-sunken);
+    border-top: 2px solid var(--line);
 }
 
 /* Ensure all dropdowns work in fullscreen */
@@ -3212,29 +3212,29 @@ kbd {
 
 .toolbar-select {
     padding: 0.25rem 0.5rem;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--line-strong);
     border-radius: 4px;
-    background: white;
+    background: var(--surface);
     font-size: 0.875rem;
-    color: #374151;
+    color: var(--ink);
     cursor: pointer;
     transition: border-color 0.2s;
 }
 
 .toolbar-select:hover {
-    border-color: #9ca3af;
+    border-color: var(--line-strong);
 }
 
 .toolbar-select:focus {
     outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    border-color: var(--accent-ink);
+    box-shadow: 0 0 0 3px rgba(var(--accent-fill-rgb), 0.15);
 }
 
 /* Enhanced Table Styles */
 .custom-editor .table-wrapper {
     margin: 1rem 0;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--line);
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -3248,30 +3248,30 @@ kbd {
 
 .custom-editor .custom-table th,
 .custom-editor .custom-table td {
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--line);
     padding: 12px;
     text-align: left;
     vertical-align: top;
 }
 
 .custom-editor .custom-table th {
-    background-color: #f8fafc;
+    background-color: var(--surface-sunken);
     font-weight: 600;
-    color: #374151;
+    color: var(--ink);
 }
 
 .custom-editor .custom-table tr:nth-child(even) {
-    background-color: #f9fafb;
+    background-color: var(--surface-sunken);
 }
 
 .custom-editor .custom-table tr:hover {
-    background-color: #f1f5f9;
+    background-color: var(--surface-raised);
 }
 
 .custom-editor .table-controls {
-    background-color: #f8fafc;
+    background-color: var(--surface-sunken);
     padding: 8px 12px;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid var(--line);
     text-align: center;
 }
 
@@ -3355,7 +3355,7 @@ kbd {
 /* High Contrast Mode Support */
 @media (prefers-contrast: high) {
     .custom-editor__status {
-        background-color: #ffffff;
+        background-color: var(--surface);
         border-top-color: #000000;
     }
 
@@ -3390,12 +3390,12 @@ kbd {
 }
 
 .editable-image:hover {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+    border-color: var(--accent-ink);
+    box-shadow: 0 0 0 2px rgba(var(--accent-fill-rgb), 0.15);
 }
 
 .selected-image {
-    border-color: #3b82f6 !important;
+    border-color: var(--accent-ink) !important;
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3) !important;
     outline: none;
 }
@@ -3403,8 +3403,8 @@ kbd {
 /* Image Controls */
 .image-controls {
     position: absolute;
-    background: white;
-    border: 1px solid #e5e7eb;
+    background: var(--surface);
+    border: 1px solid var(--line);
     border-radius: 8px;
     box-shadow:
         0 10px 25px -5px rgba(0, 0, 0, 0.1),
@@ -3419,15 +3419,15 @@ kbd {
     justify-content: space-between;
     align-items: center;
     padding: 0.75rem 1rem;
-    border-bottom: 1px solid #e5e7eb;
-    background: #f9fafb;
+    border-bottom: 1px solid var(--line);
+    background: var(--surface-sunken);
     border-radius: 8px 8px 0 0;
 }
 
 .image-controls__header span {
     font-size: 0.875rem;
     font-weight: 600;
-    color: #374151;
+    color: var(--ink);
 }
 
 .image-controls__close {
@@ -3441,12 +3441,12 @@ kbd {
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.2s;
-    color: #6b7280;
+    color: var(--ink-muted);
 }
 
 .image-controls__close:hover {
-    background: #e5e7eb;
-    color: #374151;
+    background: var(--line);
+    color: var(--ink);
 }
 
 .image-controls__content {
@@ -3462,35 +3462,35 @@ kbd {
     justify-content: center;
     width: 2rem;
     height: 2rem;
-    border: 1px solid #d1d5db;
-    background: white;
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.2s ease;
-    color: #374151;
+    color: var(--ink);
 }
 
 .image-control-btn:hover {
-    background: #f3f4f6;
-    border-color: #9ca3af;
-    color: #111827;
+    background: var(--surface-raised);
+    border-color: var(--line-strong);
+    color: var(--ink);
 }
 
 .image-control-btn--danger {
-    color: #dc2626;
-    border-color: #fecaca;
+    color: var(--tint-bad-ink);
+    border-color: var(--tint-bad-border);
 }
 
 .image-control-btn--danger:hover {
-    background: #fef2f2;
-    border-color: #fca5a5;
-    color: #dc2626;
+    background: var(--tint-bad-bg);
+    border-color: var(--tint-bad-border);
+    color: var(--tint-bad-ink);
 }
 
 .image-control-separator {
     width: 1px;
     height: 2rem;
-    background: #e5e7eb;
+    background: var(--line);
     margin: 0 0.25rem;
 }
 
@@ -3553,7 +3553,7 @@ kbd {
     align-items: center;
     gap: 0.75rem;
     padding: 0.875rem 1.25rem;
-    background: white;
+    background: var(--surface);
     border-radius: 0.5rem;
     box-shadow:
         0 10px 25px -5px rgba(0, 0, 0, 0.1),
@@ -3566,30 +3566,30 @@ kbd {
 }
 
 .notification--success {
-    border-left-color: #10b981;
+    border-left-color: var(--tint-good-ink);
     color: #065f46;
 }
 
 .notification--success svg {
-    color: #10b981;
+    color: var(--tint-good-ink);
 }
 
 .notification--error {
-    border-left-color: #ef4444;
-    color: #991b1b;
+    border-left-color: var(--tint-bad-ink);
+    color: var(--tint-bad-ink);
 }
 
 .notification--error svg {
-    color: #ef4444;
+    color: var(--tint-bad-ink);
 }
 
 .notification--info {
     border-left-color: #3b82f6;
-    color: #1e40af;
+    color: var(--tint-info-ink);
 }
 
 .notification--info svg {
-    color: #3b82f6;
+    color: var(--accent-ink);
 }
 
 .notification-enter-active,
@@ -3642,7 +3642,7 @@ kbd {
     display: inline-flex;
     align-items: center;
     gap: 0.375rem;
-    color: #6b7280;
+    color: var(--ink-muted);
     font-size: 0.75rem;
 }
 
@@ -3659,7 +3659,7 @@ kbd {
 }
 
 .last-saved svg {
-    color: #10b981;
+    color: var(--tint-good-ink);
 }
 
 /* Enhanced Table Delete Button */
@@ -3668,7 +3668,7 @@ kbd {
     align-items: center;
     gap: 0.5rem;
     background: #dc3545;
-    color: white;
+    color: var(--accent-on);
     border: none;
     padding: 0.5rem 1rem;
     border-radius: 0.375rem;
@@ -3730,7 +3730,7 @@ kbd {
     width: 2rem;
     height: 2rem;
     margin: -1rem 0 0 -1rem;
-    border: 3px solid #e5e7eb;
+    border: 3px solid var(--line);
     border-top-color: #3b82f6;
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
@@ -3750,13 +3750,13 @@ kbd {
     }
 
     .notification--success {
-        border-left-color: #10b981;
+        border-left-color: var(--tint-good-ink);
         color: #6ee7b7;
     }
 
     .notification--error {
-        border-left-color: #ef4444;
-        color: #fca5a5;
+        border-left-color: var(--tint-bad-ink);
+        color: var(--tint-bad-ink);
     }
 
     .notification--info {
@@ -3766,7 +3766,7 @@ kbd {
 
     .status-item {
         background: rgba(31, 41, 55, 0.6);
-        color: #d1d5db;
+        color: var(--ink-subtle);
     }
 
     .status-item:hover {
