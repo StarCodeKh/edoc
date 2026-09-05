@@ -185,8 +185,12 @@
 
                                 <span class="doc-row__date">{{ khShortDate(doc.created_at, true) }}</span>
 
-                                <span class="doc-row__status" :class="doc.is_done ? 'is-done' : 'is-open'">
-                                    {{ doc.is_done ? $t('Done') : doc.status || $t('Active') }}
+                                <span
+                                    class="doc-row__status"
+                                    :class="doc.is_done ? 'is-done' : 'is-open'"
+                                    :title="statusLabel(doc)"
+                                >
+                                    {{ statusLabel(doc) }}
                                 </span>
 
                                 <!-- The tracking slip, printable straight from the
@@ -252,8 +256,12 @@
                             <div class="doc-panel__title">{{ detail.title }}</div>
                             <div v-if="detail.code" class="doc-panel__code">{{ detail.code }}</div>
                         </div>
-                        <span class="doc-row__status" :class="detail.is_done ? 'is-done' : 'is-open'">
-                            {{ detail.is_done ? $t('Done') : detail.status || $t('Active') }}
+                        <span
+                            class="doc-row__status doc-panel__status"
+                            :class="detail.is_done ? 'is-done' : 'is-open'"
+                            :title="statusLabel(detail)"
+                        >
+                            {{ statusLabel(detail) }}
                         </span>
                         <button type="button" class="doc-panel__close" @click="closeDetail" :title="$t('Close')">
                             <icon name="close" class="h-4 w-4" />
@@ -535,6 +543,17 @@ export default {
         },
     },
     methods: {
+        /**
+         * What the status chip says: the board a document is sitting on, or
+         * "Done" once it is closed.
+         *
+         * Also the chip's title, because the list row clips it to one line -
+         * board names here run to "ការិយាល័យ រដ្ឋបាល ពិនិត្យ និងបញ្ជូនឯកសារ",
+         * which no row is wide enough to hold.
+         */
+        statusLabel(doc) {
+            return doc.is_done ? this.$t('Done') : doc.status || this.$t('Active');
+        },
         /** Map a file extension onto one of the file icons. */
         fileIcon(ext) {
             return EXTENSION_ICONS[String(ext || '').toLowerCase()] || 'file-generic';
@@ -680,6 +699,22 @@ export default {
     gap: 12px;
     padding: 16px 18px;
     border-bottom: 1px solid #eef2f7;
+}
+/* The same chip serves the list and this panel. In a row it has to be one
+   clipped line so the rows align, but here there is room, and a board name cut
+   to "ការិយាល័យ រដ្ឋបាល ពិនិត្យ និង…" tells the reader less than the space
+   allows. Wrapped, capped at two lines so a long one cannot push the close
+   button around. */
+.doc-panel__status {
+    max-width: 15rem;
+    white-space: normal;
+    overflow: hidden;
+    text-overflow: clip;
+    line-height: 1.35;
+    text-align: center;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
 .doc-panel__title {
     font-size: 15px;

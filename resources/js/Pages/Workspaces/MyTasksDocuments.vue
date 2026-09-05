@@ -122,7 +122,11 @@
                                     <span class="doc-row__user-name">{{ doc.user ? doc.user.name : '—' }}</span>
                                 </span>
                                 <span class="doc-row__date">{{ shortDate(doc.created_at) }}</span>
-                                <span class="doc-row__status" :class="doc.is_done ? 'is-done' : 'is-open'">
+                                <span
+                                    class="doc-row__status"
+                                    :class="doc.is_done ? 'is-done' : 'is-open'"
+                                    :title="doc.is_done ? $t('Done') : doc.status || $t('Active')"
+                                >
                                     {{ doc.is_done ? $t('Done') : doc.status || $t('Active') }}
                                 </span>
                                 <icon name="chevron-right" class="doc-row__chevron" />
