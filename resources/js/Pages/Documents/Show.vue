@@ -765,6 +765,7 @@
                                                             forwarding ||
                                                             links.blocks_forward ||
                                                             needsDocumentFirst ||
+                                                            nextStepHasNobody ||
                                                             !handToChosen
                                                         "
                                                         :title="
@@ -776,11 +777,18 @@
                                                                   ? $t(
                                                                         'Waiting on the internal document(s) raised from this one.'
                                                                     )
-                                                                  : finishes_here
+                                                                  : nextStepHasNobody
                                                                     ? $t(
-                                                                          'This is the last step — finish the document here.'
+                                                                          'Nobody carries :role yet — assign it in Settings → Workflow Roles.',
+                                                                          { role: next_step.responsible_role_name }
                                                                       )
-                                                                    : $t('Forward to :step', { step: next_step.title })
+                                                                    : finishes_here
+                                                                      ? $t(
+                                                                            'This is the last step — finish the document here.'
+                                                                        )
+                                                                      : $t('Forward to :step', {
+                                                                            step: next_step.title,
+                                                                        })
                                                         "
                                                         @click="forward"
                                                     >
@@ -821,6 +829,22 @@
                                                 >
                                                     {{
                                                         $t('Waiting on the internal document(s) raised from this one.')
+                                                    }}
+                                                </p>
+                                                <!-- The step exists but has no holder, so there is
+                                                     nowhere for the document to land. Said in amber
+                                                     next to a disabled button, because it is the
+                                                     forwarder's cue to go and fix the configuration,
+                                                     not a note about what happens next. -->
+                                                <p
+                                                    v-else-if="nextStepHasNobody"
+                                                    class="mt-1.5 text-center text-[11px] font-medium text-amber-600"
+                                                >
+                                                    {{
+                                                        $t(
+                                                            'Nobody carries :role yet — assign it in Settings → Workflow Roles.',
+                                                            { role: next_step.responsible_role_name }
+                                                        )
                                                     }}
                                                 </p>
                                                 <p
@@ -1218,8 +1242,32 @@ export default {
             if (!this.mustChooseHandTo || !codes.length) return people;
 
             const groupCode = this.next_step.responsible_role;
+            const narrowed = people.filter(
+                (person) => codes.includes(person.role_code) || person.role_code === groupCode
+            );
 
-            return people.filter((person) => codes.includes(person.role_code) || person.role_code === groupCode);
+            // Nobody carries the department that was picked, so the step falls
+            // back to its own responsibility - which is what assignStepOwners
+            // does on the server. Without the fallback the panel named nobody
+            // for a hand-off the server would have delivered.
+            return narrowed.length ? narrowed : people;
+        },
+        /**
+         * The next step names a responsibility nobody carries, so forwarding
+         * would take the document off this plate and put it on no other.
+         *
+         * The answer comes from the server, which counts holders this page
+         * cannot see: next_step.people leaves the forwarder out, so the only
+         * holder of the next step would otherwise read as nobody at all.
+         * Mirrors the gate in DocumentSubmissionController::forward, so the
+         * button refuses for the same reason the server would.
+         */
+        nextStepHasNobody() {
+            if (this.finishes_here || !this.next_step) return false;
+
+            // Naming people outright is the one thing that works on a step
+            // whose responsibility has no holders yet.
+            return this.next_step.has_holder === false && !this.assign_to.length;
         },
         /** Named on the panel, so the button says who it is about to reach. */
         nextStepNames() {
@@ -1473,7 +1521,7 @@ export default {
             return this.route('workspace.documents.show', [this.workspace.slug || this.workspace.id, neighbour.uid]);
         },
         forward() {
-            if (!this.canForward || this.forwarding || !this.handToChosen) return;
+            if (!this.canForward || this.forwarding || !this.handToChosen || this.nextStepHasNobody) return;
             if (this.needsDocumentFirst) return;
 
             this.forwarding = true;

@@ -144,11 +144,14 @@ class WorkflowNotificationTest extends TestCase
     }
 
     /**
-     * The case the trail now shows in amber: a step nobody carries. There is
-     * nobody to notify, and the response has to say so rather than report a
-     * clean hand-off.
+     * A step naming a responsibility nobody carries is refused, not reported.
+     *
+     * Forwarding into it used to be allowed and merely warned about
+     * afterwards, which left the document on a board with no plate to sit on
+     * and off the forwarder's own list - so nobody held it and nobody heard.
+     * The document stays where it is until the responsibility has a holder.
      */
-    public function test_a_step_nobody_carries_notifies_nobody_and_says_so(): void
+    public function test_a_step_nobody_carries_refuses_the_forward(): void
     {
         Notification::fake();
 
@@ -161,8 +164,35 @@ class WorkflowNotificationTest extends TestCase
         $this->forward($task)->assertRedirect();
 
         Notification::assertNothingSent();
-        $this->assertDatabaseMissing('assignees', ['task_id' => $task->id]);
-        $this->assertStringContainsString('nobody carries', strtolower((string) session('success')));
+        $this->assertStringContainsString('nobody carries', strtolower((string) session('error')));
+
+        // Refused means refused: the document has not moved, and it is still on
+        // the plate of the person who tried to send it - which is the whole
+        // point. Forwarding used to take it off theirs and put it on no other.
+        $this->assertSame((int) $this->first->id, (int) $task->fresh()->list_id);
+        $this->assertDatabaseHas('assignees', ['task_id' => $task->id, 'user_id' => $this->forwarder->id]);
+    }
+
+    /** Give the responsibility a holder and the same forward goes through. */
+    public function test_the_same_step_forwards_once_somebody_carries_it(): void
+    {
+        Notification::fake();
+
+        $subRole = WorkflowSubRole::create(['code' => 'rev', 'name' => 'Reviewers', 'order' => 0]);
+
+        $this->step('Intake', 0, null);
+        $this->step('Review', 1, 'rev');
+
+        $task = $this->document();
+        $this->forward($task)->assertRedirect();
+        $this->assertSame((int) $this->first->id, (int) $task->fresh()->list_id);
+
+        $reviewer = User::factory()->create(['workflow_sub_role_id' => $subRole->id]);
+
+        $this->forward($task)->assertSessionHas('success');
+
+        $this->assertSame((int) $this->second->id, (int) $task->fresh()->list_id);
+        $this->assertDatabaseHas('assignees', ['task_id' => $task->id, 'user_id' => $reviewer->id]);
     }
 
     /** The switch on Settings → Notifications is respected. */

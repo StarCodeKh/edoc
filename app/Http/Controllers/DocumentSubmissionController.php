@@ -618,6 +618,19 @@ class DocumentSubmissionController extends Controller
             }
         }
 
+        // The next step names a responsibility nobody carries. Forwarding
+        // anyway used to be allowed and merely reported afterwards, which left
+        // the document on a board with no plate to sit on and nobody notified -
+        // and off the forwarder's own list, so it disappeared. Refuse while it
+        // is still in the hands of somebody who can go and fix it. Naming
+        // people outright answers the question and moves it anyway.
+        if ($assignTo->isEmpty() && !$this->stepHasAnyHolder($this->stepConfig($task, $next))) {
+            return Redirect::back()->with('error', __('Nobody carries :role yet, so :step has no one to receive the document — assign it in Settings → Workflow Roles.', [
+                'role' => $this->stepResponsibilityName($task, $next),
+                'step' => $next->title,
+            ]));
+        }
+
         // The note is filed before the move, so the trail reads in the order it
         // happened: what the reviewer said, then where they sent it.
         if (!empty($validated['note']) && $this->userCan('comment', $task)) {
@@ -638,20 +651,16 @@ class DocumentSubmissionController extends Controller
 
         // ...and puts it on the plate of whoever carries the next step's
         // responsibility, as configured in Settings > Workflow Roles.
-        $handedTo = $this->assignStepOwners($task, $workspace, $next, $handTo, $assignTo);
+        $this->assignStepOwners($task, $workspace, $next, $handTo, $assignTo);
 
-        // Landing on nobody's plate is a dead end: the document sits on the
-        // board and shows in no one's My Documents until somebody is given the
-        // responsibility. Say so rather than reporting a clean hand-off.
-        $message = $handedTo->isEmpty()
-            ? __('Forwarded to :step, but nobody carries :role yet — assign it in Settings → Workflow Roles.', [
-                'step' => $next->title,
-                'role' => $this->stepResponsibilityName($task, $next),
-            ])
-            : __('Forwarded to :step, assigned to :count person(s).', [
-                'step' => $next->title,
-                'count' => $handedTo->count(),
-            ]);
+        // How many people hold it now, not how many rows this call happened to
+        // add: assignStepOwners skips anyone already on the document, so
+        // counting its return reported "assigned to 0 person(s)" for a
+        // hand-off that landed squarely on somebody's plate.
+        $message = __('Forwarded to :step, assigned to :count person(s).', [
+            'step' => $next->title,
+            'count' => Assignee::where('task_id', $task->id)->count(),
+        ]);
 
         // Finishing this document may be the last thing an external document was
         // waiting on, which closes it in turn.
@@ -895,6 +904,45 @@ class DocumentSubmissionController extends Controller
     }
 
     /**
+     * Does anybody at all carry the responsibility this step names?
+     *
+     * The question a forward is refused on, and it is narrower than "will this
+     * hand-off put the document on somebody's plate":
+     *
+     *  - A step naming no responsibility is not misconfigured, it is
+     *    unconfigured. A flow still being set up has to stay movable, and
+     *    naming people outright is how a document crosses it.
+     *  - The forwarder counts. Somebody who is the only holder of the next
+     *    step still makes it a step that exists; assignStepOwners will not
+     *    hand the document back to them, and that is deliberate.
+     *  - So does anyone already on the document, who keeps holding it.
+     *
+     * What is left is the case the panel shows in amber: a step that names a
+     * responsibility nobody in the register carries. Nothing about the
+     * document can fix that - only Settings → Workflow Roles can.
+     */
+    private function stepHasAnyHolder(?EdocWorkflowRole $step): bool
+    {
+        if (empty($step) || empty($step->responsible_role)) {
+            return true;
+        }
+
+        $role = WorkflowSubRole::where('code', $step->responsible_role)->first();
+
+        if (empty($role)) {
+            return true;
+        }
+
+        // A responsibility that stands for others is carried by its members,
+        // the same reach holdersOfResponsibility() hands the document to.
+        $roleIds = WorkflowSubRole::where('id', $role->id)
+            ->orWhere('parent_id', $role->id)
+            ->pluck('id');
+
+        return User::whereIn('workflow_sub_role_id', $roleIds)->exists();
+    }
+
+    /**
      * Everyone carrying a responsibility: the people filed under it, and the
      * people filed under anything it stands for.
      *
@@ -1047,6 +1095,10 @@ class DocumentSubmissionController extends Controller
             // pressed the button without being told who would actually receive
             // the document.
             'people' => $this->stepCandidates($step, $workspaceId)->all(),
+            // Whether the forward is allowed at all. Not derivable from
+            // 'people', which leaves the forwarder out: the only holder of the
+            // next step sees an empty list and a step that exists all the same.
+            'has_holder' => $this->stepHasAnyHolder($step),
         ];
     }
 
