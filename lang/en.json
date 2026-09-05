@@ -910,5 +910,12 @@
     "Doers for :step": "Doers for :step",
     "Nobody carries :role yet - the step this document lands on has no doer.": "Nobody carries :role yet - the step this document lands on has no doer.",
     "No workflow step reaches you here - pick someone below.": "No workflow step reaches you here - pick someone below.",
-    "People in :source": "People in :source"
+    "People in :source": "People in :source",
+    "Awaiting action": "Awaiting action",
+    "since today": "since today",
+    "for 1 day": "for 1 day",
+    "for :count days": "for :count days",
+    "No doer yet": "No doer yet",
+    ":count people": ":count people",
+    "In charge": "In charge"
 }

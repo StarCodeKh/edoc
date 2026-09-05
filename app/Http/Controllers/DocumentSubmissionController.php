@@ -1257,6 +1257,50 @@ class DocumentSubmissionController extends Controller
         ];
     }
 
+    /**
+     * Who carries each of these responsibilities.
+     *
+     * A responsibility that stands for others is carried by its members too -
+     * a step handed to នាយកដ្ឋាន D1-D5 reaches every officer under it - which
+     * is the same rule the intake form's doer picker uses and the mirror of
+     * User::responsibleStepsQuery().
+     *
+     * @param  array<int, string>  $codes
+     * @return array<string, array<int, array>>
+     */
+    private function doersByRoleCode(array $codes): array
+    {
+        if (empty($codes)) {
+            return [];
+        }
+
+        // A member's own code, and the code of the group it sits under.
+        $parentCodeById = WorkflowSubRole::query()
+            ->leftJoin('workflow_sub_roles as parents', 'workflow_sub_roles.parent_id', '=', 'parents.id')
+            ->pluck('parents.code', 'workflow_sub_roles.id');
+
+        $ownCodeById = WorkflowSubRole::pluck('code', 'id');
+
+        $people = User::whereNotNull('workflow_sub_role_id')
+            ->orderBy('first_name')
+            ->orderBy('last_name')
+            ->get(['id', 'first_name', 'last_name', 'photo_path', 'workflow_sub_role_id']);
+
+        $byCode = array_fill_keys($codes, []);
+
+        foreach ($people as $person) {
+            $roleId = $person->workflow_sub_role_id;
+
+            foreach ([$ownCodeById[$roleId] ?? null, $parentCodeById[$roleId] ?? null] as $code) {
+                if ($code !== null && array_key_exists($code, $byCode)) {
+                    $byCode[$code][$person->id] = $this->personPayload($person);
+                }
+            }
+        }
+
+        return array_map('array_values', $byCode);
+    }
+
     private function isoOrNull($value): ?string
     {
         if (empty($value)) {
@@ -1465,9 +1509,14 @@ class DocumentSubmissionController extends Controller
         $roleNames = WorkflowSubRole::whereIn('code', $roles->pluck('responsible_role')->filter()->unique()->all())
             ->pluck('name', 'code');
 
+        // The people each step is handed to. A step names an office; the trail
+        // reads better naming the people in it, so a step that has not been
+        // reached still says who it is going to wait on.
+        $doers = $this->doersByRoleCode($roles->pluck('responsible_role')->filter()->unique()->all());
+
         $currentOrder = optional($task->list)->order;
 
-        return $lists->map(function (BoardList $list) use ($arrivals, $roles, $roleNames, $task, $currentOrder) {
+        return $lists->map(function (BoardList $list) use ($arrivals, $roles, $roleNames, $doers, $task, $currentOrder) {
             $arrival = $arrivals[$list->title] ?? null;
             $role = $roles->get($list->title);
 
@@ -1484,6 +1533,9 @@ class DocumentSubmissionController extends Controller
                 'responsible_role_name' => optional($role)->responsible_role
                     ? ($roleNames[$role->responsible_role] ?? $role->responsible_role)
                     : null,
+                'doers' => optional($role)->responsible_role
+                    ? ($doers[$role->responsible_role] ?? [])
+                    : [],
                 'requires_signature' => (bool) optional($role)->requires_signature,
                 'requires_attachment' => (bool) optional($role)->requires_attachment,
                 'attachment_mode' => optional($role)->attachment_mode ?: 'standard',

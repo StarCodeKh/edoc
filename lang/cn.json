@@ -905,5 +905,12 @@
     "Doers for :step": ":step 的承办人",
     "Nobody carries :role yet - the step this document lands on has no doer.": "目前无人担任 :role — 该文件所到达的步骤没有承办人。",
     "No workflow step reaches you here - pick someone below.": "此处没有工作流步骤会指派给您 — 请从下方选择人员。",
-    "People in :source": ":source 的人员"
+    "People in :source": ":source 的人员",
+    "Awaiting action": "等待处理",
+    "since today": "自今天起",
+    "for 1 day": "已 1 天",
+    "for :count days": "已 :count 天",
+    "No doer yet": "尚无负责人",
+    ":count people": ":count 人",
+    "In charge": "负责"
 }

@@ -953,5 +953,12 @@
     "Doers for :step": "អ្នកទទួលបន្ទុកសម្រាប់ :step",
     "Nobody carries :role yet - the step this document lands on has no doer.": "មិនទាន់មានបុគ្គលិកកាន់តួនាទី :role ទេ — ជំហានដែលឯកសារនេះទៅដល់គ្មានអ្នកទទួលបន្ទុកទេ។",
     "No workflow step reaches you here - pick someone below.": "គ្មានជំហានលំហូរការងារណាមួយមកដល់អ្នកនៅទីនេះទេ — សូមជ្រើសរើសបុគ្គលិកខាងក្រោម។",
-    "People in :source": "បុគ្គលិកនៅ :source"
+    "People in :source": "បុគ្គលិកនៅ :source",
+    "Awaiting action": "កំពុងរង់ចាំដំណើរការ",
+    "since today": "ចាប់តាំងពីថ្ងៃនេះ",
+    "for 1 day": "រយៈពេល ១ ថ្ងៃ",
+    "for :count days": "រយៈពេល :count ថ្ងៃ",
+    "No doer yet": "មិនទាន់មានអ្នកទទួលបន្ទុក",
+    ":count people": "បុគ្គលិក :count នាក់",
+    "In charge": "ទទួលបន្ទុក"
 }

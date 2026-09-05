@@ -368,6 +368,49 @@
                                                             {{ step.responsible_role_name || step.responsible_role }}
                                                         </div>
 
+                                                        <!-- Who is in that office. A step that is done already
+                                                             names the person who did it, so this is only worth
+                                                             the room on the steps still to come. -->
+                                                        <div
+                                                            v-if="step.state !== 'done' && step.responsible_role"
+                                                            class="mt-1 flex items-center gap-1.5"
+                                                        >
+                                                            <template v-if="doersOf(step).length">
+                                                                <span class="doer-label">{{ $t('In charge') }}</span>
+                                                                <span class="flex -space-x-1.5">
+                                                                    <img
+                                                                        v-for="doer in doersOf(step)"
+                                                                        :key="doer.id"
+                                                                        v-show="doer.photo"
+                                                                        :src="doer.photo"
+                                                                        :alt="doer.name"
+                                                                        :title="doer.name"
+                                                                        class="doer-face"
+                                                                    />
+                                                                    <span
+                                                                        v-for="doer in doersOf(step)"
+                                                                        :key="'i' + doer.id"
+                                                                        v-show="!doer.photo"
+                                                                        :title="doer.name"
+                                                                        class="doer-face doer-face--initial"
+                                                                        >{{ doer.name.charAt(0) }}</span
+                                                                    >
+                                                                </span>
+                                                                <span
+                                                                    class="truncate text-[11px] text-gray-500 dark:text-gray-400"
+                                                                    :title="allDoerNames(step)"
+                                                                >
+                                                                    {{ doerSummary(step) }}
+                                                                </span>
+                                                            </template>
+                                                            <span
+                                                                v-else
+                                                                class="text-[11px] text-amber-600 dark:text-amber-300"
+                                                            >
+                                                                {{ $t('No doer yet') }}
+                                                            </span>
+                                                        </div>
+
                                                         <div v-if="step.actor" class="mt-1.5 flex items-center gap-1.5">
                                                             <img
                                                                 v-if="step.actor.photo"
@@ -398,6 +441,25 @@
                                                             class="mt-1 text-[11px] text-gray-400 dark:text-gray-500"
                                                         >
                                                             {{ $t('Not reached yet') }}
+                                                        </div>
+
+                                                        <!-- Where the document actually is. A step that is
+                                                             done and a step that is waiting both carry an
+                                                             actor and a date, so without this the trail
+                                                             showed no difference between the two. -->
+                                                        <div
+                                                            v-if="step.state === 'current'"
+                                                            class="mt-1.5 flex flex-wrap items-center gap-1.5"
+                                                        >
+                                                            <span class="step-chip step-chip--waiting">
+                                                                {{ $t('Awaiting action') }}
+                                                            </span>
+                                                            <span
+                                                                v-if="waitingFor(step)"
+                                                                class="text-[11px] text-gray-500 dark:text-gray-400"
+                                                            >
+                                                                {{ waitingFor(step) }}
+                                                            </span>
                                                         </div>
 
                                                         <div class="mt-1.5 flex flex-wrap gap-1">
@@ -1358,10 +1420,54 @@ export default {
         valueClass(value) {
             return value ? 'text-gray-800 dark:text-gray-100' : 'text-gray-300';
         },
+        /** At most three faces; the rest are counted rather than drawn. */
+        doersOf(step) {
+            return (step.doers || []).slice(0, 3);
+        },
+
+        allDoerNames(step) {
+            return (step.doers || []).map((d) => d.name).join(', ');
+        },
+
+        /**
+         * One name reads as a name; several read as a count, because a step
+         * handed to a whole department would otherwise fill the column.
+         */
+        doerSummary(step) {
+            const doers = step.doers || [];
+
+            if (doers.length === 0) return '';
+            if (doers.length === 1) return doers[0].name;
+
+            return this.$t(':count people', { count: doers.length });
+        },
+
         stepBadgeClass(step) {
-            if (step.state === 'current') return 'bg-indigo-600 text-white';
-            if (step.state === 'done') return 'bg-emerald-100 text-emerald-700';
+            if (step.state === 'current') return 'bg-indigo-600 text-white step-dot--waiting';
+            if (step.state === 'done')
+                return 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300';
             return 'bg-gray-200 dark:bg-white/10 text-gray-500 dark:text-gray-400';
+        },
+
+        /**
+         * How long the document has been sitting on the step it is on.
+         *
+         * Read off the arrival the trail already carries, so it needs nothing
+         * new from the server. Same day reads as "today" rather than "0 days" -
+         * a document that arrived this morning has not been waiting a day.
+         */
+        waitingFor(step) {
+            if (step.state !== 'current' || !step.entered_at) return '';
+
+            const arrived = moment(step.entered_at);
+            if (!arrived.isValid()) return '';
+
+            const days = moment().startOf('day').diff(arrived.clone().startOf('day'), 'days');
+
+            if (days <= 0) return this.$t('since today');
+            if (days === 1) return this.$t('for 1 day');
+
+            return this.$t('for :count days', { count: days });
         },
         neighbourHref(neighbour) {
             return this.route('workspace.documents.show', [this.workspace.slug || this.workspace.id, neighbour.uid]);
@@ -1648,6 +1754,63 @@ export default {
     font-size: 10px;
     font-weight: 700;
     line-height: 1.7;
+}
+
+.doer-label {
+    flex-shrink: 0;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: var(--ink-subtle);
+}
+
+.doer-face {
+    display: inline-flex;
+    width: 18px;
+    height: 18px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    border: 1.5px solid var(--surface);
+    background: var(--surface-raised);
+    object-fit: cover;
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--ink-muted);
+}
+
+.doer-face--initial {
+    background: var(--tint-accent-bg);
+    color: var(--accent-ink);
+}
+
+/* The requirement chips below a step say what it asks for. This one says
+   where the document is, so it takes the warn tint rather than the accent -
+   it is a state, not another requirement. */
+.step-chip--waiting {
+    background: var(--tint-warn-bg);
+    color: var(--tint-warn-ink);
+}
+
+/* A quiet pulse on the one step that is actually waiting. */
+.step-dot--waiting {
+    animation: step-dot-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes step-dot-pulse {
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(var(--accent-fill-rgb), 0.45);
+    }
+    50% {
+        box-shadow: 0 0 0 5px rgba(var(--accent-fill-rgb), 0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .step-dot--waiting {
+        animation: none;
+    }
 }
 
 /* Timeline: the rail is drawn behind each avatar and stops at the last row. */
