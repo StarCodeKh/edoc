@@ -877,14 +877,42 @@ class DocumentSubmissionController extends Controller
             ->unique('id')
             ->values();
 
-        // Nobody carries the chosen department yet - people may still be filed
-        // under the group it sits in. Falling back to the group beats handing
-        // the document to nobody, and the step is still recorded as the choice.
+        // Nobody carries the chosen department yet, or nothing was chosen at all
+        // because the step is a standard one. Either way the step falls back to
+        // the responsibility it names - and a responsibility that stands for
+        // others is carried by its members, not by anyone filed directly under
+        // the group. Resolving only the group itself left a standard step on
+        // នាយកដ្ឋាន D1-D5 assigning nobody, while the same step showed D1-D5 as
+        // its doers on the trail and put the document on their plates through
+        // Task::scopeVisibleTo. Three places said the members carry it; this
+        // one said they did not, so a forwarded document landed on no plate and
+        // notified nobody.
         if ($owners->isEmpty()) {
-            $owners = $holders($subRole);
+            $owners = $this->holdersOfResponsibility($subRole, $alreadyOn);
         }
 
         return $this->putOnPlates($task, $owners);
+    }
+
+    /**
+     * Everyone carrying a responsibility: the people filed under it, and the
+     * people filed under anything it stands for.
+     *
+     * The mirror of User::responsibleStepsQuery(), which is what decides that a
+     * D1 officer holds a standard នាយកដ្ឋាន D1-D5 step.
+     *
+     * @param  array<int, int>  $exclude  user ids already on the document
+     */
+    private function holdersOfResponsibility(WorkflowSubRole $role, array $exclude): Collection
+    {
+        $roleIds = WorkflowSubRole::where('id', $role->id)
+            ->orWhere('parent_id', $role->id)
+            ->pluck('id');
+
+        return User::whereIn('workflow_sub_role_id', $roleIds)
+            ->where('id', '!=', auth()->id())
+            ->whereNotIn('id', $exclude)
+            ->get();
     }
 
     /** Files the assignee rows and tells each person, in one place. */
