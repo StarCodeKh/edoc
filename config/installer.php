@@ -49,7 +49,7 @@ return [
         'storage/framework/' => '775',
         'storage/logs/' => '775',
         'bootstrap/cache/' => '775',
-        'resources/lang/' => '775',
+        'lang/' => '775',
         'public' => '775',
     ],
 

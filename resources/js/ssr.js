@@ -22,7 +22,7 @@ createServer((page) =>
                     location: new URL(page.props.ziggy.location),
                 })
                 .use(i18nVue, {
-                    lang: 'pt',
+                    lang: 'en',
                     resolve: (lang) => {
                         const langs = import.meta.glob('../../lang/*.json', { eager: true });
                         return langs[`../../lang/${lang}.json`].default;

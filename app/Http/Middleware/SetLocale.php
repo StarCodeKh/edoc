@@ -8,10 +8,21 @@ class SetLocale
 {
     public function handle($request, Closure $next)
     {
-        app()->setLocale(config('app.locale'));
+        // The Vue side reads the locale off the authenticated user, so PHP has
+        // to agree with it — otherwise a user whose profile says "kh" gets a
+        // Khmer interface with English flash messages until they touch the
+        // switcher. Session first for guests, then the stored preference.
+        $locale = config('app.locale');
+
         if (session()->has('locale')) {
-            app()->setLocale(session('locale'));
+            $locale = session('locale');
         }
+
+        if ($user = $request->user()) {
+            $locale = $user->locale ?: $locale;
+        }
+
+        app()->setLocale($locale);
 
         return $next($request);
     }
