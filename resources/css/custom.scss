@@ -43,9 +43,17 @@
     z-index: 991;
 }
 
+/* Two of these sit side by side in the top bar - one for the language, one for
+   the account - and at full weight they read as clutter rather than as the
+   quiet "there is more here" they are meant to be. */
 .drop-down-caret-icon {
+    width: 16px;
+    height: 16px;
+    opacity: 0.65;
+    transition: opacity 0.15s ease;
+
     &:hover {
-        opacity: 0.5;
+        opacity: 1;
     }
 }
 
@@ -79,7 +87,9 @@
     .group {
         display: flex;
         align-items: center;
-        gap: 3px;
+        /* Matches the mr-1 between the avatar and its caret next door: the two
+           triggers sit side by side and spaced their own carets differently. */
+        gap: 4px;
     }
 }
 
@@ -129,6 +139,168 @@
         height: 16px;
         flex-shrink: 0;
         fill: currentColor;
+    }
+}
+
+/* The account menu, written to match .lang-menu above: the two sit side by
+   side in the same cluster and were a rounded, bordered panel next to a square
+   `rounded` one with full-bleed indigo hover rows.
+
+   Unscoped for the same reason - Dropdown teleports the panel to the document
+   root, so nothing under .layout-app can reach it. The theme class is mirrored
+   onto <html> (see Layout applyThemeClass), which is what lets `.dark` work
+   here at all; both menus were light-only in dark mode until now. */
+.account-menu {
+    min-width: 240px;
+    padding: 6px;
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.16);
+
+    &__head {
+        padding: 8px 10px 10px;
+    }
+
+    &__label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: #9ca3af;
+    }
+
+    &__identity {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+    }
+
+    &__avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex-shrink: 0;
+    }
+
+    &__who {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    &__name {
+        font-size: 14px;
+        font-weight: 600;
+        color: #111827;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    &__email {
+        font-size: 12px;
+        color: #6b7280;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    &__group {
+        padding-top: 6px;
+        border-top: 1px solid rgba(15, 23, 42, 0.07);
+    }
+
+    &__item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        padding: 8px 10px;
+        border-radius: 8px;
+        font-size: 14px;
+        line-height: 1.5;
+        color: #1f2937;
+        text-align: start;
+        text-decoration: none;
+        transition:
+            background-color 0.15s ease,
+            color 0.15s ease;
+
+        &:hover {
+            background: #f3f4f6;
+        }
+
+        /* Ending the session is not the same kind of thing as opening a
+           settings page, and should not look like one on the way to it. */
+        &--signout:hover {
+            background: #fef2f2;
+            color: #b91c1c;
+
+            .account-menu__icon {
+                fill: #b91c1c;
+            }
+        }
+    }
+
+    &__icon {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+        fill: #9ca3af;
+    }
+}
+
+.dark .account-menu,
+.dark .lang-menu {
+    background: #262932;
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+}
+
+.dark .lang-menu__item {
+    color: #e5e7eb;
+
+    &:hover,
+    &.is-active {
+        background: rgba(255, 255, 255, 0.08);
+        color: #fff;
+    }
+}
+
+.dark .account-menu {
+    .account-menu__name {
+        color: #f3f4f6;
+    }
+
+    .account-menu__email,
+    .account-menu__label {
+        color: #9ca3af;
+    }
+
+    .account-menu__group {
+        border-top-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .account-menu__item {
+        color: #e5e7eb;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        &--signout:hover {
+            background: rgba(239, 68, 68, 0.15);
+            color: #fca5a5;
+
+            .account-menu__icon {
+                fill: #fca5a5;
+            }
+        }
     }
 }
 
@@ -354,29 +526,6 @@ svg {
             transition: all 0.3s ease;
             -webkit-animation: zoomIn 300ms ease-in-out;
             animation: zoomIn 300ms ease-in-out;
-        }
-    }
-    .chat-top-bar {
-        margin-right: 2rem;
-        .notification-box {
-            position: relative;
-            .badge {
-                position: absolute;
-                right: -5px;
-                top: -6px;
-                padding: 2px 4px;
-                font-size: 11px;
-                font-weight: 700;
-                font-family: work-Sans, sans-serif;
-                border-radius: 10rem;
-                color: #fff;
-                background-color: #f73164;
-                line-height: 1;
-                text-align: center;
-                white-space: nowrap;
-                vertical-align: baseline;
-                display: inline-block;
-            }
         }
     }
 }

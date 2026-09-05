@@ -19,7 +19,7 @@
             <div class="md:h-screen md:flex md:flex-col">
                 <div class="md:flex md:shrink-0">
                     <div
-                        class="bg-white w-full p-4 md:py-2 md:pr-12 md:pl-8 text-sm flex justify-first items-center top_bar"
+                        class="bg-white w-full p-4 md:py-2 md:px-8 text-sm flex justify-first items-center top_bar"
                         :style="[
                             $page.props.project && $page.props.project.background
                                 ? { backgroundColor: $page.props.project.background.top }
@@ -325,7 +325,7 @@
                                 <template #default>
                                     <div class="flex items-center cursor-pointer group" :title="$t('Language')">
                                         <icon :name="activeLanguage.code" class="lang-flag lang-flag--lg" />
-                                        <icon class="w-5 h-5 drop-down-caret-icon fill-white" name="cheveron-down" />
+                                        <icon class="drop-down-caret-icon fill-white" name="cheveron-down" />
                                     </div>
                                 </template>
                                 <template #dropdown>
@@ -358,65 +358,78 @@
                                                 :alt="$page.props.auth.user.first_name"
                                                 :src="$page.props.auth.user.photo"
                                             />
-                                            <img
-                                                v-else
-                                                src="/images/svg/profile.svg"
-                                                class="w-5 h-5"
-                                                alt="user profile"
-                                            />
+                                            <!-- Same class as the photo: as a bare
+                                                 w-5 h-5 square it sat smaller than the
+                                                 avatar it stands in for, and unrounded. -->
+                                            <img v-else src="/images/svg/profile.svg" class="user_photo" alt="" />
                                         </div>
-                                        <icon class="w-5 h-5 drop-down-caret-icon fill-white" name="cheveron-down" />
+                                        <icon class="drop-down-caret-icon fill-white" name="cheveron-down" />
                                     </div>
                                 </template>
                                 <template #dropdown>
-                                    <div class="shadow-xl bg-white rounded text-sm">
-                                        <div class="flex px-4 flex-col py-3">
-                                            <div class="uppercase mb-2 font-bold">Account</div>
-                                            <div class="flex gap-1 items-center">
-                                                <div class="flex">
-                                                    <img
-                                                        v-if="$page.props.auth.user.photo"
-                                                        class="user_photo w-10 h-10"
-                                                        :alt="$page.props.auth.user.first_name"
-                                                        :src="$page.props.auth.user.photo"
-                                                    />
-                                                    <img
-                                                        v-else
-                                                        src="/images/svg/profile.svg"
-                                                        class="w-10 h-10"
-                                                        alt="user profile"
-                                                    />
-                                                </div>
-                                                <div class="flex flex-col gap-[1px]">
-                                                    <span>{{
+                                    <div class="account-menu">
+                                        <!-- Who you are signed in as. The label is the
+                                             same small muted caps every other section
+                                             heading in the app uses; it read as bold
+                                             black "ACCOUNT" above the name, which drew
+                                             more attention than the name did. -->
+                                        <div class="account-menu__head">
+                                            <span class="account-menu__label">{{ $t('Account') }}</span>
+                                            <div class="account-menu__identity">
+                                                <img
+                                                    v-if="$page.props.auth.user.photo"
+                                                    class="account-menu__avatar"
+                                                    :alt="$page.props.auth.user.first_name"
+                                                    :src="$page.props.auth.user.photo"
+                                                />
+                                                <img
+                                                    v-else
+                                                    src="/images/svg/profile.svg"
+                                                    class="account-menu__avatar"
+                                                    alt=""
+                                                />
+                                                <span class="account-menu__who">
+                                                    <span class="account-menu__name">{{
                                                         $page.props.auth.user.first_name +
                                                         ' ' +
                                                         $page.props.auth.user.last_name
                                                     }}</span>
-                                                    <small>{{ $page.props.auth.user.email }}</small>
-                                                </div>
+                                                    <span class="account-menu__email">{{
+                                                        $page.props.auth.user.email
+                                                    }}</span>
+                                                </span>
                                             </div>
                                         </div>
-                                        <Link
-                                            class="flex px-6 py-2 items-center hover:bg-indigo-500 hover:text-white hover:fill-white"
-                                            :href="route('users.edit.profile')"
-                                            ><icon class="w-4 h-4 mr-2" name="user_edit" />
-                                            {{ $t('Edit Profile') }}</Link
-                                        >
-                                        <Link
-                                            v-if="$page.props.auth.user.role.slug === 'admin'"
-                                            class="flex px-6 py-2 items-center hover:bg-indigo-500 hover:text-white hover:fill-white"
-                                            :href="route('global')"
-                                            ><icon class="w-4 h-4 mr-2" name="settings" />
-                                            {{ $t('Global Settings') }}</Link
-                                        >
-                                        <Link
-                                            class="flex items-center px-6 py-2 hover:bg-indigo-500 hover:text-white hover:fill-white w-full"
-                                            :href="route('logout')"
-                                            method="delete"
-                                            as="button"
-                                            ><icon class="w-4 h-4 mr-2" name="logout" />{{ $t('Logout') }}</Link
-                                        >
+
+                                        <div class="account-menu__group">
+                                            <Link class="account-menu__item" :href="route('users.edit.profile')">
+                                                <icon class="account-menu__icon" name="user_edit" />
+                                                {{ $t('Edit Profile') }}
+                                            </Link>
+                                            <Link
+                                                v-if="$page.props.auth.user.role.slug === 'admin'"
+                                                class="account-menu__item"
+                                                :href="route('global')"
+                                            >
+                                                <icon class="account-menu__icon" name="settings" />
+                                                {{ $t('Global Settings') }}
+                                            </Link>
+                                        </div>
+
+                                        <!-- Signing out ends the session, so it sits
+                                             below a rule rather than one row away from
+                                             "Edit Profile" in an identical style. -->
+                                        <div class="account-menu__group account-menu__group--last">
+                                            <Link
+                                                class="account-menu__item account-menu__item--signout"
+                                                :href="route('logout')"
+                                                method="delete"
+                                                as="button"
+                                            >
+                                                <icon class="account-menu__icon" name="logout" />
+                                                {{ $t('Logout') }}
+                                            </Link>
+                                        </div>
                                     </div>
                                 </template>
                             </dropdown>

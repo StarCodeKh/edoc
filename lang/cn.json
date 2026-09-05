@@ -23,6 +23,7 @@
     "A step naming this one can be handed to any of them.": "指定此职责的步骤可交给其中任意一个。",
     "A worker then has to be running, or nothing leaves the queue.": "之后必须有一个队列进程在运行，否则队列中的邮件不会被发出。",
     "Access Forbidden!": "禁止访问！",
+    "Account": "账户",
     "Action": "操作",
     "Actions": "操作",
     "Active": "进行中",

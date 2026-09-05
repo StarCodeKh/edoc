@@ -10,7 +10,6 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="shortcut icon" href="/favicon.png">
-    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
 
     {{--
         The error pages are served outside the Vite/Inertia bundle, and the

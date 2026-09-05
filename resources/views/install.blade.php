@@ -10,8 +10,8 @@
 
     <title>eDoc</title>
 
-    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
     <link href="{{ asset('css/install.css') }}" rel="stylesheet">
+    @vite(['resources/js/app.js'])
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="shortcut icon" href="/favicon.png">

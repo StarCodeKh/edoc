@@ -10,7 +10,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" type="image/png" href="/favicon.png">
     <link rel="shortcut" href="/favicon.png">
-    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+    {{-- Written by Settings > Global (SettingsController), not by the build. --}}
     <link href="{{ asset('css/custom.css') }}" rel="stylesheet">
     @routes
         @vite(['resources/js/app.js', "resources/js/Pages/{$page['component']}.vue"])

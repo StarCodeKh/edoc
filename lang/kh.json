@@ -23,6 +23,7 @@
     "A step naming this one can be handed to any of them.": "ជំហានដែលកំណត់វាអាចប្រគល់ទៅមួយណាក៏បាន។",
     "A worker then has to be running, or nothing leaves the queue.": "បន្ទាប់មកត្រូវមានកម្មវិធីដំណើរការជួរ (worker) កំពុងរត់ បើមិនដូច្នេះទេ គ្មានអ៊ីមែលចេញពីជួរឡើយ។",
     "Access Forbidden!": "ការចូលប្រើត្រូវបានហាមឃាត់!",
+    "Account": "គណនី",
     "Action": "សកម្មភាព",
     "Actions": "សកម្មភាព",
     "Active": "កំពុងដំណើរការ",
