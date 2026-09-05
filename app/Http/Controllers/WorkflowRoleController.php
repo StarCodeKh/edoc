@@ -231,7 +231,12 @@ class WorkflowRoleController extends Controller
             'workflow_type' => 'required|string|max:64|regex:/^[a-z0-9_]+$/',
             'list_title' => 'required|string|max:255',
             'workspace_id' => 'nullable|integer|exists:workspaces,id',
-            'responsible_role' => 'nullable|string|max:100',
+            // The code has to name a responsibility that exists. Renaming one
+            // carries across to its steps and deleting one is refused while
+            // steps use it, so the UI cannot produce a dangling code - but the
+            // endpoint could, and a step nobody is responsible for holds a
+            // document forever without saying so.
+            'responsible_role' => 'nullable|string|max:100|exists:workflow_sub_roles,code',
             'role_mode' => $this->stepModeRule(),
             'requires_signature' => 'boolean',
             'requires_attachment' => 'boolean',
@@ -259,7 +264,7 @@ class WorkflowRoleController extends Controller
         $request->validate([
             'list_title' => 'required|string|max:255',
             'workspace_id' => 'nullable|integer|exists:workspaces,id',
-            'responsible_role' => 'required|string|max:50',
+            'responsible_role' => 'required|string|max:50|exists:workflow_sub_roles,code',
             'role_mode' => $this->stepModeRule(),
             'requires_signature' => 'boolean',
             'requires_attachment' => 'boolean',
