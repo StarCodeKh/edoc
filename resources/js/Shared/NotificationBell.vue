@@ -3,10 +3,8 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { usePage, router, Link } from '@inertiajs/vue3';
 import axios from 'axios';
 import Icon from '@/Shared/Icon.vue';
-import moment from 'moment';
-import 'moment/dist/locale/km';
-import 'moment/dist/locale/zh-cn';
-import { trans, getActiveLanguage } from 'laravel-vue-i18n';
+import { at as localised } from '@/Utils/momentLocale';
+import { trans } from 'laravel-vue-i18n';
 
 const isOpen = ref(false);
 const isMenuOpen = ref(false);
@@ -17,19 +15,12 @@ const unreadCount = ref(page.props.auth.unread_count || 0);
 const user = computed(() => page.props.auth.user);
 
 /**
- * The app's language codes are not moment's. This was a hand-rolled English
- * ladder - "3 hours ago" whatever language the reader had chosen.
+ * This was a hand-rolled English ladder - "3 hours ago" whatever language the
+ * reader had chosen, and unreachable by any catalogue.
  */
-const MOMENT_LOCALES = { kh: 'km', cn: 'zh-cn', en: 'en' };
+const locale = computed(() => page.props.auth?.user?.locale || null);
 
-const locale = computed(() => page.props.auth?.user?.locale || getActiveLanguage() || 'en');
-
-const formatTimeAgo = (dateString) =>
-    dateString
-        ? moment(dateString)
-              .locale(MOMENT_LOCALES[locale.value] || 'en')
-              .fromNow()
-        : trans('just now');
+const formatTimeAgo = (dateString) => (dateString ? localised(dateString, locale.value).fromNow() : trans('just now'));
 
 /**
  * The sentence, built rather than replayed. Newer rows carry the change as a

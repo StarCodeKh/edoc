@@ -4,10 +4,8 @@ import Pagination from '@/Shared/Pagination.vue';
 import Icon from '@/Shared/Icon.vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
-import moment from 'moment';
-import 'moment/dist/locale/km';
-import 'moment/dist/locale/zh-cn';
-import { trans, getActiveLanguage } from 'laravel-vue-i18n';
+import { at as localised } from '@/Utils/momentLocale';
+import { trans } from 'laravel-vue-i18n';
 
 const props = defineProps({
     notifications: Object,
@@ -15,19 +13,13 @@ const props = defineProps({
 
 const page = usePage();
 
-/**
- * The app's language codes are not moment's. "an hour ago" stayed English on a
- * Khmer page because nothing ever told moment which language it was in.
- */
-const MOMENT_LOCALES = { kh: 'km', cn: 'zh-cn', en: 'en' };
-
-const locale = computed(() => page.props.auth?.user?.locale || getActiveLanguage() || 'en');
+const locale = computed(() => page.props.auth?.user?.locale || null);
 
 /**
  * "2 hours ago". Grouped by day already, so a relative time is the useful half
  * and the exact stamp goes in the title attribute for anyone who needs it.
  */
-const at = (value) => moment(value).locale(MOMENT_LOCALES[locale.value] || 'en');
+const at = (value) => localised(value, locale.value);
 
 const timeAgo = (value) => (value ? at(value).fromNow() : '');
 const timeExact = (value) => (value ? at(value).format('DD MMM YYYY, HH:mm') : '');
@@ -59,12 +51,12 @@ const markAllAsRead = () => {
  * DD MMM YYYY the rest of the app writes dates in.
  */
 const groupedNotifications = computed(() => {
-    const today = moment().startOf('day');
-    const yesterday = moment().subtract(1, 'day').startOf('day');
+    const today = at().startOf('day');
+    const yesterday = at().subtract(1, 'day').startOf('day');
     const groups = new Map();
 
     for (const notification of props.notifications.data) {
-        const day = moment(notification.created_at).startOf('day');
+        const day = at(notification.created_at).startOf('day');
 
         let label;
         if (day.isSame(today)) {
