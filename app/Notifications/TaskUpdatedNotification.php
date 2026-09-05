@@ -59,7 +59,13 @@ class TaskUpdatedNotification extends Notification implements ShouldQueue
             'workspace_name' => $this->task->project->workspace->name,
             'actor_name' => $this->updatingUser->first_name.' '.$this->updatingUser->last_name,
             'change_message' => $this->generateMessage(),
-            'message' => $this->generateMessage(), // Generate the dynamic message
+            // English, for mail and Slack, and for rows written before the
+            // translatable pair below existed.
+            'message' => $this->generateMessage(),
+            // The same sentence as a key and its values, so the page can build
+            // it in the reader's language instead of replaying the language it
+            // happened to be written in.
+            ...$this->messageDescriptor(),
             'url' => route('projects.board.with.task', [$this->task->project_id, $this->task->id]),
         ];
     }
@@ -116,17 +122,94 @@ class TaskUpdatedNotification extends Notification implements ShouldQueue
      * can hold something Carbon cannot read, and a notification is no place to
      * throw over it.
      */
-    private function shortDate($value): string
+    private function shortDate($value, ?string $whenMissing = null): string
     {
+        $missing = $whenMissing ?? 'no date';
+
         if (empty($value)) {
-            return 'no date';
+            return $missing;
         }
 
         try {
             return Carbon::parse($value)->format('M d');
         } catch (\Throwable $e) {
-            return 'no date';
+            return $missing;
         }
+    }
+
+    /**
+     * The change as a translation key and its values.
+     *
+     * generateMessage() bakes the sentence in English at write time, which is
+     * fine for the mail and Slack copies - they are sent once, to one place.
+     * The database copy is read back for thirty days by whoever opens the bell,
+     * in whatever language they have chosen, so it carries the parts instead.
+     *
+     * @return array{message_key: string, message_values: array<string, string>}
+     */
+    private function messageDescriptor(): array
+    {
+        $describe = function (string $key, array $values = []): array {
+            return ['message_key' => $key, 'message_values' => $values];
+        };
+
+        switch ($this->field) {
+            case 'title':
+                return $describe('renamed the task from ":from" to ":to"', [
+                    'from' => (string) $this->oldValue,
+                    'to' => (string) $this->newValue,
+                ]);
+
+            case 'description':
+                return $describe('updated the description for task ":task"', [
+                    'task' => (string) $this->task->title,
+                ]);
+
+            case 'due_date':
+                return $describe('changed the due date from :from to :to', [
+                    'from' => $this->shortDate($this->oldValue, __('no date')),
+                    'to' => $this->shortDate($this->newValue, __('no date')),
+                ]);
+
+            case 'list_id':
+                return $describe('moved task ":task" from ":from" to ":to"', [
+                    'task' => (string) $this->task->title,
+                    'from' => $this->listTitle($this->oldValue) ?? __('Unknown'),
+                    'to' => $this->listTitle($this->newValue) ?? __('Unknown'),
+                ]);
+
+            case 'is_done':
+                if ($this->isTruthy($this->newValue)) {
+                    return $describe('marked ":task" as done', ['task' => (string) $this->task->title]);
+                }
+
+                if ($this->isTruthy($this->oldValue)) {
+                    return $describe('marked ":task" as not done', ['task' => (string) $this->task->title]);
+                }
+
+                return $describe('updated the completion status of task ":task"', [
+                    'task' => (string) $this->task->title,
+                ]);
+
+            default:
+                return $describe('updated task ":task"', ['task' => (string) $this->task->title]);
+        }
+    }
+
+    /**
+     * The board a list id names, or null where the board has since been
+     * deleted. The stand-in is the caller's to choose: the mail and Slack
+     * copies want English, the stored one wants the reader's language.
+     */
+    private function listTitle($value): ?string
+    {
+        return $value ? BoardList::find($value)?->title : null;
+    }
+
+    /** is_done arrives as a bool, an int or a string depending on the caller. */
+    private function isTruthy($value): bool
+    {
+        return $value === true || $value === 1 || $value === '1' || $value === 'true';
     }
 
     private function generateMessage(): string
@@ -143,16 +226,14 @@ class TaskUpdatedNotification extends Notification implements ShouldQueue
                     .' to '.$this->shortDate($this->newValue);
 
             case 'list_id':
-                $fromTitle = $this->oldValue ? (BoardList::find($this->oldValue)?->title) : null;
-                $toTitle = $this->newValue ? (BoardList::find($this->newValue)?->title) : null;
-
-                return 'moved task "'.$this->task->title.'" from "'.($fromTitle ?? 'Unknown').'" to "'.($toTitle ?? 'Unknown').'"';
+                return 'moved task "'.$this->task->title.'" from "'.($this->listTitle($this->oldValue) ?? 'Unknown')
+                    .'" to "'.($this->listTitle($this->newValue) ?? 'Unknown').'"';
 
             case 'is_done':
-                if ($this->newValue === true || $this->newValue === '1' || $this->newValue === 1 || $this->newValue === 'true') {
+                if ($this->isTruthy($this->newValue)) {
                     return 'marked "'.$this->task->title.'" as done';
                 }
-                if ($this->oldValue === true || $this->oldValue === '1' || $this->oldValue === 1 || $this->oldValue === 'true') {
+                if ($this->isTruthy($this->oldValue)) {
                     return 'marked "'.$this->task->title.'" as not done';
                 }
 

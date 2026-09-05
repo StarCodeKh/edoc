@@ -55,6 +55,7 @@ class UserAssignedNotification extends Notification implements ShouldQueue
             'project_name' => $this->task->project->title,
             'workspace_name' => $this->task->project->workspace->name,
             'message' => 'assigned you to the task', // Message is specific to the person being notified
+            'message_key' => 'assigned you to the task',
             'url' => route('projects.board.with.task', [$this->task->project_id, $this->task->id]),
         ];
     }

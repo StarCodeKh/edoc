@@ -43,6 +43,7 @@ class NewMemberAddedNotification extends Notification implements ShouldQueue
             'workspace_id' => $this->teamMember->workspace->id,
             'workspace_name' => $this->teamMember->workspace->name,
             'message' => 'added you to the workspace',
+            'message_key' => 'added you to the workspace',
             'url' => route('workspace.view', $this->teamMember->workspace->slug), // Assumes a route name 'workspaces.show'
         ];
     }

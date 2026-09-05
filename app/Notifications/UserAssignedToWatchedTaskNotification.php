@@ -39,8 +39,12 @@ class UserAssignedToWatchedTaskNotification extends Notification implements Shou
             'project_id' => $this->task->project_id,
             'project_name' => $this->task->project->title,
             'workspace_name' => $this->task->project->workspace->name,
-            // The message is different for watchers
+            // The message is different for watchers. English for mail and Slack
+            // and for rows already written; the key and its value are what the
+            // bell renders, in whatever language the reader has chosen.
             'message' => 'assigned '.$this->assignedUser->first_name.' to the task',
+            'message_key' => 'assigned :name to the task',
+            'message_values' => ['name' => $this->assignedUser->first_name],
             'url' => route('projects.board.with.task', [$this->task->project_id, $this->task->id]),
         ];
     }

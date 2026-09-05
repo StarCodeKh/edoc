@@ -43,6 +43,7 @@ class NewCommentNotification extends Notification implements ShouldQueue
             'task_id' => $this->comment->task_id,
             'task_title' => $this->comment->task->title,
             'message' => 'added a new comment', // Removed the period to fit the sentence better
+            'message_key' => 'added a new comment',
             'url' => route('projects.board.with.task', [$this->comment->task->project_id, $this->comment->task_id]),
             'action_user_photo' => $this->comment->user->photo_path,
             'workspace_name' => $this->comment->task->project->workspace->name,

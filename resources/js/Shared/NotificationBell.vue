@@ -3,6 +3,10 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { usePage, router, Link } from '@inertiajs/vue3';
 import axios from 'axios';
 import Icon from '@/Shared/Icon.vue';
+import moment from 'moment';
+import 'moment/dist/locale/km';
+import 'moment/dist/locale/zh-cn';
+import { trans, getActiveLanguage } from 'laravel-vue-i18n';
 
 const isOpen = ref(false);
 const isMenuOpen = ref(false);
@@ -12,24 +16,30 @@ const notifications = ref(page.props.auth.notifications || []);
 const unreadCount = ref(page.props.auth.unread_count || 0);
 const user = computed(() => page.props.auth.user);
 
-const formatTimeAgo = (dateString) => {
-    if (!dateString) return 'just now';
-    const date = new Date(dateString);
-    const seconds = Math.floor((new Date() - date) / 1000);
-    if (seconds < 2) return 'just now';
-    if (seconds < 60) return `${seconds} seconds ago`;
-    let interval = seconds / 31536000;
-    if (interval > 1) return Math.floor(interval) + ' years ago';
-    interval = seconds / 2592000;
-    if (interval > 1) return Math.floor(interval) + ' months ago';
-    interval = seconds / 86400;
-    if (interval > 1) return Math.floor(interval) + ' days ago';
-    interval = seconds / 3600;
-    if (interval > 1) return Math.floor(interval) + ' hours ago';
-    interval = seconds / 60;
-    if (interval > 1) return Math.floor(interval) + ' minutes ago';
-    return Math.floor(seconds) + ' seconds ago';
-};
+/**
+ * The app's language codes are not moment's. This was a hand-rolled English
+ * ladder - "3 hours ago" whatever language the reader had chosen.
+ */
+const MOMENT_LOCALES = { kh: 'km', cn: 'zh-cn', en: 'en' };
+
+const locale = computed(() => page.props.auth?.user?.locale || getActiveLanguage() || 'en');
+
+const formatTimeAgo = (dateString) =>
+    dateString
+        ? moment(dateString)
+              .locale(MOMENT_LOCALES[locale.value] || 'en')
+              .fromNow()
+        : trans('just now');
+
+/**
+ * The sentence, built rather than replayed. Newer rows carry the change as a
+ * key and its values; older ones carry only the English sentence, which still
+ * goes through the catalogue so the fixed phrases land translated.
+ */
+const messageOf = (notification) =>
+    notification.data?.message_key
+        ? trans(notification.data.message_key, notification.data.message_values || {})
+        : trans(notification.data?.message || '');
 
 const handleNotificationClick = (notification) => {
     isOpen.value = false;
@@ -233,18 +243,31 @@ onUnmounted(() => document.removeEventListener('keydown', closeOnEscape));
 
                             <!-- Notification Text Content -->
                             <div class="flex-1 min-w-0">
-                                <!-- CONSTRUCT THE FULL SENTENCE HERE -->
                                 <p class="text-sm text-gray-800 dark:text-gray-300 leading-snug">
                                     <strong class="font-medium dark:text-white">{{ n.data?.action_user_name }}</strong>
-                                    {{ n.data?.message }} on task
-                                    <strong class="font-medium text-blue-600 dark:text-blue-400"
-                                        >“{{ n.data?.task_title }}”</strong
-                                    >
-                                    in project
-                                    <strong class="font-medium dark:text-white">“{{ n.data?.project_name }}”</strong>
-                                    under workspace
-                                    <strong class="font-medium dark:text-white">“{{ n.data?.workspace_name }}”</strong>.
+                                    {{ messageOf(n) }}
                                 </p>
+                                <!-- "on task X in project Y under workspace Z"
+                                     was three clauses of English glue no
+                                     catalogue could reach, and it repeated what
+                                     the message already names. The same context
+                                     the notifications page shows, said once. -->
+                                <div
+                                    class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-gray-500 dark:text-gray-400"
+                                >
+                                    <span v-if="n.data?.task_title" class="inline-flex min-w-0 items-center gap-1">
+                                        <icon name="checklist_box" class="h-3.5 w-3.5 shrink-0 opacity-70" />
+                                        <span class="truncate">{{ n.data.task_title }}</span>
+                                    </span>
+                                    <span v-if="n.data?.project_name" class="inline-flex min-w-0 items-center gap-1">
+                                        <icon name="project" class="h-3.5 w-3.5 shrink-0 opacity-70" />
+                                        <span class="truncate">{{ n.data.project_name }}</span>
+                                    </span>
+                                    <span v-if="n.data?.workspace_name" class="inline-flex min-w-0 items-center gap-1">
+                                        <icon name="workspace" class="h-3.5 w-3.5 shrink-0 opacity-70" />
+                                        <span class="truncate">{{ n.data.workspace_name }}</span>
+                                    </span>
+                                </div>
 
                                 <!-- Timestamp (This part remains the same) -->
                                 <div class="text-xs text-gray-500 dark:text-gray-400 mt-2">
