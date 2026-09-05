@@ -4,17 +4,20 @@ namespace Tests\Feature;
 
 use App\Models\Assignee;
 use App\Models\BoardList;
+use App\Models\DocumentSource;
 use App\Models\EdocWorkflowRole;
 use App\Models\NotificationSetting;
 use App\Models\Project;
 use App\Models\Role;
 use App\Models\Task;
+use App\Models\TeamMember;
 use App\Models\User;
 use App\Models\WorkflowSubRole;
 use App\Models\Workspace;
 use App\Notifications\UserAssignedNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
+use Inertia\Testing\AssertableInertia;
 use Tests\TestCase;
 
 /**
@@ -171,6 +174,115 @@ class WorkflowNotificationTest extends TestCase
         // point. Forwarding used to take it off theirs and put it on no other.
         $this->assertSame((int) $this->first->id, (int) $task->fresh()->list_id);
         $this->assertDatabaseHas('assignees', ['task_id' => $task->id, 'user_id' => $this->forwarder->id]);
+    }
+
+    /**
+     * Naming somebody outright gets past a step nobody carries.
+     *
+     * The block is there so a document is never dropped on an empty plate, not
+     * to hold it hostage to an administrator: the panel offers the workspace's
+     * own people, and picking one answers the same question the responsibility
+     * would have.
+     */
+    public function test_naming_somebody_forwards_a_step_nobody_carries(): void
+    {
+        Notification::fake();
+
+        WorkflowSubRole::create(['code' => 'rev', 'name' => 'Reviewers', 'order' => 0]);
+
+        $this->step('Intake', 0, null);
+        $this->step('Review', 1, 'rev');
+
+        $stand_in = User::factory()->create();
+        TeamMember::create([
+            'workspace_id' => $this->workspace->id,
+            'user_id' => $stand_in->id,
+            'added_by' => $this->forwarder->id,
+        ]);
+
+        $task = $this->document();
+
+        $this->post(
+            '/w/'.$this->workspace->slug.'/documents/'.$task->slug.'/forward',
+            ['assign_to' => [$stand_in->id]]
+        )->assertSessionHas('success');
+
+        $this->assertSame((int) $this->second->id, (int) $task->fresh()->list_id);
+        $this->assertDatabaseHas('assignees', ['task_id' => $task->id, 'user_id' => $stand_in->id]);
+        Notification::assertSentTo($stand_in, UserAssignedNotification::class);
+    }
+
+    /**
+     * The page offers those people, so there is something to pick from - and
+     * offers them by ចំណងជើង, នាយកដ្ឋាន and ការិយាល័យរង, which is what the
+     * panel's search box narrows on. A list of bare names is unsearchable once
+     * it is the whole workspace.
+     */
+    public function test_a_step_nobody_carries_offers_the_workspace_to_pick_from(): void
+    {
+        WorkflowSubRole::create(['code' => 'rev', 'name' => 'Reviewers', 'order' => 0]);
+
+        $this->step('Intake', 0, null);
+        $this->step('Review', 1, 'rev');
+
+        $department = DocumentSource::create(['name' => 'នាយកដ្ឋានរដ្ឋបាល', 'order' => 0]);
+        $office = DocumentSource::create([
+            'name' => 'ការិយាល័យរង ១', 'parent_id' => $department->id, 'order' => 0,
+        ]);
+
+        $stand_in = User::factory()->create([
+            'title' => 'ប្រធានការិយាល័យ',
+            'document_source_id' => $office->id,
+        ]);
+        TeamMember::create([
+            'workspace_id' => $this->workspace->id,
+            'user_id' => $stand_in->id,
+            'added_by' => $this->forwarder->id,
+        ]);
+
+        $task = $this->document();
+
+        $this->get('/w/'.$this->workspace->slug.'/documents/'.$task->slug)
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('next_step.has_holder', false)
+                ->has('next_step.people', 0)
+                ->has('next_step.fallback_people', 1)
+                ->where('next_step.fallback_people.0.id', $stand_in->id)
+                ->where('next_step.fallback_people.0.title', 'ប្រធានការិយាល័យ')
+                // The department is the one above, not the source they carry.
+                ->where('next_step.fallback_people.0.department', 'នាយកដ្ឋានរដ្ឋបាល')
+                ->where('next_step.fallback_people.0.office', 'ការិយាល័យរង ១')
+            );
+    }
+
+    /**
+     * Somebody filed straight under a department has no ការិយាល័យរង, and the
+     * one source they carry is the department itself - not a sub-office with
+     * nothing above it.
+     */
+    public function test_a_person_filed_under_a_department_has_no_sub_office(): void
+    {
+        WorkflowSubRole::create(['code' => 'rev', 'name' => 'Reviewers', 'order' => 0]);
+
+        $this->step('Intake', 0, null);
+        $this->step('Review', 1, 'rev');
+
+        $department = DocumentSource::create(['name' => 'នាយកដ្ឋានរដ្ឋបាល', 'order' => 0]);
+
+        $stand_in = User::factory()->create(['document_source_id' => $department->id]);
+        TeamMember::create([
+            'workspace_id' => $this->workspace->id,
+            'user_id' => $stand_in->id,
+            'added_by' => $this->forwarder->id,
+        ]);
+
+        $this->get('/w/'.$this->workspace->slug.'/documents/'.$this->document()->slug)
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('next_step.fallback_people.0.department', 'នាយកដ្ឋានរដ្ឋបាល')
+                ->where('next_step.fallback_people.0.office', null)
+            );
     }
 
     /** Give the responsibility a holder and the same forward goes through. */

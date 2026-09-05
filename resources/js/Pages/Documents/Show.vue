@@ -715,34 +715,12 @@
                                                         {{ nextStepSummary }}
                                                     </p>
 
-                                                    <ul
+                                                    <person-picker
                                                         v-else
-                                                        class="mt-1 max-h-40 overflow-y-auto rounded-xl border border-gray-200 dark:border-white/10 p-1"
-                                                    >
-                                                        <li v-for="person in nextStepPeople" :key="person.id">
-                                                            <label
-                                                                class="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-gray-50 dark:hover:bg-white/5"
-                                                            >
-                                                                <input
-                                                                    type="checkbox"
-                                                                    class="h-4 w-4 rounded border-gray-300 dark:border-white/15 text-indigo-600 dark:text-indigo-300"
-                                                                    :value="person.id"
-                                                                    v-model="assign_to"
-                                                                />
-                                                                <span class="min-w-0">
-                                                                    <span
-                                                                        class="block truncate text-sm text-gray-800 dark:text-gray-100"
-                                                                        >{{ person.name }}</span
-                                                                    >
-                                                                    <span
-                                                                        v-if="person.role"
-                                                                        class="block truncate text-[11px] text-gray-400 dark:text-gray-500"
-                                                                        >{{ person.role }}</span
-                                                                    >
-                                                                </span>
-                                                            </label>
-                                                        </li>
-                                                    </ul>
+                                                        v-model="assign_to"
+                                                        :people="nextStepPeople"
+                                                        class="mt-1"
+                                                    />
 
                                                     <!-- Ticking nobody is not "send it to nobody": it is
                                                          the default, which is everybody the step reaches. -->
@@ -751,6 +729,40 @@
                                                         class="mt-1 text-[11px] text-gray-400 dark:text-gray-500"
                                                     >
                                                         {{ $t('Tick nobody to send it to everyone listed.') }}
+                                                    </p>
+                                                </div>
+
+                                                <!-- Nobody carries the next step. Rather than a dead
+                                                     end behind a disabled button, offer the workspace's
+                                                     own people: naming somebody outright is what moves
+                                                     a document across a step whose responsibility has
+                                                     no holder. Fixing the workflow is still the better
+                                                     answer, which is why the label says so. -->
+                                                <div
+                                                    v-if="!finishes_here && next_step && next_step.has_holder === false"
+                                                    class="mt-2"
+                                                >
+                                                    <label
+                                                        class="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-amber-600"
+                                                    >
+                                                        {{
+                                                            $t('Nobody carries :role yet', {
+                                                                role: next_step.responsible_role_name,
+                                                            })
+                                                        }}
+                                                    </label>
+
+                                                    <person-picker
+                                                        v-if="fallbackPeople.length"
+                                                        v-model="assign_to"
+                                                        :people="fallbackPeople"
+                                                    />
+
+                                                    <p
+                                                        v-else
+                                                        class="rounded-xl border border-dashed border-gray-200 dark:border-white/10 px-3 py-2 text-[11px] text-gray-400 dark:text-gray-500"
+                                                    >
+                                                        {{ $t('This workspace has no one to hand it to yet.') }}
                                                     </p>
                                                 </div>
 
@@ -832,19 +844,26 @@
                                                     }}
                                                 </p>
                                                 <!-- The step exists but has no holder, so there is
-                                                     nowhere for the document to land. Said in amber
-                                                     next to a disabled button, because it is the
-                                                     forwarder's cue to go and fix the configuration,
-                                                     not a note about what happens next. -->
+                                                     nowhere for the document to land by itself. Said
+                                                     in amber next to a disabled button, and said as
+                                                     the two things that unblock it: name somebody
+                                                     from the list above, or go and fix the workflow.
+                                                     Where the workspace has nobody to name either,
+                                                     only the second one is left. -->
                                                 <p
                                                     v-else-if="nextStepHasNobody"
                                                     class="mt-1.5 text-center text-[11px] font-medium text-amber-600"
                                                 >
                                                     {{
-                                                        $t(
-                                                            'Nobody carries :role yet — assign it in Settings → Workflow Roles.',
-                                                            { role: next_step.responsible_role_name }
-                                                        )
+                                                        fallbackPeople.length
+                                                            ? $t(
+                                                                  'Choose who receives it, or give :role a holder in Settings → Workflow Roles.',
+                                                                  { role: next_step.responsible_role_name }
+                                                              )
+                                                            : $t(
+                                                                  'Nobody carries :role yet — assign it in Settings → Workflow Roles.',
+                                                                  { role: next_step.responsible_role_name }
+                                                              )
                                                     }}
                                                 </p>
                                                 <p
@@ -858,15 +877,12 @@
                                                     class="mt-1.5 text-center text-[11px] text-gray-400 dark:text-gray-500"
                                                 >
                                                     {{ $t('Next: :step', { step: next_step.title }) }}
+                                                    <!-- No names to add is not "nobody carries it":
+                                                         the amber branch above owns that case, and
+                                                         reaching here with an empty summary means the
+                                                         step's only holder is the forwarder, who is
+                                                         left out of the list by design. -->
                                                     <template v-if="nextStepSummary"> — {{ nextStepSummary }}</template>
-                                                    <template v-else-if="next_step.responsible_role_name">
-                                                        —
-                                                        {{
-                                                            $t('nobody carries :role yet', {
-                                                                role: next_step.responsible_role_name,
-                                                            })
-                                                        }}
-                                                    </template>
                                                 </p>
                                                 <p
                                                     v-else
@@ -1040,11 +1056,12 @@ import axios from 'axios';
 import PrinterIcon from '@/Shared/Components/PrinterIcon.vue';
 import DocumentReceipt from '@/Shared/Modals/DocumentReceipt.vue';
 import FilterSelect from '@/Shared/Components/FilterSelect.vue';
+import PersonPicker from '@/Shared/Components/PersonPicker.vue';
 
 export default {
     metaInfo: { title: 'Document' },
     layout: Layout,
-    components: { Head, Link, Icon, PrinterIcon, DocumentReceipt, FilterSelect },
+    components: { Head, Link, Icon, PrinterIcon, DocumentReceipt, FilterSelect, PersonPicker },
     props: {
         title: String,
         workspace: Object,
@@ -1269,10 +1286,27 @@ export default {
             // whose responsibility has no holders yet.
             return this.next_step.has_holder === false && !this.assign_to.length;
         },
+        /**
+         * The workspace's own people, offered only where the step's
+         * responsibility has nobody to offer. Empty otherwise - the server
+         * does not carry a list the panel has no use for.
+         */
+        fallbackPeople() {
+            return (this.next_step && this.next_step.fallback_people) || [];
+        },
+        /**
+         * Everyone the panel can name, whichever list that came from. Ticking
+         * nobody means something different in each: the step's own holders are
+         * the default when none are ticked, while the fallback list has no
+         * default at all - nobody carries the step, so somebody has to be said.
+         */
+        handoffPool() {
+            return this.nextStepPeople.length ? this.nextStepPeople : this.fallbackPeople;
+        },
         /** Named on the panel, so the button says who it is about to reach. */
         nextStepNames() {
             const chosen = this.assign_to.length
-                ? this.nextStepPeople.filter((person) => this.assign_to.includes(person.id))
+                ? this.handoffPool.filter((person) => this.assign_to.includes(person.id))
                 : this.nextStepPeople;
 
             return chosen.map((person) => person.name);
@@ -1403,7 +1437,10 @@ export default {
         hand_to() {
             if (!this.assign_to.length) return;
 
-            const reachable = new Set(this.nextStepPeople.map((person) => person.id));
+            // Against whichever list they were picked from: on a step nobody
+            // carries, the names came from the workspace and a department
+            // choice does not make them unreachable.
+            const reachable = new Set(this.handoffPool.map((person) => person.id));
 
             this.assign_to = this.assign_to.filter((id) => reachable.has(id));
         },

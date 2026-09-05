@@ -1080,6 +1080,7 @@ class DocumentSubmissionController extends Controller
         $options = $this->handToOptions($step);
 
         $workspaceId = optional($task->project)->workspace_id;
+        $hasHolder = $this->stepHasAnyHolder($step);
 
         return [
             'id' => $next->id,
@@ -1098,7 +1099,67 @@ class DocumentSubmissionController extends Controller
             // Whether the forward is allowed at all. Not derivable from
             // 'people', which leaves the forwarder out: the only holder of the
             // next step sees an empty list and a step that exists all the same.
-            'has_holder' => $this->stepHasAnyHolder($step),
+            'has_holder' => $hasHolder,
+            // Nobody carries the step, so the panel has nobody to offer and the
+            // forward is refused. Offer the workspace's own people instead:
+            // naming somebody outright is the one arm of assignStepOwners that
+            // works on a responsibility with no holders, and without it the
+            // only way past the block is an administrator editing the workflow.
+            // Only queried in that case - it is a dead payload otherwise.
+            'fallback_people' => $hasHolder ? [] : $this->workspaceCandidates($workspaceId)->all(),
+        ];
+    }
+
+    /**
+     * The workspace's own people, for handing a document to somebody by name
+     * when the step's responsibility has no holder to offer.
+     *
+     * Deliberately the team, not everyone: the forwarder picks from the people
+     * already working in this workspace rather than the whole register.
+     */
+    private function workspaceCandidates(?int $workspaceId): Collection
+    {
+        if (empty($workspaceId)) {
+            return collect();
+        }
+
+        return User::whereIn('id', TeamMember::where('workspace_id', $workspaceId)->select('user_id'))
+            ->where('id', '!=', auth()->id())
+            ->with(['workflowSubRole:id,name,code', 'documentSource:id,parent_id,name', 'documentSource.parent:id,name'])
+            ->orderBy('first_name')
+            ->get(['id', 'first_name', 'last_name', 'title', 'email', 'photo_path', 'workflow_sub_role_id', 'document_source_id'])
+            ->map(fn (User $user) => $this->handoffPersonPayload($user))
+            ->values();
+    }
+
+    /**
+     * One person as the forward panel lists them.
+     *
+     * Carries ចំណងជើង, នាយកដ្ឋាន and ការិយាល័យរង alongside the name: a list of
+     * bare names is unsearchable once it is the whole workspace, and those
+     * three are how people here are actually told apart.
+     */
+    private function handoffPersonPayload(User $user): array
+    {
+        $source = $user->documentSource;
+        $parent = optional($source)->parent;
+
+        return [
+            'id' => $user->id,
+            'name' => trim($user->first_name.' '.$user->last_name) ?: $user->email,
+            'email' => $user->email,
+            'photo' => $user->photo_path,
+            'role' => optional($user->workflowSubRole)->name,
+            'role_code' => optional($user->workflowSubRole)->code,
+            // ចំណងជើង - the post they hold, which is not their workflow
+            // responsibility and is often the only thing that tells two
+            // officers of the same office apart.
+            'title' => $user->title,
+            // Somebody filed directly under a department has no sub-office, so
+            // the one source they carry is the department itself rather than a
+            // ការិយាល័យរង with nothing above it.
+            'department' => $parent ? $parent->name : optional($source)->name,
+            'office' => $parent ? $source->name : null,
         ];
     }
 
@@ -1133,17 +1194,10 @@ class DocumentSubmissionController extends Controller
 
         return User::whereIn('workflow_sub_role_id', $roleIds)
             ->where('id', '!=', auth()->id())
-            ->with('workflowSubRole:id,name,code')
+            ->with(['workflowSubRole:id,name,code', 'documentSource:id,parent_id,name', 'documentSource.parent:id,name'])
             ->orderBy('first_name')
-            ->get(['id', 'first_name', 'last_name', 'email', 'photo_path', 'workflow_sub_role_id'])
-            ->map(fn (User $user) => [
-                'id' => $user->id,
-                'name' => trim($user->first_name.' '.$user->last_name) ?: $user->email,
-                'email' => $user->email,
-                'photo' => $user->photo_path,
-                'role' => optional($user->workflowSubRole)->name,
-                'role_code' => optional($user->workflowSubRole)->code,
-            ])
+            ->get(['id', 'first_name', 'last_name', 'title', 'email', 'photo_path', 'workflow_sub_role_id', 'document_source_id'])
+            ->map(fn (User $user) => $this->handoffPersonPayload($user))
             ->values();
     }
 
