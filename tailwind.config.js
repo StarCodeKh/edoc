@@ -34,14 +34,31 @@ module.exports = {
             gray: colors.slate,
             slate: colors.slate,
             teal: colors.teal,
+            // The app's accent, and the one place its steps are written down.
+            //
+            // This scale used to be a shorter, greyer set of its own, which put
+            // two different indigos on screen at once: a button written
+            // `bg-indigo-600` came out #5661b3, while the 73 places that name a
+            // colour directly - inline styles, scoped CSS - all used #4f46e5,
+            // the step this ramp actually carries. They are the same colour now.
+            //
+            // The gaps mattered as much as the values. 50, 200, 700 and 950 were
+            // absent, so `bg-indigo-50`, `text-indigo-700` and `ring-indigo-200`
+            // compiled to nothing at all - roughly 140 usages that asked for a
+            // tint, a darker label or a focus ring and silently got none. The
+            // ramp is complete now, so those render.
             indigo: {
-                100: '#e6e8ff',
-                300: '#b2b7ff',
-                400: '#7886d7',
-                500: '#6574cd',
-                600: '#5661b3',
-                800: '#2f365f',
-                900: '#191e38',
+                50: '#eef2ff',
+                100: '#e0e7ff',
+                200: '#c7d2fe',
+                300: '#a5b4fc',
+                400: '#818cf8',
+                500: '#6366f1',
+                600: '#4f46e5',
+                700: '#4338ca',
+                800: '#3730a3',
+                900: '#312e81',
+                950: '#1e1b4b',
             },
             primary: {
                 50: '#eff6ff',

@@ -264,19 +264,19 @@ export default {
     min-width: 11rem;
     max-width: 18rem;
     padding: 7px 10px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--line);
     border-radius: 10px;
-    background: #fff;
+    background: var(--surface);
     font-size: 12px;
     font-weight: 600;
-    color: #374151;
+    color: var(--ink);
     transition:
         border-color 0.15s ease,
         box-shadow 0.15s ease;
 }
 
 .filter-select__trigger:hover {
-    border-color: #c7d2fe;
+    border-color: var(--accent-border);
 }
 
 /* Form context (SelectInput). Filter bars want a compact pill sized to its
@@ -289,10 +289,10 @@ export default {
     height: 2.3rem;
     padding: 3px 10px;
     border-radius: 0.25rem;
-    border-color: #d1d5db;
+    border-color: var(--line-strong);
     font-size: 15px;
     font-weight: 400;
-    color: #1f2937;
+    color: var(--ink);
 }
 
 @media (max-width: 640px) {
@@ -330,15 +330,15 @@ export default {
 }
 
 .is-open .filter-select__trigger {
-    border-color: #6366f1;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    border-color: var(--accent-ink);
+    box-shadow: 0 0 0 3px rgba(var(--accent-fill-rgb), 0.15);
 }
 
 .filter-select__icon {
     width: 14px;
     height: 14px;
     flex-shrink: 0;
-    color: #9ca3af;
+    color: var(--ink-muted);
 }
 
 .filter-select__option .truncate {
@@ -354,7 +354,7 @@ export default {
 }
 
 .filter-select__value.is-placeholder {
-    color: #9ca3af;
+    color: var(--ink-muted);
     font-weight: 500;
 }
 
@@ -362,7 +362,7 @@ export default {
     width: 14px;
     height: 14px;
     flex-shrink: 0;
-    fill: #9ca3af;
+    fill: var(--ink-muted);
     transition: transform 0.2s ease;
 }
 
@@ -376,8 +376,8 @@ export default {
     /* Above the task dialog, which sits at 9999. The panel is teleported to
        <body>, so it has to out-rank whatever it is opened from. */
     z-index: 10000;
-    background: #fff;
-    border: 1px solid rgba(15, 23, 42, 0.08);
+    background: var(--surface);
+    border: 1px solid var(--line);
     border-radius: 12px;
     box-shadow: 0 12px 28px rgba(15, 23, 42, 0.16);
     overflow: hidden;
@@ -388,7 +388,7 @@ export default {
     align-items: center;
     gap: 6px;
     padding: 8px 10px;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--line);
 }
 
 .filter-select__search input {
@@ -433,7 +433,7 @@ export default {
     border-radius: 8px;
     font-size: 12.5px;
     line-height: 1.6;
-    color: #1f2937;
+    color: var(--ink);
     text-align: left;
     transition:
         background-color 0.12s ease,
@@ -441,13 +441,13 @@ export default {
 }
 
 .filter-select__option:hover {
-    background: #eef2ff;
-    color: #4338ca;
+    background: var(--accent-soft);
+    color: var(--accent-ink);
 }
 
 .filter-select__option.is-active {
-    background: #eef2ff;
-    color: #4338ca;
+    background: var(--accent-soft);
+    color: var(--accent-ink);
     font-weight: 600;
 }
 
@@ -458,14 +458,14 @@ export default {
     width: 14px;
     height: 14px;
     flex-shrink: 0;
-    border: 1.5px solid #cbd5e1;
+    border: 1.5px solid var(--line-strong);
     border-radius: 4px;
-    color: #fff;
+    color: var(--accent-on);
 }
 
 .filter-select__box.is-checked {
-    background: #4f46e5;
-    border-color: #4f46e5;
+    background: var(--accent-fill);
+    border-color: var(--accent-ink);
 }
 
 .filter-select__badge {
@@ -473,8 +473,8 @@ export default {
     min-width: 18px;
     padding: 1px 5px;
     border-radius: 9999px;
-    background: #4f46e5;
-    color: #fff;
+    background: var(--accent-fill);
+    color: var(--accent-on);
     font-size: 10px;
     font-weight: 700;
     text-align: center;
@@ -486,14 +486,14 @@ export default {
     justify-content: space-between;
     gap: 8px;
     padding: 8px 12px;
-    border-top: 1px solid #f1f5f9;
+    border-top: 1px solid var(--line);
     font-size: 11px;
     font-weight: 600;
-    color: #64748b;
+    color: var(--ink-muted);
 }
 
 .filter-select__footer button {
-    color: #4f46e5;
+    color: var(--accent-ink);
 }
 
 .filter-select__footer button:hover {
@@ -503,7 +503,7 @@ export default {
 .filter-select__empty {
     padding: 12px 10px;
     font-size: 12px;
-    color: #9ca3af;
+    color: var(--ink-muted);
     text-align: center;
 }
 

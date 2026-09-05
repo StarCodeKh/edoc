@@ -3333,7 +3333,7 @@ body {
   min-height: 0;
   margin-top: 17px;
   margin-left: 15px !important;
-  background-color: #7366ff !important;
+  background-color: var(--accent-fill) !important;
   color: #fff !important;
   border-radius: 3px !important;
   box-shadow: 0 0px 10px -5px rgba(254, 127, 0, 0.3);
@@ -3416,7 +3416,20 @@ input:checked ~ .toggle__dot {
 }
 /* Modules */
 :root {
-  --theme-deafult: #7366ff;
+  /* The accent, defined here too because this sheet is served on its own to
+     the installer, which never loads the app bundle. Same values as
+     resources/css/variables.scss, which overrides them (and adds the dark
+     steps) on every page that does load the bundle. */
+  --accent-fill: #4f46e5;
+  --accent-fill-hover: #4338ca;
+  --accent-bright: #6366f1;
+  --accent-ink: #4f46e5;
+  --accent-on: #ffffff;
+  --accent-soft: #eef2ff;
+  --accent-border: #c7d2fe;
+  --accent-fill-rgb: 79, 70, 229;
+
+  --theme-deafult: var(--accent-fill);
   --dark-text: #ffffffb3;
   --white: #ffffff;
   --gray: #f1f5f9;
@@ -4092,7 +4105,7 @@ body .dark.layout_landing .top_bar .top_bar__menu .t__l__wrapper .__creation .m_
   font-size: 14px;
 }
 .menu-item.active .menu-link {
-  background-color: #7366ff;
+  background-color: var(--accent-fill);
   transition: all 0.5s ease;
 }
 .menu-item.active .menu-link .menu__name {
@@ -4107,10 +4120,10 @@ body .dark.layout_landing .top_bar .top_bar__menu .t__l__wrapper .__creation .m_
   background-color: #dad6ff;
 }
 .menu-item.active .menu-link.have-sub-menu .menu__name {
-  color: #7366ff;
+  color: var(--accent-ink);
 }
 .menu-item.active .menu-link.have-sub-menu .menu__icon {
-  fill: #7366ff;
+  fill: var(--accent-ink);
 }
 .menu-item.active .menu-link.have-sub-menu:after {
   background-image: url("/images/svg/angle-down.svg");
@@ -4119,22 +4132,22 @@ body .dark.layout_landing .top_bar .top_bar__menu .t__l__wrapper .__creation .m_
   display: flex;
 }
 .menu-item.active .sub-menu-items .sub-menu-item.active .menu__name {
-  color: #7366ff;
+  color: var(--accent-ink);
   transition: all 0.3s ease;
 }
 .menu-item.active .sub-menu-items .sub-menu-item.active .menu__icon {
-  fill: #7366ff;
+  fill: var(--accent-ink);
   transition: all 0.3s ease;
 }
 .menu-item.hover .menu-link.have-sub-menu {
   background-color: #dad6ff;
 }
 .menu-item.hover .menu-link.have-sub-menu .menu__name {
-  color: #7366ff;
+  color: var(--accent-ink);
   transition: all 0.3s ease;
 }
 .menu-item.hover .menu-link.have-sub-menu .menu__icon {
-  fill: #7366ff;
+  fill: var(--accent-ink);
   transition: all 0.3s ease;
 }
 .menu-item.hover .menu-link.have-sub-menu:after {
@@ -4246,7 +4259,7 @@ body .dark.layout_landing .sticky {
   color: rgb(255 255 255 / var(--tw-text-opacity));
 }
 .sticky nav li.group.active {
-  color: #4f46e5;
+  color: var(--accent-ink);
 }
 #navbarCollapse li .ud-menu-scroll.active {
   opacity: 0.7;
@@ -4800,7 +4813,7 @@ button.disabled {
 }
 .toggle_swtich input:checked ~ .dot {
   transform: translateX(100%);
-  background-color: #7366ff;
+  background-color: var(--accent-fill);
 }
 .select_user .group div {
   display: flex;
@@ -4913,7 +4926,7 @@ svg.logo {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  border: 1px solid #7366ff;
+  border: 1px solid var(--accent-ink);
   background-color: #ffffff;
   z-index: 100;
 }
@@ -4951,7 +4964,7 @@ svg.logo {
 .chat_bubble span.bottom_text {
   position: absolute;
   bottom: -22px;
-  color: #7366ff;
+  color: var(--accent-ink);
   font-size: 14px;
 }
 .t__area {

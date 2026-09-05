@@ -2194,7 +2194,7 @@ export default {
     max-width: 34rem;
     padding: 8px 20px;
     border-radius: 999px;
-    background: #4f46e5;
+    background: var(--accent-fill);
     color: #fff;
     font-size: 12px;
     font-weight: 700;
@@ -2206,7 +2206,7 @@ export default {
         box-shadow 0.15s ease;
 }
 .approve-sign-btn:hover:not(:disabled) {
-    background: #4338ca;
+    background: var(--accent-fill-hover);
     box-shadow: 0 8px 20px rgba(67, 56, 202, 0.4);
 }
 .approve-sign-btn:disabled {

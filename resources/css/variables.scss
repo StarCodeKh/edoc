@@ -1,8 +1,72 @@
+/**
+ * The accent, once.
+ *
+ * Everything that is "the app's colour" - buttons, active menu items, focus
+ * rings, links - reads these. The Tailwind `indigo` scale in
+ * tailwind.config.js carries the same steps, so a class and a hand-written
+ * rule cannot drift apart again.
+ *
+ * The split between fill and ink is what makes it work on both surfaces. As a
+ * solid button the accent stays var(--accent-fill) in either mode - white on it is 6.29:1,
+ * and a saturated button reads correctly against a dark page. As text or an
+ * icon it has to lighten, because var(--accent-fill) on the dark card is 2.31:1 and
+ * unreadable; #818cf8 is 4.87:1 there.
+ */
 :root {
-    --theme-deafult: #7366ff;
+    --accent-fill: #4f46e5;
+    --accent-fill-hover: #4338ca;
+    --accent-bright: #6366f1;
+    --accent-ink: #4f46e5;
+    --accent-on: #ffffff;
+    --accent-soft: #eef2ff;
+    --accent-border: #c7d2fe;
+    --accent-fill-rgb: 79, 70, 229;
+
+    /* The neutrals, for hand-written CSS that has no `dark:` variant to lean
+       on. Tailwind classes already pair themselves (`text-gray-900
+       dark:text-gray-100`) and are left alone - inverting the gray scale
+       globally would flip both halves of every one of those pairs and break
+       them. These exist for the stylesheets and inline styles that cannot say
+       `dark:` at all. */
+    --surface: #ffffff;
+    --surface-sunken: #f8fafc;
+    --surface-raised: #f1f5f9;
+    --ink: #111827;
+    --ink-muted: #6b7280;
+    --ink-subtle: #94a3b8;
+    --line: #e5e7eb;
+    --line-strong: #cbd5e1;
+
+    /* The bar across the top is translucent over whatever the board is
+       wearing, so it needs its own step rather than --surface. */
+    --topbar: rgba(255, 255, 255, 0.95);
+
+    // The legacy theme sheet in public/css reads this one. Pointing it at the
+    // accent retires the third indigo (#7366ff) without touching that file's
+    // twelve rules.
+    --theme-deafult: var(--accent-fill);
     --dark-text: #ffffffb3;
     --white: #ffffff;
     --gray: #f1f5f9;
+}
+
+/* The theme toggle puts .dark on <html>, so teleported panels get these too. */
+:root.dark {
+    --surface: #262932;
+    --surface-sunken: #1e2028;
+    --surface-raised: #30333d;
+    --ink: #f3f4f6;
+    --ink-muted: #9ca3af;
+    --ink-subtle: #6b7280;
+    --line: rgba(255, 255, 255, 0.1);
+    --line-strong: rgba(255, 255, 255, 0.18);
+    --topbar: rgba(30, 32, 40, 0.95);
+
+    --accent-fill-hover: #6366f1;
+    --accent-bright: #818cf8;
+    --accent-ink: #818cf8;
+    --accent-soft: rgba(129, 140, 248, 0.14);
+    --accent-border: rgba(129, 140, 248, 0.32);
 }
 .card {
     margin-bottom: 30px;

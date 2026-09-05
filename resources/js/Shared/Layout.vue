@@ -635,9 +635,12 @@ export default {
     },
     methods: {
         getDefaultTopBarStyle() {
-            // Matching top bar with slight transparency and blur
+            // Translucent and blurred over whatever is behind it. The colour is
+            // a token rather than a literal because this is an inline style -
+            // there is no `dark:` variant to reach it, which is why the bar
+            // stayed white across the whole app in dark mode.
             return {
-                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                backgroundColor: 'var(--topbar)',
                 backdropFilter: 'blur(10px)',
                 WebkitBackdropFilter: 'blur(10px)',
             };

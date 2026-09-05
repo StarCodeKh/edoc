@@ -1,31 +1,39 @@
 <template>
     <div
-        class="right__menu fixed w-[320px] z-[200] h-[calc(100vh-45px)] shadow-2xl text-sm bg-white overflow-hidden rounded-l-2xl border-l border-gray-200/60 backdrop-blur-xl flex flex-col"
+        class="right__menu fixed w-[320px] z-[200] h-[calc(100vh-45px)] shadow-2xl text-sm bg-white dark:bg-[#262932] overflow-hidden rounded-l-2xl border-l border-gray-200/60 dark:border-white/10 backdrop-blur-xl flex flex-col"
         :style="{ top, left, right }"
     >
         <!-- Enhanced Header -->
-        <div class="relative bg-gradient-to-r from-white via-gray-50/50 to-white border-b border-gray-200/60">
+        <div
+            class="relative bg-gradient-to-r from-white via-gray-50/50 to-white border-b border-gray-200/60 dark:border-white/10"
+        >
             <div class="flex items-center justify-between px-6 py-4">
                 <div class="flex items-center space-x-3">
                     <div
                         v-if="show_back_button"
                         @click="goBack()"
-                        class="p-2 rounded-xl hover:bg-gray-100 transition-all duration-200 cursor-pointer group"
+                        class="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition-all duration-200 cursor-pointer group"
                     >
-                        <icon name="arrow-left" class="w-5 h-5 text-gray-600 group-hover:text-gray-900" />
+                        <icon
+                            name="arrow-left"
+                            class="w-5 h-5 text-gray-600 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white"
+                        />
                     </div>
                     <div class="flex items-center space-x-2">
                         <div class="p-2 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl">
                             <icon name="menu" class="w-5 h-5 text-white" />
                         </div>
-                        <h2 class="text-lg font-bold text-gray-900">{{ $t('Menu') }}</h2>
+                        <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100">{{ $t('Menu') }}</h2>
                     </div>
                 </div>
                 <button
                     @click="$emit('menuToggle')"
-                    class="p-2 rounded-xl hover:bg-gray-100 transition-all duration-200 group"
+                    class="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition-all duration-200 group"
                 >
-                    <icon class="w-5 h-5 text-gray-600 group-hover:text-gray-900" name="close" />
+                    <icon
+                        class="w-5 h-5 text-gray-600 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white"
+                        name="close"
+                    />
                 </button>
             </div>
         </div>
@@ -34,12 +42,14 @@
             <div class="p-4 space-y-2">
                 <!-- Archive Section -->
                 <div class="space-y-1">
-                    <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider px-3 py-2">
+                    <h3
+                        class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-3 py-2"
+                    >
                         {{ $t('Archive') }}
                     </h3>
                     <button
                         @click="showItems('tasks')"
-                        class="w-full flex items-center px-3 py-3 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-xl transition-all duration-200 group"
+                        class="w-full flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-all duration-200 group"
                     >
                         <div class="p-1.5 bg-orange-100 rounded-lg mr-3 group-hover:bg-orange-200 transition-colors">
                             <icon name="archive" class="w-4 h-4 text-orange-600" />
@@ -48,7 +58,7 @@
                     </button>
                     <button
                         @click="showItems('boards')"
-                        class="w-full flex items-center px-3 py-3 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-xl transition-all duration-200 group"
+                        class="w-full flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-all duration-200 group"
                     >
                         <div class="p-1.5 bg-orange-100 rounded-lg mr-3 group-hover:bg-orange-200 transition-colors">
                             <icon name="archive" class="w-4 h-4 text-orange-600" />
@@ -59,12 +69,14 @@
 
                 <!-- Export Section -->
                 <div v-if="$page.props.auth.user.role.slug === 'admin'" class="space-y-1">
-                    <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider px-3 py-2">
+                    <h3
+                        class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-3 py-2"
+                    >
                         {{ $t('Export') }}
                     </h3>
                     <a
                         :href="'/project/csv/export/' + project.id"
-                        class="w-full flex items-center px-3 py-3 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-xl transition-all duration-200 group"
+                        class="w-full flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-all duration-200 group"
                     >
                         <div class="p-1.5 bg-green-100 rounded-lg mr-3 group-hover:bg-green-200 transition-colors">
                             <img class="w-4 h-4" src="/images/svg/csv.svg" alt="Export CSV" />
@@ -73,7 +85,7 @@
                     </a>
                     <a
                         :href="'/project/excel/export/' + project.id"
-                        class="w-full flex items-center px-3 py-3 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-xl transition-all duration-200 group"
+                        class="w-full flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-all duration-200 group"
                     >
                         <div class="p-1.5 bg-green-100 rounded-lg mr-3 group-hover:bg-green-200 transition-colors">
                             <img class="w-4 h-4" src="/images/svg/excel.svg" alt="Export Excel" />
@@ -84,12 +96,14 @@
 
                 <!-- Project Settings Section -->
                 <div v-if="$page.props.auth.user.role.slug === 'admin'" class="space-y-1">
-                    <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider px-3 py-2">
+                    <h3
+                        class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-3 py-2"
+                    >
                         {{ $t('Project Settings') }}
                     </h3>
                     <button
                         @click="showItems('backgrounds')"
-                        class="w-full flex items-center px-3 py-3 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-xl transition-all duration-200 group"
+                        class="w-full flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-all duration-200 group"
                     >
                         <div class="p-1.5 bg-purple-100 rounded-lg mr-3 group-hover:bg-purple-200 transition-colors">
                             <span
@@ -97,7 +111,7 @@
                                 :style="[
                                     project && project.background
                                         ? { backgroundImage: 'url(' + project.background.image + ')' }
-                                        : { backgroundColor: '#6366f1' },
+                                        : { backgroundColor: 'var(--accent-fill)' },
                                 ]"
                             />
                         </div>
@@ -105,19 +119,19 @@
                     </button>
                     <button
                         @click="showItems('workspaces')"
-                        class="w-full flex items-center px-3 py-3 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-xl transition-all duration-200 group"
+                        class="w-full flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-all duration-200 group"
                     >
                         <div class="p-1.5 bg-blue-100 rounded-lg mr-3 group-hover:bg-blue-200 transition-colors">
-                            <icon name="gear" class="w-4 h-4 text-blue-600" />
+                            <icon name="gear" class="w-4 h-4 text-blue-600 dark:text-blue-300" />
                         </div>
                         {{ $t('Change Workspace') }}
                     </button>
                     <button
                         @click="showItems('visibility')"
-                        class="w-full flex items-center px-3 py-3 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-xl transition-all duration-200 group"
+                        class="w-full flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-all duration-200 group"
                     >
                         <div class="p-1.5 bg-indigo-100 rounded-lg mr-3 group-hover:bg-indigo-200 transition-colors">
-                            <icon name="display" class="w-4 h-4 text-indigo-600" />
+                            <icon name="display" class="w-4 h-4 text-indigo-600 dark:text-indigo-300" />
                         </div>
                         {{ $t('Change Task Visibility') }}
                     </button>
@@ -125,7 +139,9 @@
 
                 <!-- Danger Zone -->
                 <div v-if="$page.props.auth.user.role.slug === 'admin'" class="space-y-1">
-                    <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider px-3 py-2">
+                    <h3
+                        class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-3 py-2"
+                    >
                         {{ $t('Danger Zone') }}
                     </h3>
                     <button
@@ -141,15 +157,19 @@
 
                 <!-- Global Settings -->
                 <div v-if="$page.props.auth.user.role.slug === 'admin'" class="space-y-1">
-                    <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider px-3 py-2">
+                    <h3
+                        class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-3 py-2"
+                    >
                         {{ $t('System') }}
                     </h3>
                     <Link
                         :href="route('global')"
-                        class="w-full flex items-center px-3 py-3 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-xl transition-all duration-200 group"
+                        class="w-full flex items-center px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-all duration-200 group"
                     >
-                        <div class="p-1.5 bg-gray-100 rounded-lg mr-3 group-hover:bg-gray-200 transition-colors">
-                            <icon name="settings" class="w-4 h-4 text-gray-600" />
+                        <div
+                            class="p-1.5 bg-gray-100 dark:bg-white/10 rounded-lg mr-3 group-hover:bg-gray-200 transition-colors"
+                        >
+                            <icon name="settings" class="w-4 h-4 text-gray-600 dark:text-gray-300" />
                         </div>
                         {{ $t('Global Settings') }}
                     </Link>
@@ -160,8 +180,10 @@
         <div v-if="enable_options['tasks']" class="flex-1 overflow-y-auto min-h-0">
             <div class="p-4">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900">{{ $t('Archived Tasks') }}</h3>
-                    <div class="text-sm text-gray-500">{{ menu_data.tasks.length }} {{ $t('tasks') }}</div>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ $t('Archived Tasks') }}</h3>
+                    <div class="text-sm text-gray-500 dark:text-gray-400">
+                        {{ menu_data.tasks.length }} {{ $t('tasks') }}
+                    </div>
                 </div>
 
                 <div class="space-y-3" v-if="menu_data.tasks.length">
@@ -170,11 +192,11 @@
                         :key="element.id"
                         @click="$emit('openTask', element.slug || element.id)"
                         :data-id="element.id"
-                        class="p-4 bg-white border border-gray-200 rounded-xl cursor-pointer hover:shadow-md transition-all duration-200 group hover:border-gray-300"
+                        class="p-4 bg-white dark:bg-[#262932] border border-gray-200 dark:border-white/10 rounded-xl cursor-pointer hover:shadow-md transition-all duration-200 group hover:border-gray-300 dark:hover:border-white/20"
                         draggable="true"
                     >
                         <h4
-                            class="text-sm font-semibold text-gray-900 mb-2 group-hover:text-indigo-600 transition-colors"
+                            class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition-colors"
                         >
                             {{ element.title }}
                         </h4>
@@ -187,7 +209,7 @@
                                 {{ moment(element.due_date).format('MMM D') }}
                             </div>
                             <div
-                                class="flex items-center px-2 py-1 bg-blue-100 text-blue-700 rounded-full"
+                                class="flex items-center px-2 py-1 bg-blue-100 text-blue-700 dark:text-blue-300 rounded-full"
                                 v-if="element.description"
                             >
                                 <icon class="w-3 h-3 mr-1" name="details" />{{ $t('Description') }}
@@ -207,7 +229,7 @@
                                 {{ element.attachments_count }}
                             </div>
                             <div
-                                class="flex items-center px-2 py-1 bg-indigo-100 text-indigo-700 rounded-full"
+                                class="flex items-center px-2 py-1 bg-indigo-100 text-indigo-700 dark:text-indigo-300 rounded-full"
                                 v-if="element.checklists_count"
                             >
                                 <icon class="w-3 h-3 mr-1" name="checklist" />
@@ -218,10 +240,12 @@
                 </div>
 
                 <div v-else class="text-center py-8">
-                    <div class="p-3 bg-gray-100 rounded-full w-12 h-12 mx-auto mb-3 flex items-center justify-center">
-                        <icon name="archive" class="w-6 h-6 text-gray-400" />
+                    <div
+                        class="p-3 bg-gray-100 dark:bg-white/10 rounded-full w-12 h-12 mx-auto mb-3 flex items-center justify-center"
+                    >
+                        <icon name="archive" class="w-6 h-6 text-gray-400 dark:text-gray-500" />
                     </div>
-                    <p class="text-gray-500 text-sm">{{ $t('No archived tasks found') }}</p>
+                    <p class="text-gray-500 dark:text-gray-400 text-sm">{{ $t('No archived tasks found') }}</p>
                 </div>
             </div>
         </div>
@@ -229,15 +253,19 @@
         <div v-if="enable_options['boards']" class="flex-1 overflow-y-auto min-h-0">
             <div class="p-4">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900">{{ $t('Archived Board Items') }}</h3>
-                    <div class="text-sm text-gray-500">{{ menu_data.boards.length }} {{ $t('items') }}</div>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                        {{ $t('Archived Board Items') }}
+                    </h3>
+                    <div class="text-sm text-gray-500 dark:text-gray-400">
+                        {{ menu_data.boards.length }} {{ $t('items') }}
+                    </div>
                 </div>
 
                 <div class="space-y-3" v-if="menu_data.boards.length">
                     <div
                         v-for="list in menu_data.boards"
                         :key="list.id"
-                        class="p-4 bg-white border border-gray-200 rounded-xl hover:shadow-md transition-all duration-200"
+                        class="p-4 bg-white dark:bg-[#262932] border border-gray-200 dark:border-white/10 rounded-xl hover:shadow-md transition-all duration-200"
                     >
                         <div class="flex items-center justify-between">
                             <div class="flex items-center space-x-3">
@@ -245,13 +273,17 @@
                                     <icon name="archive" class="w-4 h-4 text-orange-600" />
                                 </div>
                                 <div>
-                                    <h4 class="text-sm font-semibold text-gray-900">{{ list.title }}</h4>
-                                    <p class="text-xs text-gray-500">{{ $t('Archived board item') }}</p>
+                                    <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                        {{ list.title }}
+                                    </h4>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                                        {{ $t('Archived board item') }}
+                                    </p>
                                 </div>
                             </div>
                             <button
                                 @click="sendToBoard(list.id)"
-                                class="flex items-center px-3 py-2 text-sm font-medium text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-all duration-200"
+                                class="flex items-center px-3 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-300 hover:text-indigo-700 dark:hover:text-indigo-200 hover:bg-indigo-50 dark:hover:bg-indigo-500/20 rounded-lg transition-all duration-200"
                             >
                                 <icon class="w-4 h-4 mr-2" name="undo" />
                                 {{ $t('Restore') }}
@@ -261,20 +293,24 @@
                 </div>
 
                 <div v-else class="text-center py-8">
-                    <div class="p-3 bg-gray-100 rounded-full w-12 h-12 mx-auto mb-3 flex items-center justify-center">
-                        <icon name="archive" class="w-6 h-6 text-gray-400" />
+                    <div
+                        class="p-3 bg-gray-100 dark:bg-white/10 rounded-full w-12 h-12 mx-auto mb-3 flex items-center justify-center"
+                    >
+                        <icon name="archive" class="w-6 h-6 text-gray-400 dark:text-gray-500" />
                     </div>
-                    <p class="text-gray-500 text-sm">{{ $t('No archived board items found') }}</p>
+                    <p class="text-gray-500 dark:text-gray-400 text-sm">{{ $t('No archived board items found') }}</p>
                 </div>
             </div>
         </div>
         <!-- Enhanced Workspace Settings -->
         <div v-if="enable_options['workspaces']" class="flex-1 overflow-y-auto min-h-0">
             <div class="p-4">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ $t('Change Workspace') }}</h3>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+                    {{ $t('Change Workspace') }}
+                </h3>
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">{{
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">{{
                             $t('Select a workspace')
                         }}</label>
                         <select-input v-model="selected_workspace" class="w-full">
@@ -298,9 +334,9 @@
         <!-- Enhanced Visibility Settings -->
         <div v-if="enable_options['visibility']" class="flex-1 overflow-y-auto min-h-0">
             <div class="p-4">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ $t('Task Visibility') }}</h3>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">{{ $t('Task Visibility') }}</h3>
                 <div class="space-y-4">
-                    <div class="p-4 bg-gray-50 rounded-xl">
+                    <div class="p-4 bg-gray-50 dark:bg-white/5 rounded-xl">
                         <div class="flex items-start space-x-3">
                             <div class="flex items-center h-5 mt-0.5">
                                 <input
@@ -310,14 +346,17 @@
                                     type="checkbox"
                                     true-value="1"
                                     false-value="0"
-                                    class="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 focus:ring-2"
+                                    class="w-4 h-4 text-indigo-600 dark:text-indigo-300 bg-gray-100 dark:bg-white/10 border-gray-300 dark:border-white/15 rounded focus:ring-indigo-500 focus:ring-2"
                                 />
                             </div>
                             <div class="flex-1">
-                                <label for="helper-checkbox" class="text-sm font-medium text-gray-900">
+                                <label
+                                    for="helper-checkbox"
+                                    class="text-sm font-medium text-gray-900 dark:text-gray-100"
+                                >
                                     {{ $t('Visible tasks only for the assigned people.') }}
                                 </label>
-                                <p id="helper-checkbox-text" class="text-xs text-gray-500 mt-1">
+                                <p id="helper-checkbox-text" class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                     {{
                                         $t(
                                             'Enabling this the tasks will be visible only for the admin and assigned people'
@@ -340,11 +379,15 @@
         <!-- Enhanced Background Settings -->
         <div v-if="enable_options['backgrounds']" class="flex-1 overflow-y-auto min-h-0">
             <div class="p-4">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ $t('Change Background') }}</h3>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+                    {{ $t('Change Background') }}
+                </h3>
 
                 <!-- Preset Backgrounds -->
                 <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-3">{{ $t('Choose a background') }}</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-3">{{
+                        $t('Choose a background')
+                    }}</label>
                     <div class="grid grid-cols-4 gap-3">
                         <button
                             v-for="color in menu_data['backgrounds']"
@@ -369,8 +412,8 @@
                 </div>
 
                 <!-- Upload Custom Background -->
-                <div class="border-t border-gray-200 pt-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-3">{{
+                <div class="border-t border-gray-200 dark:border-white/10 pt-6">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-3">{{
                         $t('Upload custom background')
                     }}</label>
                     <div class="space-y-3">
@@ -379,15 +422,17 @@
                                 @change="projectBgChange($event)"
                                 ref="projectBgUpload"
                                 id="projectBgUpload"
-                                class="block w-full text-sm text-gray-900 border border-gray-300 rounded-xl cursor-pointer bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                class="block w-full text-sm text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-white/15 rounded-xl cursor-pointer bg-gray-50 dark:bg-white/5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                                 type="file"
                                 accept="image/*"
                             />
                             <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                <icon name="upload" class="w-4 h-4 text-gray-400" />
+                                <icon name="upload" class="w-4 h-4 text-gray-400 dark:text-gray-500" />
                             </div>
                         </div>
-                        <p class="text-xs text-gray-500">{{ $t('SVG, PNG, JPG or GIF (MAX. 2MB)') }}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                            {{ $t('SVG, PNG, JPG or GIF (MAX. 2MB)') }}
+                        </p>
                         <button
                             v-if="upload_project_bg"
                             @click="uploadBackground($event)"
@@ -613,7 +658,7 @@ button[style*='background']:hover {
 
 /* File input styling */
 input[type='file']::-webkit-file-upload-button {
-    background: linear-gradient(to right, #6366f1, #8b5cf6);
+    background: linear-gradient(to right, var(--accent-bright), #8b5cf6);
     color: white;
     border: none;
     padding: 8px 16px;
@@ -625,13 +670,13 @@ input[type='file']::-webkit-file-upload-button {
 }
 
 input[type='file']::-webkit-file-upload-button:hover {
-    background: linear-gradient(to right, #4f46e5, #7c3aed);
+    background: linear-gradient(to right, var(--accent-fill), #7c3aed);
     transform: translateY(-1px);
 }
 
 /* Enhanced checkbox styling */
 input[type='checkbox'] {
-    accent-color: #6366f1;
+    accent-color: var(--accent-ink);
 }
 
 /* Gradient text animation */
@@ -648,7 +693,7 @@ input[type='checkbox'] {
 }
 
 .gradient-text {
-    background: linear-gradient(-45deg, #6366f1, #8b5cf6, #ec4899, #f59e0b);
+    background: linear-gradient(-45deg, var(--accent-bright), #8b5cf6, #ec4899, #f59e0b);
     background-size: 400% 400%;
     animation: gradient-shift 3s ease infinite;
     -webkit-background-clip: text;

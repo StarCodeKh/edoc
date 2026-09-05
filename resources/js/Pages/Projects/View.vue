@@ -1969,7 +1969,7 @@ export default {
     border-radius: 8px;
     background: #eef2ff;
     border: 1px solid #e0e7ff;
-    color: #4f46e5;
+    color: var(--accent-ink);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1998,7 +1998,7 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #4f46e5;
+    color: var(--accent-ink);
     flex-shrink: 0;
 }
 
@@ -2014,7 +2014,7 @@ export default {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: #6366f1;
+    color: var(--accent-ink);
 }
 
 .doc-track-chip__code {
@@ -2074,8 +2074,8 @@ export default {
     margin: 4px 0 14px;
     padding: 11px 14px;
     border-radius: 10px;
-    border: 1px solid #4338ca;
-    background: #4f46e5;
+    border: 1px solid var(--accent-ink);
+    background: var(--accent-fill);
     color: #fff;
     font-size: 13px;
     font-weight: 700;
@@ -2087,7 +2087,7 @@ export default {
         box-shadow 0.15s ease;
 }
 .sign-request-btn:hover:not(:disabled) {
-    background: #4338ca;
+    background: var(--accent-fill-hover);
     box-shadow: 0 8px 20px rgba(67, 56, 202, 0.34);
 }
 .sign-request-btn:disabled {
@@ -2141,7 +2141,7 @@ export default {
 }
 .doc-assign__add:hover {
     background: rgba(99, 102, 241, 0.12);
-    color: #4f46e5;
+    color: var(--accent-ink);
 }
 .doc-assign__list {
     display: flex;
@@ -2234,7 +2234,7 @@ export default {
     height: 32px;
     border-radius: 8px;
     background: #eef2ff;
-    color: #4f46e5;
+    color: var(--accent-ink);
     flex-shrink: 0;
 }
 .dark .doc-assign__head-icon {
@@ -2266,7 +2266,7 @@ export default {
     height: 18px;
     padding: 0 6px;
     border-radius: 999px;
-    background: #4f46e5;
+    background: var(--accent-fill);
     color: #fff;
     font-size: 10px;
     font-weight: 700;
@@ -2433,15 +2433,15 @@ export default {
     opacity: 1;
 }
 .task-select-checkbox--checked {
-    background: #4f46e5;
-    border-color: #4f46e5;
+    background: var(--accent-fill);
+    border-color: var(--accent-ink);
     transform: scale(1.05);
 }
 .task-select-checkbox--checked :deep(svg) {
     display: block;
 }
 .t__box.is-selected-for-merge {
-    outline: 2px solid #4f46e5;
+    outline: 2px solid var(--accent-ink);
     outline-offset: -2px;
     border-radius: 6px;
 }
@@ -2507,7 +2507,7 @@ export default {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    background: #4f46e5;
+    background: var(--accent-fill);
     border: none;
     color: #ffffff;
     font-size: 13px;
@@ -2518,7 +2518,7 @@ export default {
     transition: background-color 0.15s ease;
 }
 .merge-bar__merge:hover {
-    background: #4338ca;
+    background: var(--accent-fill-hover);
 }
 
 .fade-slide-up-enter-active,
@@ -3016,7 +3016,7 @@ export default {
 }
 .doc-drawer__docrow-open:hover {
     background: #eef2ff;
-    color: #4f46e5;
+    color: var(--accent-ink);
 }
 .doc-drawer__docrow-title {
     flex: 1;
@@ -3135,7 +3135,7 @@ export default {
     background: #f59e0b;
 }
 .doc-drawer__timeline-icon--indigo {
-    background: #6366f1;
+    background: var(--accent-fill);
 }
 .doc-drawer__timeline-icon--purple {
     background: #a855f7;

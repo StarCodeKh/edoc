@@ -7,8 +7,8 @@
                     <icon name="settings" class="w-6 h-6 text-white" />
                 </div>
                 <div>
-                    <h2 class="text-lg font-bold text-gray-900">{{ $t('Settings') }}</h2>
-                    <p class="text-xs text-gray-500">{{ $t('System Configuration') }}</p>
+                    <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100">{{ $t('Settings') }}</h2>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ $t('System Configuration') }}</p>
                 </div>
             </div>
         </div>
@@ -245,21 +245,21 @@ export default {
 
         getIconColor(iconName) {
             const colorMap = {
-                settings: 'bg-indigo-100 text-indigo-600',
-                users: 'bg-blue-100 text-blue-600',
-                table: 'bg-green-100 text-green-600',
-                checklist: 'bg-teal-100 text-teal-600',
-                building: 'bg-purple-100 text-purple-600',
-                shield: 'bg-red-100 text-red-600',
-                globe: 'bg-cyan-100 text-cyan-600',
-                mail: 'bg-orange-100 text-orange-600',
-                server: 'bg-gray-100 text-gray-600',
-                key: 'bg-yellow-100 text-yellow-600',
-                download: 'bg-pink-100 text-pink-600',
-                info: 'bg-red-100 text-red-600',
-                timeline: 'bg-teal-100 text-teal-600',
+                settings: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-300',
+                users: 'bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-300',
+                table: 'bg-green-100 text-green-600 dark:bg-green-500/20 dark:text-green-300',
+                checklist: 'bg-teal-100 text-teal-600 dark:bg-teal-500/20 dark:text-teal-300',
+                building: 'bg-purple-100 text-purple-600 dark:bg-purple-500/20 dark:text-purple-300',
+                shield: 'bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-300',
+                globe: 'bg-cyan-100 text-cyan-600 dark:bg-cyan-500/20 dark:text-cyan-300',
+                mail: 'bg-orange-100 text-orange-600 dark:bg-orange-500/20 dark:text-orange-300',
+                server: 'bg-gray-100 text-gray-600 dark:bg-gray-500/20 dark:text-gray-300',
+                key: 'bg-yellow-100 text-yellow-600 dark:bg-yellow-500/20 dark:text-yellow-300',
+                download: 'bg-pink-100 text-pink-600 dark:bg-pink-500/20 dark:text-pink-300',
+                info: 'bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-300',
+                timeline: 'bg-teal-100 text-teal-600 dark:bg-teal-500/20 dark:text-teal-300',
             };
-            return colorMap[iconName] || 'bg-gray-100 text-gray-600';
+            return colorMap[iconName] || 'bg-gray-100 text-gray-600 dark:bg-gray-500/20 dark:text-gray-300';
         },
 
         getMenuDescription(menuName) {

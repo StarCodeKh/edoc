@@ -781,10 +781,10 @@ export default {
 }
 .doc-row__open:hover {
     background: #e0e7ff;
-    color: #4338ca;
+    color: var(--accent-ink);
 }
 .doc-row__open:focus-visible {
-    outline: 2px solid #6366f1;
+    outline: 2px solid var(--accent-ink);
     outline-offset: 1px;
 }
 
@@ -798,7 +798,7 @@ export default {
     background: #eef2ff;
     font-size: 12px;
     font-weight: 500;
-    color: #4338ca;
+    color: var(--accent-ink);
 }
 
 .doc-panel__notice {
@@ -817,7 +817,7 @@ export default {
     padding: 6px 12px;
     border-radius: 12px;
     background: #eef2ff;
-    color: #4338ca;
+    color: var(--accent-ink);
     transition: background-color 0.12s ease;
 }
 .doc-track:hover {
@@ -855,7 +855,7 @@ export default {
 }
 .doc-panel__file-btn:hover {
     background: #e0e7ff;
-    color: #4338ca;
+    color: var(--accent-ink);
 }
 .doc-panel__file-btn.is-danger:hover {
     background: #fee2e2;

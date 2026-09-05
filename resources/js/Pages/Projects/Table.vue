@@ -31,12 +31,12 @@
                                 @click="selectStatus(listItem.id)"
                                 class="doc-status-btn shrink-0 snap-start whitespace-nowrap px-4 py-2 text-xs md:px-6 md:py-2.5 md:text-sm rounded-lg border font-semibold shadow-sm hover:shadow-md transition-all duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0"
                                 :class="{ 'doc-status-btn--active': !selectedStatus || selectedStatus === listItem.id }"
-                                :style="statusButtonStyle(listItem.id, idx)"
+                                :style="statusButtonStyle(listItem.id, listItem)"
                             >
                                 {{ listItem.title }}
                                 <span
                                     class="inline-flex items-center justify-center min-w-[20px] h-[20px] px-1.5 ml-1.5 rounded-full text-[11px] font-bold bg-white/85 align-middle"
-                                    :style="{ color: statusColor(idx) }"
+                                    :style="{ color: statusColor(listItem) }"
                                     >{{ (listItem.tasks || []).length }}</span
                                 >
                             </button>
@@ -504,6 +504,7 @@ import axios from 'axios';
 import draggable from 'vuedraggable';
 import JsBarcode from 'jsbarcode';
 import DocumentReceipt from '@/Shared/Modals/DocumentReceipt.vue';
+import { hexToRgba, isDarkMode, observeMode, statusColor } from '@/Utils/palette';
 
 export default {
     metaInfo: { title: 'Dashboard' },
@@ -537,6 +538,8 @@ export default {
         return {
             errors: [],
             loading: false,
+            is_dark: false,
+            stop_watching_mode: null,
             td_pop: false,
             show_right_menu: false,
             open_filter: false,
@@ -570,7 +573,6 @@ export default {
             receiptModalOpen: false,
             selectedReceiptTask: null,
 
-            statusPalette: ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4', '#ec4899', '#6366f1'],
             form: {
                 user: this.filters.user,
                 due: this.filters.due,
@@ -656,7 +658,18 @@ export default {
         this.syncTaskRows();
     },
     mounted() {
+        this.is_dark = isDarkMode();
+
+        // Status colours are picked for the surface they sit on, so the pills
+        // have to hear the theme toggle too.
+        this.stop_watching_mode = observeMode((dark) => {
+            this.is_dark = dark;
+        });
+
         this.$nextTick(() => this.renderBarcodes());
+    },
+    beforeUnmount() {
+        if (this.stop_watching_mode) this.stop_watching_mode();
     },
     updated() {
         this.$nextTick(() => this.renderBarcodes());
@@ -733,51 +746,38 @@ export default {
             this.saveOrder(payload);
         },
 
-        statusColor(idx) {
-            return this.statusPalette[
-                ((idx % this.statusPalette.length) + this.statusPalette.length) % this.statusPalette.length
-            ];
+        /**
+         * By the column's name rather than its position, so a status keeps its
+         * colour when a column is added above it, and matches the same
+         * document on the dashboard and on its printed receipt.
+         */
+        statusColor(listItem) {
+            return statusColor(listItem, this.is_dark);
         },
 
         statusColorFor(element) {
-            if (!this.lists) return this.statusPalette[0];
-            let idx = this.lists.findIndex((l) => l.id === element.list_id);
-            if (idx === -1) {
-                idx = this.lists.findIndex((l) => (l.tasks || []).some((t) => t.id === element.id));
-            }
-            return this.statusColor(idx === -1 ? 0 : idx);
+            const listItem =
+                (this.lists || []).find(
+                    (l) => l.id === element.list_id || (l.tasks || []).some((t) => t.id === element.id)
+                ) || element.list;
+
+            return statusColor(listItem, this.is_dark);
         },
 
-        hexToRgba(hex, alpha) {
-            const clean = (hex || '').replace('#', '');
-            const full =
-                clean.length === 3
-                    ? clean
-                          .split('')
-                          .map((c) => c + c)
-                          .join('')
-                    : clean;
-            const num = parseInt(full, 16) || 0;
-            const r = (num >> 16) & 255;
-            const g = (num >> 8) & 255;
-            const b = num & 255;
-            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-        },
-
-        statusButtonStyle(listId, idx) {
-            const color = this.statusColor(idx);
+        statusButtonStyle(listId, listItem) {
+            const color = this.statusColor(listItem);
             const isActive = !this.selectedStatus || this.selectedStatus === listId;
             if (isActive) {
                 return {
                     backgroundColor: color,
                     borderColor: color,
                     color: '#ffffff',
-                    boxShadow: `0 4px 14px -4px ${this.hexToRgba(color, 0.55)}`,
+                    boxShadow: `0 4px 14px -4px ${hexToRgba(color, 0.55)}`,
                 };
             }
             return {
-                backgroundColor: this.hexToRgba(color, 0.12),
-                borderColor: this.hexToRgba(color, 0.25),
+                backgroundColor: hexToRgba(color, 0.12),
+                borderColor: hexToRgba(color, 0.25),
                 color: color,
                 boxShadow: 'none',
             };
@@ -1082,6 +1082,12 @@ export default {
     background: linear-gradient(135deg, #2b6f80, #235a68);
     border-radius: 0.75rem 0.75rem 0 0;
 }
+/* The band was the one colour on these screens that ignored the theme. Same
+   teal identity, stepped down for the dark card so it sits on it rather than
+   glowing off it. */
+.dark .doc-row--head {
+    background: linear-gradient(135deg, #235a68, #1c4854);
+}
 
 .doc-table {
     background: transparent;
@@ -1138,7 +1144,7 @@ export default {
     border-radius: 8px;
     background: #eef2ff;
     border: 1px solid #e0e7ff;
-    color: #4f46e5;
+    color: var(--accent-ink);
     font-size: 0.75rem;
     font-weight: 600;
     cursor: pointer;
@@ -1186,19 +1192,19 @@ export default {
 }
 .doc-page-btn:hover:not(:disabled) {
     background: #eef2ff;
-    color: #4338ca;
+    color: var(--accent-ink);
 }
 .doc-page-btn:disabled {
     opacity: 0.35;
     cursor: not-allowed;
 }
 .doc-page-btn--active {
-    background: #4f46e5;
-    border-color: #4f46e5;
+    background: var(--accent-fill);
+    border-color: var(--accent-ink);
     color: #ffffff;
 }
 .doc-page-btn--active:hover {
-    background: #4f46e5;
+    background: var(--accent-fill);
     color: #ffffff;
 }
 .doc-page-ellipsis {

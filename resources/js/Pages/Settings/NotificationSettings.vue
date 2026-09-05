@@ -4,7 +4,7 @@
             <Head title="Notification Settings" />
 
             <!-- Enhanced Header -->
-            <div class="bg-white border-b border-gray-200/60 shadow-sm">
+            <div class="bg-white dark:bg-[#262932] border-b border-gray-200/60 dark:border-white/10 shadow-sm">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div class="py-5 sm:py-8">
                         <div class="flex items-center gap-3 sm:gap-4">
@@ -14,10 +14,12 @@
                                 <icon name="bell" class="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                             </div>
                             <div class="min-w-0">
-                                <h1 class="text-xl sm:text-3xl font-bold text-gray-900 leading-tight">
+                                <h1
+                                    class="text-xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 leading-tight"
+                                >
                                     {{ $t('Notification Settings') }}
                                 </h1>
-                                <p class="text-sm sm:text-base text-gray-600 mt-1">
+                                <p class="text-sm sm:text-base text-gray-600 dark:text-gray-300 mt-1">
                                     {{ $t('Configure email, Slack and Telegram notification preferences') }}
                                 </p>
                             </div>
@@ -30,14 +32,17 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8">
                 <div class="space-y-5 sm:space-y-8">
                     <!-- Flash Messages -->
-                    <div v-if="flash.success" class="bg-green-50 border border-green-200 rounded-xl p-4">
+                    <div
+                        v-if="flash.success"
+                        class="bg-green-50 dark:bg-green-500/15 border border-green-200 rounded-xl p-4"
+                    >
                         <div class="flex items-center">
                             <icon name="check-circle" class="w-5 h-5 text-green-600 mr-2" />
                             <p class="text-green-800 font-medium">{{ flash.success }}</p>
                         </div>
                     </div>
 
-                    <div v-if="flash.error" class="bg-red-50 border border-red-200 rounded-xl p-4">
+                    <div v-if="flash.error" class="bg-red-50 dark:bg-red-500/15 border border-red-200 rounded-xl p-4">
                         <div class="flex items-center">
                             <icon name="exclamation-circle" class="w-5 h-5 text-red-600 mr-2" />
                             <p class="text-red-800 font-medium">{{ flash.error }}</p>
@@ -73,10 +78,10 @@
                     <div
                         v-if="activeChannel"
                         :key="'panel_' + activeChannel.key"
-                        class="bg-white rounded-2xl shadow-sm border border-gray-200/60 overflow-hidden"
+                        class="bg-white dark:bg-[#262932] rounded-2xl shadow-sm border border-gray-200/60 dark:border-white/10 overflow-hidden"
                     >
                         <div
-                            class="px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-gray-50/80 to-gray-100/80 border-b border-gray-200/60"
+                            class="px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-gray-50/80 to-gray-100/80 border-b border-gray-200/60 dark:border-white/10"
                         >
                             <div class="flex items-center justify-between gap-3 flex-wrap">
                                 <div class="flex items-center gap-2 sm:gap-3 min-w-0">
@@ -90,12 +95,14 @@
                                             :style="{ color: activeChannel.color }"
                                         />
                                     </div>
-                                    <h2 class="text-base sm:text-xl font-semibold text-gray-900 truncate">
+                                    <h2
+                                        class="text-base sm:text-xl font-semibold text-gray-900 dark:text-gray-100 truncate"
+                                    >
                                         {{ $t(activeChannel.label + ' Notifications') }}
                                     </h2>
                                 </div>
                                 <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-                                    <span class="text-xs sm:text-sm font-medium text-gray-700">{{
+                                    <span class="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-200">{{
                                         $t('Master Toggle')
                                     }}</span>
                                     <button
@@ -124,11 +131,15 @@
                                 <div
                                     v-for="setting in settings"
                                     :key="setting.id"
-                                    class="flex items-center justify-between gap-3 p-3 sm:p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-all duration-200 border border-transparent hover:border-gray-200"
+                                    class="flex items-center justify-between gap-3 p-3 sm:p-4 bg-gray-50 dark:bg-white/5 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 transition-all duration-200 border border-transparent hover:border-gray-200 dark:hover:border-white/15"
                                 >
                                     <div class="flex-1 min-w-0">
-                                        <h3 class="text-sm font-medium text-gray-900">{{ setting.name }}</h3>
-                                        <p class="text-xs text-gray-500 mt-1">{{ setting.description }}</p>
+                                        <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                            {{ setting.name }}
+                                        </h3>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                            {{ setting.description }}
+                                        </p>
                                         <div
                                             v-if="
                                                 activeChannel.capabilityField && !setting[activeChannel.capabilityField]
@@ -136,7 +147,7 @@
                                             class="mt-2"
                                         >
                                             <span
-                                                class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600"
+                                                class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300"
                                             >
                                                 <icon name="info" class="w-3 h-3 mr-1" />
                                                 {{
@@ -172,9 +183,9 @@
                                         </button>
                                         <div
                                             v-else
-                                            class="flex items-center justify-center w-11 h-6 bg-gray-100 rounded-full"
+                                            class="flex items-center justify-center w-11 h-6 bg-gray-100 dark:bg-white/10 rounded-full"
                                         >
-                                            <icon name="minus" class="w-3 h-3 text-gray-400" />
+                                            <icon name="minus" class="w-3 h-3 text-gray-400 dark:text-gray-500" />
                                         </div>
                                     </div>
                                 </div>
@@ -183,14 +194,16 @@
                     </div>
 
                     <!-- Configuration Info -->
-                    <div class="bg-blue-50 border border-blue-200 rounded-xl p-6">
+                    <div
+                        class="bg-blue-50 dark:bg-blue-500/15 border border-blue-200 dark:border-blue-500/30 rounded-xl p-6"
+                    >
                         <div class="flex items-start space-x-3">
-                            <icon name="information-circle" class="w-6 h-6 text-blue-600 mt-0.5" />
+                            <icon name="information-circle" class="w-6 h-6 text-blue-600 dark:text-blue-300 mt-0.5" />
                             <div>
-                                <h3 class="text-sm font-semibold text-blue-900 mb-2">
+                                <h3 class="text-sm font-semibold text-blue-900 dark:text-blue-200 mb-2">
                                     {{ $t('Configuration Information') }}
                                 </h3>
-                                <div class="text-sm text-blue-800 space-y-2">
+                                <div class="text-sm text-blue-800 dark:text-blue-200 space-y-2">
                                     <p>
                                         {{
                                             $t(
@@ -230,6 +243,7 @@
 import Layout from '@/Shared/Layout.vue';
 import { Head, router, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
+import { ACCENT } from '@/Utils/palette';
 
 const props = defineProps({
     settings: Array,
@@ -238,7 +252,14 @@ const props = defineProps({
 const flash = computed(() => usePage().props.flash);
 
 const channels = [
-    { key: 'in_app', field: 'is_active', label: 'In-App', icon: 'bell', color: '#4f46e5', capabilityField: null },
+    {
+        key: 'in_app',
+        field: 'is_active',
+        label: 'In-App',
+        icon: 'bell',
+        color: ACCENT.light.fill,
+        capabilityField: null,
+    },
     {
         key: 'email',
         field: 'email_is_active',

@@ -563,7 +563,7 @@ export default {
     padding: 0 5px;
     margin-right: 4px;
     border-radius: 9999px;
-    background: #4f46e5;
+    background: var(--accent-fill);
     color: #fff;
     font-size: 10px;
     font-weight: 700;

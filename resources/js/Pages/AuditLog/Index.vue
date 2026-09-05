@@ -46,7 +46,9 @@
 
                     <!-- Filters. Every control is the same height and shares one
                          focus treatment, so the row reads as a single bar. -->
-                    <div class="mt-4 rounded-2xl border border-gray-200/70 bg-white p-3 sm:p-4 shadow-sm">
+                    <div
+                        class="mt-4 rounded-2xl border border-gray-200/70 bg-white dark:bg-[#262932] p-3 sm:p-4 shadow-sm"
+                    >
                         <div class="flex flex-wrap items-end gap-3">
                             <div class="w-full sm:min-w-[15rem] sm:flex-1">
                                 <span class="audit-caption">{{ $t('Search') }}</span>
@@ -132,8 +134,10 @@
 
                 <div class="audit-scroll min-h-0 flex-1 overflow-y-auto px-4 pb-4">
                     <!-- Log. One line per entry; the full record is in the panel. -->
-                    <div class="mt-4 overflow-hidden rounded-2xl border border-gray-200/70 bg-white shadow-sm">
-                        <div v-if="entries.data.length" class="divide-y divide-gray-100">
+                    <div
+                        class="mt-4 overflow-hidden rounded-2xl border border-gray-200/70 bg-white dark:bg-[#262932] shadow-sm"
+                    >
+                        <div v-if="entries.data.length" class="divide-y divide-gray-100 dark:divide-white/10">
                             <button
                                 v-for="entry in entries.data"
                                 :key="entry.id"
@@ -167,15 +171,17 @@
                         </div>
 
                         <div v-else class="flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
-                            <div class="rounded-2xl bg-gray-100 p-4">
-                                <icon name="security" class="h-8 w-8 text-gray-400" />
+                            <div class="rounded-2xl bg-gray-100 dark:bg-white/10 p-4">
+                                <icon name="security" class="h-8 w-8 text-gray-400 dark:text-gray-500" />
                             </div>
-                            <p class="font-semibold text-gray-700">{{ $t('No activity recorded yet.') }}</p>
+                            <p class="font-semibold text-gray-700 dark:text-gray-200">
+                                {{ $t('No activity recorded yet.') }}
+                            </p>
                             <button
                                 v-if="hasFilters"
                                 type="button"
                                 @click="reset"
-                                class="text-sm font-semibold text-indigo-600 hover:text-indigo-800"
+                                class="text-sm font-semibold text-indigo-600 dark:text-indigo-300 hover:text-indigo-800"
                             >
                                 {{ $t('Clear All') }}
                             </button>
@@ -489,23 +495,23 @@ export default {
     height: 14px;
     transform: translateY(-50%);
     pointer-events: none;
-    color: #9ca3af;
+    color: var(--ink-muted);
 }
 .audit-search__input {
     width: 100%;
     height: 38px;
     padding: 0 12px 0 34px;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--line-strong);
     border-radius: 9px;
     font-size: 14px;
-    color: #1f2937;
-    background: #fff;
+    color: var(--ink);
+    background: var(--surface);
     transition:
         border-color 0.15s ease,
         box-shadow 0.15s ease;
 }
 .audit-search__input::placeholder {
-    color: #9ca3af;
+    color: var(--ink-muted);
 }
 .audit-search__input:focus {
     outline: none;
@@ -521,7 +527,7 @@ export default {
     border-color: #d1d5db;
     font-size: 13px;
     font-weight: 500;
-    color: #1f2937;
+    color: var(--ink);
 }
 
 .audit-range {
@@ -530,9 +536,9 @@ export default {
     gap: 4px;
     height: 38px;
     padding: 0 6px;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--line-strong);
     border-radius: 9px;
-    background: #fff;
+    background: var(--surface);
     transition:
         border-color 0.15s ease,
         box-shadow 0.15s ease;
@@ -693,7 +699,7 @@ export default {
     text-align: right;
     font-size: 11px;
     font-weight: 600;
-    color: #9ca3af;
+    color: var(--ink-muted);
 }
 .audit-row__chevron {
     flex-shrink: 0;
@@ -722,7 +728,7 @@ export default {
     max-width: 34rem;
     max-height: 88vh;
     overflow: hidden;
-    background: #fff;
+    background: var(--surface);
     border-radius: 16px;
     box-shadow: 0 24px 60px rgba(15, 23, 42, 0.3);
 }
@@ -796,7 +802,7 @@ export default {
 }
 .audit-panel__grid dd {
     font-size: 13px;
-    color: #1f2937;
+    color: var(--ink);
     line-height: 1.5;
 }
 .audit-panel__muted {
@@ -860,7 +866,7 @@ export default {
 }
 .audit-btn--ghost {
     color: #475569;
-    background: #fff;
+    background: var(--surface);
     border: 1px solid #e2e8f0;
 }
 .audit-btn--ghost:hover {

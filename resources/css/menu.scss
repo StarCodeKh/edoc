@@ -404,7 +404,7 @@ body {
                 top: 0;
                 bottom: 0;
                 width: 4px;
-                background: linear-gradient(to bottom, #6366f1, #8b5cf6);
+                background: linear-gradient(to bottom, var(--accent-bright), #8b5cf6);
                 border-radius: 0 2px 2px 0;
             }
 
@@ -444,7 +444,7 @@ body {
         }
 
         &:focus-visible {
-            outline: 2px solid #6366f1;
+            outline: 2px solid var(--accent-ink);
             outline-offset: 2px;
             border-radius: 0.75rem;
         }
@@ -541,17 +541,17 @@ body {
 
         &.active {
             background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
-            border-right: 2px solid #6366f1;
+            border-right: 2px solid var(--accent-ink);
             box-shadow: 0 2px 8px rgba(99, 102, 241, 0.1);
             transform: translateX(4px);
 
             .submenu-icon {
-                color: #6366f1;
+                color: var(--accent-ink);
                 transform: scale(1.05);
             }
 
             .submenu-name {
-                color: #4f46e5;
+                color: var(--accent-ink);
                 font-weight: 600;
             }
         }
@@ -562,7 +562,7 @@ body {
         }
 
         &:focus-visible {
-            outline: 2px solid #6366f1;
+            outline: 2px solid var(--accent-ink);
             outline-offset: 2px;
             border-radius: 0.5rem;
         }
@@ -931,7 +931,7 @@ body {
 }
 
 .gradient-text {
-    background: linear-gradient(-45deg, #6366f1, #8b5cf6, #ec4899, #f59e0b);
+    background: linear-gradient(-45deg, var(--accent-bright), #8b5cf6, #ec4899, #f59e0b);
     background-size: 400% 400%;
     animation: gradient-shift 3s ease infinite;
     -webkit-background-clip: text;
@@ -1008,11 +1008,11 @@ body {
 
             &.have-sub-menu {
                 .menu__name {
-                    color: #7366ff;
+                    color: var(--accent-ink);
                 }
 
                 .menu__icon {
-                    fill: #7366ff;
+                    fill: var(--accent-ink);
                 }
 
                 &:after {
@@ -1027,13 +1027,13 @@ body {
             .sub-menu-item {
                 &.active {
                     .menu__name {
-                        color: #7366ff;
+                        color: var(--accent-ink);
                         -webkit-transition: all 0.3s ease;
                         transition: all 0.3s ease;
                     }
 
                     .menu__icon {
-                        fill: #7366ff;
+                        fill: var(--accent-ink);
                         -webkit-transition: all 0.3s ease;
                         transition: all 0.3s ease;
                     }
@@ -1046,13 +1046,13 @@ body {
         .menu-link {
             &.have-sub-menu {
                 .menu__name {
-                    color: #7366ff;
+                    color: var(--accent-ink);
                     -webkit-transition: all 0.3s ease;
                     transition: all 0.3s ease;
                 }
 
                 .menu__icon {
-                    fill: #7366ff;
+                    fill: var(--accent-ink);
                     -webkit-transition: all 0.3s ease;
                     transition: all 0.3s ease;
                 }
@@ -1101,7 +1101,7 @@ nav {
             &.active {
                 @apply opacity-70;
                 border-color: #ffffff;
-                color: #4f46e5;
+                color: var(--accent-ink);
             }
         }
     }
@@ -1148,7 +1148,7 @@ nav {
         li {
             &.group {
                 &.active {
-                    color: #4f46e5;
+                    color: var(--accent-ink);
                 }
             }
         }

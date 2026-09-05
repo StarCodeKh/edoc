@@ -33,7 +33,7 @@
        3px blue-500 halo, which was both heavier and the wrong hue. */
     &:focus {
         outline: 0;
-        border-color: #6366f1;
+        border-color: var(--accent-ink);
         box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
     }
 }
@@ -116,7 +116,7 @@
         }
 
         &:focus {
-            border-color: #6366f1;
+            border-color: var(--accent-ink);
         }
     }
 

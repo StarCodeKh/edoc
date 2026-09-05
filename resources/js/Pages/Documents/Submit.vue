@@ -2,7 +2,7 @@
     <div class="h-full">
         <Head :title="$t('Submit Document')" />
         <div class="flex flex-col flex-grow-1 flex-shrink-1 h-full">
-            <div class="flex-1 flex flex-col bg-gradient-to-br from-gray-50 to-white overflow-y-auto">
+            <div class="flex-1 flex flex-col bg-gradient-to-br from-gray-50 dark:from-white/5 to-white overflow-y-auto">
                 <div class="m-4 flex flex-col pb-8">
                     <!-- Header -->
                     <div
@@ -31,7 +31,7 @@
                     <!-- Draft notice -->
                     <div
                         v-if="draft_restored"
-                        class="mt-4 flex items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
+                        class="mt-4 flex items-center justify-between gap-3 rounded-xl border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/15 px-4 py-3 text-sm text-amber-800 dark:text-amber-200"
                     >
                         <div class="flex items-center gap-2">
                             <icon name="info" class="h-4 w-4 shrink-0" />
@@ -43,13 +43,19 @@
                     </div>
 
                     <!-- Stepper -->
-                    <div class="mt-4 rounded-2xl border border-gray-200/70 bg-white p-3 shadow-sm sm:p-4">
+                    <div
+                        class="mt-4 rounded-2xl border border-gray-200/70 bg-white dark:bg-[#262932] p-3 shadow-sm sm:p-4"
+                    >
                         <ol class="flex flex-col gap-3 sm:flex-row sm:items-center">
                             <li v-for="(item, index) in steps" :key="item.key" class="flex flex-1 items-center gap-3">
                                 <button
                                     type="button"
                                     class="flex flex-1 items-center gap-3 rounded-xl px-3 py-2 text-left transition"
-                                    :class="step === index ? 'bg-indigo-50 ring-1 ring-indigo-200' : 'hover:bg-gray-50'"
+                                    :class="
+                                        step === index
+                                            ? 'bg-indigo-50 dark:bg-indigo-500/15 ring-1 ring-indigo-200'
+                                            : 'hover:bg-gray-50 dark:hover:bg-white/5'
+                                    "
                                     @click="goToStep(index)"
                                 >
                                     <span
@@ -62,11 +68,15 @@
                                     <span class="min-w-0">
                                         <span
                                             class="block truncate text-sm font-semibold"
-                                            :class="step === index ? 'text-indigo-700' : 'text-gray-700'"
+                                            :class="
+                                                step === index
+                                                    ? 'text-indigo-700 dark:text-indigo-300'
+                                                    : 'text-gray-700 dark:text-gray-200'
+                                            "
                                         >
                                             {{ $t(item.label) }}
                                         </span>
-                                        <span class="block truncate text-[11px] text-gray-500">
+                                        <span class="block truncate text-[11px] text-gray-500 dark:text-gray-400">
                                             {{ $t(item.hint) }}
                                         </span>
                                     </span>
@@ -85,9 +95,9 @@
                          rather than left implicit in a query string. -->
                     <div
                         v-if="parent_document"
-                        class="mt-4 flex items-center gap-2 rounded-2xl border border-indigo-200 bg-indigo-50 px-4 py-3"
+                        class="mt-4 flex items-center gap-2 rounded-2xl border border-indigo-200 bg-indigo-50 dark:bg-indigo-500/15 px-4 py-3"
                     >
-                        <icon name="file-text" class="h-4 w-4 shrink-0 text-indigo-500" />
+                        <icon name="file-text" class="h-4 w-4 shrink-0 text-indigo-500 dark:text-indigo-300" />
                         <p class="min-w-0 flex-1 text-xs text-indigo-800">
                             <span class="font-semibold">{{
                                 $t('Raised from :code', { code: parent_document.code || parent_document.title })
@@ -101,12 +111,14 @@
                     <div class="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-3">
                         <!-- Form -->
                         <form
-                            class="rounded-2xl border border-gray-200/70 bg-white p-4 shadow-sm sm:p-6 xl:col-span-2"
+                            class="rounded-2xl border border-gray-200/70 bg-white dark:bg-[#262932] p-4 shadow-sm sm:p-6 xl:col-span-2"
                             @submit.prevent="submit"
                         >
                             <!-- STEP 1 - Document info -->
                             <section v-show="step === 0" class="space-y-5">
-                                <h2 class="text-base font-bold text-gray-900">{{ $t('Document Info') }}</h2>
+                                <h2 class="text-base font-bold text-gray-900 dark:text-gray-100">
+                                    {{ $t('Document Info') }}
+                                </h2>
 
                                 <div>
                                     <label class="form-label" for="doc-title">
@@ -123,7 +135,9 @@
                                     />
                                     <p class="mt-1 flex justify-between text-xs">
                                         <span class="text-rose-600">{{ fieldError('title') }}</span>
-                                        <span class="text-gray-400">{{ form.title.length }}/200</span>
+                                        <span class="text-gray-400 dark:text-gray-500"
+                                            >{{ form.title.length }}/200</span
+                                        >
                                     </p>
                                 </div>
 
@@ -155,11 +169,11 @@
                                                 :class="
                                                     form.priority_id === priority.id
                                                         ? 'border-transparent text-white shadow-sm'
-                                                        : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                                                        : 'border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5'
                                                 "
                                                 :style="
                                                     form.priority_id === priority.id
-                                                        ? { backgroundColor: priority.color || '#4f46e5' }
+                                                        ? { backgroundColor: priority.color || 'var(--accent-fill)' }
                                                         : {}
                                                 "
                                                 @click="
@@ -235,7 +249,7 @@
                                      instead of just blocking the step. -->
                                 <p
                                     v-if="!form.project_id || !form.list_id"
-                                    class="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-700"
+                                    class="rounded-xl bg-amber-50 dark:bg-amber-500/15 px-4 py-3 text-sm text-amber-700"
                                 >
                                     {{ $t('This workspace has no open board to file a document into yet.') }}
                                 </p>
@@ -243,7 +257,9 @@
 
                             <!-- STEP 2 - Dates & routing -->
                             <section v-show="step === 1" class="space-y-5">
-                                <h2 class="text-base font-bold text-gray-900">{{ $t('Dates & Routing') }}</h2>
+                                <h2 class="text-base font-bold text-gray-900 dark:text-gray-100">
+                                    {{ $t('Dates & Routing') }}
+                                </h2>
 
                                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
                                     <div>
@@ -283,20 +299,20 @@
                                 <div>
                                     <div class="flex items-center justify-between">
                                         <label class="form-label mb-0">{{ $t('Assign to') }}</label>
-                                        <span class="text-xs text-gray-500">
+                                        <span class="text-xs text-gray-500 dark:text-gray-400">
                                             {{ $t(':count selected', { count: form.assignees.length }) }}
                                         </span>
                                     </div>
-                                    <div class="mt-2 rounded-xl border border-gray-200">
+                                    <div class="mt-2 rounded-xl border border-gray-200 dark:border-white/10">
                                         <!-- Pinned above the search: a document you file is yours by
                                              default, and this is what puts it in My Tasks. -->
                                         <label
-                                            class="flex cursor-pointer items-center gap-3 border-b border-gray-100 px-3 py-2.5 hover:bg-gray-50"
+                                            class="flex cursor-pointer items-center gap-3 border-b border-gray-100 dark:border-white/10 px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-white/5"
                                         >
                                             <input
                                                 v-model="assignToMe"
                                                 type="checkbox"
-                                                class="h-4 w-4 rounded border-gray-300 text-indigo-600"
+                                                class="h-4 w-4 rounded border-gray-300 dark:border-white/15 text-indigo-600 dark:text-indigo-300"
                                             />
                                             <span
                                                 class="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-600 text-xs font-semibold text-white"
@@ -305,19 +321,24 @@
                                             </span>
                                             <span class="min-w-0">
                                                 <span class="flex items-center gap-2">
-                                                    <span class="truncate text-sm font-medium text-gray-800">
+                                                    <span
+                                                        class="truncate text-sm font-medium text-gray-800 dark:text-gray-100"
+                                                    >
                                                         {{ $t('Assign this document to me') }}
                                                     </span>
                                                     <!-- The responsibility the document would land on,
                                                          named where the workflow actually carries one. -->
                                                     <span
                                                         v-if="myRoleLabel"
-                                                        class="shrink-0 rounded-full bg-indigo-50 px-2 py-0.5 text-[11px] font-medium text-indigo-700"
+                                                        class="shrink-0 rounded-full bg-indigo-50 dark:bg-indigo-500/15 px-2 py-0.5 text-[11px] font-medium text-indigo-700 dark:text-indigo-300"
                                                     >
                                                         {{ myRoleLabel }}
                                                     </span>
                                                 </span>
-                                                <span v-if="canAssignToMe" class="block truncate text-xs text-gray-400">
+                                                <span
+                                                    v-if="canAssignToMe"
+                                                    class="block truncate text-xs text-gray-400 dark:text-gray-500"
+                                                >
                                                     {{ $t('Shows it in My Tasks') }}
                                                 </span>
                                                 <!-- No step in this flow is ever handed to them, so filing
@@ -328,11 +349,11 @@
                                             </span>
                                         </label>
 
-                                        <div class="border-b border-gray-100 p-2">
+                                        <div class="border-b border-gray-100 dark:border-white/10 p-2">
                                             <div class="relative">
                                                 <icon
                                                     name="search"
-                                                    class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+                                                    class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 dark:text-gray-500"
                                                 />
                                                 <input
                                                     v-model="member_search"
@@ -350,13 +371,13 @@
                                              for, so the list is that and nothing else. -->
                                         <p
                                             v-if="membersAreStepDoers"
-                                            class="border-b border-gray-100 px-3 py-2 text-xs text-gray-400"
+                                            class="border-b border-gray-100 dark:border-white/10 px-3 py-2 text-xs text-gray-400 dark:text-gray-500"
                                         >
                                             {{ $t('Doers for :step', { step: stepRoleName || selectedList.title }) }}
                                         </p>
                                         <p
                                             v-else-if="stepHasNoDoers"
-                                            class="border-b border-gray-100 px-3 py-2 text-xs text-amber-600"
+                                            class="border-b border-gray-100 dark:border-white/10 px-3 py-2 text-xs text-amber-600"
                                         >
                                             {{
                                                 $t(
@@ -369,13 +390,13 @@
                                         </p>
                                         <p
                                             v-else-if="membersFellBack"
-                                            class="border-b border-gray-100 px-3 py-2 text-xs text-amber-600"
+                                            class="border-b border-gray-100 dark:border-white/10 px-3 py-2 text-xs text-amber-600"
                                         >
                                             {{ $t('Nobody is filed under this office yet - showing the whole team.') }}
                                         </p>
                                         <p
                                             v-else-if="membersFromRoles"
-                                            class="border-b border-gray-100 px-3 py-2 text-xs text-amber-600"
+                                            class="border-b border-gray-100 dark:border-white/10 px-3 py-2 text-xs text-amber-600"
                                         >
                                             {{
                                                 $t(
@@ -385,18 +406,18 @@
                                         </p>
                                         <p
                                             v-else-if="department_id"
-                                            class="border-b border-gray-100 px-3 py-2 text-xs text-gray-400"
+                                            class="border-b border-gray-100 dark:border-white/10 px-3 py-2 text-xs text-gray-400 dark:text-gray-500"
                                         >
                                             {{ $t('People in :source', { source: sourceLabel || departmentLabel }) }}
                                         </p>
                                         <ul class="max-h-56 overflow-y-auto p-1">
                                             <li v-for="member in filteredMembers" :key="member.id">
                                                 <label
-                                                    class="flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 hover:bg-gray-50"
+                                                    class="flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 hover:bg-gray-50 dark:hover:bg-white/5"
                                                 >
                                                     <input
                                                         type="checkbox"
-                                                        class="h-4 w-4 rounded border-gray-300 text-indigo-600"
+                                                        class="h-4 w-4 rounded border-gray-300 dark:border-white/15 text-indigo-600 dark:text-indigo-300"
                                                         :value="member.id"
                                                         v-model="form.assignees"
                                                     />
@@ -408,15 +429,19 @@
                                                     />
                                                     <span
                                                         v-else
-                                                        class="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700"
+                                                        class="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700 dark:text-indigo-300"
                                                     >
                                                         {{ member.name.charAt(0) }}
                                                     </span>
                                                     <span class="min-w-0">
-                                                        <span class="block truncate text-sm text-gray-800">
+                                                        <span
+                                                            class="block truncate text-sm text-gray-800 dark:text-gray-100"
+                                                        >
                                                             {{ member.name }}
                                                         </span>
-                                                        <span class="block truncate text-xs text-gray-400">
+                                                        <span
+                                                            class="block truncate text-xs text-gray-400 dark:text-gray-500"
+                                                        >
                                                             {{ member.email }}
                                                             <span v-if="member.role" class="text-gray-300">·</span>
                                                             <span v-if="member.role">{{ member.role }}</span>
@@ -426,7 +451,7 @@
                                             </li>
                                             <li
                                                 v-if="!filteredMembers.length"
-                                                class="px-3 py-6 text-center text-sm text-gray-400"
+                                                class="px-3 py-6 text-center text-sm text-gray-400 dark:text-gray-500"
                                             >
                                                 {{ $t('No members found') }}
                                             </li>
@@ -443,19 +468,19 @@
                                 <div v-if="linkable_documents.length">
                                     <div class="flex items-center justify-between">
                                         <label class="form-label mb-0">{{ $t('Answers external document') }}</label>
-                                        <span class="text-xs text-gray-500">
+                                        <span class="text-xs text-gray-500 dark:text-gray-400">
                                             {{ $t(':count selected', { count: form.parent_task_ids.length }) }}
                                         </span>
                                     </div>
-                                    <p class="mt-1 text-xs text-gray-400">
+                                    <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">
                                         {{ $t('Those documents stay open until this one is finished.') }}
                                     </p>
-                                    <div class="mt-2 rounded-xl border border-gray-200">
-                                        <div class="border-b border-gray-100 p-2">
+                                    <div class="mt-2 rounded-xl border border-gray-200 dark:border-white/10">
+                                        <div class="border-b border-gray-100 dark:border-white/10 p-2">
                                             <div class="relative">
                                                 <icon
                                                     name="search"
-                                                    class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+                                                    class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 dark:text-gray-500"
                                                 />
                                                 <input
                                                     v-model="link_search"
@@ -468,20 +493,27 @@
                                         <ul class="max-h-56 overflow-y-auto p-1">
                                             <li v-for="doc in filteredLinkable" :key="doc.id">
                                                 <label
-                                                    class="flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 hover:bg-gray-50"
+                                                    class="flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 hover:bg-gray-50 dark:hover:bg-white/5"
                                                 >
                                                     <input
                                                         v-model="form.parent_task_ids"
                                                         type="checkbox"
-                                                        class="h-4 w-4 rounded border-gray-300 text-indigo-600"
+                                                        class="h-4 w-4 rounded border-gray-300 dark:border-white/15 text-indigo-600 dark:text-indigo-300"
                                                         :value="doc.id"
                                                     />
-                                                    <icon name="file-text" class="h-4 w-4 shrink-0 text-gray-400" />
+                                                    <icon
+                                                        name="file-text"
+                                                        class="h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500"
+                                                    />
                                                     <span class="min-w-0">
-                                                        <span class="block truncate text-sm text-gray-800">
+                                                        <span
+                                                            class="block truncate text-sm text-gray-800 dark:text-gray-100"
+                                                        >
                                                             {{ doc.code ? doc.code + ' · ' : '' }}{{ doc.title }}
                                                         </span>
-                                                        <span class="block truncate text-xs text-gray-400">
+                                                        <span
+                                                            class="block truncate text-xs text-gray-400 dark:text-gray-500"
+                                                        >
                                                             {{
                                                                 [doc.workspace, doc.status].filter(Boolean).join(' · ')
                                                             }}
@@ -491,7 +523,7 @@
                                             </li>
                                             <li
                                                 v-if="!filteredLinkable.length"
-                                                class="px-3 py-6 text-center text-sm text-gray-400"
+                                                class="px-3 py-6 text-center text-sm text-gray-400 dark:text-gray-500"
                                             >
                                                 {{ $t('No external documents found') }}
                                             </li>
@@ -502,7 +534,9 @@
 
                             <!-- STEP 3 - Content & files -->
                             <section v-show="step === 2" class="space-y-5">
-                                <h2 class="text-base font-bold text-gray-900">{{ $t('Content & Files') }}</h2>
+                                <h2 class="text-base font-bold text-gray-900 dark:text-gray-100">
+                                    {{ $t('Content & Files') }}
+                                </h2>
 
                                 <div>
                                     <label class="form-label">{{ $t('Description') }}</label>
@@ -523,25 +557,28 @@
                                         class="rounded-xl border-2 border-dashed px-4 py-8 text-center transition"
                                         :class="
                                             dragging
-                                                ? 'border-indigo-400 bg-indigo-50'
-                                                : 'border-gray-200 hover:border-indigo-300'
+                                                ? 'border-indigo-400 bg-indigo-50 dark:bg-indigo-500/15'
+                                                : 'border-gray-200 dark:border-white/10 hover:border-indigo-300'
                                         "
                                         @dragover.prevent="dragging = true"
                                         @dragleave.prevent="dragging = false"
                                         @drop.prevent="onDrop"
                                     >
-                                        <icon name="attachment" class="mx-auto h-6 w-6 text-gray-400" />
-                                        <p class="mt-2 text-sm text-gray-600">
+                                        <icon
+                                            name="attachment"
+                                            class="mx-auto h-6 w-6 text-gray-400 dark:text-gray-500"
+                                        />
+                                        <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
                                             {{ $t('Drop PDF files here, or') }}
                                             <button
                                                 type="button"
-                                                class="font-semibold text-indigo-600 hover:underline"
+                                                class="font-semibold text-indigo-600 dark:text-indigo-300 hover:underline"
                                                 @click="$refs.fileInput.click()"
                                             >
                                                 {{ $t('browse') }}
                                             </button>
                                         </p>
-                                        <p class="mt-1 text-xs text-gray-400">
+                                        <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">
                                             {{
                                                 $t('PDF only, up to :size MB each, :count files max', {
                                                     size: limits.max_file_mb,
@@ -566,20 +603,20 @@
                                         <li
                                             v-for="(file, index) in form.files"
                                             :key="index"
-                                            class="flex items-center gap-3 rounded-xl border border-gray-200 px-3 py-2"
+                                            class="flex items-center gap-3 rounded-xl border border-gray-200 dark:border-white/10 px-3 py-2"
                                         >
                                             <icon name="file-pdf" class="h-5 w-5 shrink-0 text-rose-500" />
                                             <span class="min-w-0 flex-1">
-                                                <span class="block truncate text-sm text-gray-800">{{
+                                                <span class="block truncate text-sm text-gray-800 dark:text-gray-100">{{
                                                     file.name
                                                 }}</span>
-                                                <span class="block text-xs text-gray-400">{{
+                                                <span class="block text-xs text-gray-400 dark:text-gray-500">{{
                                                     fileSize(file.size)
                                                 }}</span>
                                             </span>
                                             <button
                                                 type="button"
-                                                class="rounded-lg p-1.5 text-gray-400 hover:bg-rose-50 hover:text-rose-600"
+                                                class="rounded-lg p-1.5 text-gray-400 dark:text-gray-500 hover:bg-rose-50 hover:text-rose-600"
                                                 :aria-label="$t('Remove')"
                                                 @click="removeFile(index)"
                                             >
@@ -592,12 +629,12 @@
 
                             <!-- Actions -->
                             <div
-                                class="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-4"
+                                class="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 dark:border-white/10 pt-4"
                             >
                                 <div class="flex items-center gap-2">
                                     <button
                                         type="button"
-                                        class="rounded-xl border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
+                                        class="rounded-xl border border-gray-200 dark:border-white/10 px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
                                         @click="saveDraft(true)"
                                     >
                                         {{ draft_saved ? $t('Draft saved') : $t('Save draft') }}
@@ -605,7 +642,7 @@
                                     <button
                                         v-if="step > 0"
                                         type="button"
-                                        class="rounded-xl border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
+                                        class="rounded-xl border border-gray-200 dark:border-white/10 px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
                                         @click="step--"
                                     >
                                         {{ $t('Back') }}
@@ -641,16 +678,20 @@
 
                         <!-- Live summary -->
                         <aside class="xl:col-span-1">
-                            <div class="sticky top-4 rounded-2xl border border-gray-200/70 bg-white p-4 shadow-sm">
-                                <h3 class="text-sm font-bold text-gray-900">{{ $t('Summary') }}</h3>
+                            <div
+                                class="sticky top-4 rounded-2xl border border-gray-200/70 bg-white dark:bg-[#262932] p-4 shadow-sm"
+                            >
+                                <h3 class="text-sm font-bold text-gray-900 dark:text-gray-100">{{ $t('Summary') }}</h3>
                                 <dl class="mt-3 space-y-3">
                                     <div v-for="row in summaryRows" :key="row.label">
-                                        <dt class="text-[11px] font-medium uppercase tracking-wide text-gray-400">
+                                        <dt
+                                            class="text-[11px] font-medium uppercase tracking-wide text-gray-400 dark:text-gray-500"
+                                        >
                                             {{ $t(row.label) }}
                                         </dt>
                                         <dd
                                             class="mt-0.5 break-words text-sm"
-                                            :class="row.value ? 'text-gray-800' : 'text-gray-300'"
+                                            :class="row.value ? 'text-gray-800 dark:text-gray-100' : 'text-gray-300'"
                                         >
                                             {{ row.value || $t('Not set') }}
                                         </dd>
@@ -675,19 +716,25 @@
                     @click.self="closePreview"
                 >
                     <div
-                        class="flex max-h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-gray-200/60 bg-white shadow-2xl"
+                        class="flex max-h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-gray-200/60 dark:border-white/10 bg-white dark:bg-[#262932] shadow-2xl"
                         role="dialog"
                         aria-modal="true"
                         :aria-label="$t('Review before saving')"
                     >
-                        <div class="flex items-start justify-between gap-4 border-b border-gray-100 px-5 py-4">
+                        <div
+                            class="flex items-start justify-between gap-4 border-b border-gray-100 dark:border-white/10 px-5 py-4"
+                        >
                             <div>
-                                <h2 class="text-base font-bold text-gray-900">{{ $t('Review before saving') }}</h2>
-                                <p class="mt-0.5 text-sm text-gray-500">{{ $t('Nothing is filed until you save.') }}</p>
+                                <h2 class="text-base font-bold text-gray-900 dark:text-gray-100">
+                                    {{ $t('Review before saving') }}
+                                </h2>
+                                <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+                                    {{ $t('Nothing is filed until you save.') }}
+                                </p>
                             </div>
                             <button
                                 type="button"
-                                class="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                                class="rounded-lg p-1.5 text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-600 dark:hover:text-gray-300"
                                 :aria-label="$t('Close')"
                                 @click="closePreview"
                             >
@@ -698,11 +745,11 @@
                         <div class="grid min-h-0 flex-1 grid-cols-1 overflow-hidden lg:grid-cols-5">
                             <!-- The document itself -->
                             <div
-                                class="flex min-h-0 flex-col border-b border-gray-100 bg-gray-50 p-4 lg:col-span-3 lg:border-b-0 lg:border-r"
+                                class="flex min-h-0 flex-col border-b border-gray-100 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-4 lg:col-span-3 lg:border-b-0 lg:border-r"
                             >
                                 <div class="mb-3 flex flex-wrap items-center gap-2">
                                     <span
-                                        class="rounded-lg bg-white px-2.5 py-1 text-xs font-semibold text-gray-600 ring-1 ring-gray-200"
+                                        class="rounded-lg bg-white dark:bg-[#262932] px-2.5 py-1 text-xs font-semibold text-gray-600 dark:text-gray-300 ring-1 ring-gray-200"
                                     >
                                         {{ attachmentModeLabel }}
                                     </span>
@@ -711,7 +758,7 @@
 
                                 <div
                                     v-if="preview_urls.length"
-                                    class="min-h-0 flex-1 overflow-hidden rounded-xl border border-gray-200 bg-white"
+                                    class="min-h-0 flex-1 overflow-hidden rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#262932]"
                                 >
                                     <iframe
                                         :src="preview_urls[preview_index]"
@@ -721,13 +768,15 @@
                                 </div>
                                 <div
                                     v-else
-                                    class="flex min-h-[45vh] flex-1 flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 bg-white text-center"
+                                    class="flex min-h-[45vh] flex-1 flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 dark:border-white/10 bg-white dark:bg-[#262932] text-center"
                                 >
                                     <icon name="file-pdf" class="h-7 w-7 text-gray-300" />
-                                    <p class="mt-2 text-sm text-gray-500">{{ $t('No document attached') }}</p>
+                                    <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                                        {{ $t('No document attached') }}
+                                    </p>
                                     <button
                                         type="button"
-                                        class="mt-2 text-xs font-semibold text-indigo-600 hover:underline"
+                                        class="mt-2 text-xs font-semibold text-indigo-600 dark:text-indigo-300 hover:underline"
                                         @click="editFrom(2)"
                                     >
                                         {{ $t('Attach one') }}
@@ -743,8 +792,8 @@
                                             class="flex max-w-[16rem] items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs"
                                             :class="
                                                 index === preview_index
-                                                    ? 'border-indigo-300 bg-indigo-50 text-indigo-700'
-                                                    : 'border-gray-200 bg-white text-gray-600 hover:border-indigo-200'
+                                                    ? 'border-indigo-300 bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300'
+                                                    : 'border-gray-200 dark:border-white/10 bg-white dark:bg-[#262932] text-gray-600 dark:text-gray-300 hover:border-indigo-200'
                                             "
                                             @click="preview_index = index"
                                         >
@@ -759,10 +808,12 @@
                             <div class="min-h-0 overflow-y-auto p-5 lg:col-span-2">
                                 <div v-for="section in reviewSections" :key="section.step" class="mb-6 last:mb-0">
                                     <div class="flex items-center justify-between gap-3">
-                                        <h3 class="text-sm font-bold text-gray-900">{{ $t(section.label) }}</h3>
+                                        <h3 class="text-sm font-bold text-gray-900 dark:text-gray-100">
+                                            {{ $t(section.label) }}
+                                        </h3>
                                         <button
                                             type="button"
-                                            class="text-xs font-semibold text-indigo-600 hover:underline"
+                                            class="text-xs font-semibold text-indigo-600 dark:text-indigo-300 hover:underline"
                                             @click="editFrom(section.step)"
                                         >
                                             {{ $t('Edit') }}
@@ -770,18 +821,22 @@
                                     </div>
                                     <dl class="mt-2 space-y-2.5">
                                         <div v-for="row in section.rows" :key="row.label">
-                                            <dt class="text-[11px] font-medium uppercase tracking-wide text-gray-400">
+                                            <dt
+                                                class="text-[11px] font-medium uppercase tracking-wide text-gray-400 dark:text-gray-500"
+                                            >
                                                 {{ $t(row.label) }}
                                             </dt>
                                             <dd
                                                 v-if="row.html && row.value"
-                                                class="mt-0.5 break-words text-sm text-gray-800"
+                                                class="mt-0.5 break-words text-sm text-gray-800 dark:text-gray-100"
                                                 v-html="row.value"
                                             ></dd>
                                             <dd
                                                 v-else
                                                 class="mt-0.5 break-words text-sm"
-                                                :class="row.value ? 'text-gray-800' : 'text-gray-300'"
+                                                :class="
+                                                    row.value ? 'text-gray-800 dark:text-gray-100' : 'text-gray-300'
+                                                "
                                             >
                                                 {{ row.value || $t('Not set') }}
                                             </dd>
@@ -791,10 +846,12 @@
                             </div>
                         </div>
 
-                        <div class="flex flex-wrap items-center justify-end gap-2 border-t border-gray-100 px-5 py-4">
+                        <div
+                            class="flex flex-wrap items-center justify-end gap-2 border-t border-gray-100 dark:border-white/10 px-5 py-4"
+                        >
                             <button
                                 type="button"
-                                class="rounded-xl border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
+                                class="rounded-xl border border-gray-200 dark:border-white/10 px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
                                 @click="closePreview"
                             >
                                 {{ $t('Back to editing') }}
@@ -1418,7 +1475,7 @@ export default {
         stepBadgeClass(index) {
             if (this.step === index) return 'bg-indigo-600 text-white';
             if (this.stepIsValid(index)) return 'bg-emerald-100 text-emerald-700';
-            return 'bg-gray-100 text-gray-500';
+            return 'bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400';
         },
         goToStep(index) {
             // Backwards is always allowed; forwards only over completed steps,

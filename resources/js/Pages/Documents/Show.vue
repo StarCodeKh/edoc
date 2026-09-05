@@ -2,7 +2,7 @@
     <div class="h-full">
         <Head :title="document.code || document.title" />
         <div class="flex flex-col flex-grow-1 flex-shrink-1 h-full">
-            <div class="flex-1 flex flex-col bg-gradient-to-br from-gray-50 to-white overflow-y-auto">
+            <div class="flex-1 flex flex-col bg-gradient-to-br from-gray-50 dark:from-white/5 to-white overflow-y-auto">
                 <div class="m-4 flex flex-col pb-8">
                     <!-- Header -->
                     <div
@@ -78,7 +78,7 @@
                                             document.slug || document.id,
                                         ])
                                     "
-                                    class="flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-indigo-700 shadow-sm hover:bg-indigo-50"
+                                    class="flex items-center gap-2 rounded-xl bg-white dark:bg-[#262932] px-4 py-2 text-sm font-semibold text-indigo-700 dark:text-indigo-300 shadow-sm hover:bg-indigo-50 dark:hover:bg-indigo-500/20"
                                 >
                                     <icon name="link_external" class="h-4 w-4" />
                                     {{ $t('Open full task') }}
@@ -90,8 +90,12 @@
                     <div class="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-3">
                         <!-- The intake form's own field groups, read-only. -->
                         <div class="space-y-4 xl:col-span-2">
-                            <section class="rounded-2xl border border-gray-200/70 bg-white p-4 shadow-sm sm:p-6">
-                                <h2 class="text-base font-bold text-gray-900">{{ $t('Document Info') }}</h2>
+                            <section
+                                class="rounded-2xl border border-gray-200/70 bg-white dark:bg-[#262932] p-4 shadow-sm sm:p-6"
+                            >
+                                <h2 class="text-base font-bold text-gray-900 dark:text-gray-100">
+                                    {{ $t('Document Info') }}
+                                </h2>
                                 <dl class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                                     <div v-for="row in infoRows" :key="row.label">
                                         <dt class="form-label mb-1">{{ $t(row.label) }}</dt>
@@ -103,7 +107,9 @@
                                             <span
                                                 v-if="document.priority"
                                                 class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold text-white"
-                                                :style="{ backgroundColor: document.priority.color || '#4f46e5' }"
+                                                :style="{
+                                                    backgroundColor: document.priority.color || 'var(--accent-fill)',
+                                                }"
                                             >
                                                 {{ document.priority.name }}
                                             </span>
@@ -113,8 +119,12 @@
                                 </dl>
                             </section>
 
-                            <section class="rounded-2xl border border-gray-200/70 bg-white p-4 shadow-sm sm:p-6">
-                                <h2 class="text-base font-bold text-gray-900">{{ $t('Dates & Routing') }}</h2>
+                            <section
+                                class="rounded-2xl border border-gray-200/70 bg-white dark:bg-[#262932] p-4 shadow-sm sm:p-6"
+                            >
+                                <h2 class="text-base font-bold text-gray-900 dark:text-gray-100">
+                                    {{ $t('Dates & Routing') }}
+                                </h2>
                                 <dl class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
                                     <div v-for="row in dateRows" :key="row.label">
                                         <dt class="form-label mb-1">{{ $t(row.label) }}</dt>
@@ -128,7 +138,7 @@
                                         <li
                                             v-for="person in document.assignees"
                                             :key="person.id"
-                                            class="flex items-center gap-2 rounded-full border border-gray-200 py-1 pl-1 pr-3"
+                                            class="flex items-center gap-2 rounded-full border border-gray-200 dark:border-white/10 py-1 pl-1 pr-3"
                                         >
                                             <img
                                                 v-if="person.photo"
@@ -138,25 +148,31 @@
                                             />
                                             <span
                                                 v-else
-                                                class="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-100 text-[10px] font-semibold text-indigo-700"
+                                                class="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-100 text-[10px] font-semibold text-indigo-700 dark:text-indigo-300"
                                             >
                                                 {{ person.name.charAt(0) }}
                                             </span>
-                                            <span class="text-sm text-gray-700">{{ person.name }}</span>
+                                            <span class="text-sm text-gray-700 dark:text-gray-200">{{
+                                                person.name
+                                            }}</span>
                                         </li>
                                     </ul>
                                     <p v-else class="text-sm text-gray-300">{{ $t('Not set') }}</p>
                                 </div>
                             </section>
 
-                            <section class="rounded-2xl border border-gray-200/70 bg-white p-4 shadow-sm sm:p-6">
-                                <h2 class="text-base font-bold text-gray-900">{{ $t('Content & Files') }}</h2>
+                            <section
+                                class="rounded-2xl border border-gray-200/70 bg-white dark:bg-[#262932] p-4 shadow-sm sm:p-6"
+                            >
+                                <h2 class="text-base font-bold text-gray-900 dark:text-gray-100">
+                                    {{ $t('Content & Files') }}
+                                </h2>
 
                                 <div class="mt-4">
                                     <div class="form-label mb-1">{{ $t('Description') }}</div>
                                     <div
                                         v-if="document.description"
-                                        class="prose prose-sm max-w-none text-gray-700"
+                                        class="prose prose-sm max-w-none text-gray-700 dark:text-gray-200"
                                         v-html="document.description"
                                     ></div>
                                     <p v-else class="text-sm text-gray-300">{{ $t('Not set') }}</p>
@@ -170,7 +186,7 @@
                                         <button
                                             v-if="can.upload"
                                             type="button"
-                                            class="flex items-center gap-1.5 rounded-xl border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+                                            class="flex items-center gap-1.5 rounded-xl border border-gray-200 dark:border-white/10 px-3 py-1.5 text-xs font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-60"
                                             :disabled="uploading"
                                             :title="
                                                 replacesOnUpload
@@ -214,7 +230,7 @@
 
                                     <p
                                         v-if="canSign && attachments.length"
-                                        class="mt-2 flex items-center gap-1.5 rounded-xl bg-indigo-50 px-3 py-2 text-xs font-medium text-indigo-700"
+                                        class="mt-2 flex items-center gap-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-500/15 px-3 py-2 text-xs font-medium text-indigo-700 dark:text-indigo-300"
                                     >
                                         <icon name="edit" class="h-3.5 w-3.5 shrink-0" />
                                         {{ $t('This step needs a signature — open the file to draw or type on it.') }}
@@ -224,14 +240,14 @@
                                         <li
                                             v-for="file in attachments"
                                             :key="file.id"
-                                            class="flex items-center gap-3 rounded-xl border border-gray-200 px-3 py-2"
+                                            class="flex items-center gap-3 rounded-xl border border-gray-200 dark:border-white/10 px-3 py-2"
                                         >
                                             <icon name="file-pdf" class="h-5 w-5 shrink-0 text-rose-500" />
                                             <span class="min-w-0 flex-1">
-                                                <span class="block truncate text-sm text-gray-800">{{
+                                                <span class="block truncate text-sm text-gray-800 dark:text-gray-100">{{
                                                     file.name
                                                 }}</span>
-                                                <span class="block text-xs text-gray-400">{{
+                                                <span class="block text-xs text-gray-400 dark:text-gray-500">{{
                                                     fileSize(file.size)
                                                 }}</span>
                                             </span>
@@ -250,7 +266,7 @@
                                                 :href="annotatorUrl(file)"
                                                 target="_blank"
                                                 rel="noopener"
-                                                class="rounded-lg p-1.5 text-gray-400 hover:bg-indigo-50 hover:text-indigo-600"
+                                                class="rounded-lg p-1.5 text-gray-400 dark:text-gray-500 hover:bg-indigo-50 dark:hover:bg-indigo-500/20 hover:text-indigo-600"
                                                 :title="$t('Open')"
                                             >
                                                 <icon name="eye" class="h-4 w-4" />
@@ -258,7 +274,7 @@
                                             <button
                                                 v-if="can.detach"
                                                 type="button"
-                                                class="rounded-lg p-1.5 text-gray-400 hover:bg-rose-50 hover:text-rose-600"
+                                                class="rounded-lg p-1.5 text-gray-400 dark:text-gray-500 hover:bg-rose-50 hover:text-rose-600"
                                                 :title="$t('Remove')"
                                                 @click="removeFile(file)"
                                             >
@@ -278,7 +294,9 @@
                              all three fighting for the same column. -->
                         <aside class="xl:col-span-1">
                             <div class="sticky top-4 space-y-4">
-                                <div class="overflow-hidden rounded-2xl border border-gray-200/70 bg-white shadow-sm">
+                                <div
+                                    class="overflow-hidden rounded-2xl border border-gray-200/70 bg-white dark:bg-[#262932] shadow-sm"
+                                >
                                     <div class="doc-tabs" role="tablist">
                                         <button
                                             v-for="tab in tabs"
@@ -301,7 +319,7 @@
                                         <dl v-if="active_tab === 'summary'" class="space-y-3">
                                             <div v-for="row in summaryRows" :key="row.label">
                                                 <dt
-                                                    class="text-[11px] font-medium uppercase tracking-wide text-gray-400"
+                                                    class="text-[11px] font-medium uppercase tracking-wide text-gray-400 dark:text-gray-500"
                                                 >
                                                     {{ $t(row.label) }}
                                                 </dt>
@@ -335,15 +353,15 @@
                                                             class="text-sm font-semibold"
                                                             :class="
                                                                 step.state === 'pending'
-                                                                    ? 'text-gray-400'
-                                                                    : 'text-gray-900'
+                                                                    ? 'text-gray-400 dark:text-gray-500'
+                                                                    : 'text-gray-900 dark:text-gray-100'
                                                             "
                                                         >
                                                             {{ step.title }}
                                                         </div>
                                                         <div
                                                             v-if="step.responsible_role"
-                                                            class="text-[11px] text-gray-500"
+                                                            class="text-[11px] text-gray-500 dark:text-gray-400"
                                                         >
                                                             {{ step.responsible_role_name || step.responsible_role }}
                                                         </div>
@@ -357,20 +375,25 @@
                                                             />
                                                             <span
                                                                 v-else
-                                                                class="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-100 text-[10px] font-semibold text-indigo-700"
+                                                                class="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-100 text-[10px] font-semibold text-indigo-700 dark:text-indigo-300"
                                                             >
                                                                 {{ step.actor.name.charAt(0) }}
                                                             </span>
-                                                            <span class="truncate text-[11px] text-gray-600">
+                                                            <span
+                                                                class="truncate text-[11px] text-gray-600 dark:text-gray-300"
+                                                            >
                                                                 {{ step.actor.name }}
                                                             </span>
                                                         </div>
-                                                        <div v-if="step.entered_at" class="text-[11px] text-gray-400">
+                                                        <div
+                                                            v-if="step.entered_at"
+                                                            class="text-[11px] text-gray-400 dark:text-gray-500"
+                                                        >
                                                             {{ formatDate(step.entered_at) }}
                                                         </div>
                                                         <div
                                                             v-else-if="step.state === 'pending'"
-                                                            class="mt-1 text-[11px] text-gray-400"
+                                                            class="mt-1 text-[11px] text-gray-400 dark:text-gray-500"
                                                         >
                                                             {{ $t('Not reached yet') }}
                                                         </div>
@@ -393,7 +416,7 @@
                                                     </div>
                                                 </li>
                                             </ol>
-                                            <p v-else class="text-sm text-gray-400">
+                                            <p v-else class="text-sm text-gray-400 dark:text-gray-500">
                                                 {{ $t('This project has no open list') }}
                                             </p>
                                         </template>
@@ -404,7 +427,7 @@
                                              Only documents already linked to this one
                                              can be drawn on. -->
                                         <template v-else-if="active_tab === 'merge'">
-                                            <p class="text-xs text-gray-500">
+                                            <p class="text-xs text-gray-500 dark:text-gray-400">
                                                 {{
                                                     $t(
                                                         'Combines the PDFs of the documents chosen below into one file on this document. Each of them keeps its own files.'
@@ -415,25 +438,31 @@
                                             <ul v-if="mergeCandidates.length" class="mt-3 space-y-1">
                                                 <li v-for="doc in mergeCandidates" :key="doc.id">
                                                     <label
-                                                        class="flex cursor-pointer items-start gap-3 rounded-lg px-2 py-2 hover:bg-gray-50"
+                                                        class="flex cursor-pointer items-start gap-3 rounded-lg px-2 py-2 hover:bg-gray-50 dark:hover:bg-white/5"
                                                         :class="{ 'opacity-50': !doc.file_count }"
                                                     >
                                                         <input
                                                             v-model="merge_ids"
                                                             type="checkbox"
-                                                            class="mt-0.5 h-4 w-4 rounded border-gray-300 text-indigo-600"
+                                                            class="mt-0.5 h-4 w-4 rounded border-gray-300 dark:border-white/15 text-indigo-600 dark:text-indigo-300"
                                                             :value="doc.id"
                                                             :disabled="!doc.file_count"
                                                         />
                                                         <span class="min-w-0 flex-1">
-                                                            <span class="block truncate text-sm text-gray-800">
+                                                            <span
+                                                                class="block truncate text-sm text-gray-800 dark:text-gray-100"
+                                                            >
                                                                 {{ doc.code ? doc.code + ' · ' : '' }}{{ doc.title }}
                                                             </span>
-                                                            <span class="block truncate text-xs text-gray-400">
+                                                            <span
+                                                                class="block truncate text-xs text-gray-400 dark:text-gray-500"
+                                                            >
                                                                 {{ doc.status }}
                                                             </span>
                                                         </span>
-                                                        <span class="shrink-0 text-[11px] font-medium text-gray-400">
+                                                        <span
+                                                            class="shrink-0 text-[11px] font-medium text-gray-400 dark:text-gray-500"
+                                                        >
                                                             {{
                                                                 doc.file_count
                                                                     ? $t(':count files', { count: doc.file_count })
@@ -443,13 +472,13 @@
                                                     </label>
                                                 </li>
                                             </ul>
-                                            <p v-else class="mt-3 text-sm text-gray-400">
+                                            <p v-else class="mt-3 text-sm text-gray-400 dark:text-gray-500">
                                                 {{ $t('Nothing is linked to this document yet.') }}
                                             </p>
 
                                             <div
                                                 v-if="mergeCandidates.length"
-                                                class="mt-4 border-t border-gray-100 pt-3"
+                                                class="mt-4 border-t border-gray-100 dark:border-white/10 pt-3"
                                             >
                                                 <textarea
                                                     v-model="merge_note"
@@ -476,7 +505,9 @@
                                                     }}
                                                 </button>
 
-                                                <p class="mt-1.5 text-center text-[11px] text-gray-400">
+                                                <p
+                                                    class="mt-1.5 text-center text-[11px] text-gray-400 dark:text-gray-500"
+                                                >
                                                     {{ $t('The merged file is filed here, then sent on as usual.') }}
                                                 </p>
                                             </div>
@@ -500,19 +531,19 @@
                                                         </span>
                                                     </span>
                                                     <div class="min-w-0 flex-1 pb-5">
-                                                        <p class="text-sm text-gray-800">
+                                                        <p class="text-sm text-gray-800 dark:text-gray-100">
                                                             <span class="font-semibold">
                                                                 {{ entry.actor ? entry.actor.name : $t('System') }}
                                                             </span>
                                                             {{ ' ' }}{{ entry.text }}
                                                         </p>
-                                                        <p class="mt-0.5 text-xs text-gray-400">
+                                                        <p class="mt-0.5 text-xs text-gray-400 dark:text-gray-500">
                                                             {{ formatDate(entry.at) }}
                                                         </p>
                                                     </div>
                                                 </li>
                                             </ol>
-                                            <p v-else class="text-sm text-gray-400">
+                                            <p v-else class="text-sm text-gray-400 dark:text-gray-500">
                                                 {{ $t('No activity recorded yet.') }}
                                             </p>
                                         </template>
@@ -532,23 +563,32 @@
                                                     </span>
                                                     <div class="min-w-0 flex-1">
                                                         <div class="flex items-baseline gap-2">
-                                                            <span class="truncate text-sm font-semibold text-gray-800">
+                                                            <span
+                                                                class="truncate text-sm font-semibold text-gray-800 dark:text-gray-100"
+                                                            >
                                                                 {{ note.author ? note.author.name : $t('System') }}
                                                             </span>
-                                                            <span class="shrink-0 text-[11px] text-gray-400">
+                                                            <span
+                                                                class="shrink-0 text-[11px] text-gray-400 dark:text-gray-500"
+                                                            >
                                                                 {{ formatDate(note.at) }}
                                                             </span>
                                                         </div>
                                                         <div
-                                                            class="prose prose-sm mt-0.5 max-w-none break-words text-sm text-gray-700"
+                                                            class="prose prose-sm mt-0.5 max-w-none break-words text-sm text-gray-700 dark:text-gray-200"
                                                             v-html="note.details"
                                                         ></div>
                                                     </div>
                                                 </li>
                                             </ol>
-                                            <p v-else class="text-sm text-gray-400">{{ $t('No comments yet.') }}</p>
+                                            <p v-else class="text-sm text-gray-400 dark:text-gray-500">
+                                                {{ $t('No comments yet.') }}
+                                            </p>
 
-                                            <div v-if="canForward" class="mt-4 border-t border-gray-100 pt-3">
+                                            <div
+                                                v-if="canForward"
+                                                class="mt-4 border-t border-gray-100 dark:border-white/10 pt-3"
+                                            >
                                                 <textarea
                                                     v-model="new_comment"
                                                     rows="3"
@@ -561,7 +601,7 @@
                                                      the department that gets it is named. -->
                                                 <div v-if="mustChooseHandTo" class="mt-2">
                                                     <label
-                                                        class="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-gray-400"
+                                                        class="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500"
                                                     >
                                                         {{ $t('Hand to') }}
                                                     </label>
@@ -591,45 +631,48 @@
                                                 <div v-if="!finishes_here && nextStepPeople.length" class="mt-2">
                                                     <div class="flex items-center justify-between gap-2">
                                                         <span
-                                                            class="text-[11px] font-semibold uppercase tracking-wide text-gray-400"
+                                                            class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500"
                                                         >
                                                             {{ $t('Goes to') }}
                                                         </span>
                                                         <button
                                                             type="button"
-                                                            class="text-[11px] font-medium text-indigo-600 hover:underline"
+                                                            class="text-[11px] font-medium text-indigo-600 dark:text-indigo-300 hover:underline"
                                                             @click="show_assignees = !show_assignees"
                                                         >
                                                             {{ show_assignees ? $t('Done') : $t('Change') }}
                                                         </button>
                                                     </div>
 
-                                                    <p v-if="!show_assignees" class="mt-0.5 text-sm text-gray-700">
+                                                    <p
+                                                        v-if="!show_assignees"
+                                                        class="mt-0.5 text-sm text-gray-700 dark:text-gray-200"
+                                                    >
                                                         {{ nextStepSummary }}
                                                     </p>
 
                                                     <ul
                                                         v-else
-                                                        class="mt-1 max-h-40 overflow-y-auto rounded-xl border border-gray-200 p-1"
+                                                        class="mt-1 max-h-40 overflow-y-auto rounded-xl border border-gray-200 dark:border-white/10 p-1"
                                                     >
                                                         <li v-for="person in nextStepPeople" :key="person.id">
                                                             <label
-                                                                class="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-gray-50"
+                                                                class="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-gray-50 dark:hover:bg-white/5"
                                                             >
                                                                 <input
                                                                     type="checkbox"
-                                                                    class="h-4 w-4 rounded border-gray-300 text-indigo-600"
+                                                                    class="h-4 w-4 rounded border-gray-300 dark:border-white/15 text-indigo-600 dark:text-indigo-300"
                                                                     :value="person.id"
                                                                     v-model="assign_to"
                                                                 />
                                                                 <span class="min-w-0">
                                                                     <span
-                                                                        class="block truncate text-sm text-gray-800"
+                                                                        class="block truncate text-sm text-gray-800 dark:text-gray-100"
                                                                         >{{ person.name }}</span
                                                                     >
                                                                     <span
                                                                         v-if="person.role"
-                                                                        class="block truncate text-[11px] text-gray-400"
+                                                                        class="block truncate text-[11px] text-gray-400 dark:text-gray-500"
                                                                         >{{ person.role }}</span
                                                                     >
                                                                 </span>
@@ -639,7 +682,10 @@
 
                                                     <!-- Ticking nobody is not "send it to nobody": it is
                                                          the default, which is everybody the step reaches. -->
-                                                    <p v-if="show_assignees" class="mt-1 text-[11px] text-gray-400">
+                                                    <p
+                                                        v-if="show_assignees"
+                                                        class="mt-1 text-[11px] text-gray-400 dark:text-gray-500"
+                                                    >
                                                         {{ $t('Tick nobody to send it to everyone listed.') }}
                                                     </p>
                                                 </div>
@@ -715,13 +761,13 @@
                                                 </p>
                                                 <p
                                                     v-else-if="finishes_here"
-                                                    class="mt-1.5 text-center text-[11px] text-gray-400"
+                                                    class="mt-1.5 text-center text-[11px] text-gray-400 dark:text-gray-500"
                                                 >
                                                     {{ $t('This is the last step — finish the document here.') }}
                                                 </p>
                                                 <p
                                                     v-else-if="canForward"
-                                                    class="mt-1.5 text-center text-[11px] text-gray-400"
+                                                    class="mt-1.5 text-center text-[11px] text-gray-400 dark:text-gray-500"
                                                 >
                                                     {{ $t('Next: :step', { step: next_step.title }) }}
                                                     <template v-if="nextStepSummary"> — {{ nextStepSummary }}</template>
@@ -734,7 +780,10 @@
                                                         }}
                                                     </template>
                                                 </p>
-                                                <p v-else class="mt-1.5 text-center text-[11px] text-gray-400">
+                                                <p
+                                                    v-else
+                                                    class="mt-1.5 text-center text-[11px] text-gray-400 dark:text-gray-500"
+                                                >
                                                     {{ $t('This document is already at the last step.') }}
                                                 </p>
                                             </div>
@@ -744,7 +793,7 @@
                                                  rides along with the move. -->
                                             <p
                                                 v-else-if="document.is_done"
-                                                class="mt-4 flex items-center justify-center gap-1.5 border-t border-gray-100 pt-3 text-center text-[11px] font-medium text-emerald-600"
+                                                class="mt-4 flex items-center justify-center gap-1.5 border-t border-gray-100 dark:border-white/10 pt-3 text-center text-[11px] font-medium text-emerald-600"
                                             >
                                                 <icon name="tick_check" class="h-3.5 w-3.5 shrink-0" />
                                                 {{ $t('This document is finished.') }}
@@ -759,29 +808,37 @@
                                      from either page. -->
                                 <div
                                     v-if="showLinksCard"
-                                    class="rounded-2xl border border-gray-200/70 bg-white p-4 shadow-sm"
+                                    class="rounded-2xl border border-gray-200/70 bg-white dark:bg-[#262932] p-4 shadow-sm"
                                 >
-                                    <h3 class="text-sm font-bold text-gray-900">{{ $t('Linked documents') }}</h3>
+                                    <h3 class="text-sm font-bold text-gray-900 dark:text-gray-100">
+                                        {{ $t('Linked documents') }}
+                                    </h3>
 
                                     <div v-if="links.parents.length" class="mt-3">
-                                        <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+                                        <p
+                                            class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500"
+                                        >
                                             {{ $t('Raised from') }}
                                         </p>
                                         <ul class="mt-1.5 space-y-1.5">
                                             <li v-for="doc in links.parents" :key="'p-' + doc.id">
                                                 <a
                                                     :href="linkedHref(doc)"
-                                                    class="flex items-center gap-2 rounded-xl border border-gray-200 px-3 py-2 hover:bg-gray-50"
+                                                    class="flex items-center gap-2 rounded-xl border border-gray-200 dark:border-white/10 px-3 py-2 hover:bg-gray-50 dark:hover:bg-white/5"
                                                 >
-                                                    <icon name="file-text" class="h-4 w-4 shrink-0 text-gray-400" />
+                                                    <icon
+                                                        name="file-text"
+                                                        class="h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500"
+                                                    />
                                                     <span class="min-w-0 flex-1">
                                                         <span
-                                                            class="block truncate text-xs font-semibold text-gray-800"
+                                                            class="block truncate text-xs font-semibold text-gray-800 dark:text-gray-100"
                                                             >{{ doc.code || doc.title }}</span
                                                         >
-                                                        <span class="block truncate text-[11px] text-gray-400">{{
-                                                            doc.status
-                                                        }}</span>
+                                                        <span
+                                                            class="block truncate text-[11px] text-gray-400 dark:text-gray-500"
+                                                            >{{ doc.status }}</span
+                                                        >
                                                     </span>
                                                 </a>
                                             </li>
@@ -789,31 +846,37 @@
                                     </div>
 
                                     <div v-if="links.children.length" class="mt-3">
-                                        <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+                                        <p
+                                            class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500"
+                                        >
                                             {{ $t('Internal documents raised') }}
                                         </p>
                                         <ul class="mt-1.5 space-y-1.5">
                                             <li v-for="doc in links.children" :key="'c-' + doc.id">
                                                 <a
                                                     :href="linkedHref(doc)"
-                                                    class="flex items-center gap-2 rounded-xl border border-gray-200 px-3 py-2 hover:bg-gray-50"
+                                                    class="flex items-center gap-2 rounded-xl border border-gray-200 dark:border-white/10 px-3 py-2 hover:bg-gray-50 dark:hover:bg-white/5"
                                                 >
-                                                    <icon name="file-text" class="h-4 w-4 shrink-0 text-gray-400" />
+                                                    <icon
+                                                        name="file-text"
+                                                        class="h-4 w-4 shrink-0 text-gray-400 dark:text-gray-500"
+                                                    />
                                                     <span class="min-w-0 flex-1">
                                                         <span
-                                                            class="block truncate text-xs font-semibold text-gray-800"
+                                                            class="block truncate text-xs font-semibold text-gray-800 dark:text-gray-100"
                                                             >{{ doc.code || doc.title }}</span
                                                         >
-                                                        <span class="block truncate text-[11px] text-gray-400">{{
-                                                            doc.status
-                                                        }}</span>
+                                                        <span
+                                                            class="block truncate text-[11px] text-gray-400 dark:text-gray-500"
+                                                            >{{ doc.status }}</span
+                                                        >
                                                     </span>
                                                     <span
                                                         class="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold"
                                                         :class="
                                                             doc.is_complete
                                                                 ? 'bg-emerald-100 text-emerald-700'
-                                                                : 'bg-amber-100 text-amber-700'
+                                                                : 'bg-amber-100 dark:bg-amber-500/20 text-amber-700'
                                                         "
                                                     >
                                                         {{ doc.is_complete ? $t('Complete') : $t('In progress') }}
@@ -825,7 +888,7 @@
 
                                     <p
                                         v-if="links.held"
-                                        class="mt-3 flex items-start gap-1.5 rounded-xl bg-amber-50 px-3 py-2 text-[11px] font-medium text-amber-700"
+                                        class="mt-3 flex items-start gap-1.5 rounded-xl bg-amber-50 dark:bg-amber-500/15 px-3 py-2 text-[11px] font-medium text-amber-700"
                                     >
                                         <icon name="clock" class="mt-px h-3.5 w-3.5 shrink-0" />
                                         <span>{{
@@ -838,7 +901,7 @@
                                     <a
                                         v-if="canRaiseInternal"
                                         :href="raiseInternalHref"
-                                        class="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-indigo-200 px-4 py-2 text-sm font-semibold text-indigo-600 hover:bg-indigo-50"
+                                        class="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-indigo-200 px-4 py-2 text-sm font-semibold text-indigo-600 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-500/20"
                                     >
                                         <icon name="plus" class="h-4 w-4" />
                                         {{ $t('Create internal document') }}
@@ -847,11 +910,16 @@
 
                                 <div
                                     v-if="document.qr_code"
-                                    class="rounded-2xl border border-gray-200/70 bg-white p-4 text-center shadow-sm"
+                                    class="rounded-2xl border border-gray-200/70 bg-white dark:bg-[#262932] p-4 text-center shadow-sm"
                                 >
-                                    <h3 class="text-sm font-bold text-gray-900">{{ $t('Tracking') }}</h3>
+                                    <h3 class="text-sm font-bold text-gray-900 dark:text-gray-100">
+                                        {{ $t('Tracking') }}
+                                    </h3>
                                     <img :src="document.qr_code" :alt="document.code" class="mx-auto mt-3 h-32 w-32" />
-                                    <p v-if="document.code" class="mt-2 text-xs font-semibold text-gray-500">
+                                    <p
+                                        v-if="document.code"
+                                        class="mt-2 text-xs font-semibold text-gray-500 dark:text-gray-400"
+                                    >
                                         {{ document.code }}
                                     </p>
 
@@ -1286,12 +1354,12 @@ export default {
             return parsed.isValid() ? parsed.format('MMM D, YYYY HH:mm') : '';
         },
         valueClass(value) {
-            return value ? 'text-gray-800' : 'text-gray-300';
+            return value ? 'text-gray-800 dark:text-gray-100' : 'text-gray-300';
         },
         stepBadgeClass(step) {
             if (step.state === 'current') return 'bg-indigo-600 text-white';
             if (step.state === 'done') return 'bg-emerald-100 text-emerald-700';
-            return 'bg-gray-200 text-gray-500';
+            return 'bg-gray-200 dark:bg-white/10 text-gray-500 dark:text-gray-400';
         },
         neighbourHref(neighbour) {
             return this.route('workspace.documents.show', [this.workspace.slug || this.workspace.id, neighbour.uid]);
@@ -1447,7 +1515,7 @@ export default {
     padding: 8px 12px;
     border-radius: 12px;
     background: #eef2ff;
-    color: #4338ca;
+    color: var(--accent-ink);
     transition: background-color 0.12s ease;
 }
 .doc-track:hover {
@@ -1509,18 +1577,18 @@ export default {
 
 .doc-tab:hover {
     background: rgba(99, 102, 241, 0.08);
-    color: #4338ca;
+    color: var(--accent-ink);
 }
 
 /* Solid fill, matching the active view in the workspace toolbar. */
 .doc-tab.is-active {
-    background: #4f46e5;
+    background: var(--accent-fill);
     color: #fff;
     box-shadow: 0 1px 3px rgba(79, 70, 229, 0.4);
 }
 
 .doc-tab.is-active:hover {
-    background: #4338ca;
+    background: var(--accent-fill-hover);
     color: #fff;
 }
 
@@ -1574,7 +1642,7 @@ export default {
     padding: 1px 7px;
     border-radius: 9999px;
     background: #eef2ff;
-    color: #4338ca;
+    color: var(--accent-ink);
     font-size: 10px;
     font-weight: 700;
     line-height: 1.7;
@@ -1615,7 +1683,7 @@ export default {
     align-items: center;
     justify-content: center;
     background: #e0e7ff;
-    color: #4338ca;
+    color: var(--accent-ink);
     font-size: 12px;
     font-weight: 700;
 }

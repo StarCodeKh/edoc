@@ -406,55 +406,7 @@ import draggable from 'vuedraggable';
 import moment from 'moment';
 import axios from 'axios';
 import DocumentReceipt from '@/Shared/Modals/DocumentReceipt.vue';
-
-/**
- * Two palettes, each selected for the surface it sits on rather than flipped
- * from the other. Both were run through the data-viz validator as a set:
- * the categorical eight pass the lightness band, chroma floor, adjacent CVD
- * separation (worst 9.1 light / 8.4 dark, target >= 8) and the normal-vision
- * floor (19.6 / 19.3, floor 15) in both modes.
- *
- * Three light slots and one dark slot sit under 3:1 against the card, so the
- * relief rule applies and is met: every donut segment is named and counted in
- * the legend beside it, and the register itself is on the same screen.
- *
- * STATUS is reserved for document state - done, overdue, due soon, open,
- * unassigned - and is never reused as "series 6". Board columns are identity,
- * not state, so they draw from CATEGORICAL. Same values as Projects/Dashboard,
- * so a document keeps its colour across the two dashboards.
- */
-const STATUS = {
-    light: {
-        complete: '#0ca30c',
-        soon: '#fab219',
-        later: '#2a78d6',
-        overdue: '#d03b3b',
-        none: '#8a8f98',
-        series: '#2a78d6',
-        surface: '#ffffff',
-        ink: '#52514e',
-        muted: '#898781',
-        grid: '#e8e7e3',
-    },
-    dark: {
-        complete: '#0ca30c',
-        soon: '#fab219',
-        later: '#3987e5',
-        overdue: '#e66767',
-        none: '#9aa0a6',
-        series: '#3987e5',
-        surface: '#262932',
-        ink: '#c3c2b7',
-        muted: '#898781',
-        grid: '#3a3d46',
-    },
-};
-
-/** Fixed slot order - assigned by position, never cycled through a hue wheel. */
-const CATEGORICAL = {
-    light: ['#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4', '#008300', '#4a3aa7', '#e34948'],
-    dark: ['#3987e5', '#d95926', '#199e70', '#c98500', '#d55181', '#008300', '#9085e9', '#e66767'],
-};
+import { STATUS, isDarkMode, observeMode, statusColor } from '@/Utils/palette';
 
 /** Tile glyphs, as single stroked paths on a 24x24 box. */
 const ICONS = {
@@ -511,7 +463,7 @@ export default {
             pageSize: 10,
             pageRows: [],
             is_dark: false,
-            mode_observer: null,
+            stop_watching_mode: null,
             // ApexCharts is a browser component and is not registered on the
             // SSR build, so the charts wait for the client.
             ready: false,
@@ -520,9 +472,6 @@ export default {
     computed: {
         palette() {
             return this.is_dark ? STATUS.dark : STATUS.light;
-        },
-        categorical() {
-            return this.is_dark ? CATEGORICAL.dark : CATEGORICAL.light;
         },
 
         /**
@@ -669,7 +618,7 @@ export default {
                 key: 'list_' + (listItem.id || idx),
                 name: this.$t(listItem.title),
                 total: this.tasksForList(listItem).length,
-                color: this.categorical[idx % this.categorical.length],
+                color: statusColor(listItem, this.is_dark),
             }));
 
             const total = rows.reduce((sum, row) => sum + row.total, 0);
@@ -905,15 +854,13 @@ export default {
     },
     mounted() {
         this.ready = true;
-        this.readMode();
+        this.is_dark = isDarkMode();
 
         // The theme toggle swaps a class on the layout root; the charts pick
         // their colours for the surface they are on, so they have to hear it.
-        const root = document.querySelector('.layout-app');
-        if (root && typeof MutationObserver !== 'undefined') {
-            this.mode_observer = new MutationObserver(this.readMode);
-            this.mode_observer.observe(root, { attributes: true, attributeFilter: ['class'] });
-        }
+        this.stop_watching_mode = observeMode((dark) => {
+            this.is_dark = dark;
+        });
 
         this.$nextTick(() => this.renderBarcodes());
     },
@@ -921,14 +868,9 @@ export default {
         this.$nextTick(() => this.renderBarcodes());
     },
     beforeUnmount() {
-        if (this.mode_observer) this.mode_observer.disconnect();
+        if (this.stop_watching_mode) this.stop_watching_mode();
     },
     methods: {
-        readMode() {
-            const root = document.querySelector('.layout-app');
-            this.is_dark = !!root && root.classList.contains('dark');
-        },
-
         initialsOf(label) {
             return String(label || '—')
                 .trim()
@@ -966,13 +908,17 @@ export default {
                 console.log(error);
             });
         },
+        /**
+         * By the column's name, not its row - so this pill matches the same
+         * document's pill on the register tables and on its printed receipt.
+         */
         statusColorFor(element) {
-            if (!this.lists) return this.categorical[0];
-            let idx = this.lists.findIndex((l) => l.id === element.list_id);
-            if (idx === -1) {
-                idx = this.lists.findIndex((l) => (l.tasks || []).some((t) => t.id === element.id));
-            }
-            return this.categorical[(idx === -1 ? 0 : idx) % this.categorical.length];
+            const listItem =
+                (this.lists || []).find(
+                    (l) => l.id === element.list_id || (l.tasks || []).some((t) => t.id === element.id)
+                ) || element.list;
+
+            return statusColor(listItem, this.is_dark);
         },
         documentCode(element) {
             if (element.task_code) return element.task_code;
@@ -1248,6 +1194,12 @@ export default {
     font-weight: 600;
     border-radius: 0.6rem;
 }
+/* The band was the one colour on this page that ignored the theme. Same teal
+   identity, stepped down for the dark card so it sits on it rather than
+   glowing off it. */
+.dark .wdash__doc-row--head {
+    background: linear-gradient(135deg, #235a68, #1c4854);
+}
 .wdash__drag-handle {
     align-items: center;
     justify-content: center;
@@ -1350,7 +1302,7 @@ export default {
     border-radius: 8px;
     background: #eef2ff;
     border: 1px solid #e0e7ff;
-    color: #4f46e5;
+    color: var(--accent-ink);
     font-size: 0.75rem;
     font-weight: 600;
     cursor: pointer;

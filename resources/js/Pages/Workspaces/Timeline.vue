@@ -10,52 +10,54 @@
             />
 
             <!-- Enhanced Timeline Container -->
-            <div class="flex-1 flex flex-col bg-gradient-to-br from-gray-50 to-white">
+            <div class="flex-1 flex flex-col bg-gradient-to-br from-gray-50 dark:from-white/5 to-white">
                 <div
                     v-if="timelineReady"
-                    class="flex-1 flex flex-col m-2 sm:m-4 bg-white rounded-2xl shadow-xl border border-gray-200/60 overflow-hidden"
+                    class="flex-1 flex flex-col m-2 sm:m-4 bg-white dark:bg-[#262932] rounded-2xl shadow-xl border border-gray-200/60 dark:border-white/10 overflow-hidden"
                 >
                     <!-- Enhanced Timeline Header -->
                     <div
-                        class="timeline-header border-b border-gray-200/60 bg-gradient-to-r from-white via-gray-50/30 to-white"
+                        class="timeline-header border-b border-gray-200/60 dark:border-white/10 bg-gradient-to-r from-white via-gray-50/30 to-white"
                     >
                         <div class="px-3 py-4 sm:px-6 sm:py-5">
                             <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                                 <!-- Navigation Section -->
                                 <div class="flex items-center justify-center lg:justify-start">
                                     <div
-                                        class="flex items-center bg-white rounded-2xl shadow-sm border border-gray-200/60 p-1"
+                                        class="flex items-center bg-white dark:bg-[#262932] rounded-2xl shadow-sm border border-gray-200/60 dark:border-white/10 p-1"
                                     >
                                         <button
                                             @click="navigatePeriod(-1)"
-                                            class="p-2 sm:p-3 hover:bg-gray-50 rounded-xl transition-all duration-200 group"
+                                            class="p-2 sm:p-3 hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-all duration-200 group"
                                         >
                                             <icon
                                                 name="arrow-left"
-                                                class="w-5 h-5 text-gray-600 group-hover:text-indigo-600 transition-colors"
+                                                class="w-5 h-5 text-gray-600 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition-colors"
                                             />
                                         </button>
                                         <div class="px-3 sm:px-6 text-center min-w-0 sm:min-w-[200px]">
-                                            <h2 class="text-lg sm:text-2xl font-bold text-gray-900 tracking-tight">
+                                            <h2
+                                                class="text-lg sm:text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight"
+                                            >
                                                 {{ currentPeriodTitle }}
                                             </h2>
-                                            <p class="text-sm text-gray-500 mt-0.5 font-medium">
+                                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5 font-medium">
                                                 {{ currentPeriodSubtitle }}
                                             </p>
                                             <p
                                                 v-if="khPeriodLabel"
-                                                class="text-xs text-indigo-600 mt-1 font-semibold khmer-lunar-text leading-snug"
+                                                class="text-xs text-indigo-600 dark:text-indigo-300 mt-1 font-semibold khmer-lunar-text leading-snug"
                                             >
                                                 {{ khPeriodLabel }}
                                             </p>
                                         </div>
                                         <button
                                             @click="navigatePeriod(1)"
-                                            class="p-2 sm:p-3 hover:bg-gray-50 rounded-xl transition-all duration-200 group"
+                                            class="p-2 sm:p-3 hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-all duration-200 group"
                                         >
                                             <icon
                                                 name="arrow-right"
-                                                class="w-5 h-5 text-gray-600 group-hover:text-indigo-600 transition-colors"
+                                                class="w-5 h-5 text-gray-600 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition-colors"
                                             />
                                         </button>
                                     </div>
@@ -65,7 +67,7 @@
                                 <div class="flex flex-col sm:flex-row items-center gap-4">
                                     <!-- View Mode Switcher -->
                                     <div
-                                        class="flex bg-gray-100/80 rounded-2xl p-1.5 shadow-sm border border-gray-200/40"
+                                        class="flex bg-gray-100/80 dark:bg-white/10 rounded-2xl p-1.5 shadow-sm border border-gray-200/40 dark:border-white/10"
                                     >
                                         <button
                                             v-for="view in availableViews"
@@ -74,8 +76,8 @@
                                             :class="[
                                                 'flex items-center px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-300 whitespace-nowrap',
                                                 currentView === view.key
-                                                    ? 'bg-white text-indigo-600 shadow-md shadow-indigo-100/50 ring-1 ring-indigo-100'
-                                                    : 'text-gray-600 hover:text-gray-900 hover:bg-white/60',
+                                                    ? 'bg-white dark:bg-[#262932] text-indigo-600 dark:text-indigo-300 shadow-md shadow-indigo-100/50 ring-1 ring-indigo-100'
+                                                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-white/60',
                                             ]"
                                             :title="$t(view.description)"
                                         >
@@ -90,8 +92,8 @@
                                         :class="[
                                             'flex items-center px-3 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 border',
                                             khmerCalendarOn
-                                                ? 'text-white bg-amber-500 border-amber-500 hover:bg-amber-600 shadow-md shadow-amber-200'
-                                                : 'text-gray-400 bg-white border-dashed border-gray-300 hover:text-gray-600 hover:border-gray-400',
+                                                ? 'text-amber-950 bg-amber-400 border-amber-400 hover:bg-amber-300 shadow-md shadow-amber-500/30'
+                                                : 'text-gray-400 dark:text-gray-500 bg-white dark:bg-[#262932] border-dashed border-gray-300 dark:border-white/15 hover:text-gray-600 hover:border-gray-400',
                                         ]"
                                         :aria-pressed="khmerCalendarOn ? 'true' : 'false'"
                                         :title="
@@ -107,7 +109,7 @@
                                     <!-- Today Button -->
                                     <button
                                         @click="goToToday"
-                                        class="flex items-center px-4 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 bg-white hover:bg-gray-50 rounded-xl border border-gray-200/60 transition-all duration-200"
+                                        class="flex items-center px-4 py-2.5 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white bg-white dark:bg-[#262932] hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl border border-gray-200/60 dark:border-white/10 transition-all duration-200"
                                     >
                                         <icon name="calendar-today" class="w-4 h-4 mr-2" />
                                         {{ $t('Today') }}
@@ -129,7 +131,7 @@
                                         class="mb-8"
                                     >
                                         <div class="month-header mb-6">
-                                            <h3 class="text-xl font-bold text-gray-900">
+                                            <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">
                                                 {{ month.name }} {{ khNum(month.year) }}
                                             </h3>
                                             <div
@@ -149,16 +151,18 @@
                                             >
                                                 <div class="flex items-start justify-between">
                                                     <div class="flex-1">
-                                                        <h4 class="font-semibold text-gray-900 mb-1">
+                                                        <h4 class="font-semibold text-gray-900 dark:text-gray-100 mb-1">
                                                             {{ task.title }}
                                                         </h4>
                                                         <p
                                                             v-if="task.description"
-                                                            class="text-sm text-gray-600 mb-2 line-clamp-2"
+                                                            class="text-sm text-gray-600 dark:text-gray-300 mb-2 line-clamp-2"
                                                         >
                                                             {{ task.description }}
                                                         </p>
-                                                        <div class="flex items-center space-x-4 text-xs text-gray-500">
+                                                        <div
+                                                            class="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400"
+                                                        >
                                                             <span v-if="task.project" class="flex items-center">
                                                                 <div
                                                                     class="project__color w-4 h-4 rounded-full inline-block mr-1"
@@ -232,7 +236,7 @@
                                 <div class="timeline-container">
                                     <div v-for="week in weeksInView" :key="week.start.toISOString()" class="mb-8">
                                         <div class="week-header mb-6">
-                                            <h3 class="text-lg font-bold text-gray-900">
+                                            <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">
                                                 {{ formatWeekRange(week.start, week.end) }}
                                             </h3>
                                             <div
@@ -252,16 +256,18 @@
                                             >
                                                 <div class="flex items-start justify-between">
                                                     <div class="flex-1">
-                                                        <h4 class="font-semibold text-gray-900 mb-1">
+                                                        <h4 class="font-semibold text-gray-900 dark:text-gray-100 mb-1">
                                                             {{ task.title }}
                                                         </h4>
                                                         <p
                                                             v-if="task.description"
-                                                            class="text-sm text-gray-600 mb-2 line-clamp-2"
+                                                            class="text-sm text-gray-600 dark:text-gray-300 mb-2 line-clamp-2"
                                                         >
                                                             {{ task.description }}
                                                         </p>
-                                                        <div class="flex items-center space-x-4 text-xs text-gray-500">
+                                                        <div
+                                                            class="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400"
+                                                        >
                                                             <span v-if="task.list" class="flex items-center">
                                                                 <icon name="list" class="w-3 h-3 mr-1" />
                                                                 {{ task.list.title }}
@@ -303,7 +309,7 @@
                             <div class="flex-1 overflow-y-auto p-3 sm:p-6">
                                 <div class="timeline-container">
                                     <div class="day-header mb-6">
-                                        <h3 class="text-xl font-bold text-gray-900">
+                                        <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">
                                             {{ formatFullDate(selectedDate) }}
                                         </h3>
                                         <khmer-date-card
@@ -329,14 +335,18 @@
                                         >
                                             <div class="flex items-start justify-between">
                                                 <div class="flex-1">
-                                                    <h4 class="font-semibold text-gray-900 mb-1">{{ task.title }}</h4>
+                                                    <h4 class="font-semibold text-gray-900 dark:text-gray-100 mb-1">
+                                                        {{ task.title }}
+                                                    </h4>
                                                     <p
                                                         v-if="task.description"
-                                                        class="text-sm text-gray-600 mb-2 line-clamp-2"
+                                                        class="text-sm text-gray-600 dark:text-gray-300 mb-2 line-clamp-2"
                                                     >
                                                         {{ task.description }}
                                                     </p>
-                                                    <div class="flex items-center space-x-4 text-xs text-gray-500">
+                                                    <div
+                                                        class="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400"
+                                                    >
                                                         <span v-if="task.list" class="flex items-center">
                                                             <icon name="list" class="w-3 h-3 mr-1" />
                                                             {{ task.list.title }}
@@ -394,7 +404,7 @@
                         <div
                             class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"
                         ></div>
-                        <p class="text-gray-600">{{ $t('Loading timeline...') }}</p>
+                        <p class="text-gray-600 dark:text-gray-300">{{ $t('Loading timeline...') }}</p>
                     </div>
                 </div>
             </div>
@@ -607,15 +617,15 @@ export default {
         },
         getTaskColorClass(task) {
             if (task.is_done) {
-                return 'bg-green-50 border-green-400 hover:bg-green-100';
+                return 'bg-green-50 dark:bg-green-500/15 border-green-400 hover:bg-green-100 dark:hover:bg-green-500/25';
             }
             if (this.isOverdue(task)) {
-                return 'bg-red-50 border-red-400 hover:bg-red-100';
+                return 'bg-red-50 dark:bg-red-500/15 border-red-400 hover:bg-red-100 dark:hover:bg-red-500/25';
             }
             if (this.isHighPriority(task)) {
-                return 'bg-orange-50 border-orange-400 hover:bg-orange-100';
+                return 'bg-orange-50 dark:bg-orange-500/15 border-orange-400 hover:bg-orange-100 dark:hover:bg-orange-500/25';
             }
-            return 'bg-blue-50 border-blue-400 hover:bg-blue-100';
+            return 'bg-blue-50 dark:bg-blue-500/15 border-blue-400 hover:bg-blue-100 dark:hover:bg-blue-500/25';
         },
         getTaskTooltip(task) {
             let tooltip = task.title;

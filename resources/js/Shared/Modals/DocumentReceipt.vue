@@ -427,6 +427,7 @@
 
 <script>
 import moment from 'moment';
+import { statusColor } from '@/Utils/palette';
 
 export default {
     name: 'DocumentReceipt',
@@ -492,17 +493,18 @@ export default {
             return 'N/A';
         },
 
+        /**
+         * Always the light steps: this sheet is printed, and the dark steps are
+         * chosen for a dark card rather than for paper. By the status name, so
+         * the pill here is the colour the same document wears on the register
+         * and on the dashboard.
+         */
         statusColor() {
             if (this.presetStatusColor) return this.presetStatusColor;
-            const palette = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4', '#ec4899', '#6366f1'];
-            if (this.matchedList) return palette[this.matchedList.index % palette.length];
-            const label = this.statusLabel;
-            if (!label || label === 'N/A') return '#9ca3af';
-            let hash = 0;
-            for (let i = 0; i < label.length; i++) {
-                hash = (hash * 31 + label.charCodeAt(i)) >>> 0;
-            }
-            return palette[hash % palette.length];
+
+            const column = this.task?.list || (this.matchedList ? this.matchedList.list : null);
+
+            return statusColor(column || this.statusLabel, false);
         },
 
         // One-by-one list of tasks that were merged into this one

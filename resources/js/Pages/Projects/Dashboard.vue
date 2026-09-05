@@ -111,39 +111,7 @@ import { Head, Link } from '@inertiajs/vue3';
 import Layout from '@/Shared/Layout.vue';
 import Icon from '@/Shared/Icon.vue';
 import BoardViewMenu from '@/Shared/BoardViewMenu.vue';
-
-/**
- * Status colours for the due buckets, and the one series colour the magnitude
- * charts use. Both modes are chosen for their own surface rather than flipped:
- * validated for colour-blind separation (worst adjacent pair dE 11.3 light /
- * 8.6 dark) and for contrast against the card. The amber sits under 3:1 on
- * white by design - it never carries meaning alone, every segment is named in
- * the legend and counted beside it.
- */
-const PALETTE = {
-    light: {
-        complete: '#0ca30c',
-        soon: '#fab219',
-        later: '#2a78d6',
-        overdue: '#d03b3b',
-        none: '#8a8f98',
-        series: '#2a78d6',
-        surface: '#ffffff',
-        ink: '#52514e',
-        muted: '#898781',
-    },
-    dark: {
-        complete: '#0ca30c',
-        soon: '#fab219',
-        later: '#3987e5',
-        overdue: '#e66767',
-        none: '#9aa0a6',
-        series: '#3987e5',
-        surface: '#262932',
-        ink: '#c3c2b7',
-        muted: '#898781',
-    },
-};
+import { STATUS, isDarkMode, observeMode } from '@/Utils/palette';
 
 export default {
     components: {
@@ -167,12 +135,12 @@ export default {
     data() {
         return {
             is_dark: false,
-            mode_observer: null,
+            stop_watching_mode: null,
         };
     },
     computed: {
         palette() {
-            return this.is_dark ? PALETTE.dark : PALETTE.light;
+            return this.is_dark ? STATUS.dark : STATUS.light;
         },
 
         due_rows() {
@@ -321,25 +289,18 @@ export default {
                 rows: items.map((row) => ({ ...row, share: max ? Math.max(4, (row.total / max) * 100) : 0 })),
             };
         },
-
-        readMode() {
-            const root = document.querySelector('.layout-app');
-            this.is_dark = !!root && root.classList.contains('dark');
-        },
     },
     mounted() {
-        this.readMode();
+        this.is_dark = isDarkMode();
 
         // The theme toggle swaps a class on the layout root; the charts pick
         // their colours for the surface they are on, so they have to hear it.
-        const root = document.querySelector('.layout-app');
-        if (root && typeof MutationObserver !== 'undefined') {
-            this.mode_observer = new MutationObserver(this.readMode);
-            this.mode_observer.observe(root, { attributes: true, attributeFilter: ['class'] });
-        }
+        this.stop_watching_mode = observeMode((dark) => {
+            this.is_dark = dark;
+        });
     },
     beforeUnmount() {
-        if (this.mode_observer) this.mode_observer.disconnect();
+        if (this.stop_watching_mode) this.stop_watching_mode();
     },
 };
 </script>

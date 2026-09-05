@@ -70,7 +70,7 @@ body {
         }
         .hover\:bg-gray-100 {
             &:hover {
-                background-color: #7366ff9e;
+                background-color: rgba(var(--accent-fill-rgb), 0.62);
             }
         }
         input,

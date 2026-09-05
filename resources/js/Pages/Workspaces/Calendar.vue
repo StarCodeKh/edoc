@@ -10,52 +10,54 @@
             />
 
             <!-- Enhanced Calendar Container -->
-            <div class="flex-1 flex flex-col bg-gradient-to-br from-gray-50 to-white">
+            <div class="flex-1 flex flex-col bg-gradient-to-br from-gray-50 dark:from-white/5 to-white">
                 <div
                     v-if="calendarReady"
-                    class="flex-1 flex flex-col m-2 sm:m-4 bg-white rounded-2xl shadow-xl border border-gray-200/60 overflow-hidden"
+                    class="flex-1 flex flex-col m-2 sm:m-4 bg-white dark:bg-[#262932] rounded-2xl shadow-xl border border-gray-200/60 dark:border-white/10 overflow-hidden"
                 >
                     <!-- Enhanced Calendar Header -->
                     <div
-                        class="calendar-header border-b border-gray-200/60 bg-gradient-to-r from-white via-gray-50/30 to-white"
+                        class="calendar-header border-b border-gray-200/60 dark:border-white/10 bg-gradient-to-r from-white via-gray-50/30 to-white"
                     >
                         <div class="px-3 py-4 sm:px-6 sm:py-5">
                             <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                                 <!-- Navigation Section -->
                                 <div class="flex items-center justify-center lg:justify-start">
                                     <div
-                                        class="flex items-center bg-white rounded-2xl shadow-sm border border-gray-200/60 p-1"
+                                        class="flex items-center bg-white dark:bg-[#262932] rounded-2xl shadow-sm border border-gray-200/60 dark:border-white/10 p-1"
                                     >
                                         <button
                                             @click="navigatePeriod(-1)"
-                                            class="p-2 sm:p-3 hover:bg-gray-50 rounded-xl transition-all duration-200 group"
+                                            class="p-2 sm:p-3 hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-all duration-200 group"
                                         >
                                             <icon
                                                 name="arrow-left"
-                                                class="w-5 h-5 text-gray-600 group-hover:text-indigo-600 transition-colors"
+                                                class="w-5 h-5 text-gray-600 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition-colors"
                                             />
                                         </button>
                                         <div class="px-3 sm:px-6 text-center min-w-0 sm:min-w-[200px]">
-                                            <h2 class="text-lg sm:text-2xl font-bold text-gray-900 tracking-tight">
+                                            <h2
+                                                class="text-lg sm:text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight"
+                                            >
                                                 {{ currentPeriodTitle }}
                                             </h2>
-                                            <p class="text-sm text-gray-500 mt-0.5 font-medium">
+                                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5 font-medium">
                                                 {{ currentPeriodSubtitle }}
                                             </p>
                                             <p
                                                 v-if="khPeriodLabel"
-                                                class="text-xs text-indigo-600 mt-1 font-semibold khmer-lunar-text leading-snug"
+                                                class="text-xs text-indigo-600 dark:text-indigo-300 mt-1 font-semibold khmer-lunar-text leading-snug"
                                             >
                                                 {{ khPeriodLabel }}
                                             </p>
                                         </div>
                                         <button
                                             @click="navigatePeriod(1)"
-                                            class="p-2 sm:p-3 hover:bg-gray-50 rounded-xl transition-all duration-200 group"
+                                            class="p-2 sm:p-3 hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-all duration-200 group"
                                         >
                                             <icon
                                                 name="arrow-right"
-                                                class="w-5 h-5 text-gray-600 group-hover:text-indigo-600 transition-colors"
+                                                class="w-5 h-5 text-gray-600 dark:text-gray-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition-colors"
                                             />
                                         </button>
                                     </div>
@@ -65,7 +67,7 @@
                                 <div class="flex flex-col sm:flex-row items-center gap-4">
                                     <!-- View Mode Switcher -->
                                     <div
-                                        class="flex bg-gray-100/80 rounded-2xl p-1.5 shadow-sm border border-gray-200/40"
+                                        class="flex bg-gray-100/80 dark:bg-white/10 rounded-2xl p-1.5 shadow-sm border border-gray-200/40 dark:border-white/10"
                                     >
                                         <button
                                             v-for="view in availableViews"
@@ -74,8 +76,8 @@
                                             :class="[
                                                 'flex items-center px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-300 whitespace-nowrap',
                                                 currentView === view.key
-                                                    ? 'bg-white text-indigo-600 shadow-md shadow-indigo-100/50 ring-1 ring-indigo-100'
-                                                    : 'text-gray-600 hover:text-gray-900 hover:bg-white/60',
+                                                    ? 'bg-white dark:bg-[#262932] text-indigo-600 dark:text-indigo-300 shadow-md shadow-indigo-100/50 ring-1 ring-indigo-100'
+                                                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-white/60',
                                             ]"
                                             :title="$t(view.description)"
                                         >
@@ -91,8 +93,8 @@
                                             :class="[
                                                 'flex items-center px-3 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 border',
                                                 khmerCalendarOn
-                                                    ? 'text-white bg-amber-500 border-amber-500 hover:bg-amber-600 shadow-md shadow-amber-200'
-                                                    : 'text-gray-400 bg-white border-dashed border-gray-300 hover:text-gray-600 hover:border-gray-400',
+                                                    ? 'text-amber-950 bg-amber-400 border-amber-400 hover:bg-amber-300 shadow-md shadow-amber-500/30'
+                                                    : 'text-gray-400 dark:text-gray-500 bg-white dark:bg-[#262932] border-dashed border-gray-300 dark:border-white/15 hover:text-gray-600 hover:border-gray-400',
                                             ]"
                                             :aria-pressed="khmerCalendarOn ? 'true' : 'false'"
                                             :title="
@@ -106,14 +108,14 @@
                                         </button>
                                         <button
                                             @click="goToToday"
-                                            class="flex items-center px-4 py-2.5 text-sm font-semibold text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 bg-indigo-50/50 rounded-xl transition-all duration-200 border border-indigo-200/60"
+                                            class="flex items-center px-4 py-2.5 text-sm font-semibold text-indigo-600 dark:text-indigo-300 hover:text-indigo-700 dark:hover:text-indigo-200 hover:bg-indigo-50 dark:hover:bg-indigo-500/20 bg-indigo-50/50 dark:bg-indigo-500/15 rounded-xl transition-all duration-200 border border-indigo-200/60 dark:border-indigo-500/30"
                                         >
                                             <icon name="calendar" class="w-4 h-4 mr-2" />
                                             {{ $t('Today') }}
                                         </button>
                                         <button
                                             @click="refreshCalendar"
-                                            class="p-2.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 bg-white rounded-xl transition-all duration-200 shadow-sm border border-gray-200/60"
+                                            class="p-2.5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/10 bg-white dark:bg-[#262932] rounded-xl transition-all duration-200 shadow-sm border border-gray-200/60 dark:border-white/10"
                                             :title="$t('Refresh')"
                                         >
                                             <icon name="refresh" class="w-4 h-4" />
@@ -125,17 +127,17 @@
                     </div>
 
                     <!-- Enhanced Calendar Content -->
-                    <div class="calendar-content flex-1 overflow-hidden bg-white">
+                    <div class="calendar-content flex-1 overflow-hidden bg-white dark:bg-[#262932]">
                         <!-- Month View -->
                         <div v-if="currentView === 'month'" class="month-view h-full flex flex-col">
                             <!-- Days of Week Header -->
                             <div
-                                class="grid grid-cols-7 bg-gradient-to-r from-gray-50 via-indigo-50/30 to-gray-50 border-b border-gray-200/60"
+                                class="grid grid-cols-7 bg-gradient-to-r from-gray-50 dark:from-white/5 via-indigo-50/30 to-gray-50 border-b border-gray-200/60 dark:border-white/10"
                             >
                                 <div
                                     v-for="(day, dayIndex) in calendarWeekdays"
                                     :key="dayIndex"
-                                    class="px-4 py-4 text-center text-sm font-bold text-gray-700 border-r border-gray-200/40 last:border-r-0 bg-white/60"
+                                    class="px-4 py-4 text-center text-sm font-bold text-gray-700 dark:text-gray-200 border-r border-gray-200/40 dark:border-white/10 last:border-r-0 bg-white/60 dark:bg-white/5"
                                 >
                                     {{ day }}
                                 </div>
@@ -147,12 +149,12 @@
                                     v-for="(day, index) in calendarDays"
                                     :key="index"
                                     :class="[
-                                        'border-r border-b border-gray-200/40 last:border-r-0 p-1.5 sm:p-3 min-h-[68px] sm:min-h-[140px] relative overflow-hidden transition-all duration-300 group',
+                                        'border-r border-b border-gray-200/40 dark:border-white/10 last:border-r-0 p-1.5 sm:p-3 min-h-[68px] sm:min-h-[140px] relative overflow-hidden transition-all duration-300 group',
                                         day.isCurrentMonth
-                                            ? 'bg-white hover:bg-gray-50/80'
-                                            : 'bg-gray-50/60 hover:bg-gray-100/80',
+                                            ? 'bg-white dark:bg-[#262932] hover:bg-gray-50/80'
+                                            : 'bg-gray-50/60 dark:bg-white/5 hover:bg-gray-100/80 dark:hover:bg-white/10',
                                         day.isToday
-                                            ? 'bg-gradient-to-br from-indigo-50 to-blue-50/60 ring-2 ring-indigo-200/60 shadow-inner'
+                                            ? 'bg-gradient-to-br from-indigo-50 dark:from-indigo-500/15 to-blue-50/60 dark:to-blue-500/10 ring-2 ring-indigo-200/60 dark:ring-indigo-500/40 shadow-inner'
                                             : '',
                                         'cursor-pointer',
                                     ]"
@@ -167,10 +169,12 @@
                                             <div
                                                 :class="[
                                                     'text-[11px] sm:text-sm font-bold flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full transition-all duration-200 flex-shrink-0',
-                                                    day.isCurrentMonth ? 'text-gray-900' : 'text-gray-400',
+                                                    day.isCurrentMonth
+                                                        ? 'text-gray-900 dark:text-gray-100'
+                                                        : 'text-gray-400 dark:text-gray-500',
                                                     day.isToday
                                                         ? 'bg-indigo-600 text-white shadow-lg ring-2 ring-indigo-200'
-                                                        : 'group-hover:bg-indigo-100 group-hover:text-indigo-600',
+                                                        : 'group-hover:bg-indigo-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-300',
                                                 ]"
                                             >
                                                 {{ khNum(day.date.getDate()) }}
@@ -182,8 +186,8 @@
                                                         khIsSilaDay(day.date)
                                                             ? 'text-amber-600'
                                                             : day.isCurrentMonth
-                                                              ? 'text-indigo-500'
-                                                              : 'text-gray-400',
+                                                              ? 'text-indigo-500 dark:text-indigo-300'
+                                                              : 'text-gray-400 dark:text-gray-500',
                                                     ]"
                                                 >
                                                     <span
@@ -195,7 +199,7 @@
                                                 </div>
                                                 <div
                                                     v-if="khNote(day.date)"
-                                                    class="hidden sm:block text-[10px] font-medium text-gray-400 truncate khmer-lunar-text"
+                                                    class="hidden sm:block text-[10px] font-medium text-gray-400 dark:text-gray-500 truncate khmer-lunar-text"
                                                 >
                                                     {{ khNote(day.date) }}
                                                 </div>
@@ -203,7 +207,7 @@
                                         </div>
                                         <div v-if="getTasksForDay(day.date).length > 0" class="flex items-center">
                                             <div
-                                                class="text-[10px] sm:text-xs font-semibold text-indigo-600 bg-indigo-100 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full shadow-sm"
+                                                class="text-[10px] sm:text-xs font-semibold text-indigo-600 dark:text-indigo-300 bg-indigo-100 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full shadow-sm"
                                             >
                                                 {{ khNum(getTasksForDay(day.date).length) }}
                                             </div>
@@ -217,7 +221,7 @@
                                         :class="[
                                             'mb-1 sm:mb-2 truncate rounded sm:rounded-lg px-1 sm:px-2 py-0.5 sm:py-1 text-[9px] sm:text-[11px] font-semibold khmer-lunar-text',
                                             event.type === 'national'
-                                                ? 'bg-rose-100/80 text-rose-700'
+                                                ? 'bg-rose-100/80 dark:bg-rose-500/20 text-rose-700 dark:text-rose-200'
                                                 : 'bg-emerald-100/80 text-emerald-700',
                                         ]"
                                         :title="event.title"
@@ -262,7 +266,7 @@
                                                     }}</span>
                                                     <span
                                                         v-if="task.project"
-                                                        class="text-xs text-gray-500 truncate block"
+                                                        class="text-xs text-gray-500 dark:text-gray-400 truncate block"
                                                         >{{ task.project.title }}</span
                                                     >
                                                 </div>
@@ -271,7 +275,7 @@
                                             <div class="hidden sm:flex items-center justify-between mt-2">
                                                 <span
                                                     v-if="task.due_date"
-                                                    class="text-xs font-medium text-gray-600 bg-gray-100 px-2 py-1 rounded-lg"
+                                                    class="text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-white/10 px-2 py-1 rounded-lg"
                                                 >
                                                     {{ khNum(moment(task.due_date).format('HH:mm')) }}
                                                 </span>
@@ -296,7 +300,7 @@
                                         <!-- Show more indicator -->
                                         <div
                                             v-if="getTasksForDay(day.date).length > 3"
-                                            class="text-xs font-semibold text-indigo-600 text-center py-2 px-3 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl hover:from-indigo-100 hover:to-blue-100 transition-all duration-200 cursor-pointer border border-indigo-200/60 shadow-sm"
+                                            class="text-xs font-semibold text-indigo-600 dark:text-indigo-300 text-center py-2 px-3 bg-gradient-to-r from-indigo-50 dark:from-indigo-500/15 to-blue-50 rounded-xl hover:from-indigo-100 hover:to-blue-100 transition-all duration-200 cursor-pointer border border-indigo-200/60 dark:border-indigo-500/30 shadow-sm"
                                             @click.stop="selectDate(day.date)"
                                         >
                                             <icon name="plus" class="w-3 h-3 inline mr-1" />
@@ -311,36 +315,42 @@
                         <div v-else-if="currentView === 'week'" class="week-view h-full flex flex-col">
                             <!-- Week Header -->
                             <div
-                                class="grid grid-cols-8 border-b bg-gradient-to-r from-gray-50 via-indigo-50/30 to-gray-50 sticky top-0 z-10"
+                                class="grid grid-cols-8 border-b bg-gradient-to-r from-gray-50 dark:from-white/5 via-indigo-50/30 to-gray-50 sticky top-0 z-10"
                             >
-                                <div class="p-4 border-r border-gray-200/40 bg-white/60">
-                                    <span class="text-sm font-bold text-gray-700">{{ $t('Time') }}</span>
+                                <div
+                                    class="p-4 border-r border-gray-200/40 dark:border-white/10 bg-white/60 dark:bg-white/5"
+                                >
+                                    <span class="text-sm font-bold text-gray-700 dark:text-gray-200">{{
+                                        $t('Time')
+                                    }}</span>
                                 </div>
                                 <div
                                     v-for="day in weekDays"
                                     :key="day.toISOString()"
-                                    class="p-4 text-center border-r border-gray-200/40 last:border-r-0 bg-white/60"
+                                    class="p-4 text-center border-r border-gray-200/40 dark:border-white/10 last:border-r-0 bg-white/60 dark:bg-white/5"
                                 >
-                                    <div class="text-sm font-bold text-gray-700">{{ formatWeekDay(day) }}</div>
+                                    <div class="text-sm font-bold text-gray-700 dark:text-gray-200">
+                                        {{ formatWeekDay(day) }}
+                                    </div>
                                     <div
                                         :class="[
                                             'text-xl font-bold mt-2 w-8 h-8 rounded-full flex items-center justify-center mx-auto transition-all duration-200',
                                             isToday(day)
                                                 ? 'bg-indigo-600 text-white shadow-lg ring-2 ring-indigo-200'
-                                                : 'text-gray-900 hover:bg-indigo-100',
+                                                : 'text-gray-900 dark:text-gray-100 hover:bg-indigo-100 dark:hover:bg-indigo-500/25',
                                         ]"
                                     >
                                         {{ khNum(day.getDate()) }}
                                     </div>
                                     <div
                                         v-if="khmerCalendarOn"
-                                        class="text-[11px] font-semibold text-indigo-500 mt-1 khmer-lunar-text"
+                                        class="text-[11px] font-semibold text-indigo-500 dark:text-indigo-300 mt-1 khmer-lunar-text"
                                         :title="khTooltip(day)"
                                     >
                                         {{ khDayLabel(day) }}
                                     </div>
                                     <div
-                                        class="text-xs text-indigo-600 mt-2 font-semibold bg-indigo-100 px-2 py-1 rounded-full"
+                                        class="text-xs text-indigo-600 dark:text-indigo-300 mt-2 font-semibold bg-indigo-100 px-2 py-1 rounded-full"
                                     >
                                         {{ $t(':count tasks', { count: khNum(getTasksForDay(day).length) }) }}
                                     </div>
@@ -351,13 +361,15 @@
                             <div class="flex-1 overflow-y-auto">
                                 <div class="grid grid-cols-8 min-h-full">
                                     <!-- Time Column -->
-                                    <div class="border-r border-gray-200/40 bg-gray-50/60">
+                                    <div
+                                        class="border-r border-gray-200/40 dark:border-white/10 bg-gray-50/60 dark:bg-white/5"
+                                    >
                                         <div
                                             v-for="hour in timeSlots"
                                             :key="hour"
-                                            class="border-b border-gray-200/40 h-16 p-2 flex items-center"
+                                            class="border-b border-gray-200/40 dark:border-white/10 h-16 p-2 flex items-center"
                                         >
-                                            <span class="text-xs text-gray-600 font-semibold">{{
+                                            <span class="text-xs text-gray-600 dark:text-gray-300 font-semibold">{{
                                                 formatHour(hour)
                                             }}</span>
                                         </div>
@@ -367,12 +379,12 @@
                                     <div
                                         v-for="day in weekDays"
                                         :key="day.toISOString()"
-                                        class="border-r border-gray-200/40 last:border-r-0"
+                                        class="border-r border-gray-200/40 dark:border-white/10 last:border-r-0"
                                     >
                                         <div
                                             v-for="hour in timeSlots"
                                             :key="hour"
-                                            class="border-b border-gray-200/40 h-16 p-1 relative hover:bg-indigo-50/50 transition-all duration-200 group"
+                                            class="border-b border-gray-200/40 dark:border-white/10 h-16 p-1 relative hover:bg-indigo-50/50 transition-all duration-200 group"
                                         >
                                             <!-- Tasks for this hour -->
                                             <div class="space-y-1">
@@ -405,9 +417,11 @@
                             <div class="flex-1">
                                 <!-- Day Header -->
                                 <div
-                                    class="sticky top-0 bg-gradient-to-r from-indigo-50 to-blue-50/60 p-6 border-b border-gray-200/60 z-10 shadow-sm"
+                                    class="sticky top-0 bg-gradient-to-r from-indigo-50 dark:from-indigo-500/15 to-blue-50/60 dark:to-blue-500/10 p-6 border-b border-gray-200/60 dark:border-white/10 z-10 shadow-sm"
                                 >
-                                    <h3 class="text-2xl font-bold text-gray-900">{{ formatFullDate(selectedDate) }}</h3>
+                                    <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                                        {{ formatFullDate(selectedDate) }}
+                                    </h3>
                                     <khmer-date-card
                                         v-if="khmerCalendarOn"
                                         :date="selectedDate"
@@ -415,7 +429,7 @@
                                         class="mt-3"
                                     />
                                     <div class="flex items-center justify-between mt-2">
-                                        <p class="text-sm text-gray-600">
+                                        <p class="text-sm text-gray-600 dark:text-gray-300">
                                             {{
                                                 $t(':count tasks scheduled', {
                                                     count: khNum(getTasksForDay(selectedDate).length),
@@ -442,10 +456,12 @@
                                     <div
                                         v-for="hour in timeSlots"
                                         :key="hour"
-                                        class="border-b border-gray-200/40 h-20 p-4 hover:bg-indigo-50/30 transition-all duration-200 group"
+                                        class="border-b border-gray-200/40 dark:border-white/10 h-20 p-4 hover:bg-indigo-50/30 transition-all duration-200 group"
                                     >
                                         <!-- Hour label for context -->
-                                        <div class="text-xs text-gray-400 font-medium mb-2">{{ formatHour(hour) }}</div>
+                                        <div class="text-xs text-gray-400 dark:text-gray-500 font-medium mb-2">
+                                            {{ formatHour(hour) }}
+                                        </div>
 
                                         <!-- Tasks for this hour -->
                                         <div class="space-y-2">
@@ -460,29 +476,31 @@
                                             >
                                                 <div class="flex items-start justify-between">
                                                     <div class="flex-1">
-                                                        <h5 class="font-bold text-gray-900 mb-1">{{ task.title }}</h5>
+                                                        <h5 class="font-bold text-gray-900 dark:text-gray-100 mb-1">
+                                                            {{ task.title }}
+                                                        </h5>
                                                         <p
                                                             v-if="task.description"
-                                                            class="text-sm text-gray-600 mb-2 line-clamp-2"
+                                                            class="text-sm text-gray-600 dark:text-gray-300 mb-2 line-clamp-2"
                                                         >
                                                             {{ task.description }}
                                                         </p>
                                                         <div class="flex items-center space-x-4 text-xs">
                                                             <span
                                                                 v-if="task.due_date"
-                                                                class="text-gray-600 bg-gray-100 px-2 py-1 rounded-lg font-medium"
+                                                                class="text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-white/10 px-2 py-1 rounded-lg font-medium"
                                                                 >{{
                                                                     khNum(moment(task.due_date).format('HH:mm'))
                                                                 }}</span
                                                             >
                                                             <span
                                                                 v-if="task.project"
-                                                                class="bg-gray-100 text-gray-700 px-2 py-1 rounded-lg font-medium"
+                                                                class="bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-200 px-2 py-1 rounded-lg font-medium"
                                                                 >{{ task.project.title }}</span
                                                             >
                                                             <span
                                                                 v-if="task.list"
-                                                                class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded-lg font-medium"
+                                                                class="bg-indigo-100 text-indigo-700 dark:text-indigo-300 px-2 py-1 rounded-lg font-medium"
                                                                 >{{ task.list.title }}</span
                                                             >
                                                         </div>
@@ -505,17 +523,17 @@
                                                         <!-- Status Badge -->
                                                         <span
                                                             v-if="task.is_done"
-                                                            class="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs rounded-full font-semibold"
+                                                            class="px-3 py-1 bg-emerald-100 text-emerald-800 dark:text-emerald-200 text-xs rounded-full font-semibold"
                                                             >{{ $t('Done') }}</span
                                                         >
                                                         <span
                                                             v-else-if="isOverdue(task)"
-                                                            class="px-3 py-1 bg-red-100 text-red-800 text-xs rounded-full animate-pulse font-semibold"
+                                                            class="px-3 py-1 bg-red-100 dark:bg-red-500/20 text-red-800 dark:text-red-200 text-xs rounded-full animate-pulse font-semibold"
                                                             >{{ $t('Overdue') }}</span
                                                         >
                                                         <span
                                                             v-else
-                                                            class="px-3 py-1 bg-blue-100 text-blue-800 text-xs rounded-full font-semibold"
+                                                            class="px-3 py-1 bg-blue-100 dark:bg-blue-500/20 text-blue-800 dark:text-blue-200 text-xs rounded-full font-semibold"
                                                             >{{ $t('Active') }}</span
                                                         >
                                                     </div>
@@ -529,7 +547,7 @@
                                         v-if="getAllDayTasks(selectedDate).length > 0"
                                         class="bg-gradient-to-r from-yellow-50 to-amber-50 border-t-2 border-yellow-200 p-6 mt-4"
                                     >
-                                        <h4 class="font-bold text-gray-900 mb-4 flex items-center">
+                                        <h4 class="font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
                                             <icon name="calendar" class="w-5 h-5 mr-2 text-amber-600" />
                                             {{ $t('All Day Tasks') }}
                                         </h4>
@@ -544,15 +562,17 @@
                                                 @click="openTask(task)"
                                             >
                                                 <div class="flex items-center justify-between">
-                                                    <h5 class="font-semibold text-gray-900 flex-1">{{ task.title }}</h5>
+                                                    <h5 class="font-semibold text-gray-900 dark:text-gray-100 flex-1">
+                                                        {{ task.title }}
+                                                    </h5>
                                                     <span
                                                         v-if="task.project"
-                                                        class="text-xs text-gray-600 bg-white px-2 py-1 rounded-lg ml-2"
+                                                        class="text-xs text-gray-600 dark:text-gray-300 bg-white dark:bg-[#262932] px-2 py-1 rounded-lg ml-2"
                                                         >{{ task.project.title }}</span
                                                     >
                                                     <span
                                                         v-if="task.list"
-                                                        class="text-xs text-gray-600 bg-white px-2 py-1 rounded-lg ml-2"
+                                                        class="text-xs text-gray-600 dark:text-gray-300 bg-white dark:bg-[#262932] px-2 py-1 rounded-lg ml-2"
                                                         >{{ task.list.title }}</span
                                                     >
                                                 </div>
@@ -568,10 +588,14 @@
                             <!-- Year Overview Stats -->
                             <div class="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
                                 <div
-                                    class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200/60"
+                                    class="bg-gradient-to-r from-blue-50 dark:from-blue-500/15 to-indigo-50 dark:to-indigo-500/15 p-4 rounded-xl border border-blue-200/60 dark:border-blue-500/30"
                                 >
-                                    <div class="text-2xl font-bold text-blue-700">{{ khNum(getYearTaskCount()) }}</div>
-                                    <div class="text-sm text-blue-600 font-medium">{{ $t('Total Tasks') }}</div>
+                                    <div class="text-2xl font-bold text-blue-700 dark:text-blue-300">
+                                        {{ khNum(getYearTaskCount()) }}
+                                    </div>
+                                    <div class="text-sm text-blue-600 dark:text-blue-300 font-medium">
+                                        {{ $t('Total Tasks') }}
+                                    </div>
                                 </div>
                                 <div
                                     class="bg-gradient-to-r from-emerald-50 to-green-50 p-4 rounded-xl border border-emerald-200/60"
@@ -606,16 +630,18 @@
                                 <div
                                     v-for="month in yearMonths"
                                     :key="month.month"
-                                    class="year-month-card bg-white rounded-2xl border border-gray-200/60 hover:shadow-xl transition-all duration-300 cursor-pointer group"
+                                    class="year-month-card bg-white dark:bg-[#262932] rounded-2xl border border-gray-200/60 dark:border-white/10 hover:shadow-xl transition-all duration-300 cursor-pointer group"
                                     @click="selectMonth(month)"
                                 >
                                     <!-- Month Header -->
                                     <div
-                                        class="p-5 border-b border-gray-200/60 bg-gradient-to-r from-gray-50 to-indigo-50/30"
+                                        class="p-5 border-b border-gray-200/60 dark:border-white/10 bg-gradient-to-r from-gray-50 dark:from-white/5 to-indigo-50/30"
                                     >
-                                        <h4 class="font-bold text-gray-900 text-lg">{{ month.name }}</h4>
+                                        <h4 class="font-bold text-gray-900 dark:text-gray-100 text-lg">
+                                            {{ month.name }}
+                                        </h4>
                                         <div class="flex items-center justify-between mt-2">
-                                            <p class="text-sm text-gray-600 font-medium">
+                                            <p class="text-sm text-gray-600 dark:text-gray-300 font-medium">
                                                 {{ $t(':count tasks', { count: khNum(month.taskCount) }) }}
                                             </p>
                                             <div class="flex items-center space-x-2">
@@ -624,7 +650,7 @@
                                                     >{{ khNum(month.completedTasks) }}</span
                                                 >
                                                 <span
-                                                    class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full font-semibold"
+                                                    class="text-xs bg-red-100 dark:bg-red-500/20 text-red-700 px-2 py-1 rounded-full font-semibold"
                                                     >{{ khNum(month.overdueTasks) }}</span
                                                 >
                                             </div>
@@ -638,7 +664,7 @@
                                             <div
                                                 v-for="(day, miniIndex) in miniCalendarWeekdays"
                                                 :key="miniIndex"
-                                                class="text-xs text-gray-500 text-center font-bold"
+                                                class="text-xs text-gray-500 dark:text-gray-400 text-center font-bold"
                                             >
                                                 {{ day }}
                                             </div>
@@ -651,14 +677,14 @@
                                                 :class="[
                                                     'text-xs text-center p-2 rounded-lg transition-all duration-200 cursor-pointer',
                                                     day.isCurrentMonth
-                                                        ? 'text-gray-900 hover:bg-indigo-50'
+                                                        ? 'text-gray-900 dark:text-gray-100 hover:bg-indigo-50 dark:hover:bg-indigo-500/20'
                                                         : 'text-gray-300',
                                                     day.isToday
                                                         ? 'bg-indigo-600 text-white font-bold shadow-lg ring-2 ring-indigo-200'
                                                         : '',
                                                     day.taskCount > 0 && !day.isToday
-                                                        ? 'bg-blue-100 hover:bg-blue-200 text-blue-800 font-semibold'
-                                                        : 'hover:bg-gray-100',
+                                                        ? 'bg-blue-100 dark:bg-blue-500/20 hover:bg-blue-200 dark:hover:bg-blue-500/30 text-blue-800 dark:text-blue-200 font-semibold'
+                                                        : 'hover:bg-gray-100 dark:hover:bg-white/10',
                                                     day.hasOverdue ? 'ring-2 ring-red-300' : '',
                                                 ]"
                                                 :title="miniDayTooltip(day)"
@@ -671,7 +697,7 @@
                                                             day.hasOverdue
                                                                 ? 'bg-red-500'
                                                                 : day.isToday
-                                                                  ? 'bg-white'
+                                                                  ? 'bg-white dark:bg-[#262932]'
                                                                   : 'bg-blue-500',
                                                         ]"
                                                     ></div>
@@ -681,29 +707,31 @@
                                     </div>
 
                                     <!-- Task Summary -->
-                                    <div class="p-4 border-t border-gray-200/60 bg-gray-50/60">
+                                    <div
+                                        class="p-4 border-t border-gray-200/60 dark:border-white/10 bg-gray-50/60 dark:bg-white/5"
+                                    >
                                         <div class="grid grid-cols-3 gap-2 text-xs">
                                             <div class="text-center">
                                                 <div class="font-bold text-emerald-600">
                                                     {{ khNum(month.completedTasks) }}
                                                 </div>
-                                                <div class="text-gray-500">{{ $t('Done') }}</div>
+                                                <div class="text-gray-500 dark:text-gray-400">{{ $t('Done') }}</div>
                                             </div>
                                             <div class="text-center">
-                                                <div class="font-bold text-blue-600">
+                                                <div class="font-bold text-blue-600 dark:text-blue-300">
                                                     {{
                                                         khNum(
                                                             month.taskCount - month.completedTasks - month.overdueTasks
                                                         )
                                                     }}
                                                 </div>
-                                                <div class="text-gray-500">{{ $t('Active') }}</div>
+                                                <div class="text-gray-500 dark:text-gray-400">{{ $t('Active') }}</div>
                                             </div>
                                             <div class="text-center">
                                                 <div class="font-bold text-red-600">
                                                     {{ khNum(month.overdueTasks) }}
                                                 </div>
-                                                <div class="text-gray-500">{{ $t('Overdue') }}</div>
+                                                <div class="text-gray-500 dark:text-gray-400">{{ $t('Overdue') }}</div>
                                             </div>
                                         </div>
                                     </div>
@@ -1003,13 +1031,13 @@ export default {
         },
         getTaskColorClass(task) {
             if (task.is_done) {
-                return 'bg-gradient-to-r from-emerald-100 to-green-100 text-emerald-800 border-emerald-200';
+                return 'bg-gradient-to-r from-emerald-100 dark:from-emerald-500/20 to-green-100 dark:to-green-500/20 text-emerald-800 dark:text-emerald-200 border-emerald-200 dark:border-emerald-500/30';
             } else if (this.isOverdue(task)) {
-                return 'bg-gradient-to-r from-red-100 to-rose-100 text-red-800 border-red-200';
+                return 'bg-gradient-to-r from-red-100 to-rose-100 dark:from-red-500/20 dark:to-rose-500/20 text-red-800 dark:text-red-200 border-red-200 dark:border-red-500/30';
             } else if (this.isHighPriority(task)) {
-                return 'bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border-amber-200';
+                return 'bg-gradient-to-r from-amber-100 dark:from-amber-500/20 to-orange-100 dark:to-orange-500/20 text-amber-800 dark:text-amber-200 border-amber-200 dark:border-amber-500/30';
             } else {
-                return 'bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 border-blue-200';
+                return 'bg-gradient-to-r from-blue-100 dark:from-blue-500/20 to-indigo-100 dark:to-indigo-500/20 text-blue-800 dark:text-blue-200 border-blue-200 dark:border-blue-500/30';
             }
         },
         getTaskTooltip(task) {

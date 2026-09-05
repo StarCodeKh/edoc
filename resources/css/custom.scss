@@ -52,7 +52,7 @@
 .toggle_swtich {
     input:checked ~ .dot {
         transform: translateX(100%);
-        background-color: #7366ff;
+        background-color: var(--accent-fill);
     }
 }
 
@@ -109,12 +109,12 @@
 
         &:hover {
             background: #eef2ff;
-            color: #4338ca;
+            color: var(--accent-ink);
         }
 
         &.is-active {
             background: #eef2ff;
-            color: #4338ca;
+            color: var(--accent-ink);
             font-weight: 600;
         }
     }
@@ -257,7 +257,7 @@ svg {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    border: 1px solid #7366ff;
+    border: 1px solid var(--accent-ink);
     background-color: #ffffff;
     z-index: 100;
     @apply rtl:left-[4rem];
@@ -289,7 +289,7 @@ svg {
         &.bottom_text {
             position: absolute;
             bottom: -22px;
-            color: #7366ff;
+            color: var(--accent-ink);
             font-size: 14px;
         }
     }

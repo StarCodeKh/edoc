@@ -79,7 +79,9 @@
                             >
                                 {{ subRole.code }}
                             </span>
-                            <span class="flex-1 min-w-0 truncate text-sm text-gray-800 dark:text-gray-200">
+                            <span
+                                class="flex-1 min-w-0 truncate text-sm text-gray-800 dark:text-gray-100 dark:text-gray-200"
+                            >
                                 {{ subRole.name }}
                             </span>
                             <span
@@ -91,7 +93,7 @@
                             </span>
                             <button
                                 type="button"
-                                class="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-indigo-600 dark:hover:bg-gray-700"
+                                class="rounded-lg p-1.5 text-gray-400 dark:text-gray-500 hover:bg-gray-100 hover:text-indigo-600 dark:hover:bg-gray-700"
                                 :title="$t('Edit')"
                                 @click="subRole.editing = true"
                             >
@@ -99,7 +101,7 @@
                             </button>
                             <button
                                 type="button"
-                                class="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-gray-700"
+                                class="rounded-lg p-1.5 text-gray-400 dark:text-gray-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-gray-700"
                                 :title="$t('Delete')"
                                 @click="removeSubRole(subRole)"
                             >
@@ -108,7 +110,7 @@
                         </template>
                     </li>
 
-                    <li v-if="!localSubRoles.length" class="py-6 text-center text-sm text-gray-400">
+                    <li v-if="!localSubRoles.length" class="py-6 text-center text-sm text-gray-400 dark:text-gray-500">
                         {{ $t('No responsibilities yet.') }}
                     </li>
                 </ul>
@@ -157,7 +159,7 @@
         >
             <div class="px-4 sm:px-6 lg:px-8 py-5 sm:py-6 flex items-start gap-3 sm:gap-4">
                 <span
-                    class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300"
+                    class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 dark:text-gray-300"
                 >
                     <Icon name="plus" class="w-5 h-5" />
                 </span>
@@ -275,7 +277,7 @@
                     v-if="canRemoveWorkflowType(type)"
                     type="button"
                     @click="removeWorkflowType(type)"
-                    class="inline-flex items-center justify-center w-7 h-7 rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 flex-shrink-0 transition-colors"
+                    class="inline-flex items-center justify-center w-7 h-7 rounded-lg text-gray-400 dark:text-gray-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 flex-shrink-0 transition-colors"
                     :title="$t('Remove this empty workflow')"
                 >
                     <Icon name="trash" class="w-3.5 h-3.5" />
@@ -360,7 +362,7 @@
                         <input
                             type="checkbox"
                             v-model="role.requires_signature"
-                            class="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 dark:border-gray-600"
+                            class="w-3.5 h-3.5 text-blue-600 dark:text-blue-300 rounded border-gray-300 dark:border-gray-600"
                         />
                         {{ $t('Signature') }}
                     </label>
@@ -371,7 +373,7 @@
                         <input
                             type="checkbox"
                             v-model="role.is_terminal"
-                            class="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 dark:border-gray-600"
+                            class="w-3.5 h-3.5 text-blue-600 dark:text-blue-300 rounded border-gray-300 dark:border-gray-600"
                         />
                         {{ $t('Terminal') }}
                     </label>
@@ -385,7 +387,7 @@
                         <input
                             type="checkbox"
                             v-model="role.allows_merge"
-                            class="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 dark:border-gray-600"
+                            class="w-3.5 h-3.5 text-blue-600 dark:text-blue-300 rounded border-gray-300 dark:border-gray-600"
                         />
                         {{ $t('Merge documents') }}
                     </label>
@@ -398,7 +400,7 @@
                             <input
                                 type="checkbox"
                                 v-model="role.requires_attachment"
-                                class="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 dark:border-gray-600"
+                                class="w-3.5 h-3.5 text-blue-600 dark:text-blue-300 rounded border-gray-300 dark:border-gray-600"
                             />
                             {{ $t('Attachment') }}
                         </label>
@@ -431,7 +433,7 @@
                     <button
                         type="button"
                         @click="deleteRole(type, role)"
-                        class="justify-self-end lg:justify-self-auto inline-flex items-center justify-center w-7 h-7 rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 flex-shrink-0 transition-colors"
+                        class="justify-self-end lg:justify-self-auto inline-flex items-center justify-center w-7 h-7 rounded-lg text-gray-400 dark:text-gray-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 flex-shrink-0 transition-colors"
                         :title="$t('Delete step')"
                     >
                         <Icon name="trash" class="w-3.5 h-3.5" />
@@ -502,7 +504,7 @@
                     <input
                         type="checkbox"
                         v-model="newRoleForms[type].requires_signature"
-                        class="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 dark:border-gray-600"
+                        class="w-3.5 h-3.5 text-blue-600 dark:text-blue-300 rounded border-gray-300 dark:border-gray-600"
                     />
                     {{ $t('Signature') }}
                 </label>
@@ -510,7 +512,7 @@
                     <input
                         type="checkbox"
                         v-model="newRoleForms[type].is_terminal"
-                        class="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 dark:border-gray-600"
+                        class="w-3.5 h-3.5 text-blue-600 dark:text-blue-300 rounded border-gray-300 dark:border-gray-600"
                     />
                     {{ $t('Terminal') }}
                 </label>
@@ -521,7 +523,7 @@
                     <input
                         type="checkbox"
                         v-model="newRoleForms[type].allows_merge"
-                        class="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 dark:border-gray-600"
+                        class="w-3.5 h-3.5 text-blue-600 dark:text-blue-300 rounded border-gray-300 dark:border-gray-600"
                     />
                     {{ $t('Merge documents') }}
                 </label>
@@ -530,7 +532,7 @@
                         <input
                             type="checkbox"
                             v-model="newRoleForms[type].requires_attachment"
-                            class="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 dark:border-gray-600"
+                            class="w-3.5 h-3.5 text-blue-600 dark:text-blue-300 rounded border-gray-300 dark:border-gray-600"
                         />
                         {{ $t('Attachment') }}
                     </label>
@@ -616,6 +618,7 @@ import Icon from '@/Shared/Icon.vue';
 import FilterSelect from '@/Shared/Components/FilterSelect.vue';
 import Layout from '@/Shared/Layout.vue';
 import axios from 'axios';
+import { CATEGORICAL, isDarkMode, observeMode } from '@/Utils/palette';
 
 export default {
     components: { FilterSelect, Icon, Head },
@@ -646,7 +649,6 @@ export default {
             casino_operator: 'briefcase',
             internal_cgmc: 'building',
         };
-        const colorPalette = ['#3b82f6', '#8b5cf6', '#6366f1', '#10b981', '#f59e0b', '#ec4899', '#06b6d4', '#ef4444'];
 
         let savedLabels = {};
         try {
@@ -697,12 +699,22 @@ export default {
             dynamicWorkflowTypes: [],
             typeLabels: { ...builtInLabels, ...savedLabels },
             builtInIcons,
-            colorPalette,
+            is_dark: false,
+            stop_watching_mode: null,
             selectedWorkflowType: startingTypes[0] || null,
             newWorkflowForm: { type: '', label: '' },
             toasts: [],
             toastIdCounter: 0,
         };
+    },
+    mounted() {
+        this.is_dark = isDarkMode();
+        this.stop_watching_mode = observeMode((dark) => {
+            this.is_dark = dark;
+        });
+    },
+    beforeUnmount() {
+        if (this.stop_watching_mode) this.stop_watching_mode();
     },
     watch: {
         allWorkflowTypes(newTypes) {
@@ -714,6 +726,11 @@ export default {
         },
     },
     computed: {
+        /** Slots for the surface these chips are drawn on. */
+        colorPalette() {
+            return this.is_dark ? CATEGORICAL.dark : CATEGORICAL.light;
+        },
+
         /** FilterSelect takes [{ value, label }]. A null row keeps "no workspace"
             available, which the old <select> had as its first option. */
         workspaceOptions() {
