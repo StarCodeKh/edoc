@@ -23,13 +23,28 @@ const locale = computed(() => page.props.auth?.user?.locale || null);
 const formatTimeAgo = (dateString) => (dateString ? localised(dateString, locale.value).fromNow() : trans('just now'));
 
 /**
- * The sentence, built rather than replayed. Newer rows carry the change as a
- * key and its values; older ones carry only the English sentence, which still
- * goes through the catalogue so the fixed phrases land translated.
+ * The sentence, built rather than replayed.
+ *
+ * A value may itself be a word standing in for a missing part - a deleted
+ * board, an unset due date. Those travel as { translate: key } rather than as
+ * text, because they have no language of their own until somebody reads them.
+ */
+const resolveValues = (values) =>
+    Object.fromEntries(
+        Object.entries(values || {}).map(([key, value]) => [
+            key,
+            value && typeof value === 'object' && value.translate ? trans(value.translate) : value,
+        ])
+    );
+
+/**
+ * Newer rows carry the change as a key and its values; older ones carry only
+ * the English sentence, which still goes through the catalogue so the fixed
+ * phrases land translated.
  */
 const messageOf = (notification) =>
     notification.data?.message_key
-        ? trans(notification.data.message_key, notification.data.message_values || {})
+        ? trans(notification.data.message_key, resolveValues(notification.data.message_values))
         : trans(notification.data?.message || '');
 
 const handleNotificationClick = (notification) => {

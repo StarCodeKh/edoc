@@ -313,14 +313,39 @@ class User extends Authenticatable
         return $this->morphedByMany(Project::class, 'watchable', 'watchers');
     }
 
+    /**
+     * The user list's search box, matching everything the list shows.
+     *
+     * It used to reach first name, last name, phone and email only, so a search
+     * for ចំណងជើង, a responsibility or a department found nobody - the columns
+     * were right there on screen and typing them returned an empty table.
+     *
+     * The two full-name arms matter as much: the names are stored split, so
+     * "ទ្រី គីមហេង" matched neither field on its own.
+     */
     public function scopeFilter($query, array $filters)
     {
         $query->when($filters['search'] ?? null, function ($query, $search) {
-            $query->where(function ($query) use ($search) {
-                $query->where('first_name', 'like', '%'.$search.'%')
-                    ->orWhere('last_name', 'like', '%'.$search.'%')
-                    ->orWhere('phone', 'like', '%'.$search.'%')
-                    ->orWhere('email', 'like', '%'.$search.'%');
+            $like = '%'.$search.'%';
+
+            $query->where(function ($query) use ($like) {
+                $query->where('first_name', 'like', $like)
+                    ->orWhere('last_name', 'like', $like)
+                    ->orWhere('phone', 'like', $like)
+                    ->orWhere('email', 'like', $like)
+                    ->orWhere('title', 'like', $like)
+                    // Written both ways round: Khmer names are given
+                    // family-name-first, and the list is read by people who
+                    // type them either way.
+                    ->orWhereRaw("CONCAT(COALESCE(first_name, ''), ' ', COALESCE(last_name, '')) LIKE ?", [$like])
+                    ->orWhereRaw("CONCAT(COALESCE(last_name, ''), ' ', COALESCE(first_name, '')) LIKE ?", [$like])
+                    ->orWhereHas('role', fn ($q) => $q->where('name', 'like', $like))
+                    ->orWhereHas('workflowSubRole', fn ($q) => $q->where('name', 'like', $like)
+                        ->orWhere('code', 'like', $like))
+                    // នាយកដ្ឋាន and ការិយាល័យរង: the office someone is filed
+                    // under, and the department that office sits in.
+                    ->orWhereHas('documentSource', fn ($q) => $q->where('name', 'like', $like)
+                        ->orWhereHas('parent', fn ($p) => $p->where('name', 'like', $like)));
             });
         })->when($filters['role_id'] ?? null, function ($query, $role_id) {
             $query->whereRoleId($role_id);

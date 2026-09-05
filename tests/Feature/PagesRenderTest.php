@@ -129,6 +129,20 @@ class PagesRenderTest extends TestCase
             );
     }
 
+    /** The user list, which nothing covered before it was rebuilt. */
+    public function test_the_users_page_renders(): void
+    {
+        $this->get('/settings/users')
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('Users/Index')
+                ->has('users.data')
+                // The header pill counts the whole result, not this page of it.
+                ->has('users.total')
+                ->has('roles')
+            );
+    }
+
     public function test_login_page_renders_for_a_guest(): void
     {
         auth()->logout();

@@ -20,7 +20,7 @@
                             ref="search"
                             v-model="query"
                             type="text"
-                            :placeholder="searchPlaceholder"
+                            :placeholder="searchText"
                             @keydown.esc.stop="close"
                         />
                     </div>
@@ -40,7 +40,7 @@
                                 >
                                     <icon v-if="!selectedValues.length" name="check" class="h-2.5 w-2.5" />
                                 </span>
-                                <span class="truncate">{{ allLabel }}</span>
+                                <span class="truncate">{{ allText }}</span>
                                 <icon v-if="!multiple && !selectedValues.length" name="check" class="h-3.5 w-3.5" />
                             </button>
                         </li>
@@ -63,13 +63,13 @@
                             </button>
                         </li>
                         <li v-if="searchable && !filtered.length" class="filter-select__empty">
-                            {{ emptyLabel }}
+                            {{ emptyText }}
                         </li>
                     </ul>
 
                     <div v-if="multiple && selectedValues.length" class="filter-select__footer">
                         <span>{{ countLabel }}</span>
-                        <button type="button" @click="pick(null)">{{ clearLabel }}</button>
+                        <button type="button" @click="pick(null)">{{ clearText }}</button>
                     </div>
                 </div>
             </transition>
@@ -93,9 +93,12 @@ export default {
         /** [{ value, label }] */
         options: { type: Array, default: () => [] },
         placeholder: { type: String, default: '' },
-        allLabel: { type: String, default: 'All' },
-        searchPlaceholder: { type: String, default: 'Search…' },
-        emptyLabel: { type: String, default: 'No matches' },
+        // Left blank so the fallbacks below resolve at render time. As literal
+        // prop defaults these read "All", "Search…", "No matches" and "Clear"
+        // in every language, in every filter bar in the app.
+        allLabel: { type: String, default: '' },
+        searchPlaceholder: { type: String, default: '' },
+        emptyLabel: { type: String, default: '' },
         icon: { type: String, default: '' },
         /** Allow several options at once. modelValue becomes a comma-joined string. */
         multiple: { type: Boolean, default: false },
@@ -103,7 +106,7 @@ export default {
         showAll: { type: Boolean, default: true },
         disabled: { type: Boolean, default: false },
         countLabel: { type: String, default: '' },
-        clearLabel: { type: String, default: 'Clear' },
+        clearLabel: { type: String, default: '' },
         /** Show the search box automatically once the list gets long. */
         searchAfter: { type: Number, default: 8 },
     },
@@ -112,6 +115,23 @@ export default {
         return { open: false, query: '', panelStyle: {} };
     },
     computed: {
+        /**
+         * The four bits of chrome every filter select shows. Translated here
+         * rather than defaulted in props, so they follow a language switch
+         * instead of being fixed when the component was first resolved.
+         */
+        allText() {
+            return this.allLabel || this.$t('All');
+        },
+        searchText() {
+            return this.searchPlaceholder || this.$t('Search') + '…';
+        },
+        emptyText() {
+            return this.emptyLabel || this.$t('No matches');
+        },
+        clearText() {
+            return this.clearLabel || this.$t('Clear');
+        },
         searchable() {
             return this.options.length > this.searchAfter;
         },
@@ -121,10 +141,10 @@ export default {
             return String(this.modelValue).split(',').filter(Boolean);
         },
         triggerLabel() {
-            if (!this.selectedValues.length) return this.placeholder || this.allLabel;
+            if (!this.selectedValues.length) return this.placeholder || this.allText;
             const first = this.options.find((o) => String(o.value) === this.selectedValues[0]);
             // A blank <option> carries no label; fall back rather than showing nothing.
-            return first && first.label ? first.label : this.placeholder || this.allLabel;
+            return first && first.label ? first.label : this.placeholder || this.allText;
         },
         filtered() {
             const q = this.query.trim().toLowerCase();

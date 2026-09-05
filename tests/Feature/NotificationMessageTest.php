@@ -96,13 +96,30 @@ class NotificationMessageTest extends TestCase
         );
     }
 
-    /** A board deleted since the move leaves the id resolving to nothing. */
-    public function test_a_missing_board_falls_back_rather_than_blanking(): void
+    /**
+     * A board deleted since the move leaves the id resolving to nothing.
+     *
+     * The stand-in travels as a key, not as text: resolved here it would be
+     * written in the locale of whoever happened to press the button, and then
+     * read back by somebody using the app in another language.
+     */
+    public function test_a_missing_board_travels_as_a_key_not_as_text(): void
     {
         $data = $this->payload('list_id', 999999, $this->second->id);
 
-        $this->assertSame(__('Unknown'), $data['message_values']['from']);
+        $this->assertSame(['translate' => 'Unknown'], $data['message_values']['from']);
+
+        // The mail and Slack copy is English and stays plain text.
         $this->assertStringContainsString('Unknown', $data['message']);
+    }
+
+    /** The same, for a due date that was never set. */
+    public function test_a_missing_due_date_travels_as_a_key(): void
+    {
+        $data = $this->payload('due_date', null, '2026-09-30');
+
+        $this->assertSame(['translate' => 'no date'], $data['message_values']['from']);
+        $this->assertSame('Sep 30', $data['message_values']['to']);
     }
 
     public static function fields(): array

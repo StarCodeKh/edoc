@@ -122,18 +122,28 @@ class TaskUpdatedNotification extends Notification implements ShouldQueue
      * can hold something Carbon cannot read, and a notification is no place to
      * throw over it.
      */
-    private function shortDate($value, ?string $whenMissing = null): string
+    private function shortDate($value): string
     {
-        $missing = $whenMissing ?? 'no date';
+        return $this->formatDate($value) ?? 'no date';
+    }
 
+    /** The same date for a stored value, where the stand-in has to travel as a key. */
+    private function shortDateValue($value): string|array
+    {
+        return $this->formatDate($value) ?? self::translate('no date');
+    }
+
+    /** M d, or null where there is no date or Carbon cannot read it. */
+    private function formatDate($value): ?string
+    {
         if (empty($value)) {
-            return $missing;
+            return null;
         }
 
         try {
             return Carbon::parse($value)->format('M d');
         } catch (\Throwable $e) {
-            return $missing;
+            return null;
         }
     }
 
@@ -167,15 +177,15 @@ class TaskUpdatedNotification extends Notification implements ShouldQueue
 
             case 'due_date':
                 return $describe('changed the due date from :from to :to', [
-                    'from' => $this->shortDate($this->oldValue, __('no date')),
-                    'to' => $this->shortDate($this->newValue, __('no date')),
+                    'from' => $this->shortDateValue($this->oldValue),
+                    'to' => $this->shortDateValue($this->newValue),
                 ]);
 
             case 'list_id':
                 return $describe('moved task ":task" from ":from" to ":to"', [
                     'task' => (string) $this->task->title,
-                    'from' => $this->listTitle($this->oldValue) ?? __('Unknown'),
-                    'to' => $this->listTitle($this->newValue) ?? __('Unknown'),
+                    'from' => $this->listTitle($this->oldValue) ?? self::translate('Unknown'),
+                    'to' => $this->listTitle($this->newValue) ?? self::translate('Unknown'),
                 ]);
 
             case 'is_done':
@@ -194,6 +204,26 @@ class TaskUpdatedNotification extends Notification implements ShouldQueue
             default:
                 return $describe('updated task ":task"', ['task' => (string) $this->task->title]);
         }
+    }
+
+    /**
+     * A value the page translates when it reads the row back.
+     *
+     * __() here would resolve at write time, inside a queued job running in the
+     * *actor's* locale - so a Khmer clerk moving a task off a since-deleted
+     * board stored "មិនស្គាល់", and an English reader got that word sitting in
+     * an otherwise English sentence. A word standing in for a missing part is
+     * the one piece of a message that has no language of its own, so it travels
+     * as a key and is resolved by whoever is reading.
+     *
+     * A plain string can never be mistaken for one of these: a board really
+     * named "Unknown" arrives as the string, this arrives as an object.
+     *
+     * @return array{translate: string}
+     */
+    private static function translate(string $key): array
+    {
+        return ['translate' => $key];
     }
 
     /**

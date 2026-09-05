@@ -657,10 +657,22 @@ class DocumentSubmissionController extends Controller
         // add: assignStepOwners skips anyone already on the document, so
         // counting its return reported "assigned to 0 person(s)" for a
         // hand-off that landed squarely on somebody's plate.
-        $message = __('Forwarded to :step, assigned to :count person(s).', [
-            'step' => $next->title,
-            'count' => Assignee::where('task_id', $task->id)->count(),
-        ]);
+        $holding = Assignee::where('task_id', $task->id)->count();
+
+        // ...and zero really is zero. The gate above lets a step through whose
+        // only holder is the forwarder - deliberately, because that step does
+        // exist - but assignStepOwners will not hand the document back to them,
+        // so it lands on no plate at all. Say so rather than reporting a clean
+        // hand-off to nobody.
+        $message = $holding === 0
+            ? __('Forwarded to :step, but nobody carries :role yet — assign it in Settings → Workflow Roles.', [
+                'step' => $next->title,
+                'role' => $this->stepResponsibilityName($task, $next),
+            ])
+            : __('Forwarded to :step. :count person(s) now hold it.', [
+                'step' => $next->title,
+                'count' => $holding,
+            ]);
 
         // Finishing this document may be the last thing an external document was
         // waiting on, which closes it in turn.
@@ -670,6 +682,9 @@ class DocumentSubmissionController extends Controller
         // all, so going back to it would 403. They go back to their pile.
         $task->load('assignees');
 
+        // Still a success: the document moved, and the move is what was asked
+        // for. The warning rides in the text - FlashMessages only renders
+        // success and error, and an error toast would say the forward failed.
         if (!$this->userCan('view', $task)) {
             return Redirect::route('workspace.view.my-tasks.documents', [
                 'uid' => $workspace->slug ?: $workspace->id,
@@ -1105,8 +1120,12 @@ class DocumentSubmissionController extends Controller
             // naming somebody outright is the one arm of assignStepOwners that
             // works on a responsibility with no holders, and without it the
             // only way past the block is an administrator editing the workflow.
-            // Only queried in that case - it is a dead payload otherwise.
-            'fallback_people' => $hasHolder ? [] : $this->workspaceCandidates($workspaceId)->all(),
+            // Only built for somebody who can act on it: this is the whole
+            // workspace team by name, where 'people' above is the holders of one
+            // responsibility, and the panel it feeds is itself behind can.forward.
+            'fallback_people' => $hasHolder || !$this->userCan('move', $task)
+                ? []
+                : $this->workspaceCandidates($workspaceId)->all(),
         ];
     }
 
@@ -1147,7 +1166,6 @@ class DocumentSubmissionController extends Controller
         return [
             'id' => $user->id,
             'name' => trim($user->first_name.' '.$user->last_name) ?: $user->email,
-            'email' => $user->email,
             'photo' => $user->photo_path,
             'role' => optional($user->workflowSubRole)->name,
             'role_code' => optional($user->workflowSubRole)->code,

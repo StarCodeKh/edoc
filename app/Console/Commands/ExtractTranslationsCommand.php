@@ -317,7 +317,12 @@ class ExtractTranslationsCommand extends Command
         $output = $this->option('output') ?: $this->defaultOutput;
         $path = str_starts_with($output, '/') ? $output : base_path($output);
 
-        if (str_starts_with(realpath(dirname($path)) ?: dirname($path), lang_path())) {
+        // With the separator: a bare prefix test also refused lang-reports/,
+        // which is not inside lang/ and is a perfectly good place for a report.
+        $langDir = rtrim(lang_path(), DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR;
+        $target = rtrim(realpath(dirname($path)) ?: dirname($path), DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR;
+
+        if (str_starts_with($target, $langDir)) {
             $this->warn('Refusing to write inside lang/ — Vite would bundle it as a locale.');
 
             return;
@@ -327,7 +332,9 @@ class ExtractTranslationsCommand extends Command
 
         File::put($path, json_encode([
             'json' => array_combine($jsonKeys, $jsonKeys),
-            'php' => $phpKeys,
+            // array_filter() preserved the scan indices, which JSON-encoded as an
+            // object keyed 798, 799, ... rather than a list.
+            'php' => array_values($phpKeys),
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE).PHP_EOL);
 
         $this->newLine();

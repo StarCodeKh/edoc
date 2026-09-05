@@ -32,7 +32,10 @@ class NotificationController extends Controller
      */
     private function sidebarWorkspace(): ?Workspace
     {
-        return Workspace::accessibleTo()->orderBy('name')->first();
+        // WorkspaceMenu gates Board, Members and Settings on
+        // workspace.member?.role === 'admin', so a workspace admin opening this
+        // page without the relation loaded got a sidebar quietly missing them.
+        return Workspace::accessibleTo()->with('member')->orderBy('name')->first();
     }
 
     public function update(DatabaseNotification $notification)

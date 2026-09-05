@@ -25,16 +25,29 @@ const timeAgo = (value) => (value ? at(value).fromNow() : '');
 const timeExact = (value) => (value ? at(value).format('DD MMM YYYY, HH:mm') : '');
 
 /**
- * The sentence, built here rather than replayed.
+ * The sentence, built rather than replayed.
  *
+ * A value may itself be a word standing in for a missing part - a deleted
+ * board, an unset due date. Those travel as { translate: key } rather than as
+ * text, because they have no language of their own until somebody reads them.
+ */
+const resolveValues = (values) =>
+    Object.fromEntries(
+        Object.entries(values || {}).map(([key, value]) => [
+            key,
+            value && typeof value === 'object' && value.translate ? trans(value.translate) : value,
+        ])
+    );
+
+/**
  * Newer rows carry the change as a key and its values, so it renders in the
  * reader's language. Rows written before that carry only the English sentence,
- * which still goes through $t() - the fixed phrases have keys and the
+ * which still goes through the catalogue - the fixed phrases have keys and the
  * interpolated ones fall through unchanged rather than breaking.
  */
 const messageOf = (notification) =>
     notification.data.message_key
-        ? trans(notification.data.message_key, notification.data.message_values || {})
+        ? trans(notification.data.message_key, resolveValues(notification.data.message_values))
         : trans(notification.data.message || '');
 
 const hasUnread = computed(() => props.notifications.data.some((notification) => !notification.read_at));
