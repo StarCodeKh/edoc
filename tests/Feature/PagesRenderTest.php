@@ -111,6 +111,24 @@ class PagesRenderTest extends TestCase
             ->assertInertia(fn (AssertableInertia $page) => $page->component($component));
     }
 
+    /**
+     * The notification log, which nothing else covered.
+     *
+     * The workspace prop is what Layout picks the sidebar off. Without it the
+     * page rendered with no navigation at all for anyone who is not an admin,
+     * because the fallback menu is the admin settings one.
+     */
+    public function test_the_notifications_page_renders(): void
+    {
+        $this->get('/notifications')
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('Notifications/Index')
+                ->has('notifications.data')
+                ->where('workspace.id', $this->workspace->id)
+            );
+    }
+
     public function test_login_page_renders_for_a_guest(): void
     {
         auth()->logout();
