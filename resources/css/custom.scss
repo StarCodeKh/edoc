@@ -345,8 +345,9 @@ svg {
         align-items: center;
         justify-content: center;
         display: flex;
-        margin-left: 1.5rem;
-        margin-right: 1.5rem;
+        /* Spacing comes from the cluster's own gap; these margins made the
+           theme toggle sit 36px from its neighbours where the bell and the
+           language switcher sat 12px apart. */
         cursor: pointer;
         .switch-icon {
             -webkit-transition: all 0.3s ease;

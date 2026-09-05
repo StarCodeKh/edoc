@@ -43,24 +43,51 @@ class Task extends Model
         return (int) $this->list_id !== (int) $this->origin_list_id;
     }
 
-    private function generateTaskCode()
+    /** The register's prefix. Codes read CGMC-000000001. */
+    private const CODE_PREFIX = 'CGMC-';
+
+    /**
+     * The next code in the register.
+     *
+     * withTrashed() throughout, which is the whole point: Task is soft-deleted,
+     * so both the starting number and the collision check ran under the default
+     * scope and could not see a deleted document. Deleting the newest one
+     * therefore freed its code, and the next document created was handed the
+     * same CGMC number - two documents, one code, in a register where the code
+     * is the identity. There is no unique index on task_code to catch it, so it
+     * happened silently.
+     *
+     * The number is taken from the highest code ever issued rather than from
+     * the highest id, for the same reason. The id is still a floor, so the two
+     * stay aligned on a register that has never had a document deleted.
+     */
+    private function generateTaskCode(): string
     {
-        $prefix = 'CGMC-';
+        $prefix = self::CODE_PREFIX;
 
-        $latestTask = static::latest('id')->first();
-        $nextNumber = $latestTask ? $latestTask->id + 1 : 1;
+        // Codes are zero-padded to a fixed width, so the largest string is the
+        // largest number - no CAST, which keeps this working on both MySQL and
+        // the SQLite the tests run on.
+        $highestCode = static::withTrashed()
+            ->where('task_code', 'like', $prefix.'%')
+            ->orderBy('task_code', 'desc')
+            ->value('task_code');
 
-        $paddedNumber = str_pad($nextNumber, 9, '0', STR_PAD_LEFT);
-        $code = "{$prefix}{$paddedNumber}";
+        $next = max(
+            (int) substr((string) $highestCode, strlen($prefix)),
+            (int) static::withTrashed()->max('id')
+        ) + 1;
 
-        $counter = 1;
-        while (static::where('task_code', $code)->exists()) {
-            $paddedNumber = str_pad($nextNumber + $counter, 9, '0', STR_PAD_LEFT);
-            $code = "{$prefix}{$paddedNumber}";
-            $counter++;
+        while (static::withTrashed()->where('task_code', $this->formatCode($next))->exists()) {
+            $next++;
         }
 
-        return $code;
+        return $this->formatCode($next);
+    }
+
+    private function formatCode(int $number): string
+    {
+        return self::CODE_PREFIX.str_pad((string) $number, 9, '0', STR_PAD_LEFT);
     }
 
     private function generateQrCode($title, $taskCode)

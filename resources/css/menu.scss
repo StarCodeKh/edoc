@@ -16,6 +16,10 @@ body {
 }
 
 .top_bar {
+    align-items: center;
+    /* One spacing token between the three groups, rather than each of them
+       carrying its own margins. */
+    gap: 1.5rem;
     background-color: #fff;
     -webkit-box-shadow: 0px 4px 40px rgb(0 0 0 / 7%);
     box-shadow: 0px 4px 40px rgb(0 0 0 / 7%);
@@ -118,17 +122,27 @@ body {
     }
 }
 
-/* Wide enough for the placeholder to read in full, capped so it never crowds
-   the bell, the theme toggle and the language switcher. The field sits beside
-   the icon cluster rather than inside it, so this is anchored on the bar. */
-.top_bar .top-search {
-    width: clamp(240px, 24vw, 420px);
-    /* Holds its width; the menus on the left give way first. */
-    flex: 0 0 auto;
-}
+/* Three groups across the bar: brand and menus, search, actions.
+
+   The left block used to be flex: 1 1 auto, so it swallowed every spare pixel
+   and shoved the search hard against the icon cluster - roughly 700px of empty
+   bar in the middle on a wide screen, with the placeholder truncating inside a
+   field that had room to spare. Giving the two outer groups the same basis
+   centres the search between them instead, and the field takes some of the
+   space back. Below 1024px responsive.scss sends it to its own line and this
+   no longer applies. */
 .top_bar .placement-top-left {
-    flex: 1 1 auto;
+    flex: 1 1 0;
+    /* The menus here carry text and may truncate; the icons opposite may not. */
     min-width: 0;
+}
+.top_bar .top-search {
+    flex: 0 1 clamp(280px, 34vw, 560px);
+    min-width: 0;
+}
+.top_bar .placement-top-right {
+    flex: 1 1 0;
+    justify-content: flex-end;
 }
 
 .placement-top-right {
