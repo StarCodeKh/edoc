@@ -2,7 +2,7 @@
     <div class="h-full">
         <Head :title="$t('Documents')" />
         <div class="flex flex-col flex-grow-1 flex-shrink-1 h-full">
-            <div class="flex-1 flex flex-col bg-gradient-to-br from-gray-50 to-white overflow-y-auto">
+            <div class="flex-1 flex flex-col bg-gradient-to-br from-gray-50 dark:from-white/5 to-white overflow-y-auto">
                 <div class="m-4 flex flex-col">
                     <!-- Header -->
                     <div
@@ -31,7 +31,7 @@
                                      so the way to file it belongs here too. -->
                                 <Link
                                     :href="route('workspace.documents.submit', workspace.slug || workspace.id)"
-                                    class="flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-indigo-700 shadow-sm hover:bg-indigo-50"
+                                    class="flex items-center gap-2 rounded-xl bg-white dark:bg-[#262932] px-4 py-2.5 text-sm font-semibold text-indigo-700 dark:text-indigo-300 shadow-sm hover:bg-indigo-50 dark:hover:bg-indigo-500/20"
                                 >
                                     <icon name="post" class="h-4 w-4" />
                                     {{ $t('Submit Document') }}
@@ -41,15 +41,18 @@
                     </div>
 
                     <!-- Filters -->
-                    <div class="mt-4 rounded-2xl border border-gray-200/70 bg-white p-3 sm:p-4 shadow-sm">
+                    <div
+                        class="mt-4 rounded-2xl border border-gray-200/70 bg-white dark:bg-[#262932] p-3 sm:p-4 shadow-sm"
+                    >
                         <div class="flex flex-wrap items-start lg:items-center gap-x-6 gap-y-4">
                             <!-- Uploader -->
                             <div
                                 class="doc-filter flex flex-col items-start gap-1.5 lg:flex-row lg:items-center lg:gap-2"
                             >
-                                <span class="text-xs font-bold uppercase tracking-wide text-gray-500 flex-shrink-0">{{
-                                    $t('Uploader')
-                                }}</span>
+                                <span
+                                    class="text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400 flex-shrink-0"
+                                    >{{ $t('Uploader') }}</span
+                                >
                                 <div class="flex flex-wrap items-center gap-1.5">
                                     <button
                                         type="button"
@@ -80,9 +83,10 @@
                             <div
                                 class="doc-filter flex flex-col items-start gap-1.5 lg:flex-row lg:items-center lg:gap-2"
                             >
-                                <span class="text-xs font-bold uppercase tracking-wide text-gray-500 flex-shrink-0">{{
-                                    $t('Document Type')
-                                }}</span>
+                                <span
+                                    class="text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400 flex-shrink-0"
+                                    >{{ $t('Document Type') }}</span
+                                >
                                 <filter-select
                                     v-model="form.type"
                                     multiple
@@ -101,9 +105,10 @@
                             <div
                                 class="doc-filter flex flex-col items-start gap-1.5 lg:flex-row lg:items-center lg:gap-2"
                             >
-                                <span class="text-xs font-bold uppercase tracking-wide text-gray-500 flex-shrink-0">{{
-                                    $t('Period')
-                                }}</span>
+                                <span
+                                    class="text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400 flex-shrink-0"
+                                    >{{ $t('Period') }}</span
+                                >
                                 <div class="flex flex-wrap items-center gap-1.5">
                                     <button
                                         v-for="period in periods"
@@ -120,7 +125,7 @@
                             <!-- Custom range -->
                             <div v-if="activePeriod === 'custom'" class="doc-filter flex flex-wrap items-center gap-2">
                                 <date-picker v-model="fromDate" :max-date="form.to" :placeholder="$t('From')" />
-                                <span class="text-gray-400">–</span>
+                                <span class="text-gray-400 dark:text-gray-500">–</span>
                                 <date-picker v-model="toDate" :min-date="form.from" :placeholder="$t('To')" />
                             </div>
 
@@ -128,7 +133,7 @@
                                 v-if="hasFilters"
                                 type="button"
                                 @click="reset"
-                                class="w-full lg:w-auto lg:ml-auto flex items-center justify-center lg:justify-start gap-1 text-sm font-semibold text-gray-500 hover:text-red-600"
+                                class="w-full lg:w-auto lg:ml-auto flex items-center justify-center lg:justify-start gap-1 text-sm font-semibold text-gray-500 dark:text-gray-400 hover:text-red-600"
                             >
                                 <icon name="close" class="h-3.5 w-3.5" />
                                 {{ $t('Clear All') }}
@@ -139,8 +144,10 @@
                     <!-- List. One line per document; the file list, dates, source
                          and type live in the detail panel, so a document with five
                          attachments no longer owns half the page. -->
-                    <div class="mt-4 overflow-hidden rounded-2xl border border-gray-200/70 bg-white shadow-sm">
-                        <div v-if="documents.data.length" class="divide-y divide-gray-100">
+                    <div
+                        class="mt-4 overflow-hidden rounded-2xl border border-gray-200/70 bg-white dark:bg-[#262932] shadow-sm"
+                    >
+                        <div v-if="documents.data.length" class="divide-y divide-gray-100 dark:divide-white/10">
                             <!-- A div rather than a button: the print control sits
                                  inside the row, and a button inside a button is
                                  not something a browser will render. -->
@@ -212,15 +219,17 @@
 
                         <!-- Empty state -->
                         <div v-else class="flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
-                            <div class="rounded-2xl bg-gray-100 p-4">
-                                <icon name="book" class="h-8 w-8 text-gray-400" />
+                            <div class="rounded-2xl bg-gray-100 dark:bg-white/10 p-4">
+                                <icon name="book" class="h-8 w-8 text-gray-400 dark:text-gray-500" />
                             </div>
-                            <p class="font-semibold text-gray-700">{{ $t('No documents found.') }}</p>
+                            <p class="font-semibold text-gray-700 dark:text-gray-200">
+                                {{ $t('No documents found.') }}
+                            </p>
                             <button
                                 v-if="hasFilters"
                                 type="button"
                                 @click="reset"
-                                class="text-sm font-semibold text-indigo-600 hover:text-indigo-800"
+                                class="text-sm font-semibold text-indigo-600 dark:text-indigo-300 hover:text-indigo-800"
                             >
                                 {{ $t('Clear All') }}
                             </button>
@@ -619,7 +628,9 @@ export default {
         chipClass(active) {
             return [
                 'flex items-center rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors',
-                active ? 'bg-indigo-600 text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200',
+                active
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10',
             ];
         },
         setPeriod(key) {
@@ -659,7 +670,7 @@ export default {
     max-width: 36rem;
     max-height: 88vh;
     overflow: hidden;
-    background: #fff;
+    background: var(--surface);
     border-radius: 16px;
     box-shadow: 0 24px 60px rgba(15, 23, 42, 0.3);
 }
@@ -673,7 +684,7 @@ export default {
 .doc-panel__title {
     font-size: 15px;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--ink);
 }
 .doc-panel__code {
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -689,11 +700,11 @@ export default {
     height: 28px;
     flex-shrink: 0;
     border-radius: 999px;
-    color: #94a3b8;
+    color: var(--ink-subtle);
 }
 .doc-panel__close:hover {
-    background: #f1f5f9;
-    color: #475569;
+    background: var(--surface-raised);
+    color: var(--ink-muted);
 }
 
 .doc-panel__body {
@@ -711,12 +722,12 @@ export default {
     font-weight: 800;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: #94a3b8;
+    color: var(--ink-subtle);
     margin-bottom: 2px;
 }
 .doc-panel__grid dd {
     font-size: 13px;
-    color: #1f2937;
+    color: var(--ink);
     line-height: 1.5;
 }
 
@@ -726,10 +737,10 @@ export default {
     font-weight: 800;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: #94a3b8;
+    color: var(--ink-subtle);
 }
 .doc-panel__files {
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--line);
     border-radius: 12px;
     overflow: hidden;
 }
@@ -738,7 +749,7 @@ export default {
     align-items: center;
     gap: 10px;
     padding: 8px 12px;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--line);
 }
 .doc-panel__file:last-child {
     border-bottom: 0;
@@ -757,14 +768,14 @@ export default {
     min-width: 0;
     font-size: 12px;
     font-weight: 500;
-    color: #374151;
+    color: var(--ink);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 .doc-panel__file-size {
     font-size: 11px;
-    color: #9ca3af;
+    color: var(--ink-subtle);
 }
 
 /* The chevron is the row's way out to the document itself. It sits inside the
@@ -780,7 +791,7 @@ export default {
     color: #cbd5e1;
 }
 .doc-row__open:hover {
-    background: #e0e7ff;
+    background: var(--tint-accent-bg);
     color: var(--accent-ink);
 }
 .doc-row__open:focus-visible {
@@ -795,7 +806,7 @@ export default {
     margin-bottom: 8px;
     padding: 8px 12px;
     border-radius: 12px;
-    background: #eef2ff;
+    background: var(--tint-accent-bg);
     font-size: 12px;
     font-weight: 500;
     color: var(--accent-ink);
@@ -805,7 +816,7 @@ export default {
     margin-top: 8px;
     font-size: 12px;
     font-weight: 500;
-    color: #dc2626;
+    color: var(--tint-bad-ink);
 }
 
 /* The tracking slip button: what it is, then the code it is filed under. */
@@ -816,12 +827,12 @@ export default {
     margin-right: auto;
     padding: 6px 12px;
     border-radius: 12px;
-    background: #eef2ff;
+    background: var(--tint-accent-bg);
     color: var(--accent-ink);
     transition: background-color 0.12s ease;
 }
 .doc-track:hover {
-    background: #e0e7ff;
+    background: var(--tint-accent-bg);
 }
 .doc-track__icon {
     width: 18px;
@@ -851,15 +862,15 @@ export default {
     height: 28px;
     flex-shrink: 0;
     border-radius: 8px;
-    color: #94a3b8;
+    color: var(--ink-subtle);
 }
 .doc-panel__file-btn:hover {
-    background: #e0e7ff;
+    background: var(--tint-accent-bg);
     color: var(--accent-ink);
 }
 .doc-panel__file-btn.is-danger:hover {
-    background: #fee2e2;
-    color: #b91c1c;
+    background: var(--tint-bad-bg);
+    color: var(--tint-bad-ink);
 }
 .doc-panel__file-btn:disabled {
     opacity: 0.5;
@@ -868,11 +879,11 @@ export default {
 
 .doc-panel__empty {
     padding: 1.5rem;
-    border: 1px dashed #e5e7eb;
+    border: 1px dashed var(--line);
     border-radius: 12px;
     text-align: center;
     font-size: 13px;
-    color: #94a3b8;
+    color: var(--ink-subtle);
 }
 
 .doc-panel__foot {
@@ -882,7 +893,7 @@ export default {
     gap: 8px;
     padding: 12px 18px;
     border-top: 1px solid #eef2f7;
-    background: #fbfdff;
+    background: var(--surface-sunken);
 }
 .doc-btn {
     display: inline-flex;
@@ -894,12 +905,12 @@ export default {
     font-weight: 700;
 }
 .doc-btn--ghost {
-    color: #475569;
-    background: #fff;
-    border: 1px solid #e2e8f0;
+    color: var(--ink-muted);
+    background: var(--surface);
+    border: 1px solid var(--line);
 }
 .doc-btn--ghost:hover {
-    background: #f1f5f9;
+    background: var(--surface-raised);
 }
 .doc-btn--primary {
     color: #fff;

@@ -4210,10 +4210,15 @@ body .dark.layout_landing .sticky {
           backdrop-filter: blur(5px);
   box-shadow: inset 0 -1px 0 0 rgba(0, 0, 0, 0.1);
 }
-.sticky .drop-down-caret-icon {
+/* Scoped to the landing header these came with. Unscoped, `.sticky span`
+   repainted every span inside anything using Tailwind's `sticky` utility -
+   it was overriding the white label on the active document tab, in light
+   mode as much as in dark. Nothing in this app renders .navbar-logo or
+   #navbarToggler, so the landing markup these belong to is not here. */
+header.sticky .drop-down-caret-icon {
   fill: #0f172a;
 }
-.sticky span {
+header.sticky span {
   color: #0f172a;
 }
 .sticky .navbar-logo {

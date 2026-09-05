@@ -1,6 +1,8 @@
 <template>
     <Layout>
-        <div class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+        <div
+            class="min-h-screen bg-gradient-to-br from-gray-50 dark:from-white/5 via-white dark:via-white/5 to-gray-100 dark:to-white/10"
+        >
             <Head title="Notification Settings" />
 
             <!-- Enhanced Header -->
@@ -34,18 +36,21 @@
                     <!-- Flash Messages -->
                     <div
                         v-if="flash.success"
-                        class="bg-green-50 dark:bg-green-500/15 border border-green-200 rounded-xl p-4"
+                        class="bg-green-50 dark:bg-green-500/15 border border-green-200 dark:border-green-500/30 rounded-xl p-4"
                     >
                         <div class="flex items-center">
                             <icon name="check-circle" class="w-5 h-5 text-green-600 mr-2" />
-                            <p class="text-green-800 font-medium">{{ flash.success }}</p>
+                            <p class="text-green-800 dark:text-green-200 font-medium">{{ flash.success }}</p>
                         </div>
                     </div>
 
-                    <div v-if="flash.error" class="bg-red-50 dark:bg-red-500/15 border border-red-200 rounded-xl p-4">
+                    <div
+                        v-if="flash.error"
+                        class="bg-red-50 dark:bg-red-500/15 border border-red-200 dark:border-red-500/30 rounded-xl p-4"
+                    >
                         <div class="flex items-center">
                             <icon name="exclamation-circle" class="w-5 h-5 text-red-600 mr-2" />
-                            <p class="text-red-800 font-medium">{{ flash.error }}</p>
+                            <p class="text-red-800 dark:text-red-200 font-medium">{{ flash.error }}</p>
                         </div>
                     </div>
 
@@ -81,7 +86,7 @@
                         class="bg-white dark:bg-[#262932] rounded-2xl shadow-sm border border-gray-200/60 dark:border-white/10 overflow-hidden"
                     >
                         <div
-                            class="px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-gray-50/80 to-gray-100/80 border-b border-gray-200/60 dark:border-white/10"
+                            class="px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-gray-50/80 dark:from-white/5 to-gray-100/80 dark:to-white/10 border-b border-gray-200/60 dark:border-white/10"
                         >
                             <div class="flex items-center justify-between gap-3 flex-wrap">
                                 <div class="flex items-center gap-2 sm:gap-3 min-w-0">

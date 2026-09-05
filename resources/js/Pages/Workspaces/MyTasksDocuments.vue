@@ -22,7 +22,7 @@
         </div>
 
         <div class="flex flex-col flex-grow-1 flex-shrink-1 h-full">
-            <div class="flex-1 flex flex-col bg-gradient-to-br from-gray-50 to-white overflow-y-auto">
+            <div class="flex-1 flex flex-col bg-gradient-to-br from-gray-50 dark:from-white/5 to-white overflow-y-auto">
                 <div class="m-4 flex flex-col pb-8">
                     <!-- Header -->
                     <div
@@ -45,7 +45,7 @@
                                 </div>
                                 <Link
                                     :href="route('workspace.documents.submit', workspace.slug || workspace.id)"
-                                    class="flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-indigo-700 shadow-sm hover:bg-indigo-50"
+                                    class="flex items-center gap-2 rounded-xl bg-white dark:bg-[#262932] px-4 py-2.5 text-sm font-semibold text-indigo-700 dark:text-indigo-300 shadow-sm hover:bg-indigo-50 dark:hover:bg-indigo-500/20"
                                 >
                                     <icon name="post" class="h-4 w-4" />
                                     {{ $t('Submit Document') }}
@@ -55,10 +55,15 @@
                     </div>
 
                     <!-- Filter -->
-                    <div v-if="types.length" class="mt-4 rounded-2xl border border-gray-200/70 bg-white p-3 shadow-sm">
+                    <div
+                        v-if="types.length"
+                        class="mt-4 rounded-2xl border border-gray-200/70 bg-white dark:bg-[#262932] p-3 shadow-sm"
+                    >
                         <div class="flex flex-wrap items-center gap-x-6 gap-y-3">
                             <div class="flex flex-col items-start gap-1.5 lg:flex-row lg:items-center lg:gap-2">
-                                <span class="text-xs font-semibold uppercase tracking-wide text-gray-400">
+                                <span
+                                    class="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500"
+                                >
                                     {{ $t('Document Type') }}
                                 </span>
                                 <filter-select
@@ -76,7 +81,7 @@
                             <button
                                 v-if="form.type"
                                 type="button"
-                                class="text-sm font-semibold text-indigo-600 hover:text-indigo-800"
+                                class="text-sm font-semibold text-indigo-600 dark:text-indigo-300 hover:text-indigo-800"
                                 @click="form.type = null"
                             >
                                 {{ $t('Clear All') }}
@@ -85,8 +90,10 @@
                     </div>
 
                     <!-- The register's own rows: same markup, same stylesheet. -->
-                    <div class="mt-4 overflow-hidden rounded-2xl border border-gray-200/70 bg-white shadow-sm">
-                        <div v-if="documents.data.length" class="divide-y divide-gray-100">
+                    <div
+                        class="mt-4 overflow-hidden rounded-2xl border border-gray-200/70 bg-white dark:bg-[#262932] shadow-sm"
+                    >
+                        <div v-if="documents.data.length" class="divide-y divide-gray-100 dark:divide-white/10">
                             <Link
                                 v-for="doc in documents.data"
                                 :key="doc.id"
@@ -123,11 +130,13 @@
                         </div>
 
                         <div v-else class="flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
-                            <div class="rounded-2xl bg-gray-100 p-4">
-                                <icon name="list" class="h-8 w-8 text-gray-400" />
+                            <div class="rounded-2xl bg-gray-100 dark:bg-white/10 p-4">
+                                <icon name="list" class="h-8 w-8 text-gray-400 dark:text-gray-500" />
                             </div>
-                            <p class="font-semibold text-gray-700">{{ $t('No documents found.') }}</p>
-                            <p class="text-sm text-gray-500">
+                            <p class="font-semibold text-gray-700 dark:text-gray-200">
+                                {{ $t('No documents found.') }}
+                            </p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">
                                 {{ $t('Documents assigned to you show up here.') }}
                             </p>
                         </div>

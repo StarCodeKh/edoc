@@ -103,7 +103,7 @@
                                 </button>
                                 <div
                                     v-if="show_more"
-                                    class="absolute right-0 top-full mt-3 w-56 bg-white rounded-2xl shadow-2xl border border-gray-200/60 overflow-hidden z-[9999] backdrop-blur-xl"
+                                    class="absolute right-0 top-full mt-3 w-56 bg-white dark:bg-[#262932] rounded-2xl shadow-2xl border border-gray-200/60 dark:border-white/10 overflow-hidden z-[9999] backdrop-blur-xl"
                                 >
                                     <div class="p-2">
                                         <button
@@ -111,12 +111,15 @@
                                                 edit_workspace_option = true;
                                                 show_more = false;
                                             "
-                                            class="w-full flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 rounded-xl transition-all duration-200 group"
+                                            class="w-full flex items-center px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-indigo-50 dark:hover:bg-indigo-500/20 hover:text-indigo-600 rounded-xl transition-all duration-200 group"
                                         >
                                             <div
-                                                class="p-2 bg-indigo-100 rounded-xl mr-3 group-hover:bg-indigo-200 transition-colors"
+                                                class="p-2 bg-indigo-100 dark:bg-indigo-500/20 rounded-xl mr-3 group-hover:bg-indigo-200 transition-colors"
                                             >
-                                                <icon class="w-4 h-4 text-indigo-600" name="edit" />
+                                                <icon
+                                                    class="w-4 h-4 text-indigo-600 dark:text-indigo-300"
+                                                    name="edit"
+                                                />
                                             </div>
                                             <span>{{ $t('Edit Workspace') }}</span>
                                         </button>
@@ -128,7 +131,7 @@
                                             class="w-full flex items-center px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200 group"
                                         >
                                             <div
-                                                class="p-2 bg-red-100 rounded-xl mr-3 group-hover:bg-red-200 transition-colors"
+                                                class="p-2 bg-red-100 dark:bg-red-500/20 rounded-xl mr-3 group-hover:bg-red-200 transition-colors"
                                             >
                                                 <icon class="w-4 h-4 text-red-600" name="trash" />
                                             </div>
@@ -146,51 +149,55 @@
                 <!-- Quick Stats Section -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
                     <div
-                        class="relative bg-white rounded-2xl shadow-lg border border-gray-200/60 p-7 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group overflow-hidden"
+                        class="relative bg-white dark:bg-[#262932] rounded-2xl shadow-lg border border-gray-200/60 dark:border-white/10 p-7 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group overflow-hidden"
                     >
                         <div
                             class="absolute top-0 right-0 w-32 h-32 bg-indigo-100/50 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"
                         ></div>
                         <div class="relative flex items-center justify-between">
                             <div class="flex-1">
-                                <p class="text-sm font-semibold text-gray-500 mb-2 uppercase tracking-wide">
+                                <p
+                                    class="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide"
+                                >
                                     {{ $t('Total Projects') }}
                                 </p>
                                 <p
-                                    class="text-4xl font-extrabold text-gray-900 group-hover:text-indigo-600 transition-colors mb-1"
+                                    class="text-4xl font-extrabold text-gray-900 dark:text-gray-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition-colors mb-1"
                                 >
                                     {{ projects?.length || 0 }}
                                 </p>
-                                <p class="text-xs text-gray-500">{{ $t('Active projects') }}</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">{{ $t('Active projects') }}</p>
                             </div>
                             <div
-                                class="p-4 bg-gradient-to-br from-indigo-100 to-indigo-200 rounded-2xl group-hover:from-indigo-200 group-hover:to-indigo-300 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-md"
+                                class="p-4 bg-gradient-to-br from-indigo-100 dark:from-indigo-500/20 to-indigo-200 rounded-2xl group-hover:from-indigo-200 group-hover:to-indigo-300 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-md"
                             >
-                                <icon name="folder" class="w-7 h-7 text-indigo-600" />
+                                <icon name="folder" class="w-7 h-7 text-indigo-600 dark:text-indigo-300" />
                             </div>
                         </div>
                     </div>
                     <Link
                         :href="route('workspace.view.board', workspace.slug || workspace.id)"
-                        class="relative bg-white rounded-2xl shadow-lg border border-gray-200/60 p-7 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group block overflow-hidden"
+                        class="relative bg-white dark:bg-[#262932] rounded-2xl shadow-lg border border-gray-200/60 dark:border-white/10 p-7 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group block overflow-hidden"
                     >
                         <div
                             class="absolute top-0 right-0 w-32 h-32 bg-purple-100/50 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"
                         ></div>
                         <div class="relative flex items-center justify-between">
                             <div class="flex-1">
-                                <p class="text-sm font-semibold text-gray-500 mb-2 uppercase tracking-wide">
+                                <p
+                                    class="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide"
+                                >
                                     {{ $t('Workspace Tasks') }}
                                 </p>
                                 <p
-                                    class="text-xl font-extrabold text-gray-900 group-hover:text-purple-600 transition-colors mb-1"
+                                    class="text-xl font-extrabold text-gray-900 dark:text-gray-100 group-hover:text-purple-600 transition-colors mb-1"
                                 >
                                     {{ $t('View All') }}
                                 </p>
-                                <p class="text-xs text-gray-500">{{ $t('All workspace tasks') }}</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">{{ $t('All workspace tasks') }}</p>
                             </div>
                             <div
-                                class="p-4 bg-gradient-to-br from-purple-100 to-purple-200 rounded-2xl group-hover:from-purple-200 group-hover:to-purple-300 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-md"
+                                class="p-4 bg-gradient-to-br from-purple-100 dark:from-purple-500/20 to-purple-200 rounded-2xl group-hover:from-purple-200 group-hover:to-purple-300 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-md"
                             >
                                 <icon name="table" class="w-7 h-7 text-purple-600" />
                             </div>
@@ -198,25 +205,27 @@
                     </Link>
                     <Link
                         :href="route('workspace.view.my-tasks.board', workspace.slug || workspace.id)"
-                        class="relative bg-white rounded-2xl shadow-lg border border-gray-200/60 p-7 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group block overflow-hidden"
+                        class="relative bg-white dark:bg-[#262932] rounded-2xl shadow-lg border border-gray-200/60 dark:border-white/10 p-7 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group block overflow-hidden"
                     >
                         <div
                             class="absolute top-0 right-0 w-32 h-32 bg-pink-100/50 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"
                         ></div>
                         <div class="relative flex items-center justify-between">
                             <div class="flex-1">
-                                <p class="text-sm font-semibold text-gray-500 mb-2 uppercase tracking-wide">
+                                <p
+                                    class="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide"
+                                >
                                     {{ $t('My Tasks') }}
                                 </p>
                                 <p
-                                    class="text-xl font-extrabold text-gray-900 group-hover:text-pink-600 transition-colors mb-1"
+                                    class="text-xl font-extrabold text-gray-900 dark:text-gray-100 group-hover:text-pink-600 transition-colors mb-1"
                                 >
                                     {{ $t('View All') }}
                                 </p>
-                                <p class="text-xs text-gray-500">{{ $t('Your assigned tasks') }}</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">{{ $t('Your assigned tasks') }}</p>
                             </div>
                             <div
-                                class="p-4 bg-gradient-to-br from-pink-100 to-pink-200 rounded-2xl group-hover:from-pink-200 group-hover:to-pink-300 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-md"
+                                class="p-4 bg-gradient-to-br from-pink-100 dark:from-pink-500/20 to-pink-200 rounded-2xl group-hover:from-pink-200 group-hover:to-pink-300 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-md"
                             >
                                 <icon name="list" class="w-7 h-7 text-pink-600" />
                             </div>
@@ -230,7 +239,7 @@
                     @click="edit_workspace_option = false"
                 >
                     <div
-                        class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] flex flex-col overflow-hidden animate-slideUp"
+                        class="bg-white dark:bg-[#262932] rounded-3xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] flex flex-col overflow-hidden animate-slideUp"
                         @click.stop
                     >
                         <div
@@ -253,14 +262,18 @@
                         </div>
                         <!-- The form scrolls; the buttons below do not, so they
                              cannot end up past the bottom of a short window. -->
-                        <div class="flex-1 overflow-y-auto p-8 space-y-6 bg-gradient-to-br from-white to-gray-50">
+                        <div
+                            class="flex-1 overflow-y-auto p-8 space-y-6 bg-gradient-to-br from-white dark:from-white/5 to-gray-50"
+                        >
                             <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+                                <label
+                                    class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3 uppercase tracking-wide"
+                                >
                                     {{ $t('Workspace name') }} <span class="text-red-500">*</span>
                                 </label>
                                 <input
                                     v-model="form.name"
-                                    class="w-full rounded-xl border-2 border-gray-200 px-5 py-3.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-white text-gray-900 font-medium shadow-sm hover:shadow-md"
+                                    class="w-full rounded-xl border-2 border-gray-200 dark:border-white/10 px-5 py-3.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-white dark:bg-[#262932] text-gray-900 dark:text-gray-100 font-medium shadow-sm hover:shadow-md"
                                     type="text"
                                     required="required"
                                     aria-required="true"
@@ -269,7 +282,9 @@
                                 />
                             </div>
                             <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+                                <label
+                                    class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3 uppercase tracking-wide"
+                                >
                                     {{ $t('Workspace Type') }}
                                 </label>
                                 <select-input v-model="form.type_id" class="w-full">
@@ -279,7 +294,9 @@
                                 </select-input>
                             </div>
                             <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+                                <label
+                                    class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3 uppercase tracking-wide"
+                                >
                                     {{ $t('Workspace Logo') }}
                                 </label>
                                 <file-input
@@ -291,37 +308,43 @@
                                 />
                             </div>
                             <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+                                <label
+                                    class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3 uppercase tracking-wide"
+                                >
                                     {{ $t('Website') }}
-                                    <span class="text-gray-500 text-xs font-normal normal-case"
+                                    <span class="text-gray-500 dark:text-gray-400 text-xs font-normal normal-case"
                                         >({{ $t('optional') }})</span
                                     >
                                 </label>
                                 <input
                                     v-model="form.website"
-                                    class="w-full rounded-xl border-2 border-gray-200 px-5 py-3.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-white text-gray-900 font-medium shadow-sm hover:shadow-md"
+                                    class="w-full rounded-xl border-2 border-gray-200 dark:border-white/10 px-5 py-3.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-white dark:bg-[#262932] text-gray-900 dark:text-gray-100 font-medium shadow-sm hover:shadow-md"
                                     type="text"
                                     autocomplete="off"
                                     placeholder="https://example.com"
                                 />
                             </div>
                             <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+                                <label
+                                    class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3 uppercase tracking-wide"
+                                >
                                     {{ $t('Workspace Description') }}
-                                    <span class="text-gray-500 text-xs font-normal normal-case"
+                                    <span class="text-gray-500 dark:text-gray-400 text-xs font-normal normal-case"
                                         >({{ $t('optional') }})</span
                                     >
                                 </label>
                                 <textarea
                                     v-model="form.description"
-                                    class="w-full rounded-xl border-2 border-gray-200 px-5 py-3.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-white text-gray-900 font-medium shadow-sm hover:shadow-md h-32 resize-none"
+                                    class="w-full rounded-xl border-2 border-gray-200 dark:border-white/10 px-5 py-3.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-white dark:bg-[#262932] text-gray-900 dark:text-gray-100 font-medium shadow-sm hover:shadow-md h-32 resize-none"
                                     autocomplete="off"
                                     placeholder="Describe your workspace..."
                                 ></textarea>
                             </div>
                         </div>
 
-                        <div class="shrink-0 flex gap-4 border-t border-gray-200 bg-white px-8 py-5">
+                        <div
+                            class="shrink-0 flex gap-4 border-t border-gray-200 dark:border-white/10 bg-white dark:bg-[#262932] px-8 py-5"
+                        >
                             <button
                                 class="flex-1 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-600 text-white font-semibold py-4 rounded-xl transition-all duration-300 shadow-xl hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed"
                                 :disabled="!form.name"
@@ -333,7 +356,7 @@
                                 </span>
                             </button>
                             <button
-                                class="px-8 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-4 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg"
+                                class="px-8 bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-700 dark:text-gray-200 font-semibold py-4 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg"
                                 @click="edit_workspace_option = false"
                             >
                                 {{ $t('Cancel') }}
@@ -344,22 +367,26 @@
 
                 <!-- Projects Section Header -->
                 <div class="mb-8">
-                    <div class="bg-white rounded-2xl shadow-lg border border-gray-200/60 p-6 mb-6">
+                    <div
+                        class="bg-white dark:bg-[#262932] rounded-2xl shadow-lg border border-gray-200/60 dark:border-white/10 p-6 mb-6"
+                    >
                         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
                             <div class="flex-1">
                                 <div class="flex items-center gap-3 mb-2">
-                                    <div class="p-2 bg-indigo-100 rounded-xl">
-                                        <icon name="folder" class="w-6 h-6 text-indigo-600" />
+                                    <div class="p-2 bg-indigo-100 dark:bg-indigo-500/20 rounded-xl">
+                                        <icon name="folder" class="w-6 h-6 text-indigo-600 dark:text-indigo-300" />
                                     </div>
                                     <div>
-                                        <h2 class="text-3xl font-extrabold text-gray-900">{{ $t('Projects') }}</h2>
-                                        <p class="text-sm text-gray-600 mt-1">
-                                            <span class="font-semibold text-indigo-600">{{
+                                        <h2 class="text-3xl font-extrabold text-gray-900 dark:text-gray-100">
+                                            {{ $t('Projects') }}
+                                        </h2>
+                                        <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                                            <span class="font-semibold text-indigo-600 dark:text-indigo-300">{{
                                                 filteredProjects.length
                                             }}</span>
-                                            <span class="text-gray-500">{{ $t('of') }}</span>
+                                            <span class="text-gray-500 dark:text-gray-400">{{ $t('of') }}</span>
                                             <span class="font-semibold">{{ projects?.length || 0 }}</span>
-                                            <span class="text-gray-500">{{
+                                            <span class="text-gray-500 dark:text-gray-400">{{
                                                 $t('project' + (projects?.length !== 1 ? 's' : ''))
                                             }}</span>
                                         </p>
@@ -370,28 +397,33 @@
                                 <!-- Search Bar -->
                                 <div class="relative flex-1 sm:flex-initial sm:w-72">
                                     <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                                        <icon name="search" class="w-5 h-5 text-gray-400" />
+                                        <icon name="search" class="w-5 h-5 text-gray-400 dark:text-gray-500" />
                                     </div>
                                     <input
                                         v-model="searchQuery"
                                         type="text"
                                         :placeholder="$t('Search projects...')"
-                                        class="w-full pl-12 pr-10 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-gray-50 hover:bg-white text-sm font-medium shadow-sm"
+                                        class="w-full pl-12 pr-10 py-3 border-2 border-gray-200 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-gray-50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 text-sm font-medium shadow-sm"
                                     />
                                     <button
                                         v-if="searchQuery"
                                         @click="searchQuery = ''"
-                                        class="absolute inset-y-0 right-0 flex items-center pr-4 hover:bg-gray-100 rounded-r-xl transition-colors"
+                                        class="absolute inset-y-0 right-0 flex items-center pr-4 hover:bg-gray-100 dark:hover:bg-white/10 rounded-r-xl transition-colors"
                                     >
-                                        <icon name="close" class="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                                        <icon
+                                            name="close"
+                                            class="w-4 h-4 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+                                        />
                                     </button>
                                 </div>
                                 <!-- Sort Dropdown -->
                                 <div class="relative" v-click-outside="() => (showSortMenu = false)">
                                     <button
                                         @click="showSortMenu = !showSortMenu"
-                                        class="flex items-center gap-2 px-4 py-3 border-2 border-gray-200 rounded-xl hover:bg-gray-50 hover:border-indigo-300 transition-all bg-white text-sm font-semibold text-gray-700 shadow-sm min-w-[140px]"
-                                        :class="{ 'border-indigo-500 bg-indigo-50': showSortMenu }"
+                                        class="flex items-center gap-2 px-4 py-3 border-2 border-gray-200 dark:border-white/10 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 hover:border-indigo-300 transition-all bg-white dark:bg-[#262932] text-sm font-semibold text-gray-700 dark:text-gray-200 shadow-sm min-w-[140px]"
+                                        :class="{
+                                            'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/15': showSortMenu,
+                                        }"
                                     >
                                         <icon name="sort" class="w-4 h-4" />
                                         <span class="flex-1 text-left">{{ getSortLabel() }}</span>
@@ -403,7 +435,7 @@
                                     </button>
                                     <div
                                         v-if="showSortMenu"
-                                        class="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-gray-200/60 overflow-hidden z-[9999] backdrop-blur-xl"
+                                        class="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-[#262932] rounded-2xl shadow-2xl border border-gray-200/60 dark:border-white/10 overflow-hidden z-[9999] backdrop-blur-xl"
                                     >
                                         <div class="p-2">
                                             <button
@@ -413,23 +445,27 @@
                                                     sortBy = option.value;
                                                     showSortMenu = false;
                                                 "
-                                                class="w-full flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 rounded-xl transition-all duration-200"
+                                                class="w-full flex items-center px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-indigo-50 dark:hover:bg-indigo-500/20 hover:text-indigo-600 rounded-xl transition-all duration-200"
                                                 :class="{
-                                                    'bg-indigo-50 text-indigo-600 font-semibold':
+                                                    'bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-300 font-semibold':
                                                         sortBy === option.value,
                                                 }"
                                             >
                                                 <div
                                                     class="p-1.5 rounded-lg mr-3"
-                                                    :class="sortBy === option.value ? 'bg-indigo-100' : 'bg-gray-100'"
+                                                    :class="
+                                                        sortBy === option.value
+                                                            ? 'bg-indigo-100 dark:bg-indigo-500/20'
+                                                            : 'bg-gray-100 dark:bg-white/10'
+                                                    "
                                                 >
                                                     <icon
                                                         :name="option.icon"
                                                         class="w-4 h-4"
                                                         :class="
                                                             sortBy === option.value
-                                                                ? 'text-indigo-600'
-                                                                : 'text-gray-600'
+                                                                ? 'text-indigo-600 dark:text-indigo-300'
+                                                                : 'text-gray-600 dark:text-gray-300'
                                                         "
                                                     />
                                                 </div>
@@ -437,7 +473,7 @@
                                                 <icon
                                                     v-if="sortBy === option.value"
                                                     name="check"
-                                                    class="w-5 h-5 text-indigo-600"
+                                                    class="w-5 h-5 text-indigo-600 dark:text-indigo-300"
                                                 />
                                             </button>
                                         </div>
@@ -445,7 +481,7 @@
                                 </div>
                                 <!-- View Toggle -->
                                 <div
-                                    class="flex items-center border-2 border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm"
+                                    class="flex items-center border-2 border-gray-200 dark:border-white/10 rounded-xl overflow-hidden bg-white dark:bg-[#262932] shadow-sm"
                                 >
                                     <button
                                         @click="viewMode = 'grid'"
@@ -453,7 +489,7 @@
                                         :class="
                                             viewMode === 'grid'
                                                 ? 'bg-gradient-to-br from-indigo-600 to-purple-600 text-white shadow-md'
-                                                : 'text-gray-600 hover:bg-gray-50'
+                                                : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5'
                                         "
                                         :title="$t('Grid View')"
                                     >
@@ -474,11 +510,11 @@
                                     </button>
                                     <button
                                         @click="viewMode = 'list'"
-                                        class="p-3 transition-all duration-200 border-l-2 border-gray-200"
+                                        class="p-3 transition-all duration-200 border-l-2 border-gray-200 dark:border-white/10"
                                         :class="
                                             viewMode === 'list'
                                                 ? 'bg-gradient-to-br from-indigo-600 to-purple-600 text-white shadow-md'
-                                                : 'text-gray-600 hover:bg-gray-50'
+                                                : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5'
                                         "
                                         :title="$t('List View')"
                                     >
@@ -520,22 +556,24 @@
                     <li v-if="!!this.$page.props.auth.user.role.create_project && !create_project" class="w-full">
                         <button
                             @click="create_project = true"
-                            class="group w-full rounded-3xl border-2 border-dashed border-gray-300 hover:border-indigo-400 bg-gradient-to-br from-gray-50 via-white to-gray-50 hover:from-indigo-50 hover:via-purple-50 hover:to-pink-50 transition-all duration-500 p-8 flex flex-col items-center justify-center relative overflow-hidden"
+                            class="group w-full rounded-3xl border-2 border-dashed border-gray-300 dark:border-white/15 hover:border-indigo-400 bg-gradient-to-br from-gray-50 dark:from-white/5 via-white to-gray-50 hover:from-indigo-50 hover:via-purple-50 hover:to-pink-50 transition-all duration-500 p-8 flex flex-col items-center justify-center relative overflow-hidden"
                         >
                             <div
                                 class="absolute inset-0 bg-gradient-to-br from-indigo-500/0 via-purple-500/0 to-pink-500/0 group-hover:from-indigo-500/5 group-hover:via-purple-500/5 group-hover:to-pink-500/5 transition-all duration-500"
                             ></div>
                             <div
-                                class="relative z-10 p-4 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-2xl mb-4 group-hover:from-indigo-200 group-hover:to-purple-200 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 transform shadow-lg"
+                                class="relative z-10 p-4 bg-gradient-to-br from-indigo-100 dark:from-indigo-500/20 to-purple-100 dark:to-purple-500/20 rounded-2xl mb-4 group-hover:from-indigo-200 group-hover:to-purple-200 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 transform shadow-lg"
                             >
-                                <icon name="plus" class="w-8 h-8 text-indigo-600" />
+                                <icon name="plus" class="w-8 h-8 text-indigo-600 dark:text-indigo-300" />
                             </div>
                             <div
-                                class="relative z-10 text-xl font-bold text-gray-800 group-hover:text-indigo-600 transition-colors mb-1"
+                                class="relative z-10 text-xl font-bold text-gray-800 dark:text-gray-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition-colors mb-1"
                             >
                                 {{ $t('Create new project') }}
                             </div>
-                            <div class="relative z-10 text-sm text-gray-500 group-hover:text-indigo-500 font-medium">
+                            <div
+                                class="relative z-10 text-sm text-gray-500 dark:text-gray-400 group-hover:text-indigo-500 font-medium"
+                            >
                                 {{ $t('Start organizing your work') }}
                             </div>
                         </button>
@@ -622,17 +660,23 @@
                         </Link>
                     </li>
                     <li v-if="filteredProjects.length === 0 && searchQuery" class="w-full col-span-full">
-                        <div class="bg-white rounded-2xl border-2 border-dashed border-gray-300 p-12 text-center">
+                        <div
+                            class="bg-white dark:bg-[#262932] rounded-2xl border-2 border-dashed border-gray-300 dark:border-white/15 p-12 text-center"
+                        >
                             <div
-                                class="p-4 bg-gray-100 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center"
+                                class="p-4 bg-gray-100 dark:bg-white/10 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center"
                             >
-                                <icon name="search" class="w-10 h-10 text-gray-400" />
+                                <icon name="search" class="w-10 h-10 text-gray-400 dark:text-gray-500" />
                             </div>
-                            <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ $t('No projects found') }}</h3>
-                            <p class="text-gray-600 mb-6">{{ $t('Try adjusting your search or filters') }}</p>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                                {{ $t('No projects found') }}
+                            </h3>
+                            <p class="text-gray-600 dark:text-gray-300 mb-6">
+                                {{ $t('Try adjusting your search or filters') }}
+                            </p>
                             <button
                                 @click="searchQuery = ''"
-                                class="inline-flex gap-2 items-center bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium px-6 py-3 rounded-xl transition-all duration-200"
+                                class="inline-flex gap-2 items-center bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-700 dark:text-gray-200 font-medium px-6 py-3 rounded-xl transition-all duration-200"
                             >
                                 <icon name="close" class="w-5 h-5" />
                                 <span>{{ $t('Clear Search') }}</span>
@@ -640,14 +684,20 @@
                         </div>
                     </li>
                     <li v-if="!projects || projects.length === 0" class="w-full col-span-full">
-                        <div class="bg-white rounded-2xl border-2 border-dashed border-gray-300 p-12 text-center">
+                        <div
+                            class="bg-white dark:bg-[#262932] rounded-2xl border-2 border-dashed border-gray-300 dark:border-white/15 p-12 text-center"
+                        >
                             <div
-                                class="p-4 bg-gray-100 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center"
+                                class="p-4 bg-gray-100 dark:bg-white/10 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center"
                             >
-                                <icon name="folder" class="w-10 h-10 text-gray-400" />
+                                <icon name="folder" class="w-10 h-10 text-gray-400 dark:text-gray-500" />
                             </div>
-                            <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ $t('No projects yet') }}</h3>
-                            <p class="text-gray-600 mb-6">{{ $t('Create your first project to get started') }}</p>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                                {{ $t('No projects yet') }}
+                            </h3>
+                            <p class="text-gray-600 dark:text-gray-300 mb-6">
+                                {{ $t('Create your first project to get started') }}
+                            </p>
                             <button
                                 v-if="!!this.$page.props.auth.user.role.create_project"
                                 @click="create_project = true"
@@ -665,18 +715,20 @@
                     <button
                         v-if="!!this.$page.props.auth.user.role.create_project && !create_project"
                         @click="create_project = true"
-                        class="group w-full rounded-xl border-2 border-dashed border-gray-300 hover:border-indigo-500 bg-gradient-to-r from-gray-50 to-white hover:from-indigo-50 hover:to-purple-50 transition-all duration-300 p-6 flex items-center justify-center gap-4"
+                        class="group w-full rounded-xl border-2 border-dashed border-gray-300 dark:border-white/15 hover:border-indigo-500 bg-gradient-to-r from-gray-50 dark:from-white/5 to-white dark:to-white/5 hover:from-indigo-50 hover:to-purple-50 transition-all duration-300 p-6 flex items-center justify-center gap-4"
                     >
-                        <div class="p-3 bg-indigo-100 rounded-xl group-hover:bg-indigo-200 transition-colors">
-                            <icon name="plus" class="w-6 h-6 text-indigo-600" />
+                        <div
+                            class="p-3 bg-indigo-100 dark:bg-indigo-500/20 rounded-xl group-hover:bg-indigo-200 transition-colors"
+                        >
+                            <icon name="plus" class="w-6 h-6 text-indigo-600 dark:text-indigo-300" />
                         </div>
                         <div class="text-left">
                             <div
-                                class="text-lg font-semibold text-gray-700 group-hover:text-indigo-600 transition-colors"
+                                class="text-lg font-semibold text-gray-700 dark:text-gray-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition-colors"
                             >
                                 {{ $t('Create new project') }}
                             </div>
-                            <div class="text-sm text-gray-500">
+                            <div class="text-sm text-gray-500 dark:text-gray-400">
                                 {{ $t('Start organizing your work') }}
                             </div>
                         </div>
@@ -685,7 +737,7 @@
                         v-for="(project, project_index) in filteredProjects"
                         :key="project.id"
                         :href="route('projects.view.board', project.slug || project.id)"
-                        class="group block bg-white rounded-2xl shadow-lg hover:shadow-2xl border-2 border-gray-200/60 hover:border-indigo-300 transition-all duration-500 overflow-hidden hover:-translate-y-1"
+                        class="group block bg-white dark:bg-[#262932] rounded-2xl shadow-lg hover:shadow-2xl border-2 border-gray-200/60 dark:border-white/10 hover:border-indigo-300 transition-all duration-500 overflow-hidden hover:-translate-y-1"
                     >
                         <div class="flex items-center gap-5 p-6">
                             <div
@@ -703,12 +755,12 @@
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-start justify-between mb-2">
                                     <h3
-                                        class="text-xl font-extrabold text-gray-900 truncate pr-3 group-hover:text-indigo-600 transition-colors"
+                                        class="text-xl font-extrabold text-gray-900 dark:text-gray-100 truncate pr-3 group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition-colors"
                                     >
                                         {{ project.title }}
                                     </h3>
                                     <button
-                                        class="flex w-9 h-9 items-center justify-center rounded-xl hover:bg-indigo-50 transition-all flex-shrink-0"
+                                        class="flex w-9 h-9 items-center justify-center rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-500/20 transition-all flex-shrink-0"
                                         @click.stop="saveProject($event, project)"
                                     >
                                         <icon
@@ -716,46 +768,58 @@
                                             name="star"
                                             class="w-5 h-5 fill-yellow-400 text-yellow-400"
                                         />
-                                        <icon v-else name="star" class="w-5 h-5 text-gray-400 hover:text-yellow-400" />
+                                        <icon
+                                            v-else
+                                            name="star"
+                                            class="w-5 h-5 text-gray-400 dark:text-gray-500 hover:text-yellow-400"
+                                        />
                                     </button>
                                 </div>
                                 <p
                                     v-if="project.description"
-                                    class="text-sm text-gray-600 line-clamp-2 mb-3 leading-relaxed"
+                                    class="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 mb-3 leading-relaxed"
                                 >
                                     {{ project.description }}
                                 </p>
                                 <div class="flex items-center gap-4">
-                                    <div class="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 rounded-lg">
-                                        <icon name="folder" class="w-4 h-4 text-indigo-600" />
-                                        <span class="text-xs text-indigo-600 font-semibold">{{ $t('Project') }}</span>
+                                    <div
+                                        class="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-500/15 rounded-lg"
+                                    >
+                                        <icon name="folder" class="w-4 h-4 text-indigo-600 dark:text-indigo-300" />
+                                        <span class="text-xs text-indigo-600 dark:text-indigo-300 font-semibold">{{
+                                            $t('Project')
+                                        }}</span>
                                     </div>
                                 </div>
                             </div>
                             <div
-                                class="flex-shrink-0 p-3 bg-indigo-50 rounded-xl group-hover:bg-indigo-100 transition-colors"
+                                class="flex-shrink-0 p-3 bg-indigo-50 dark:bg-indigo-500/15 rounded-xl group-hover:bg-indigo-100 transition-colors"
                             >
                                 <icon
                                     name="arrow-right"
-                                    class="w-6 h-6 text-indigo-600 group-hover:translate-x-1 transition-transform"
+                                    class="w-6 h-6 text-indigo-600 dark:text-indigo-300 group-hover:translate-x-1 transition-transform"
                                 />
                             </div>
                         </div>
                     </Link>
                     <div
                         v-if="filteredProjects.length === 0 && searchQuery"
-                        class="bg-white rounded-xl border-2 border-dashed border-gray-300 p-12 text-center"
+                        class="bg-white dark:bg-[#262932] rounded-xl border-2 border-dashed border-gray-300 dark:border-white/15 p-12 text-center"
                     >
                         <div
-                            class="p-4 bg-gray-100 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center"
+                            class="p-4 bg-gray-100 dark:bg-white/10 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center"
                         >
-                            <icon name="search" class="w-10 h-10 text-gray-400" />
+                            <icon name="search" class="w-10 h-10 text-gray-400 dark:text-gray-500" />
                         </div>
-                        <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ $t('No projects found') }}</h3>
-                        <p class="text-gray-600 mb-6">{{ $t('Try adjusting your search or filters') }}</p>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                            {{ $t('No projects found') }}
+                        </h3>
+                        <p class="text-gray-600 dark:text-gray-300 mb-6">
+                            {{ $t('Try adjusting your search or filters') }}
+                        </p>
                         <button
                             @click="searchQuery = ''"
-                            class="inline-flex gap-2 items-center bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium px-6 py-3 rounded-xl transition-all duration-200"
+                            class="inline-flex gap-2 items-center bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-700 dark:text-gray-200 font-medium px-6 py-3 rounded-xl transition-all duration-200"
                         >
                             <icon name="close" class="w-5 h-5" />
                             <span>{{ $t('Clear Search') }}</span>
@@ -763,15 +827,19 @@
                     </div>
                     <div
                         v-if="!projects || projects.length === 0"
-                        class="bg-white rounded-xl border-2 border-dashed border-gray-300 p-12 text-center"
+                        class="bg-white dark:bg-[#262932] rounded-xl border-2 border-dashed border-gray-300 dark:border-white/15 p-12 text-center"
                     >
                         <div
-                            class="p-4 bg-gray-100 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center"
+                            class="p-4 bg-gray-100 dark:bg-white/10 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center"
                         >
-                            <icon name="folder" class="w-10 h-10 text-gray-400" />
+                            <icon name="folder" class="w-10 h-10 text-gray-400 dark:text-gray-500" />
                         </div>
-                        <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ $t('No projects yet') }}</h3>
-                        <p class="text-gray-600 mb-6">{{ $t('Create your first project to get started') }}</p>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                            {{ $t('No projects yet') }}
+                        </h3>
+                        <p class="text-gray-600 dark:text-gray-300 mb-6">
+                            {{ $t('Create your first project to get started') }}
+                        </p>
                         <button
                             v-if="!!this.$page.props.auth.user.role.create_project"
                             @click="create_project = true"

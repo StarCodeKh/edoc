@@ -5,7 +5,9 @@
             <!-- The header and filter bar hold their place; only the log
                  below them scrolls, so the filters stay reachable however
                  far down the trail runs. -->
-            <div class="flex h-full flex-col overflow-hidden bg-gradient-to-br from-gray-50 to-white">
+            <div
+                class="flex h-full flex-col overflow-hidden bg-gradient-to-br from-gray-50 dark:from-white/5 to-white dark:to-white/5"
+            >
                 <div class="flex-shrink-0 px-4 pt-4">
                     <!-- Header. This gradient ended on indigo shade 700, which the
                          app's tailwind.config does not define (it replaces the

@@ -15,7 +15,7 @@
                         'flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200',
                         form.channel === tab.key
                             ? 'bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-300 shadow-sm'
-                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200',
+                            : 'text-gray-600 dark:text-gray-300 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white dark:hover:text-gray-200',
                     ]"
                 >
                     {{ $t(tab.label) }}
@@ -200,12 +200,12 @@ export default {
     font-size: 12px;
     letter-spacing: 0.02em;
     text-transform: uppercase;
-    color: #6b7280;
-    background: #ffffff;
-    border-bottom: 1px solid #e5e7eb;
+    color: var(--ink-muted);
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
 }
 :global(.dark) .tmpl-th {
-    color: #9ca3af;
+    color: var(--ink-subtle);
     background: #1f2937;
     border-bottom-color: #374151;
 }

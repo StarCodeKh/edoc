@@ -22,14 +22,14 @@
             </div>
 
             <!-- Enhanced Timeline Container -->
-            <div class="flex-1 flex flex-col bg-gradient-to-br from-gray-50 dark:from-white/5 to-white">
+            <div class="flex-1 flex flex-col bg-gradient-to-br from-gray-50 dark:from-white/5 to-white dark:to-white/5">
                 <div
                     v-if="timelineReady"
                     class="flex-1 flex flex-col m-2 sm:m-4 bg-white dark:bg-[#262932] rounded-2xl shadow-xl border border-gray-200/60 dark:border-white/10 overflow-hidden"
                 >
                     <!-- Enhanced Timeline Header -->
                     <div
-                        class="timeline-header border-b border-gray-200/60 dark:border-white/10 bg-gradient-to-r from-white via-gray-50/30 to-white"
+                        class="timeline-header border-b border-gray-200/60 dark:border-white/10 bg-gradient-to-r from-white dark:from-white/5 via-gray-50/30 dark:via-white/5 to-white dark:to-white/5"
                     >
                         <div class="px-3 py-4 sm:px-6 sm:py-5">
                             <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">

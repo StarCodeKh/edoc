@@ -10,14 +10,14 @@
             />
 
             <!-- Enhanced Calendar Container -->
-            <div class="flex-1 flex flex-col bg-gradient-to-br from-gray-50 dark:from-white/5 to-white">
+            <div class="flex-1 flex flex-col bg-gradient-to-br from-gray-50 dark:from-white/5 to-white dark:to-white/5">
                 <div
                     v-if="calendarReady"
                     class="flex-1 flex flex-col m-2 sm:m-4 bg-white dark:bg-[#262932] rounded-2xl shadow-xl border border-gray-200/60 dark:border-white/10 overflow-hidden"
                 >
                     <!-- Enhanced Calendar Header -->
                     <div
-                        class="calendar-header border-b border-gray-200/60 dark:border-white/10 bg-gradient-to-r from-white via-gray-50/30 to-white"
+                        class="calendar-header border-b border-gray-200/60 dark:border-white/10 bg-gradient-to-r from-white dark:from-white/5 via-gray-50/30 dark:via-white/5 to-white dark:to-white/5"
                     >
                         <div class="px-3 py-4 sm:px-6 sm:py-5">
                             <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
@@ -132,7 +132,7 @@
                         <div v-if="currentView === 'month'" class="month-view h-full flex flex-col">
                             <!-- Days of Week Header -->
                             <div
-                                class="grid grid-cols-7 bg-gradient-to-r from-gray-50 dark:from-white/5 via-indigo-50/30 to-gray-50 border-b border-gray-200/60 dark:border-white/10"
+                                class="grid grid-cols-7 bg-gradient-to-r from-gray-50 dark:from-white/5 via-indigo-50/30 to-gray-50 dark:to-white/5 border-b border-gray-200/60 dark:border-white/10"
                             >
                                 <div
                                     v-for="(day, dayIndex) in calendarWeekdays"
@@ -207,7 +207,7 @@
                                         </div>
                                         <div v-if="getTasksForDay(day.date).length > 0" class="flex items-center">
                                             <div
-                                                class="text-[10px] sm:text-xs font-semibold text-indigo-600 dark:text-indigo-300 bg-indigo-100 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full shadow-sm"
+                                                class="text-[10px] sm:text-xs font-semibold text-indigo-600 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-500/20 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full shadow-sm"
                                             >
                                                 {{ khNum(getTasksForDay(day.date).length) }}
                                             </div>
@@ -315,7 +315,7 @@
                         <div v-else-if="currentView === 'week'" class="week-view h-full flex flex-col">
                             <!-- Week Header -->
                             <div
-                                class="grid grid-cols-8 border-b bg-gradient-to-r from-gray-50 dark:from-white/5 via-indigo-50/30 to-gray-50 sticky top-0 z-10"
+                                class="grid grid-cols-8 border-b bg-gradient-to-r from-gray-50 dark:from-white/5 via-indigo-50/30 to-gray-50 dark:to-white/5 sticky top-0 z-10"
                             >
                                 <div
                                     class="p-4 border-r border-gray-200/40 dark:border-white/10 bg-white/60 dark:bg-white/5"
@@ -350,7 +350,7 @@
                                         {{ khDayLabel(day) }}
                                     </div>
                                     <div
-                                        class="text-xs text-indigo-600 dark:text-indigo-300 mt-2 font-semibold bg-indigo-100 px-2 py-1 rounded-full"
+                                        class="text-xs text-indigo-600 dark:text-indigo-300 mt-2 font-semibold bg-indigo-100 dark:bg-indigo-500/20 px-2 py-1 rounded-full"
                                     >
                                         {{ $t(':count tasks', { count: khNum(getTasksForDay(day).length) }) }}
                                     </div>
@@ -500,7 +500,7 @@
                                                             >
                                                             <span
                                                                 v-if="task.list"
-                                                                class="bg-indigo-100 text-indigo-700 dark:text-indigo-300 px-2 py-1 rounded-lg font-medium"
+                                                                class="bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 px-2 py-1 rounded-lg font-medium"
                                                                 >{{ task.list.title }}</span
                                                             >
                                                         </div>

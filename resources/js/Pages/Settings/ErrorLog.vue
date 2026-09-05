@@ -1,7 +1,7 @@
 <template>
     <div class="h-full">
         <Head :title="$t('Error Log')" />
-        <div class="flex h-full flex-col overflow-hidden bg-gradient-to-br from-gray-50 to-white">
+        <div class="flex h-full flex-col overflow-hidden bg-gradient-to-br from-gray-50 dark:from-white/5 to-white">
             <!-- Header + filters hold their place; only the log below scrolls. -->
             <div class="flex-shrink-0 px-4 pt-4">
                 <div class="rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-red-900 px-6 py-5 shadow-lg">
@@ -33,7 +33,7 @@
                     </div>
                 </div>
 
-                <div class="mt-4 rounded-2xl border border-gray-200/70 bg-white p-4 shadow-sm">
+                <div class="mt-4 rounded-2xl border border-gray-200/70 bg-white dark:bg-[#262932] p-4 shadow-sm">
                     <div class="flex flex-wrap items-end gap-3">
                         <div class="min-w-[15rem] flex-1">
                             <span class="log-caption">{{ $t('Search') }}</span>
@@ -95,8 +95,10 @@
 
             <!-- Log -->
             <div class="log-scroll min-h-0 flex-1 overflow-y-auto px-4 pb-4">
-                <div class="mt-4 overflow-hidden rounded-2xl border border-gray-200/70 bg-white shadow-sm">
-                    <div v-if="entries.data.length" class="divide-y divide-gray-100">
+                <div
+                    class="mt-4 overflow-hidden rounded-2xl border border-gray-200/70 bg-white dark:bg-[#262932] shadow-sm"
+                >
+                    <div v-if="entries.data.length" class="divide-y divide-gray-100 dark:divide-white/10">
                         <button
                             v-for="entry in entries.data"
                             :key="entry.id"
@@ -115,10 +117,10 @@
                     </div>
 
                     <div v-else class="flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
-                        <div class="rounded-2xl bg-green-100 p-4">
+                        <div class="rounded-2xl bg-green-100 dark:bg-green-500/20 p-4">
                             <icon name="complete" class="h-8 w-8 text-green-600" />
                         </div>
-                        <p class="font-semibold text-gray-700">
+                        <p class="font-semibold text-gray-700 dark:text-gray-200">
                             {{
                                 hasFilters ? $t('No matches') : $t('Nothing logged — the application is running clean.')
                             }}
@@ -127,7 +129,7 @@
                             v-if="hasFilters"
                             type="button"
                             @click="reset"
-                            class="text-sm font-semibold text-indigo-600 hover:text-indigo-800"
+                            class="text-sm font-semibold text-indigo-600 dark:text-indigo-300 hover:text-indigo-800"
                         >
                             {{ $t('Clear All') }}
                         </button>
@@ -320,7 +322,7 @@ export default {
     font-weight: 700;
     letter-spacing: 0.05em;
     text-transform: uppercase;
-    color: #6b7280;
+    color: var(--ink-muted);
 }
 .log-search {
     position: relative;
@@ -333,17 +335,17 @@ export default {
     height: 14px;
     transform: translateY(-50%);
     pointer-events: none;
-    color: #9ca3af;
+    color: var(--ink-subtle);
 }
 .log-search__input {
     width: 100%;
     height: 38px;
     padding: 0 12px 0 34px;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--line-strong);
     border-radius: 9px;
     font-size: 14px;
-    color: #1f2937;
-    background: #fff;
+    color: var(--ink);
+    background: var(--surface);
     transition:
         border-color 0.15s ease,
         box-shadow 0.15s ease;
@@ -357,10 +359,10 @@ export default {
     height: 38px;
     min-width: 11rem;
     border-radius: 9px;
-    border-color: #d1d5db;
+    border-color: var(--line-strong);
     font-size: 13px;
     font-weight: 500;
-    color: #1f2937;
+    color: var(--ink);
 }
 .log-clear,
 .log-danger {
@@ -374,20 +376,20 @@ export default {
     font-weight: 600;
 }
 .log-clear {
-    color: #6b7280;
+    color: var(--ink-muted);
 }
 .log-clear:hover {
-    background: #fef2f2;
-    color: #dc2626;
+    background: var(--tint-bad-bg);
+    color: var(--tint-bad-ink);
 }
 .log-danger {
-    color: #b91c1c;
-    border: 1px solid #fecaca;
-    background: #fff;
+    color: var(--tint-bad-ink);
+    border: 1px solid var(--tint-bad-border);
+    background: var(--surface);
 }
 .log-danger:hover:not(:disabled) {
-    background: #fef2f2;
-    border-color: #fca5a5;
+    background: var(--tint-bad-bg);
+    border-color: var(--tint-bad-border);
 }
 .log-danger:disabled {
     opacity: 0.55;
@@ -448,42 +450,42 @@ export default {
 .log-row__level.is-emergency,
 .log-row__level.is-alert,
 .log-row__level.is-critical {
-    background: #7f1d1d;
+    background: var(--tint-bad-bg);
     color: #fff;
 }
 .log-row__level.is-error {
-    background: #fee2e2;
-    color: #b91c1c;
+    background: var(--tint-bad-bg);
+    color: var(--tint-bad-ink);
 }
 .log-row__level.is-warning {
-    background: #ffedd5;
-    color: #c2410c;
+    background: var(--tint-warn-bg);
+    color: var(--tint-warn-ink);
 }
 .log-row__level.is-notice {
-    background: #fef9c3;
-    color: #a16207;
+    background: var(--tint-warn-bg);
+    color: var(--tint-warn-ink);
 }
 .log-row__level.is-info {
-    background: #dbeafe;
-    color: #1d4ed8;
+    background: var(--tint-info-bg);
+    color: var(--tint-info-ink);
 }
 .log-row__level.is-debug {
-    background: #f1f5f9;
-    color: #64748b;
+    background: var(--surface-raised);
+    color: var(--ink-muted);
 }
 
 .log-row__msg {
     flex: 1;
     min-width: 0;
     font-size: 13px;
-    color: #374151;
+    color: var(--ink);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 .log-row__trace {
     flex-shrink: 0;
-    color: #94a3b8;
+    color: var(--ink-subtle);
 }
 .log-row__time {
     width: 8.5rem;
@@ -491,7 +493,7 @@ export default {
     text-align: right;
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 11px;
-    color: #9ca3af;
+    color: var(--ink-subtle);
 }
 .log-row__chevron {
     width: 14px;
@@ -522,7 +524,7 @@ export default {
     max-width: 48rem;
     max-height: 88vh;
     overflow: hidden;
-    background: #fff;
+    background: var(--surface);
     border-radius: 16px;
     box-shadow: 0 24px 60px rgba(15, 23, 42, 0.3);
 }
@@ -536,12 +538,12 @@ export default {
 .log-panel__time {
     font-size: 14px;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--ink);
 }
 .log-panel__meta {
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 11px;
-    color: #94a3b8;
+    color: var(--ink-subtle);
 }
 .log-panel__close {
     display: flex;
@@ -551,11 +553,11 @@ export default {
     height: 28px;
     flex-shrink: 0;
     border-radius: 999px;
-    color: #94a3b8;
+    color: var(--ink-subtle);
 }
 .log-panel__close:hover {
-    background: #f1f5f9;
-    color: #475569;
+    background: var(--surface-raised);
+    color: var(--ink-muted);
 }
 
 .log-panel__body {
@@ -568,16 +570,16 @@ export default {
     font-weight: 800;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: #94a3b8;
+    color: var(--ink-subtle);
 }
 .log-panel__message {
     padding: 10px 12px;
     border-radius: 10px;
-    background: #fef2f2;
-    border: 1px solid #fee2e2;
+    background: var(--tint-bad-bg);
+    border: 1px solid var(--tint-bad-border);
     font-size: 13px;
     line-height: 1.55;
-    color: #7f1d1d;
+    color: var(--tint-bad-ink);
     word-break: break-word;
 }
 .log-panel__trace {
@@ -601,7 +603,7 @@ export default {
     gap: 8px;
     padding: 12px 18px;
     border-top: 1px solid #eef2f7;
-    background: #fbfdff;
+    background: var(--surface-sunken);
 }
 .log-btn {
     display: inline-flex;
@@ -613,12 +615,12 @@ export default {
     font-weight: 700;
 }
 .log-btn--ghost {
-    color: #475569;
-    background: #fff;
-    border: 1px solid #e2e8f0;
+    color: var(--ink-muted);
+    background: var(--surface);
+    border: 1px solid var(--line);
 }
 .log-btn--ghost:hover {
-    background: #f1f5f9;
+    background: var(--surface-raised);
 }
 .log-btn--primary {
     color: #fff;

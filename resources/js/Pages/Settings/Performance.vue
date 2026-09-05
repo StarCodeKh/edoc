@@ -1,7 +1,7 @@
 <template>
     <div class="h-full">
         <Head :title="$t('Performance')" />
-        <div class="flex h-full flex-col overflow-hidden bg-gradient-to-br from-gray-50 to-white">
+        <div class="flex h-full flex-col overflow-hidden bg-gradient-to-br from-gray-50 dark:from-white/5 to-white">
             <div class="flex-shrink-0 px-4 pt-4">
                 <div class="rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-teal-900 px-6 py-5 shadow-lg">
                     <div class="flex flex-wrap items-center justify-between gap-4">
@@ -56,7 +56,7 @@
 
             <div class="perf-scroll min-h-0 flex-1 overflow-y-auto px-4 pb-4">
                 <!-- Server health -->
-                <div class="mt-4 rounded-2xl border border-gray-200/70 bg-white p-4 shadow-sm">
+                <div class="mt-4 rounded-2xl border border-gray-200/70 bg-white dark:bg-[#262932] p-4 shadow-sm">
                     <div class="perf-section">{{ $t('Server health') }}</div>
                     <div class="perf-checks">
                         <div
@@ -76,7 +76,9 @@
                 </div>
 
                 <!-- Slowest routes -->
-                <div class="mt-4 overflow-hidden rounded-2xl border border-gray-200/70 bg-white shadow-sm">
+                <div
+                    class="mt-4 overflow-hidden rounded-2xl border border-gray-200/70 bg-white dark:bg-[#262932] shadow-sm"
+                >
                     <div class="flex flex-wrap items-center justify-between gap-3 px-4 pt-4">
                         <div class="perf-section mb-0">{{ $t('Slowest pages') }}</div>
                         <div class="flex items-center gap-1">
@@ -93,7 +95,7 @@
                         </div>
                     </div>
 
-                    <div v-if="slowest.length" class="mt-3 divide-y divide-gray-100">
+                    <div v-if="slowest.length" class="mt-3 divide-y divide-gray-100 dark:divide-white/10">
                         <div v-for="row in slowest" :key="row.route + row.path" class="perf-route">
                             <div class="min-w-0 flex-1">
                                 <div class="perf-route__name">{{ row.route || $t('Unnamed route') }}</div>
@@ -112,13 +114,15 @@
                             <span class="perf-route__hits">{{ khNum(row.hits) }}×</span>
                         </div>
                     </div>
-                    <p v-else class="px-4 py-10 text-center text-sm text-gray-400">
+                    <p v-else class="px-4 py-10 text-center text-sm text-gray-400 dark:text-gray-500">
                         {{ $t('Nothing has been slow enough to record.') }}
                     </p>
                 </div>
 
                 <!-- Recent slow requests -->
-                <div class="mt-4 overflow-hidden rounded-2xl border border-gray-200/70 bg-white shadow-sm">
+                <div
+                    class="mt-4 overflow-hidden rounded-2xl border border-gray-200/70 bg-white dark:bg-[#262932] shadow-sm"
+                >
                     <div class="flex flex-wrap items-end justify-between gap-3 px-4 pt-4">
                         <div class="perf-section mb-0">{{ $t('Recent slow requests') }}</div>
                         <div class="flex flex-wrap items-end gap-2">
@@ -148,7 +152,7 @@
                         </div>
                     </div>
 
-                    <div v-if="entries.data.length" class="mt-3 divide-y divide-gray-100">
+                    <div v-if="entries.data.length" class="mt-3 divide-y divide-gray-100 dark:divide-white/10">
                         <div v-for="entry in entries.data" :key="entry.id" class="perf-row">
                             <span class="perf-row__ms" :class="msClass(entry.duration_ms)">{{
                                 ms(entry.duration_ms)
@@ -164,7 +168,7 @@
                             <span class="perf-row__time">{{ moment(entry.created_at).format('DD MMM, HH:mm') }}</span>
                         </div>
                     </div>
-                    <p v-else class="px-4 py-10 text-center text-sm text-gray-400">
+                    <p v-else class="px-4 py-10 text-center text-sm text-gray-400 dark:text-gray-500">
                         {{ recording ? $t('Nothing has been slow enough to record.') : $t('Recording is turned off.') }}
                     </p>
 
@@ -310,7 +314,7 @@ export default {
     font-weight: 800;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: #6b7280;
+    color: var(--ink-muted);
 }
 
 /* ---- health grid ---- */
@@ -326,15 +330,15 @@ export default {
     padding: 10px 12px;
     border: 1px solid #eef2f7;
     border-radius: 12px;
-    background: #fbfdff;
+    background: var(--surface-sunken);
 }
 .perf-check.is-warn {
-    border-color: #fed7aa;
-    background: #fffbeb;
+    border-color: var(--tint-warn-border);
+    background: var(--tint-warn-bg);
 }
 .perf-check.is-bad {
-    border-color: #fecaca;
-    background: #fef2f2;
+    border-color: var(--tint-bad-border);
+    background: var(--tint-bad-bg);
 }
 .perf-check__dot {
     width: 8px;
@@ -355,21 +359,21 @@ export default {
     font-weight: 800;
     letter-spacing: 0.05em;
     text-transform: uppercase;
-    color: #94a3b8;
+    color: var(--ink-subtle);
 }
 .perf-check__value {
     font-size: 13px;
     font-weight: 600;
-    color: #1f2937;
+    color: var(--ink);
 }
 .perf-check__hint {
     margin-top: 3px;
     font-size: 11px;
     line-height: 1.45;
-    color: #b45309;
+    color: var(--tint-warn-ink);
 }
 .perf-check.is-bad .perf-check__hint {
-    color: #b91c1c;
+    color: var(--tint-bad-ink);
 }
 
 /* ---- slowest pages ---- */
@@ -378,10 +382,10 @@ export default {
     border-radius: 999px;
     font-size: 11px;
     font-weight: 700;
-    color: #6b7280;
+    color: var(--ink-muted);
 }
 .perf-range:hover {
-    background: #f1f5f9;
+    background: var(--surface-raised);
 }
 .perf-range.is-active {
     background: #6574cd;
@@ -397,7 +401,7 @@ export default {
 .perf-route__name {
     font-size: 12.5px;
     font-weight: 700;
-    color: #111827;
+    color: var(--ink);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -405,7 +409,7 @@ export default {
 .perf-route__path {
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 11px;
-    color: #94a3b8;
+    color: var(--ink-subtle);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -415,7 +419,7 @@ export default {
     height: 6px;
     flex-shrink: 0;
     border-radius: 999px;
-    background: #f1f5f9;
+    background: var(--surface-raised);
     overflow: hidden;
 }
 .perf-route__fill {
@@ -444,7 +448,7 @@ export default {
     flex-shrink: 0;
     text-align: right;
     font-size: 11px;
-    color: #94a3b8;
+    color: var(--ink-subtle);
 }
 .perf-route__hits {
     width: 3rem;
@@ -452,17 +456,17 @@ export default {
     text-align: right;
     font-size: 11px;
     font-weight: 600;
-    color: #6b7280;
+    color: var(--ink-muted);
 }
 
 .is-ok {
-    color: #15803d;
+    color: var(--tint-good-ink);
 }
 .is-warn {
-    color: #b45309;
+    color: var(--tint-warn-ink);
 }
 .is-bad {
-    color: #b91c1c;
+    color: var(--tint-bad-ink);
 }
 
 /* ---- recent requests ---- */
@@ -477,13 +481,13 @@ export default {
     height: 13px;
     transform: translateY(-50%);
     pointer-events: none;
-    color: #9ca3af;
+    color: var(--ink-subtle);
 }
 .perf-search__input {
     width: 12rem;
     height: 34px;
     padding: 0 10px 0 30px;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--line-strong);
     border-radius: 9px;
     font-size: 13px;
 }
@@ -496,7 +500,7 @@ export default {
     height: 34px;
     min-width: 10rem;
     border-radius: 9px;
-    border-color: #d1d5db;
+    border-color: var(--line-strong);
     font-size: 12.5px;
     font-weight: 500;
 }
@@ -507,15 +511,15 @@ export default {
     height: 34px;
     padding: 0 12px;
     border-radius: 9px;
-    border: 1px solid #fecaca;
+    border: 1px solid var(--tint-bad-border);
     font-size: 12.5px;
     font-weight: 600;
-    color: #b91c1c;
-    background: #fff;
+    color: var(--tint-bad-ink);
+    background: var(--surface);
 }
 .perf-danger:hover {
-    background: #fef2f2;
-    border-color: #fca5a5;
+    background: var(--tint-bad-bg);
+    border-color: var(--tint-bad-border);
 }
 
 .perf-row {
@@ -540,17 +544,17 @@ export default {
     text-align: center;
     padding: 2px 0;
     border-radius: 6px;
-    background: #f1f5f9;
+    background: var(--surface-raised);
     font-size: 10px;
     font-weight: 800;
-    color: #475569;
+    color: var(--ink-muted);
 }
 .perf-row__path {
     flex: 1;
     min-width: 0;
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 12px;
-    color: #374151;
+    color: var(--ink);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -563,14 +567,14 @@ export default {
     flex-shrink: 0;
     justify-content: flex-end;
     font-size: 11px;
-    color: #94a3b8;
+    color: var(--ink-subtle);
 }
 .perf-row__user {
     width: 8rem;
     flex-shrink: 0;
     text-align: right;
     font-size: 11px;
-    color: #6b7280;
+    color: var(--ink-muted);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -580,7 +584,7 @@ export default {
     flex-shrink: 0;
     text-align: right;
     font-size: 11px;
-    color: #9ca3af;
+    color: var(--ink-subtle);
 }
 
 /* ---------------------------------------------------------------------

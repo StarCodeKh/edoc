@@ -9,6 +9,13 @@
         background-size: 400% 400%;
         animation: gradientShift 15s ease infinite;
     }
+
+    // The same journey through the same hues, stepped down for the dark
+    // surface. Without this the page ground stayed bright, which only showed
+    // on screens whose content does not cover it edge to edge.
+    &.dark.main {
+        background: linear-gradient(135deg, #232a4d 0%, #2f2247 25%, #43244a 50%, #1a3a5c 75%, #0f3a43 100%);
+    }
 }
 
 @keyframes gradientShift {

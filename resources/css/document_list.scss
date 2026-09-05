@@ -39,7 +39,7 @@
     color: #6574cd;
 }
 .doc-row__print:hover {
-    background: #e0e7ff;
+    background: var(--tint-accent-bg);
     color: var(--accent-ink);
 }
 .doc-row__print-icon {
@@ -57,18 +57,18 @@
     flex-shrink: 0;
     padding: 2px 6px;
     border-radius: 6px;
-    background: #f1f5f9;
+    background: var(--surface-raised);
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 11px;
     font-weight: 700;
-    color: #475569;
+    color: var(--ink-muted);
 }
 .doc-row__title {
     flex: 1;
     min-width: 0;
     font-size: 13px;
     font-weight: 700;
-    color: #111827;
+    color: var(--ink);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -77,7 +77,7 @@
     width: 8rem;
     flex-shrink: 0;
     font-size: 12px;
-    color: #6b7280;
+    color: var(--ink-muted);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -90,7 +90,7 @@
     flex-shrink: 0;
     font-size: 11px;
     font-weight: 600;
-    color: #94a3b8;
+    color: var(--ink-subtle);
 }
 .doc-row__user {
     display: inline-flex;
@@ -120,7 +120,7 @@
     text-align: right;
     font-size: 11px;
     font-weight: 600;
-    color: #9ca3af;
+    color: var(--ink-subtle);
 }
 .doc-row__status {
     flex-shrink: 0;
@@ -134,12 +134,12 @@
     white-space: nowrap;
 }
 .doc-row__status.is-done {
-    background: #dcfce7;
-    color: #15803d;
+    background: var(--tint-good-bg);
+    color: var(--tint-good-ink);
 }
 .doc-row__status.is-open {
-    background: #dbeafe;
-    color: #1d4ed8;
+    background: var(--tint-info-bg);
+    color: var(--tint-info-ink);
 }
 
 .doc-row__chevron {

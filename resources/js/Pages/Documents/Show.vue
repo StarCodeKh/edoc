@@ -2,7 +2,9 @@
     <div class="h-full">
         <Head :title="document.code || document.title" />
         <div class="flex flex-col flex-grow-1 flex-shrink-1 h-full">
-            <div class="flex-1 flex flex-col bg-gradient-to-br from-gray-50 dark:from-white/5 to-white overflow-y-auto">
+            <div
+                class="flex-1 flex flex-col bg-gradient-to-br from-gray-50 dark:from-white/5 to-white dark:to-white/5 overflow-y-auto"
+            >
                 <div class="m-4 flex flex-col pb-8">
                     <!-- Header -->
                     <div
@@ -148,7 +150,7 @@
                                             />
                                             <span
                                                 v-else
-                                                class="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-100 text-[10px] font-semibold text-indigo-700 dark:text-indigo-300"
+                                                class="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-500/20 text-[10px] font-semibold text-indigo-700 dark:text-indigo-300"
                                             >
                                                 {{ person.name.charAt(0) }}
                                             </span>
@@ -375,7 +377,7 @@
                                                             />
                                                             <span
                                                                 v-else
-                                                                class="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-100 text-[10px] font-semibold text-indigo-700 dark:text-indigo-300"
+                                                                class="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-500/20 text-[10px] font-semibold text-indigo-700 dark:text-indigo-300"
                                                             >
                                                                 {{ step.actor.name.charAt(0) }}
                                                             </span>
@@ -1498,10 +1500,10 @@ export default {
     margin-top: 8px;
     padding: 8px 12px;
     border-radius: 12px;
-    background: #f1f5f9;
+    background: var(--surface-raised);
     font-size: 12px;
     font-weight: 500;
-    color: #475569;
+    color: var(--ink-muted);
 }
 
 /* The tracking slip button, as it reads on the register too. */
@@ -1514,12 +1516,12 @@ export default {
     margin-top: 12px;
     padding: 8px 12px;
     border-radius: 12px;
-    background: #eef2ff;
+    background: var(--tint-accent-bg);
     color: var(--accent-ink);
     transition: background-color 0.12s ease;
 }
 .doc-track:hover {
-    background: #e0e7ff;
+    background: var(--tint-accent-bg);
 }
 .doc-track__icon {
     width: 18px;
@@ -1549,7 +1551,7 @@ export default {
     flex-wrap: wrap;
     gap: 4px;
     padding: 6px;
-    background: #f8fafc;
+    background: var(--surface-sunken);
     border-bottom: 1px solid #eef2f7;
 }
 
@@ -1564,7 +1566,7 @@ export default {
     gap: 5px;
     padding: 7px 10px;
     border-radius: 10px;
-    color: #64748b;
+    color: var(--ink-muted);
     font-size: 12px;
     font-weight: 600;
     line-height: 1.7;
@@ -1603,7 +1605,7 @@ export default {
     padding: 0 5px;
     border-radius: 9999px;
     background: #e2e8f0;
-    color: #475569;
+    color: var(--ink-muted);
     font-size: 10px;
     font-weight: 700;
     line-height: 17px;
@@ -1641,7 +1643,7 @@ export default {
     align-items: center;
     padding: 1px 7px;
     border-radius: 9999px;
-    background: #eef2ff;
+    background: var(--tint-accent-bg);
     color: var(--accent-ink);
     font-size: 10px;
     font-weight: 700;
@@ -1682,7 +1684,7 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #e0e7ff;
+    background: var(--tint-accent-bg);
     color: var(--accent-ink);
     font-size: 12px;
     font-weight: 700;

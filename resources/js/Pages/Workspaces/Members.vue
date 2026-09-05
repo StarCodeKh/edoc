@@ -82,19 +82,25 @@
 
             <div class="min-w-full py-8 align-middle md:px-4 lg:px-6 xl:px-8">
                 <!-- Search and Stats Section -->
-                <div class="bg-white rounded-2xl shadow-lg border border-gray-200/60 p-6 mb-6">
+                <div
+                    class="bg-white dark:bg-[#262932] rounded-2xl shadow-lg border border-gray-200/60 dark:border-white/10 p-6 mb-6"
+                >
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <div class="flex items-center gap-4">
-                            <div class="p-3 bg-indigo-100 rounded-xl">
-                                <icon name="users" class="w-6 h-6 text-indigo-600" />
+                            <div class="p-3 bg-indigo-100 dark:bg-indigo-500/20 rounded-xl">
+                                <icon name="users" class="w-6 h-6 text-indigo-600 dark:text-indigo-300" />
                             </div>
                             <div>
-                                <h2 class="text-2xl font-extrabold text-gray-900">{{ $t('All Members') }}</h2>
-                                <p class="text-sm text-gray-600 mt-1">
-                                    <span class="font-semibold text-indigo-600">{{ team_members.data.length }}</span>
-                                    <span class="text-gray-500"> {{ $t('of') }} </span>
+                                <h2 class="text-2xl font-extrabold text-gray-900 dark:text-gray-100">
+                                    {{ $t('All Members') }}
+                                </h2>
+                                <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                                    <span class="font-semibold text-indigo-600 dark:text-indigo-300">{{
+                                        team_members.data.length
+                                    }}</span>
+                                    <span class="text-gray-500 dark:text-gray-400"> {{ $t('of') }} </span>
                                     <span class="font-semibold">{{ team_members.total || 0 }}</span>
-                                    <span class="text-gray-500">
+                                    <span class="text-gray-500 dark:text-gray-400">
                                         {{ $t('member' + (team_members.total !== 1 ? 's' : '')) }}</span
                                     >
                                 </p>
@@ -102,20 +108,23 @@
                         </div>
                         <div class="relative flex-1 sm:flex-initial sm:w-80">
                             <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                                <icon name="search" class="w-5 h-5 text-gray-400" />
+                                <icon name="search" class="w-5 h-5 text-gray-400 dark:text-gray-500" />
                             </div>
                             <input
                                 v-model="form.search"
                                 type="text"
                                 :placeholder="$t('Search members...')"
-                                class="w-full pl-12 pr-10 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-gray-50 hover:bg-white text-sm font-medium shadow-sm"
+                                class="w-full pl-12 pr-10 py-3 border-2 border-gray-200 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-gray-50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 text-sm font-medium shadow-sm"
                             />
                             <button
                                 v-if="form.search"
                                 @click="reset"
-                                class="absolute inset-y-0 right-0 flex items-center pr-4 hover:bg-gray-100 rounded-r-xl transition-colors"
+                                class="absolute inset-y-0 right-0 flex items-center pr-4 hover:bg-gray-100 dark:hover:bg-white/10 rounded-r-xl transition-colors"
                             >
-                                <icon name="close" class="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                                <icon
+                                    name="close"
+                                    class="w-4 h-4 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+                                />
                             </button>
                         </div>
                     </div>
@@ -129,7 +138,7 @@
                     <div
                         v-for="(member, member_index) in team_members.data"
                         :key="member.id"
-                        class="bg-white rounded-2xl shadow-lg border-2 border-gray-200/60 hover:border-indigo-300 hover:shadow-2xl transition-all duration-300 overflow-hidden group hover:-translate-y-1"
+                        class="bg-white dark:bg-[#262932] rounded-2xl shadow-lg border-2 border-gray-200/60 dark:border-white/10 hover:border-indigo-300 hover:shadow-2xl transition-all duration-300 overflow-hidden group hover:-translate-y-1"
                         :style="{ animationDelay: member_index * 50 + 'ms' }"
                     >
                         <div class="p-6">
@@ -161,20 +170,20 @@
                                 <button
                                     v-if="workspace.member.id !== member.id && workspace.member.role === 'admin'"
                                     @click="deleteMember(member, member_index)"
-                                    class="p-2 rounded-xl hover:bg-red-50 text-gray-400 hover:text-red-600 transition-all duration-200 opacity-0 group-hover:opacity-100"
+                                    class="p-2 rounded-xl hover:bg-red-50 text-gray-400 dark:text-gray-500 hover:text-red-600 transition-all duration-200 opacity-0 group-hover:opacity-100"
                                 >
                                     <icon name="trash" class="w-5 h-5" />
                                 </button>
                             </div>
                             <div class="mb-4">
                                 <h3
-                                    class="text-xl font-extrabold text-gray-900 mb-1 group-hover:text-indigo-600 transition-colors"
+                                    class="text-xl font-extrabold text-gray-900 dark:text-gray-100 mb-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition-colors"
                                 >
                                     {{ member.name }}
                                 </h3>
                                 <p
                                     v-if="member.title"
-                                    class="text-sm text-gray-500 mb-2 truncate"
+                                    class="text-sm text-gray-500 dark:text-gray-400 mb-2 truncate"
                                     :title="member.title"
                                 >
                                     {{ member.title }}
@@ -183,9 +192,11 @@
                                     <span
                                         class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold capitalize"
                                         :class="{
-                                            'bg-indigo-100 text-indigo-700': member.role === 'admin',
-                                            'bg-purple-100 text-purple-700': member.role === 'member',
-                                            'bg-gray-100 text-gray-700':
+                                            'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300':
+                                                member.role === 'admin',
+                                            'bg-purple-100 dark:bg-purple-500/20 text-purple-700':
+                                                member.role === 'member',
+                                            'bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-200':
                                                 !member.role || (member.role !== 'admin' && member.role !== 'member'),
                                         }"
                                     >
@@ -193,9 +204,9 @@
                                             :name="member.role === 'admin' ? 'shield' : 'user'"
                                             class="w-3 h-3 mr-1.5"
                                             :class="{
-                                                'text-indigo-600': member.role === 'admin',
+                                                'text-indigo-600 dark:text-indigo-300': member.role === 'admin',
                                                 'text-purple-600': member.role === 'member',
-                                                'text-gray-600':
+                                                'text-gray-600 dark:text-gray-300':
                                                     !member.role ||
                                                     (member.role !== 'admin' && member.role !== 'member'),
                                             }"
@@ -204,9 +215,9 @@
                                     </span>
                                 </div>
                             </div>
-                            <div class="pt-4 border-t border-gray-200">
-                                <div class="flex items-center gap-2 text-sm text-gray-600">
-                                    <icon name="clock" class="w-4 h-4 text-gray-400" />
+                            <div class="pt-4 border-t border-gray-200 dark:border-white/10">
+                                <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                                    <icon name="clock" class="w-4 h-4 text-gray-400 dark:text-gray-500" />
                                     <span class="font-medium">{{
                                         moment(member.created_at).format('MMM D, YYYY')
                                     }}</span>
@@ -219,20 +230,22 @@
                 <!-- Empty State -->
                 <div
                     v-else
-                    class="bg-gradient-to-br from-white via-indigo-50/30 to-purple-50/30 rounded-3xl border-2 border-dashed border-indigo-300 p-16 text-center shadow-lg"
+                    class="bg-gradient-to-br from-white dark:from-white/5 via-indigo-50/30 to-purple-50/30 rounded-3xl border-2 border-dashed border-indigo-300 p-16 text-center shadow-lg"
                 >
                     <div class="relative inline-block mb-6">
                         <div
-                            class="p-6 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-3xl w-24 h-24 mx-auto flex items-center justify-center shadow-lg"
+                            class="p-6 bg-gradient-to-br from-indigo-100 dark:from-indigo-500/20 to-purple-100 dark:to-purple-500/20 rounded-3xl w-24 h-24 mx-auto flex items-center justify-center shadow-lg"
                         >
-                            <icon name="users" class="w-12 h-12 text-indigo-500" />
+                            <icon name="users" class="w-12 h-12 text-indigo-500 dark:text-indigo-300" />
                         </div>
                         <div
                             class="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-br from-indigo-400 to-purple-400 rounded-full border-4 border-white shadow-lg animate-bounce"
                         ></div>
                     </div>
-                    <h3 class="text-3xl font-extrabold text-gray-900 mb-3">{{ $t('No members found') }}</h3>
-                    <p class="text-gray-600 mb-8 text-lg max-w-md mx-auto">
+                    <h3 class="text-3xl font-extrabold text-gray-900 dark:text-gray-100 mb-3">
+                        {{ $t('No members found') }}
+                    </h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-8 text-lg max-w-md mx-auto">
                         <span v-if="form.search">{{ $t('Try adjusting your search to find members') }}</span>
                         <span v-else>{{ $t('Invite team members to collaborate on this workspace') }}</span>
                     </p>
@@ -247,7 +260,7 @@
                     <button
                         v-else-if="form.search"
                         @click="reset"
-                        class="inline-flex gap-2 items-center bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold px-8 py-4 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg"
+                        class="inline-flex gap-2 items-center bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-700 dark:text-gray-200 font-semibold px-8 py-4 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg"
                     >
                         <icon name="close" class="w-5 h-5" />
                         <span class="text-lg">{{ $t('Clear Search') }}</span>
@@ -256,7 +269,9 @@
 
                 <!-- Pagination -->
                 <div v-if="team_members.data.length > 0" class="flex justify-center mt-8">
-                    <div class="bg-white rounded-2xl shadow-lg border border-gray-200/60 p-4">
+                    <div
+                        class="bg-white dark:bg-[#262932] rounded-2xl shadow-lg border border-gray-200/60 dark:border-white/10 p-4"
+                    >
                         <pagination :links="team_members.links" />
                     </div>
                 </div>
