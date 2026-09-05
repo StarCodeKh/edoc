@@ -157,6 +157,18 @@ class WorkSpacesController extends Controller
 
         $tasksQuery->visibleTo($user);
 
+        // Whoever does not read the whole register reads their plate, and reads
+        // it everywhere on this page - the tiles, the charts, the panels and
+        // the table all count the same rows. Same four conditions as the
+        // sidebar badge (jsonAssignedTasksCount) and the My Documents view, so
+        // the number on the menu and the number on the dashboard cannot
+        // disagree. visibleTo() is wider than this on purpose: it also lets a
+        // document open read-only because you once commented on it, and one of
+        // those is not work waiting on you.
+        if (!$user->seesEveryDocument()) {
+            $tasksQuery->where(fn ($q) => $this->onMyPlate($q, $user));
+        }
+
         $tasks = $tasksQuery->get()->toArray();
 
         $listsByTitle = [];
@@ -200,12 +212,16 @@ class WorkSpacesController extends Controller
         // so the panel lines up with the project list in the sidebar - including
         // projects that hold no documents yet, which a task-derived count can
         // never show. Same visibility rule as everywhere else.
+        $onPlate = fn ($query) => $user->seesEveryDocument()
+            ? $query
+            : $query->where(fn ($q) => $this->onMyPlate($q, $user));
+
         $statistics = Project::where('workspace_id', $workspace->id)
             ->withCount([
-                'tasks as documents_total' => fn ($query) => $query
-                    ->isOpen()->whereHas('list')->visibleTo($user),
-                'tasks as documents_done' => fn ($query) => $query
-                    ->isOpen()->whereHas('list')->where('is_done', 1)->visibleTo($user),
+                'tasks as documents_total' => fn ($query) => $onPlate($query
+                    ->isOpen()->whereHas('list')->visibleTo($user)),
+                'tasks as documents_done' => fn ($query) => $onPlate($query
+                    ->isOpen()->whereHas('list')->where('is_done', 1)->visibleTo($user)),
             ])
             ->get()
             ->map(fn (Project $project) => [
@@ -225,6 +241,16 @@ class WorkSpacesController extends Controller
             'list_index' => $list_index,
             'filters' => $requests,
             'statistics' => $statistics,
+            // Who is reading this dashboard, what the headline numbers are for
+            // them, and the two panels that differ by role. The register the
+            // numbers are counted over is $tasks, which visibleTo() has already
+            // narrowed to what this person is allowed to see - so a Normal User
+            // and an Admin get the same code over different registers rather
+            // than two code paths that can drift apart.
+            'viewer' => $this->dashboardViewer($user),
+            'metrics' => $this->dashboardMetrics($tasks, $user),
+            'trend' => $this->dashboardTrend($tasks),
+            'workload' => $this->dashboardWorkload($tasks, $user),
         ]);
     }
 
@@ -556,6 +582,252 @@ class WorkSpacesController extends Controller
      * Workspace::scopeAccessibleTo is the one answer to "may this user open
      * this workspace", and it is asked here for both arms at once.
      */
+    /**
+     * The role context the dashboard renders against.
+     *
+     * 'scope' is the one thing the front end branches on: 'all' means the
+     * numbers cover the whole register (Admin, and the registry office by
+     * responsibility - the same rule Task::scopeVisibleTo applies), 'mine'
+     * means they cover what has reached this person.
+     */
+    private function dashboardViewer(?User $user): array
+    {
+        if (empty($user)) {
+            return [
+                'name' => '',
+                'role' => null,
+                'sub_role' => null,
+                'scope' => 'mine',
+                'is_admin' => false,
+                'is_super_admin' => false,
+                'is_registry' => false,
+                'responsibilities' => [],
+            ];
+        }
+
+        return [
+            'name' => trim($user->first_name.' '.$user->last_name),
+            // Super Admin and Admin share roles.slug, so the name is what tells
+            // them apart on screen.
+            'role' => $user->isSuperAdmin() ? 'Super Admin' : ($user->role->name ?? 'Normal'),
+            'sub_role' => optional($user->workflowSubRole)->name,
+            'scope' => $user->seesEveryDocument() ? 'all' : 'mine',
+            'is_admin' => $user->isAdmin(),
+            'is_super_admin' => $user->isSuperAdmin(),
+            'is_registry' => $user->isRegistryOffice(),
+            // The board columns this person's workflow responsibility covers.
+            // These are what "waiting on me" is counted against.
+            'responsibilities' => $user->responsibleListTitles(),
+        ];
+    }
+
+    /**
+     * The headline counts, all of them, for every role. The front end picks the
+     * four or five a given role leads with; counting the rest costs nothing
+     * here and keeps the tile set a presentation decision.
+     */
+    private function dashboardMetrics(array $tasks, ?User $user): array
+    {
+        $now = Carbon::now();
+        $dueSoonUntil = $now->copy()->addDays(3);
+        $weekStart = $now->copy()->subDays(6)->startOfDay();
+
+        $userId = $user->id ?? null;
+        $responsibleFor = $user ? $user->responsibleListTitles() : [];
+
+        $counts = [
+            'total' => 0,
+            'open' => 0,
+            'done' => 0,
+            'overdue' => 0,
+            'due_soon' => 0,
+            'unassigned' => 0,
+            'mine' => 0,
+            'awaiting_me' => 0,
+            'new_this_week' => 0,
+        ];
+
+        foreach ($tasks as $task) {
+            $isDone = !empty($task['is_done']);
+            $dueDate = !empty($task['due_date']) ? Carbon::parse($task['due_date']) : null;
+            $assignees = $task['assignees'] ?? [];
+            $listTitle = $task['list']['title'] ?? null;
+            $arrivedAt = !empty($task['entry_date'])
+                ? Carbon::parse($task['entry_date'])
+                : (!empty($task['created_at']) ? Carbon::parse($task['created_at']) : null);
+
+            $counts['total']++;
+            $isDone ? $counts['done']++ : $counts['open']++;
+
+            if (!$isDone && $dueDate) {
+                if ($dueDate->lt($now)) {
+                    $counts['overdue']++;
+                } elseif ($dueDate->lte($dueSoonUntil)) {
+                    $counts['due_soon']++;
+                }
+            }
+
+            if (!$isDone && empty($assignees)) {
+                $counts['unassigned']++;
+            }
+
+            if ($arrivedAt && $arrivedAt->gte($weekStart)) {
+                $counts['new_this_week']++;
+            }
+
+            if ($userId) {
+                $isOwner = (int) ($task['user_id'] ?? 0) === (int) $userId;
+                $isAssigned = $this->assignedTo($assignees, $userId);
+
+                if ($isOwner || $isAssigned) {
+                    $counts['mine']++;
+                }
+
+                // Waiting on this person: assigned to them, or sitting on a
+                // board their responsibility covers - the same two arms
+                // WorkSpacesController::onMyPlate uses.
+                if (!$isDone && ($isAssigned || ($listTitle && in_array($listTitle, $responsibleFor, true)))) {
+                    $counts['awaiting_me']++;
+                }
+            }
+        }
+
+        $counts['completion'] = $counts['total']
+            ? (int) round($counts['done'] / $counts['total'] * 100)
+            : 0;
+
+        return $counts;
+    }
+
+    /**
+     * Documents received per day over the last fourteen days, oldest first.
+     * entry_date is when the document actually arrived; created_at is the
+     * fallback for rows filed before that column was collected.
+     */
+    private function dashboardTrend(array $tasks, int $days = 14): array
+    {
+        $buckets = [];
+        $cursor = Carbon::now()->subDays($days - 1)->startOfDay();
+
+        for ($i = 0; $i < $days; $i++) {
+            $buckets[$cursor->toDateString()] = 0;
+            $cursor->addDay();
+        }
+
+        foreach ($tasks as $task) {
+            $arrivedAt = !empty($task['entry_date'])
+                ? Carbon::parse($task['entry_date'])
+                : (!empty($task['created_at']) ? Carbon::parse($task['created_at']) : null);
+
+            if (empty($arrivedAt)) {
+                continue;
+            }
+
+            $key = $arrivedAt->toDateString();
+            if (array_key_exists($key, $buckets)) {
+                $buckets[$key]++;
+            }
+        }
+
+        return collect($buckets)
+            ->map(fn ($total, $date) => ['date' => $date, 'total' => $total])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * The role-specific panel.
+     *
+     * Whoever reads the whole register gets the open load per person, which is
+     * the thing only they can act on - nobody else can see enough of it to
+     * balance it. Everyone else gets their own responsibility steps, counted
+     * against the boards those steps resolve to, which is the same panel
+     * question asked of a register of one.
+     */
+    private function dashboardWorkload(array $tasks, ?User $user): array
+    {
+        if (empty($user)) {
+            return [];
+        }
+
+        if ($user->seesEveryDocument()) {
+            $openPerUser = [];
+
+            foreach ($tasks as $task) {
+                if (!empty($task['is_done'])) {
+                    continue;
+                }
+
+                foreach ($task['assignees'] ?? [] as $assignee) {
+                    $id = (int) ($assignee['user_id'] ?? 0);
+                    if ($id) {
+                        $openPerUser[$id] = ($openPerUser[$id] ?? 0) + 1;
+                    }
+                }
+            }
+
+            if (empty($openPerUser)) {
+                return [];
+            }
+
+            arsort($openPerUser);
+            $topIds = array_slice(array_keys($openPerUser), 0, 6, true);
+
+            // One lookup for the names - the task query loads assignee rows,
+            // not the users behind them.
+            $names = User::whereIn('id', $topIds)
+                ->get(['id', 'first_name', 'last_name', 'photo_path'])
+                ->keyBy('id');
+
+            return collect($topIds)
+                ->filter(fn ($id) => isset($names[$id]))
+                ->map(fn ($id) => [
+                    'label' => trim($names[$id]->first_name.' '.$names[$id]->last_name),
+                    'photo' => $names[$id]->photo_path,
+                    'total' => $openPerUser[$id],
+                ])
+                ->values()
+                ->all();
+        }
+
+        $responsibleFor = $user->responsibleListTitles();
+
+        if (empty($responsibleFor)) {
+            return [];
+        }
+
+        $openPerList = array_fill_keys($responsibleFor, 0);
+
+        foreach ($tasks as $task) {
+            if (!empty($task['is_done'])) {
+                continue;
+            }
+
+            $listTitle = $task['list']['title'] ?? null;
+            if ($listTitle && array_key_exists($listTitle, $openPerList)) {
+                $openPerList[$listTitle]++;
+            }
+        }
+
+        return collect($openPerList)
+            ->map(fn ($total, $title) => ['label' => $title, 'photo' => null, 'total' => $total])
+            ->sortByDesc('total')
+            ->values()
+            ->all();
+    }
+
+    /** Is this user among a task's assignee rows? */
+    private function assignedTo(array $assignees, $userId): bool
+    {
+        foreach ($assignees as $assignee) {
+            if ((int) ($assignee['user_id'] ?? 0) === (int) $userId) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private function findWorkspace($uid): ?Workspace
     {
         return Workspace::where(function ($query) use ($uid) {

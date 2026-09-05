@@ -2,124 +2,228 @@
     <div class="wdash">
         <Head :title="$t(title)" />
 
-        <!-- Top status cards -->
-        <div class="wdash__cards">
-            <div v-for="(card, cIdx) in resolvedStatusCards" :key="'card_' + cIdx" class="wdash__card">
-                <div class="wdash__card-title">{{ $t(card.title) }}</div>
-                <div class="wdash__card-total">{{ card.total }}</div>
-                <div class="wdash__rings">
-                    <div v-for="(item, iIdx) in card.items" :key="'ring_' + cIdx + '_' + iIdx" class="wdash__ring">
-                        <svg viewBox="0 0 76 76" class="wdash__ring-svg">
-                            <circle cx="38" cy="38" r="32" class="wdash__ring-bg" />
-                            <circle
-                                cx="38"
-                                cy="38"
-                                r="32"
-                                fill="none"
-                                :stroke="item.color"
-                                stroke-width="6"
-                                stroke-linecap="round"
-                                :stroke-dasharray="ringDasharray(card, item)"
-                                transform="rotate(-90 38 38)"
-                            />
-                            <text x="38" y="44" text-anchor="middle" class="wdash__ring-value">{{ item.value }}</text>
+        <!-- Who is looking, and at what. A Normal User and an Admin read the
+             same screen over different registers, so the scope has to be said
+             out loud rather than left for them to infer from the numbers. -->
+        <header class="wdash__hero">
+            <div class="min-w-0">
+                <p class="text-xs font-semibold uppercase tracking-wide text-white/70">
+                    {{ $t('ផ្ទាំងគ្រប់គ្រង') }}
+                </p>
+                <h1 class="mt-1 truncate text-xl font-extrabold text-white sm:text-2xl">
+                    {{ greeting }}
+                </h1>
+                <p class="mt-1 truncate text-sm text-white/80">{{ scopeCaption }}</p>
+            </div>
+
+            <div class="flex shrink-0 flex-wrap items-center gap-2">
+                <span v-if="viewer.role" class="wdash__chip">{{ $t(viewer.role) }}</span>
+                <span v-if="viewer.sub_role" class="wdash__chip">{{ $t(viewer.sub_role) }}</span>
+                <span class="wdash__chip wdash__chip--solid">
+                    {{ workspace ? workspace.name : '' }}
+                </span>
+            </div>
+        </header>
+
+        <!-- The headline numbers. Which five appear is the role's decision;
+             they are all counted server-side over the visible register. -->
+        <div class="grid grid-cols-2 items-start gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-5">
+            <div v-for="tile in tiles" :key="tile.key" class="wdash__tile">
+                <div class="flex items-start justify-between gap-2">
+                    <span class="wdash__tile-icon" :style="{ backgroundColor: tile.color + '1f', color: tile.color }">
+                        <svg viewBox="0 0 24 24" fill="none" class="h-4 w-4" stroke="currentColor" stroke-width="1.8">
+                            <path :d="tile.icon" stroke-linecap="round" stroke-linejoin="round" />
                         </svg>
-                        <div class="wdash__ring-label">{{ $t(item.label) }}</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="wdash__card wdash__card--simple">
-                <div class="wdash__card-title">{{ $t('ថ្នាក់/ក្រុម/គម្រោង ឯកសារ') }}</div>
-                <div class="wdash__card-total">{{ workspaceProjectCount }}</div>
-            </div>
-            <div class="wdash__card wdash__card--simple">
-                <div class="wdash__card-title">{{ $t('ឯកសារសរុប') }}</div>
-                <div class="wdash__card-total">{{ allTasks.length }}</div>
-            </div>
-        </div>
-
-        <!-- Summary + Statistics -->
-        <div class="wdash__row">
-            <div class="wdash__panel wdash__panel--summary">
-                <div class="wdash__panel-title">{{ $t('សេចក្តីសង្ខេប') }}</div>
-                <div class="wdash__donut-wrap">
-                    <svg viewBox="0 0 200 200" class="wdash__donut">
-                        <circle cx="100" cy="100" r="80" class="wdash__donut-bg" />
-                        <circle
-                            v-for="(seg, sIdx) in donutSegments"
-                            :key="'seg_' + sIdx"
-                            cx="100"
-                            cy="100"
-                            r="80"
-                            fill="none"
-                            :stroke="seg.color"
-                            stroke-width="34"
-                            :stroke-dasharray="seg.dash + ' ' + (donutCircumference - seg.dash)"
-                            :stroke-dashoffset="seg.offset"
-                            transform="rotate(-90 100 100)"
-                        />
-                    </svg>
-                    <div class="wdash__donut-center">{{ resolvedSummary.percent }}%</div>
-                </div>
-                <div class="wdash__legend">
-                    <div v-if="!resolvedSummary.segments.length" class="wdash__empty-note">
-                        {{ $t('No documents yet.') }}
-                    </div>
-                    <div
-                        v-for="(seg, sIdx) in resolvedSummary.segments"
-                        :key="'leg_' + sIdx"
-                        class="wdash__legend-item"
+                    </span>
+                    <span
+                        v-if="tile.share !== null"
+                        class="rounded-md bg-gray-100 px-1.5 py-0.5 text-[11px] font-bold tabular-nums text-gray-600 dark:bg-white/10 dark:text-gray-300"
+                        >{{ tile.share }}%</span
                     >
-                        <span class="wdash__legend-dot" :style="{ backgroundColor: seg.color }"></span>
-                        <span
-                            >{{ $t(seg.label) }}
-                            {{ seg.max ? seg.value + '/' + seg.max : seg.value + ' (' + seg.percent + '%)' }}</span
-                        >
-                    </div>
                 </div>
-            </div>
-
-            <div class="wdash__panel wdash__panel--stats">
-                <div class="wdash__panel-title">{{ $t('ថ្នាក់/ក្រុម/គម្រោង ឯកសារ') }}</div>
-                <div class="wdash__stat-list">
-                    <div v-if="!resolvedStatistics.length" class="wdash__empty-note">{{ $t('No documents yet.') }}</div>
-                    <div v-for="(stat, stIdx) in resolvedStatistics" :key="'stat_' + stIdx" class="wdash__stat-row">
-                        <div class="wdash__stat-label">{{ $t(stat.label) }}</div>
-                        <div class="wdash__stat-bar-wrap">
-                            <div class="wdash__stat-bar-track">
-                                <div class="wdash__stat-bar-fill" :style="{ width: stat.percent + '%' }">
-                                    <span class="wdash__stat-bar-text">{{ stat.done }}/{{ stat.total }}</span>
-                                </div>
-                            </div>
-                            <span class="wdash__stat-percent">{{ stat.percent }}%</span>
-                        </div>
-                    </div>
+                <div class="mt-3 text-3xl font-extrabold leading-none tabular-nums text-gray-900 dark:text-white">
+                    {{ tile.value }}
+                </div>
+                <div class="mt-1 truncate text-xs font-semibold text-gray-500 dark:text-gray-400" :title="tile.label">
+                    {{ tile.label }}
+                </div>
+                <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-gray-100 dark:bg-white/10">
+                    <span
+                        class="block h-full rounded-full transition-[width] duration-500"
+                        :style="{ width: (tile.share === null ? 100 : tile.share) + '%', backgroundColor: tile.color }"
+                    ></span>
                 </div>
             </div>
         </div>
 
-        <!-- Documents table -->
+        <div class="grid grid-cols-1 items-start gap-4 sm:gap-5 xl:grid-cols-5">
+            <!-- Part-to-whole: every document sits on exactly one board. -->
+            <section class="wdash__panel xl:col-span-2">
+                <header class="wdash__panel-head">
+                    <div class="min-w-0">
+                        <h2 class="wdash__panel-title">{{ $t('សេចក្តីសង្ខេប') }}</h2>
+                        <p class="wdash__panel-sub">{{ metrics.total }} {{ $t('ឯកសារ') }}</p>
+                    </div>
+                    <span class="wdash__badge">{{ metrics.completion }}% {{ $t('រួចរាល់') }}</span>
+                </header>
+
+                <div v-if="ready && statusRows.length" class="h-[260px]">
+                    <apexchart type="donut" height="100%" :options="donutOptions" :series="donutSeries" />
+                </div>
+                <p v-else class="flex h-[220px] items-center justify-center text-sm text-gray-400">
+                    {{ $t('មិនទាន់មានឯកសារទេ។') }}
+                </p>
+
+                <!-- The legend names and counts every segment: identity is never
+                     carried by colour alone, and it is the relief the lighter
+                     slots need against a white card. -->
+                <ul v-if="statusRows.length" class="mt-2 flex flex-col gap-2">
+                    <li v-for="row in statusRows" :key="row.key" class="flex items-center gap-2 text-sm">
+                        <span class="h-2.5 w-2.5 shrink-0 rounded-full" :style="{ backgroundColor: row.color }"></span>
+                        <span class="min-w-0 flex-1 truncate text-gray-700 dark:text-gray-200" :title="row.name">{{
+                            row.name
+                        }}</span>
+                        <span class="shrink-0 font-bold tabular-nums text-gray-900 dark:text-white">{{
+                            row.total
+                        }}</span>
+                        <span class="w-10 shrink-0 text-right text-xs tabular-nums text-gray-500 dark:text-gray-400"
+                            >{{ row.share }}%</span
+                        >
+                    </li>
+                </ul>
+            </section>
+
+            <!-- Change over time: one measure, one axis, one series. -->
+            <section class="wdash__panel xl:col-span-3">
+                <header class="wdash__panel-head">
+                    <div class="min-w-0">
+                        <h2 class="wdash__panel-title">{{ $t('ឯកសារចូល ១៤ ថ្ងៃចុងក្រោយ') }}</h2>
+                        <p class="wdash__panel-sub">
+                            {{ trendTotal }} {{ $t('ឯកសារ') }} · {{ $t('សប្តាហ៍នេះ') }}
+                            {{ metrics.new_this_week }}
+                        </p>
+                    </div>
+                </header>
+
+                <div v-if="ready" class="h-[300px]">
+                    <apexchart type="area" height="100%" :options="trendOptions" :series="trendSeries" />
+                </div>
+            </section>
+        </div>
+
+        <div class="grid grid-cols-1 items-start gap-4 sm:gap-5 xl:grid-cols-2">
+            <!-- Magnitude by a nominal category, one bar per row: this keeps
+                 long Khmer project names readable where a bar chart's rotated
+                 axis labels would not. -->
+            <section class="wdash__panel">
+                <header class="wdash__panel-head">
+                    <div class="min-w-0">
+                        <h2 class="wdash__panel-title">{{ $t('ថ្នាក់/ក្រុម/គម្រោង ឯកសារ') }}</h2>
+                        <p class="wdash__panel-sub">{{ resolvedStatistics.length }} {{ $t('គម្រោង') }}</p>
+                    </div>
+                </header>
+
+                <ul v-if="resolvedStatistics.length" class="flex flex-col gap-3.5">
+                    <li v-for="(stat, idx) in resolvedStatistics" :key="'stat_' + idx" class="flex flex-col gap-1.5">
+                        <div class="flex items-center justify-between gap-3">
+                            <span class="min-w-0 truncate text-sm text-gray-700 dark:text-gray-200" :title="stat.label">
+                                {{ $t(stat.label) }}
+                            </span>
+                            <span class="shrink-0 text-xs font-bold tabular-nums text-gray-900 dark:text-white">
+                                {{ stat.done }}/{{ stat.total }}
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="relative h-2.5 flex-1 rounded-full bg-gray-100 dark:bg-white/10">
+                                <span
+                                    class="absolute inset-y-0 left-0 rounded-full transition-[width] duration-500"
+                                    :style="{ width: stat.percent + '%', backgroundColor: palette.complete }"
+                                ></span>
+                            </span>
+                            <span
+                                class="w-9 shrink-0 text-right text-xs font-semibold tabular-nums text-gray-500 dark:text-gray-400"
+                                >{{ stat.percent }}%</span
+                            >
+                        </div>
+                    </li>
+                </ul>
+                <p v-else class="flex h-[120px] items-center justify-center text-sm text-gray-400">
+                    {{ $t('មិនទាន់មានឯកសារទេ។') }}
+                </p>
+            </section>
+
+            <!-- The panel that changes with the role: open load per person for
+                 whoever reads the whole register, own responsibility steps for
+                 everyone else. -->
+            <section class="wdash__panel">
+                <header class="wdash__panel-head">
+                    <div class="min-w-0">
+                        <h2 class="wdash__panel-title">{{ workloadTitle }}</h2>
+                        <p class="wdash__panel-sub">{{ workloadCaption }}</p>
+                    </div>
+                </header>
+
+                <ul v-if="workloadRows.length" class="flex flex-col gap-3.5">
+                    <li v-for="row in workloadRows" :key="row.key" class="flex items-center gap-3">
+                        <span v-if="row.photo" class="h-7 w-7 shrink-0 overflow-hidden rounded-full">
+                            <img :src="row.photo" alt="" class="h-full w-full object-cover" />
+                        </span>
+                        <span
+                            v-else
+                            class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gray-100 text-[11px] font-bold text-gray-500 dark:bg-white/10 dark:text-gray-300"
+                            >{{ row.initials }}</span
+                        >
+                        <span
+                            class="w-24 shrink-0 truncate text-sm text-gray-700 sm:w-40 dark:text-gray-200"
+                            :title="row.label"
+                            >{{ row.label }}</span
+                        >
+                        <span class="relative h-2.5 flex-1 rounded-full bg-gray-100 dark:bg-white/10">
+                            <span
+                                class="absolute inset-y-0 left-0 rounded-full transition-[width] duration-500"
+                                :style="{ width: row.share + '%', backgroundColor: palette.series }"
+                            ></span>
+                        </span>
+                        <span
+                            class="w-8 shrink-0 text-right text-sm font-bold tabular-nums text-gray-900 dark:text-white"
+                            >{{ row.total }}</span
+                        >
+                    </li>
+                </ul>
+                <p v-else class="flex h-[120px] items-center justify-center px-4 text-center text-sm text-gray-400">
+                    {{ workloadEmpty }}
+                </p>
+            </section>
+        </div>
+
+        <!-- The register itself. It is also the table view the lighter chart
+             colours owe the reader under the relief rule. -->
         <div class="wdash__table-card">
             <div class="wdash__table-toolbar">
-                <button
-                    type="button"
-                    class="wdash__icon-btn"
-                    @click="$emit('add-document')"
-                    :aria-label="$t('Add document')"
-                >
-                    <icon class="w-4 h-4" name="plus" />
-                </button>
-                <button
-                    type="button"
-                    class="wdash__icon-btn"
-                    @click="$emit('toggle-filter')"
-                    :aria-label="$t('Filter')"
-                >
-                    <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8">
-                        <path d="M3 5h18M6 12h12M10 19h4" stroke-linecap="round" />
-                    </svg>
-                </button>
+                <div class="min-w-0">
+                    <h2 class="wdash__table-title">{{ $t('បញ្ជីឯកសារ') }}</h2>
+                    <p class="wdash__panel-sub">{{ taskRows.length }} {{ $t('ឯកសារ') }}</p>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <button
+                        type="button"
+                        class="wdash__icon-btn"
+                        @click="$emit('add-document')"
+                        :aria-label="$t('Add document')"
+                    >
+                        <icon class="w-4 h-4" name="plus" />
+                    </button>
+                    <button
+                        type="button"
+                        class="wdash__icon-btn"
+                        @click="$emit('toggle-filter')"
+                        :aria-label="$t('Filter')"
+                    >
+                        <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <path d="M3 5h18M6 12h12M10 19h4" stroke-linecap="round" />
+                        </svg>
+                    </button>
+                </div>
             </div>
 
             <div class="wdash__doc-table">
@@ -303,6 +407,81 @@ import moment from 'moment';
 import axios from 'axios';
 import DocumentReceipt from '@/Shared/Modals/DocumentReceipt.vue';
 
+/**
+ * Two palettes, each selected for the surface it sits on rather than flipped
+ * from the other. Both were run through the data-viz validator as a set:
+ * the categorical eight pass the lightness band, chroma floor, adjacent CVD
+ * separation (worst 9.1 light / 8.4 dark, target >= 8) and the normal-vision
+ * floor (19.6 / 19.3, floor 15) in both modes.
+ *
+ * Three light slots and one dark slot sit under 3:1 against the card, so the
+ * relief rule applies and is met: every donut segment is named and counted in
+ * the legend beside it, and the register itself is on the same screen.
+ *
+ * STATUS is reserved for document state - done, overdue, due soon, open,
+ * unassigned - and is never reused as "series 6". Board columns are identity,
+ * not state, so they draw from CATEGORICAL. Same values as Projects/Dashboard,
+ * so a document keeps its colour across the two dashboards.
+ */
+const STATUS = {
+    light: {
+        complete: '#0ca30c',
+        soon: '#fab219',
+        later: '#2a78d6',
+        overdue: '#d03b3b',
+        none: '#8a8f98',
+        series: '#2a78d6',
+        surface: '#ffffff',
+        ink: '#52514e',
+        muted: '#898781',
+        grid: '#e8e7e3',
+    },
+    dark: {
+        complete: '#0ca30c',
+        soon: '#fab219',
+        later: '#3987e5',
+        overdue: '#e66767',
+        none: '#9aa0a6',
+        series: '#3987e5',
+        surface: '#262932',
+        ink: '#c3c2b7',
+        muted: '#898781',
+        grid: '#3a3d46',
+    },
+};
+
+/** Fixed slot order - assigned by position, never cycled through a hue wheel. */
+const CATEGORICAL = {
+    light: ['#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4', '#008300', '#4a3aa7', '#e34948'],
+    dark: ['#3987e5', '#d95926', '#199e70', '#c98500', '#d55181', '#008300', '#9085e9', '#e66767'],
+};
+
+/** Tile glyphs, as single stroked paths on a 24x24 box. */
+const ICONS = {
+    total: 'M3 7l9-4 9 4-9 4-9-4zm0 5l9 4 9-4M3 17l9 4 9-4',
+    open: 'M12 7v5l3 2M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
+    done: 'M20 6L9 17l-5-5',
+    overdue: 'M12 9v4m0 4h.01M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z',
+    unassigned: 'M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2M9 3a4 4 0 110 8 4 4 0 010-8zM19 8v6M22 11h-6',
+    awaiting: 'M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0',
+    due_soon: 'M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z',
+    mine: 'M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z',
+    fresh: 'M3 17l6-6 4 4 8-8M21 7v6h-6',
+};
+
+const EMPTY_METRICS = {
+    total: 0,
+    open: 0,
+    done: 0,
+    overdue: 0,
+    due_soon: 0,
+    unassigned: 0,
+    mine: 0,
+    awaiting_me: 0,
+    new_this_week: 0,
+    completion: 0,
+};
+
 export default {
     name: 'workspace-dashboard',
     components: { Head, Icon, draggable, DocumentReceipt },
@@ -312,9 +491,15 @@ export default {
         title: { type: String, default: 'Dashboard' },
         workspace: { type: Object, default: null },
         lists: { type: Array, default: () => [] },
-        statusCards: { type: Array, default: () => [] },
-        summary: { type: Object, default: () => ({ percent: 0, segments: [] }) },
         statistics: { type: Array, default: () => [] },
+        /** Role context - see WorkSpacesController::dashboardViewer. */
+        viewer: { type: Object, default: () => ({}) },
+        /** Headline counts over the register this person may see. */
+        metrics: { type: Object, default: () => ({}) },
+        /** Documents received per day, oldest first. */
+        trend: { type: Array, default: () => [] },
+        /** Open load per person (whole-register roles) or per responsibility step. */
+        workload: { type: Array, default: () => [] },
     },
     data() {
         return {
@@ -325,28 +510,329 @@ export default {
             currentPage: 1,
             pageSize: 10,
             pageRows: [],
-            statusPalette: ['#4a90d9', '#c9d94d', '#4caf50', '#e0503a', '#9b59b6', '#7cb342', '#f0a63a', '#06b6d4'],
+            is_dark: false,
+            mode_observer: null,
+            // ApexCharts is a browser component and is not registered on the
+            // SSR build, so the charts wait for the client.
+            ready: false,
         };
     },
     computed: {
-        donutCircumference() {
-            return 2 * Math.PI * 80;
+        palette() {
+            return this.is_dark ? STATUS.dark : STATUS.light;
         },
-        donutTotalPercent() {
-            return this.resolvedSummary.segments.reduce((sum, s) => sum + (s.percent || 0), 0) || 1;
+        categorical() {
+            return this.is_dark ? CATEGORICAL.dark : CATEGORICAL.light;
         },
-        donutSegments() {
-            let cumulative = 0;
-            return this.resolvedSummary.segments.map((seg) => {
-                const normalizedPercent = (seg.percent / this.donutTotalPercent) * 100;
-                const dash = (normalizedPercent / 100) * this.donutCircumference;
-                const offset = -((cumulative / 100) * this.donutCircumference);
-                cumulative += normalizedPercent;
-                return { ...seg, dash, offset };
+
+        /**
+         * 'all' - this person reads the whole register (Admin, or the registry
+         * office by responsibility). 'mine' - they read what has reached them.
+         * The server decides it; this is only the fallback for a page rendered
+         * without the prop.
+         */
+        scope() {
+            if (this.viewer && this.viewer.scope) return this.viewer.scope;
+            return this.workspace?.member?.role === 'admin' ? 'all' : 'mine';
+        },
+        isWholeRegister() {
+            return this.scope === 'all';
+        },
+
+        greeting() {
+            const name = this.viewer?.name || this.$page?.props?.auth?.user?.first_name || '';
+            return name ? this.$t('សួស្តី') + ', ' + name : this.$t('ផ្ទាំងគ្រប់គ្រងឯកសារ');
+        },
+        scopeCaption() {
+            return this.isWholeRegister
+                ? this.$t('ទិដ្ឋភាពរួមនៃឯកសារទាំងអស់ក្នុងកន្លែងធ្វើការនេះ')
+                : this.$t('ឯកសារដែលពាក់ព័ន្ធនឹងអ្នក និងតួនាទីរបស់អ្នក');
+        },
+
+        /** Server counts when they are there, counted here when they are not. */
+        resolvedMetrics() {
+            if (this.metrics && Object.keys(this.metrics).length) {
+                return { ...EMPTY_METRICS, ...this.metrics };
+            }
+
+            const tasks = this.allTasks;
+            const done = tasks.filter((task) => !!task.is_done).length;
+
+            return {
+                ...EMPTY_METRICS,
+                total: tasks.length,
+                open: tasks.length - done,
+                done,
+                mine: tasks.filter((task) => this.isMine(task)).length,
+                completion: tasks.length ? Math.round((done / tasks.length) * 100) : 0,
+            };
+        },
+
+        /** Five tiles, chosen by role: the ones that role can act on. */
+        tiles() {
+            const m = this.resolvedMetrics;
+            const p = this.palette;
+            const share = (value) => (m.total ? Math.round((value / m.total) * 100) : 0);
+
+            const wholeRegister = [
+                {
+                    key: 'total',
+                    label: this.$t('ឯកសារសរុប'),
+                    value: m.total,
+                    color: p.series,
+                    icon: ICONS.total,
+                    share: null,
+                },
+                {
+                    key: 'open',
+                    label: this.$t('កំពុងដំណើរការ'),
+                    value: m.open,
+                    color: p.later,
+                    icon: ICONS.open,
+                    share: share(m.open),
+                },
+                {
+                    key: 'done',
+                    label: this.$t('បានបញ្ចប់'),
+                    value: m.done,
+                    color: p.complete,
+                    icon: ICONS.done,
+                    share: share(m.done),
+                },
+                {
+                    key: 'overdue',
+                    label: this.$t('ហួសកំណត់'),
+                    value: m.overdue,
+                    color: p.overdue,
+                    icon: ICONS.overdue,
+                    share: share(m.overdue),
+                },
+                {
+                    key: 'unassigned',
+                    label: this.$t('មិនទាន់ប្រគល់'),
+                    value: m.unassigned,
+                    color: p.none,
+                    icon: ICONS.unassigned,
+                    share: share(m.unassigned),
+                },
+            ];
+
+            const mine = [
+                {
+                    key: 'mine',
+                    label: this.$t('ឯកសាររបស់ខ្ញុំ'),
+                    value: m.mine,
+                    color: p.series,
+                    icon: ICONS.mine,
+                    share: null,
+                },
+                {
+                    key: 'awaiting_me',
+                    label: this.$t('រង់ចាំសកម្មភាពរបស់ខ្ញុំ'),
+                    value: m.awaiting_me,
+                    color: p.later,
+                    icon: ICONS.awaiting,
+                    share: share(m.awaiting_me),
+                },
+                {
+                    key: 'due_soon',
+                    label: this.$t('ជិតដល់កំណត់'),
+                    value: m.due_soon,
+                    color: p.soon,
+                    icon: ICONS.due_soon,
+                    share: share(m.due_soon),
+                },
+                {
+                    key: 'overdue',
+                    label: this.$t('ហួសកំណត់'),
+                    value: m.overdue,
+                    color: p.overdue,
+                    icon: ICONS.overdue,
+                    share: share(m.overdue),
+                },
+                {
+                    key: 'done',
+                    label: this.$t('បានបញ្ចប់'),
+                    value: m.done,
+                    color: p.complete,
+                    icon: ICONS.done,
+                    share: share(m.done),
+                },
+            ];
+
+            return this.isWholeRegister ? wholeRegister : mine;
+        },
+
+        /** One row per board column - identity, so it draws from CATEGORICAL. */
+        statusRows() {
+            const rows = (this.lists || []).map((listItem, idx) => ({
+                key: 'list_' + (listItem.id || idx),
+                name: this.$t(listItem.title),
+                total: this.tasksForList(listItem).length,
+                color: this.categorical[idx % this.categorical.length],
+            }));
+
+            const total = rows.reduce((sum, row) => sum + row.total, 0);
+
+            return rows
+                .filter((row) => row.total > 0)
+                .map((row) => ({ ...row, share: total ? Math.round((row.total / total) * 100) : 0 }));
+        },
+
+        donutSeries() {
+            return this.statusRows.map((row) => row.total);
+        },
+        donutOptions() {
+            const p = this.palette;
+
+            return {
+                chart: {
+                    type: 'donut',
+                    fontFamily: 'inherit',
+                    background: 'transparent',
+                    toolbar: { show: false },
+                    animations: { speed: 400 },
+                },
+                labels: this.statusRows.map((row) => row.name),
+                colors: this.statusRows.map((row) => row.color),
+                // A gap in the surface colour separates the segments; no borders.
+                stroke: { width: 2, colors: [p.surface] },
+                dataLabels: { enabled: false },
+                legend: { show: false },
+                plotOptions: {
+                    pie: {
+                        expandOnClick: false,
+                        donut: {
+                            size: '72%',
+                            labels: {
+                                show: true,
+                                name: { color: p.muted, fontSize: '12px' },
+                                value: {
+                                    color: this.is_dark ? '#ffffff' : '#0b0b0b',
+                                    fontSize: '26px',
+                                    fontWeight: 700,
+                                    offsetY: 4,
+                                },
+                                total: {
+                                    show: true,
+                                    label: this.$t('ឯកសារ'),
+                                    color: p.muted,
+                                    fontSize: '12px',
+                                    formatter: () => this.resolvedMetrics.total,
+                                },
+                            },
+                        },
+                    },
+                },
+                states: { hover: { filter: { type: 'lighten', value: 0.06 } } },
+                tooltip: {
+                    theme: this.is_dark ? 'dark' : 'light',
+                    y: { formatter: (value) => value + ' ' + this.$t('ឯកសារ') },
+                },
+            };
+        },
+
+        trendRows() {
+            if (this.trend && this.trend.length) return this.trend;
+
+            // No prop: fourteen empty days, so the panel keeps its shape.
+            return Array.from({ length: 14 }, (unused, idx) => ({
+                date: moment()
+                    .subtract(13 - idx, 'days')
+                    .format('YYYY-MM-DD'),
+                total: 0,
+            }));
+        },
+        trendTotal() {
+            return this.trendRows.reduce((sum, row) => sum + (Number(row.total) || 0), 0);
+        },
+        trendSeries() {
+            return [{ name: this.$t('ឯកសារចូល'), data: this.trendRows.map((row) => Number(row.total) || 0) }];
+        },
+        trendOptions() {
+            const p = this.palette;
+
+            return {
+                chart: {
+                    type: 'area',
+                    fontFamily: 'inherit',
+                    background: 'transparent',
+                    toolbar: { show: false },
+                    zoom: { enabled: false },
+                    animations: { speed: 400 },
+                },
+                colors: [p.series],
+                // One series: the title names it, so no legend box.
+                legend: { show: false },
+                dataLabels: { enabled: false },
+                // Straight, not smoothed: a spline through daily counts
+                // invents a plateau between two days that never happened.
+                stroke: { curve: 'straight', width: 2 },
+                fill: {
+                    type: 'gradient',
+                    gradient: { shadeIntensity: 1, opacityFrom: 0.28, opacityTo: 0.02, stops: [0, 100] },
+                },
+                markers: { size: 0, hover: { size: 5 } },
+                grid: {
+                    borderColor: p.grid,
+                    strokeDashArray: 4,
+                    xaxis: { lines: { show: false } },
+                    padding: { left: 4, right: 8 },
+                },
+                xaxis: {
+                    categories: this.trendRows.map((row) => moment(row.date).format('DD MMM')),
+                    tickAmount: 6,
+                    axisBorder: { show: false },
+                    axisTicks: { show: false },
+                    labels: { style: { colors: p.muted, fontSize: '11px' } },
+                    tooltip: { enabled: false },
+                },
+                yaxis: {
+                    min: 0,
+                    // Whole documents only - a fractional tick would be a lie.
+                    forceNiceScale: true,
+                    labels: {
+                        style: { colors: p.muted, fontSize: '11px' },
+                        formatter: (value) => Math.round(value),
+                    },
+                },
+                tooltip: {
+                    theme: this.is_dark ? 'dark' : 'light',
+                    x: { show: true },
+                    y: { formatter: (value) => value + ' ' + this.$t('ឯកសារ') },
+                },
+            };
+        },
+
+        workloadTitle() {
+            return this.isWholeRegister ? this.$t('បន្ទុកឯកសារតាមបុគ្គល') : this.$t('តួនាទីរបស់ខ្ញុំក្នុងលំហូរឯកសារ');
+        },
+        workloadCaption() {
+            if (this.isWholeRegister) return this.$t('ឯកសារកំពុងដំណើរការ');
+            const steps = (this.viewer?.responsibilities || []).length;
+            return steps + ' ' + this.$t('ជំហានទទួលខុសត្រូវ');
+        },
+        workloadEmpty() {
+            return this.isWholeRegister
+                ? this.$t('មិនទាន់មានការប្រគល់ឯកសារទេ។')
+                : this.$t('អ្នកមិនទាន់មានតួនាទីក្នុងលំហូរឯកសារទេ។');
+        },
+        workloadRows() {
+            const rows = this.workload || [];
+            const max = rows.reduce((m, row) => Math.max(m, Number(row.total) || 0), 0);
+
+            return rows.map((row, idx) => {
+                const total = Number(row.total) || 0;
+
+                return {
+                    key: 'load_' + idx,
+                    label: this.$t(row.label || '—'),
+                    photo: row.photo || null,
+                    initials: this.initialsOf(row.label),
+                    total,
+                    share: max ? Math.max(4, (total / max) * 100) : 0,
+                };
             });
-        },
-        isAdmin() {
-            return this?.workspace?.member?.role === 'admin';
         },
 
         workspaceProjectCount() {
@@ -366,43 +852,6 @@ export default {
                 })
             );
         },
-        dynamicStatusCard() {
-            const items = (this.lists || []).map((listItem, idx) => ({
-                label: listItem.title,
-                value: this.tasksForList(listItem).length,
-                color: this.statusPalette[idx % this.statusPalette.length],
-            }));
-            const total = items.reduce((sum, i) => sum + i.value, 0);
-            return { title: 'ស្ថានភាពឯកសារ', total, items };
-        },
-
-        resolvedStatusCards() {
-            return this.statusCards && this.statusCards.length ? this.statusCards : [this.dynamicStatusCard];
-        },
-
-        dynamicSummary() {
-            const tasks = this.allTasks;
-            const total = tasks.length;
-            const doneCount = tasks.filter((t) => !!t.is_done).length;
-            const percent = total ? Math.round((doneCount / total) * 100) : 0;
-            const segments = (this.lists || []).map((listItem, idx) => {
-                const count = this.tasksForList(listItem).length;
-                const segPercent = total ? Math.round((count / total) * 100) : 0;
-                return {
-                    label: listItem.title,
-                    value: count,
-                    percent: segPercent,
-                    color: this.statusPalette[idx % this.statusPalette.length],
-                };
-            });
-            return { percent, segments };
-        },
-
-        resolvedSummary() {
-            return this.summary && this.summary.segments && this.summary.segments.length
-                ? this.summary
-                : this.dynamicSummary;
-        },
 
         dynamicStatistics() {
             return (this.lists || []).map((listItem) => {
@@ -413,7 +862,6 @@ export default {
                 return { label: listItem.title, done, total, percent };
             });
         },
-
         resolvedStatistics() {
             return this.statistics && this.statistics.length ? this.statistics : this.dynamicStatistics;
         },
@@ -456,19 +904,41 @@ export default {
         this.syncTaskRows();
     },
     mounted() {
+        this.ready = true;
+        this.readMode();
+
+        // The theme toggle swaps a class on the layout root; the charts pick
+        // their colours for the surface they are on, so they have to hear it.
+        const root = document.querySelector('.layout-app');
+        if (root && typeof MutationObserver !== 'undefined') {
+            this.mode_observer = new MutationObserver(this.readMode);
+            this.mode_observer.observe(root, { attributes: true, attributeFilter: ['class'] });
+        }
+
         this.$nextTick(() => this.renderBarcodes());
     },
     updated() {
         this.$nextTick(() => this.renderBarcodes());
     },
+    beforeUnmount() {
+        if (this.mode_observer) this.mode_observer.disconnect();
+    },
     methods: {
-        ringDasharray(card, item) {
-            const totalItems = card.items.reduce((sum, i) => sum + (i.value || 0), 0) || 1;
-            const circumference = 2 * Math.PI * 32;
-            const percent = (item.value / totalItems) * 100;
-            const dash = (percent / 100) * circumference;
-            return dash + ' ' + (circumference - dash);
+        readMode() {
+            const root = document.querySelector('.layout-app');
+            this.is_dark = !!root && root.classList.contains('dark');
         },
+
+        initialsOf(label) {
+            return String(label || '—')
+                .trim()
+                .split(/\s+/)
+                .slice(0, 2)
+                .map((part) => part.charAt(0))
+                .join('')
+                .toUpperCase();
+        },
+
         syncTaskRows() {
             this.taskRows = [...this.allTasks].sort((a, b) => (a.order || 0) - (b.order || 0));
             this.syncPageRows();
@@ -497,12 +967,12 @@ export default {
             });
         },
         statusColorFor(element) {
-            if (!this.lists) return this.statusPalette[0];
+            if (!this.lists) return this.categorical[0];
             let idx = this.lists.findIndex((l) => l.id === element.list_id);
             if (idx === -1) {
                 idx = this.lists.findIndex((l) => (l.tasks || []).some((t) => t.id === element.id));
             }
-            return this.statusPalette[(idx === -1 ? 0 : idx) % this.statusPalette.length];
+            return this.categorical[(idx === -1 ? 0 : idx) % this.categorical.length];
         },
         documentCode(element) {
             if (element.task_code) return element.task_code;
@@ -515,9 +985,34 @@ export default {
             return (task.assignees || []).some((a) => Number(a.user_id) === Number(userId));
         },
 
+        /**
+         * The same three arms Task::scopeVisibleTo uses for someone who does
+         * not read the whole register - theirs by authorship, by assignment, or
+         * because it sits on a board their responsibility covers. Written the
+         * same way here so the table cannot hide a document the server has
+         * already decided this person may see.
+         */
+        isMine(task) {
+            const userId = this.$page?.props?.auth?.user?.id;
+            if (!userId) return false;
+
+            if (Number(task.user_id) === Number(userId)) return true;
+            if (this.isAssignedToMe(task)) return true;
+
+            const responsibleFor = this.viewer?.responsibilities || [];
+            const listTitle = task.list?.title;
+
+            return !!(listTitle && responsibleFor.includes(listTitle));
+        },
+
+        /**
+         * No filtering here. WorkSpacesController::viewMainDashboard narrows the
+         * register before it renders - the whole register for whoever reads it,
+         * that person's plate for everyone else - so a second rule at this end
+         * could only disagree with the counts the same controller sent.
+         */
         tasksForList(listItem) {
-            const tasks = listItem.tasks || [];
-            return this.isAdmin ? tasks : tasks.filter((t) => this.isAssignedToMe(t));
+            return listItem.tasks || [];
         },
 
         taskDetailsPopup(element) {
@@ -575,243 +1070,134 @@ export default {
     padding: 1rem 1.25rem 2rem;
 }
 
-/* Workspace name + total-projects badge */
-.wdash__header {
+/* Greeting strip. The workspace background behind it is whatever the board
+   is wearing, so the strip carries its own dark scrim rather than trusting
+   the contrast of an arbitrary image. */
+.wdash__hero {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 0.75rem;
+    gap: 1rem;
+    padding: 1.1rem 1.35rem;
+    border-radius: 1rem;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.82), rgba(30, 41, 59, 0.68));
+    backdrop-filter: blur(6px);
+    box-shadow: 0 6px 20px rgba(15, 23, 42, 0.18);
 }
-.wdash__header-title {
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: #1f2937;
-    margin: 0;
-}
-.wdash__header-count {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: #64748b;
-}
-.wdash__header-count-badge {
+.wdash__chip {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    min-width: 22px;
-    height: 22px;
-    padding: 0 0.4rem;
+    height: 1.75rem;
+    padding: 0 0.7rem;
     border-radius: 999px;
-    background: #4f46e5;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    background: rgba(255, 255, 255, 0.12);
     color: #fff;
     font-size: 0.75rem;
-    font-weight: 700;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.wdash__chip--solid {
+    border-color: transparent;
+    background: #fff;
+    color: #1f2937;
 }
 
-/* Top cards */
-.wdash__cards {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
+/* Tiles and panels share one card treatment with the project dashboard. */
+.wdash__tile,
+.wdash__panel {
+    border-radius: 1rem;
+    border: 1px solid rgba(229, 231, 235, 0.6);
+    background: #fff;
+    padding: 1rem;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
 }
-@media (max-width: 1024px) {
-    .wdash__cards {
-        grid-template-columns: 1fr;
-    }
+.wdash__panel {
+    padding: 1.15rem 1.25rem;
 }
-.wdash__card {
-    background: linear-gradient(160deg, #2f6c81, #235567);
-    border-radius: 0.9rem;
-    padding: 1.25rem 1.5rem;
-    color: #fff;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+.dark .wdash__tile,
+.dark .wdash__panel {
+    border-color: rgba(255, 255, 255, 0.1);
+    background: #262932;
+}
+.wdash__tile {
     transition:
         transform 0.2s ease,
         box-shadow 0.2s ease;
 }
-.wdash__card:hover {
+.wdash__tile:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.18);
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.14);
 }
-.wdash__card-title {
-    font-size: 1.05rem;
-    font-weight: 500;
-    opacity: 0.95;
-    margin-bottom: 0.35rem;
-}
-.wdash__card-total {
-    font-size: 2.1rem;
-    font-weight: 700;
-    margin-bottom: 1rem;
-}
-.wdash__card--simple {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    min-height: 100%;
-}
-.wdash__card--simple .wdash__card-total {
-    margin-bottom: 0;
-}
-.wdash__rings {
-    display: flex;
-    justify-content: space-between;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-}
-.wdash__ring {
-    display: flex;
-    flex-direction: column;
+.wdash__tile-icon {
+    display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    flex: 1;
-    min-width: 0;
-}
-.wdash__ring-svg {
-    width: 100%;
-    max-width: 64px;
-}
-.wdash__ring-bg {
-    fill: none;
-    stroke: rgba(255, 255, 255, 0.18);
-    stroke-width: 6;
-}
-.wdash__ring-value {
-    fill: #fff;
-    font-size: 1.1rem;
-    font-weight: 700;
-}
-.wdash__ring-label {
-    font-size: 0.72rem;
-    opacity: 0.85;
-    text-align: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.65rem;
 }
 
-.wdash__row {
-    display: grid;
-    grid-template-columns: 34% 66%;
-    gap: 1rem;
-}
-@media (max-width: 900px) {
-    .wdash__row {
-        grid-template-columns: 1fr;
-    }
-}
-.wdash__panel {
-    background: linear-gradient(160deg, #2f6c81, #235567);
-    border-radius: 0.9rem;
-    padding: 1.25rem 1.5rem;
-    color: #fff;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
-}
-.wdash__panel-title {
-    font-size: 1.05rem;
-    font-weight: 600;
+.wdash__panel-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
     margin-bottom: 1rem;
 }
-.wdash__donut-wrap {
-    position: relative;
-    width: 200px;
-    max-width: 100%;
-    margin: 0 auto 1.25rem;
-}
-.wdash__donut {
-    width: 100%;
-    display: block;
-}
-.wdash__donut-bg {
-    fill: #fff;
-}
-.wdash__donut-center {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.6rem;
+.wdash__panel-title {
+    font-size: 1rem;
     font-weight: 700;
-    color: #1f4b58;
+    color: #111827;
+    margin: 0;
 }
-.wdash__legend {
-    display: flex;
-    flex-direction: column;
-    gap: 0.55rem;
-    font-size: 0.82rem;
-}
-.wdash__legend-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-.wdash__legend-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 999px;
-    flex-shrink: 0;
-}
-.wdash__empty-note {
-    font-size: 0.8rem;
-    opacity: 0.75;
-}
-.wdash__stat-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.9rem;
-}
-.wdash__stat-label {
-    font-size: 0.85rem;
-    margin-bottom: 0.3rem;
-}
-.wdash__stat-bar-wrap {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-.wdash__stat-bar-track {
-    flex: 1;
-    height: 22px;
-    background: rgba(255, 255, 255, 0.25);
-    border-radius: 999px;
-    overflow: hidden;
-}
-.wdash__stat-bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #4caf50, #43a047);
-    border-radius: 999px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 2.5rem;
-    transition: width 0.4s ease;
-}
-.wdash__stat-bar-text {
-    font-size: 0.75rem;
-    font-weight: 600;
+.dark .wdash__panel-title {
     color: #fff;
+}
+.wdash__panel-sub {
+    margin: 0.15rem 0 0;
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+.dark .wdash__panel-sub {
+    color: #9ca3af;
+}
+.wdash__badge {
+    flex-shrink: 0;
+    border-radius: 0.5rem;
+    background: #f3f4f6;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #4b5563;
     white-space: nowrap;
 }
-.wdash__stat-percent {
-    font-size: 0.82rem;
-    font-weight: 600;
-    width: 3rem;
-    text-align: right;
+.dark .wdash__badge {
+    background: rgba(255, 255, 255, 0.1);
+    color: #d1d5db;
 }
 
 /* Documents table */
 .wdash__table-card {
     background: #fff;
-    border-radius: 0.9rem;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(229, 231, 235, 0.6);
+    border-radius: 1rem;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
     overflow: hidden;
 }
 .wdash__table-toolbar {
     display: flex;
-    justify-content: flex-end;
-    gap: 0.5rem;
-    padding: 0.85rem 1rem 0;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem 0;
+}
+.wdash__table-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
 }
 .wdash__icon-btn {
     width: 2rem;
@@ -878,6 +1264,13 @@ export default {
 @media (max-width: 900px) {
     .wdash__doc-row {
         grid-template-columns: 1fr;
+    }
+    /* The header row is Tailwind-hidden below md, but this file's own
+       .wdash__doc-row { display: grid } lands after it in the stylesheet and
+       wins on equal specificity - so it is said again here. Each cell carries
+       its own data-label at this width anyway. */
+    .wdash__doc-row--head {
+        display: none;
     }
     .wdash__drag-handle {
         display: none;
@@ -1052,5 +1445,60 @@ export default {
     height: 32px;
     color: #94a3b8;
     font-size: 0.8rem;
+}
+
+/* Dark mode for the register. The table was written for a white card only;
+   these are the same rules restated for the dark surface. */
+.dark .wdash__table-card {
+    background: #262932;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.dark .wdash__table-title {
+    color: #fff;
+}
+.dark .wdash__icon-btn {
+    color: #9ca3af;
+}
+.dark .wdash__icon-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+.dark .wdash__doc-rows > .wdash__doc-row:hover {
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow: none;
+}
+.dark .wdash__doc-code,
+.dark .wdash__doc-subject {
+    color: #e5e7eb;
+}
+.dark .wdash__doc-code:hover,
+.dark .wdash__doc-subject:hover {
+    color: #93c5fd;
+}
+.dark .wdash__doc-attach {
+    background: rgba(255, 255, 255, 0.1);
+    color: #d1d5db;
+}
+.dark .wdash__doc-row > [data-label]::before {
+    color: #9ca3af;
+}
+.dark .wdash__doc-row > [data-label] {
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+.dark .wdash__page-btn {
+    color: #d1d5db;
+}
+.dark .wdash__page-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+.dark .wdash__page-btn--active,
+.dark .wdash__page-btn--active:hover {
+    background: #3987e5;
+    border-color: #3987e5;
+    color: #fff;
+}
+.dark .wdash__pagination-info {
+    color: #9ca3af;
 }
 </style>
