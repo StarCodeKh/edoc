@@ -6,18 +6,9 @@ import { getActiveLanguage } from 'laravel-vue-i18n';
 /**
  * Relative and formatted times in the reader's language.
  *
- * Two traps live here, which is why this is one module rather than a couple of
- * lines repeated per component.
- *
- * The first is that moment.defineLocale() sets the *global* locale as a side
- * effect, and that is what importing a locale file does. Pulling in km and
- * zh-cn to translate one timestamp left moment globally on zh-cn, so all 27
- * files that call moment(...).format(...) without naming a locale started
- * writing Chinese month names. The reset below undoes that: locales are
- * registered and available, and the default stays English.
- *
- * The second is that the app's language codes are not moment's - kh is km, and
- * cn is zh-cn - so asking moment for the app's code silently gets you English.
+ * One module because of two traps: importing a locale file calls
+ * moment.defineLocale(), which switches the *global* locale (hence the reset
+ * below), and the app's codes are not moment's - kh is km, cn is zh-cn.
  */
 const APP_TO_MOMENT = { kh: 'km', cn: 'zh-cn', en: 'en' };
 

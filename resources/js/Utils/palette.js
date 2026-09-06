@@ -1,37 +1,21 @@
 /**
  * One place the whole app gets its data colours from.
  *
- * Before this file there were three copies of a status palette - Projects/Table,
- * Workspaces/Table and the printed DocumentReceipt each carried their own array,
- * and the two dashboards carried a fourth and a fifth. They did not agree, and
- * they were indexed by the document's position in whichever list the screen
- * happened to be holding. The same document came out green on the register
- * table and blue on the dashboard.
- *
- * Two things fix that, and both live here:
+ * Five diverging palettes used to exist, each indexed by the row's position in
+ * whatever list the screen held - so one document was green on the register and
+ * blue on the dashboard. Two rules fix that:
  *
  *   1. One set of values, selected per surface rather than flipped. Both modes
- *      were run through the data-viz validator as a set: lightness band, chroma
- *      floor, adjacent CVD separation (worst 9.1 light / 8.4 dark, target >= 8)
- *      and the normal-vision floor (19.6 / 19.3, floor 15) all pass.
+ *      pass the data-viz validator as a set: adjacent CVD separation 9.1 light
+ *      / 8.4 dark (target >= 8), normal-vision floor 19.6 / 19.3 (floor 15).
  *
- *   2. A status colour is derived from the column's own workflow position -
- *      board_lists.order, which is where the step sits in the flow - and not
- *      from where the row happens to fall in whatever array the screen is
- *      holding. Every screen reads the same number off the same database row,
- *      so a status is one colour everywhere, and it keeps that colour when the
- *      register is filtered or a project shows only part of the flow.
+ *   2. A status colour comes from board_lists.order - the step's place in the
+ *      flow - not from the array index, so it survives filtering and partial
+ *      views. A column with no order falls back to a hash of its name.
  *
- * Thirteen steps into eight slots means the ninth step reuses the first
- * colour. That is deliberate rather than a wrap-around accident: colliding
- * steps are always eight apart in the flow, so they are never side by side,
- * and every place that paints a status prints its name beside the colour
- * anyway - the colour is a second cue, never the only one.
- *
- * A column with no order to read falls back to a hash of its name, which is at
- * least stable. If hand-picked colours are ever wanted, the upgrade is a
- * `color` column on board_lists and a settings screen to set it; this file
- * then becomes the fallback for a column nobody has chosen a colour for.
+ * Thirteen steps into eight slots means the ninth reuses the first. Deliberate:
+ * colliding steps are always eight apart, never side by side, and every surface
+ * prints the status name beside the colour anyway.
  */
 
 /**

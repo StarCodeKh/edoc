@@ -78,10 +78,9 @@ import Icon from '@/Shared/Icon.vue';
 /**
  * A checkbox list of people, narrowed by one search box.
  *
- * The box matches name, ចំណងជើង, នាយកដ្ឋាន and ការិយាល័យរង together rather than
- * offering a select per field: in a sidebar the width is not there for three
- * dropdowns, and somebody looking for a person usually remembers one of the
- * four and not which kind of thing it was.
+ * One box across name, ចំណងជើង, នាយកដ្ឋាន and ការិយាល័យរង rather than a select
+ * per field: a sidebar has no width for three dropdowns, and you usually
+ * remember one of the four without remembering which kind it was.
  */
 export default {
     components: { Icon },

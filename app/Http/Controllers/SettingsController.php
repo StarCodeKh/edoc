@@ -10,7 +10,6 @@ use App\Support\EnvFile;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Storage;
@@ -22,11 +21,6 @@ class SettingsController extends Controller
     {
         $this->middleware(RedirectIfNotAdmin::class.':global,smtp');
     }
-
-    // const BASE_URL = 'https://gitlab.com';
-    // const TOKEN = 'glpat-ziRSG7-kAY1zfw6yTgH4';
-    // const PROJECT_ID = '52426748';
-    // const TOKEN_FULL = 'Bearer glpat-NNGd8mSrzsyi7xXAXm46';
 
     private function configExist($array)
     {
@@ -206,22 +200,6 @@ class SettingsController extends Controller
             'demo' => boolval($demo),
         ]);
     }
-
-    // protected function getVersionAvailable($current)
-    // {
-    //     $headers = [
-    //         'PRIVATE-TOKEN' => self::TOKEN,
-    //     ];
-    //     $response = Http::withHeaders($headers)->get(self::BASE_URL.'/api/v4/projects/'.self::PROJECT_ID.'/repository/tags');
-    //     $releaseCollection = collect(\json_decode($response->body()));
-    //     $tag = $releaseCollection->first();
-    //     if(!empty($tag)){
-    //         if (version_compare($current, $tag->name, '<')) {
-    //             return $tag->name;
-    //         }
-    //     }
-    //     return false;
-    // }
 
     public function updateSmtp()
     {

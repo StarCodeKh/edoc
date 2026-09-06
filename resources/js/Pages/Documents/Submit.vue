@@ -1096,13 +1096,10 @@ export default {
         /**
          * The list the picker offers.
          *
-         * Where the step this document lands on names a responsibility, that
-         * settles it: the people carrying it, and nobody else. Only where the
-         * step names none does the older order apply - whoever the
-         * department/sub-office reaches, else the workspace's own team, else
-         * whoever the workflow reaches by responsibility - each tier skipped
-         * when empty, so filing is never blocked by a directory that is not
-         * filled in yet.
+         * A landing step naming a responsibility settles it: its holders, and
+         * nobody else. Otherwise the older order applies - department/office,
+         * then the workspace team, then whoever the workflow reaches - each
+         * tier skipped when empty, so a thin directory never blocks filing.
          */
         assignableMembers() {
             // A step that names its own responsibility settles the question:
@@ -1426,16 +1423,12 @@ export default {
             }
         },
         /**
-         * Tick the people the step this document lands on is handed to.
+         * Tick the people the landing step is handed to.
          *
-         * Filing a document is handing it to whoever does the next step, and
-         * the workflow already says who that is - so the pick is made rather
-         * than merely offered. It mirrors what forwarding does at every later
-         * step: assignStepOwners() puts the document on all of the
-         * responsibility's holders, not one of them.
-         *
-         * The filer's own row is left alone either way: it is pinned above the
-         * list and has its own rule, the registry exemption included.
+         * The workflow already says who that is, so the pick is made rather
+         * than offered - mirroring assignStepOwners(), which puts the document
+         * on all of a responsibility's holders. The filer's own row is pinned
+         * above the list and keeps its own rule.
          */
         tickStepDoers() {
             if (!this.stepRoleCode) return;

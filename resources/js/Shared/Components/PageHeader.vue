@@ -35,11 +35,9 @@
 import Icon from '@/Shared/Icon.vue';
 
 /**
- * The band at the top of a settings page: what this page is, how many of them
- * there are, and the one or two things you can do here.
- *
- * Written once because every admin list had its own arrangement of the same
- * three parts, and they had drifted apart.
+ * The band at the top of a settings page: what it is, how many, and the one or
+ * two things you can do. Written once because every admin list had its own
+ * arrangement of the same three parts.
  */
 export default {
     components: { Icon },

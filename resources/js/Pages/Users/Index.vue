@@ -31,10 +31,9 @@
         <div
             class="overflow-hidden rounded-2xl border border-gray-200/70 bg-white shadow-sm dark:border-white/10 dark:bg-[#262932]"
         >
-            <!-- Six columns do not survive a phone, and a horizontally scrolling
-                 table is a table nobody scrolls. Below sm the same rows are
-                 cards; from sm up it is the table it always was, with phone and
-                 title dropping out first because they are the thinnest columns. -->
+            <!-- Six columns do not survive a phone, and nobody scrolls a table
+                 sideways. Below sm the rows are cards; above, phone and title
+                 drop out first as the thinnest columns. -->
             <table class="hidden w-full sm:table">
                 <thead>
                     <tr class="border-b border-gray-100 text-left dark:border-white/5">

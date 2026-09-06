@@ -1,16 +1,11 @@
 /**
- * Front-end mirror of App\Support\TaskAbility.
+ * Front-end mirror of App\Support\TaskAbility, so the UI can hide what would
+ * be refused rather than offer a button that 403s. The server is the authority.
  *
- * The server is the authority - every endpoint checks for itself. This exists so
- * the UI can hide what would be refused, instead of offering a button that 403s.
- *
- * The rules:
- *   Super Admin / Admin - everything.
- *   Normal User         - sees only documents assigned to them or created by
- *                         them; may edit / delete / move a document they created
- *                         only while it still sits in the board it was created
- *                         in; on anything else they may only attach files and
- *                         comment.
+ *   Admin       - everything.
+ *   Normal User - documents assigned to or created by them; edit/delete/move
+ *                 only while their own document sits in its original board;
+ *                 elsewhere, attach and comment only.
  */
 
 export function isAdmin(user) {

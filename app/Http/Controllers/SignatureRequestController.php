@@ -15,12 +15,9 @@ use Illuminate\Support\Facades\DB;
 /**
  * "Approve & Sign from Secretariat General".
  *
- * A column whose workflow step has `requires_signature` is where a document
- * waits for the Secretary General. The administration opens the last file
- * attached to the document, confirms, and the card moves on to the next column.
- *
- * Which columns these are is configuration, not code — see
- * Settings → Workflow Roles and App\Support\WorkflowStep.
+ * A column whose step has `requires_signature` is where a document waits for
+ * the Secretary General: open the last file, confirm, and the card moves on.
+ * Which columns those are is configuration - Settings → Workflow Roles.
  */
 class SignatureRequestController extends Controller
 {

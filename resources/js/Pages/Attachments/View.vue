@@ -954,13 +954,11 @@ export default {
         },
 
         /**
-         * Where the bytes come from - not `attachment.path`, which is the
-         * file's place on disk under public/. Served that way the web server
-         * hands the document to anyone who knows the URL, and only when every
-         * directory on the way happens to be traversable by the web user; when
-         * one is not, the answer is a bare 403 and the file will not open at
-         * all. This route reads it through PHP, behind the same permission
-         * check that guards this page.
+         * Where the bytes come from - not `attachment.path`, the file's place
+         * on disk under public/. Served that way the web server hands it to
+         * anyone with the URL, and only where every directory happens to be
+         * traversable. This route reads it through PHP, behind the same
+         * permission check that guards this page.
          */
         fileUrl() {
             if (!this.attachment?.id) return null;

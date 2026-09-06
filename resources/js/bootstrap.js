@@ -9,13 +9,10 @@ import Pusher from 'pusher-js';
 window.Pusher = Pusher;
 
 /**
- * Reverb speaks the Pusher protocol, so this is still the Pusher client - it
- * just points at our own server instead of pusher.com.
- *
- * Echo is only constructed when a key is actually configured. pusher-js
- * rejects a null key but accepts an empty one, so a blank key - what
- * BROADCAST_DRIVER=log leaves behind - opens a socket that can never
- * authenticate and retries it for the life of the page, silently.
+ * Reverb speaks the Pusher protocol, so this is the Pusher client pointed at
+ * our own server. Echo is built only when a key is configured: pusher-js
+ * accepts an empty key - what BROADCAST_DRIVER=log leaves behind - and then
+ * retries a socket that can never authenticate for the life of the page.
  */
 const reverbKey = import.meta.env.VITE_REVERB_APP_KEY;
 const reverbScheme = import.meta.env.VITE_REVERB_SCHEME ?? 'https';

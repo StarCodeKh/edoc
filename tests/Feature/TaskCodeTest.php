@@ -14,11 +14,9 @@ use Tests\TestCase;
 /**
  * The CGMC number a document is registered under.
  *
- * It is the document's identity - it is printed on the tracking slip, read off
- * the barcode and quoted between offices - so two documents must never carry
- * the same one. There is no unique index on task_code to fall back on, which
- * makes the generator the only thing standing between the register and a
- * duplicate.
+ * It is the document's identity - printed on the slip, read off the barcode,
+ * quoted between offices - and there is no unique index on task_code, so the
+ * generator is the only thing standing between the register and a duplicate.
  */
 class TaskCodeTest extends TestCase
 {
@@ -66,9 +64,8 @@ class TaskCodeTest extends TestCase
 
     /**
      * The bug this guards: Task is soft-deleted, and the generator asked the
-     * default scope for both the highest row and whether a code was taken. A
-     * deleted document was invisible to both, so its code was handed straight
-     * to the next document created.
+     * default scope, so a deleted document's code was handed straight to the
+     * next one created.
      */
     public function test_a_deleted_document_does_not_free_its_code(): void
     {

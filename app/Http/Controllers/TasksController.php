@@ -587,12 +587,9 @@ class TasksController extends Controller
     /**
      * Hand back the file itself.
      *
-     * Uploads live under public/files, so nginx would happily serve them
-     * straight off disk - but only if every directory on the way is
-     * traversable by the web user, and only to anyone at all, signed in or
-     * not. Streaming through here removes both problems: the same permission
-     * check the viewer page runs applies to the bytes, and the file is read by
-     * PHP, which owns it, rather than by nginx.
+     * Uploads live under public/files, so nginx would serve them off disk to
+     * anyone at all, signed in or not. Streaming here applies the viewer
+     * page's permission check to the bytes, and PHP reads its own files.
      */
     public function streamAttachment($taskUid, $attachmentId, Request $request)
     {

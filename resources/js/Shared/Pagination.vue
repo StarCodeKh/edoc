@@ -37,16 +37,11 @@ export default {
     },
     methods: {
         /**
-         * Laravel builds pagination URLs from the incoming request
-         * (Paginator::currentPathResolver -> $request->url()), so the scheme and
-         * host come from whatever the app believes it was reached on. Behind a
-         * proxy that terminates TLS without forwarding X-Forwarded-Proto, that
-         * is `http://` while the page itself is `https://` - a different origin
-         * as far as the browser is concerned, so Inertia's request is blocked
-         * and the click appears to do nothing.
-         *
-         * Only the path and query are ever needed here, so the origin is
-         * dropped and every link stays on the page we are already on.
+         * Laravel builds pagination URLs from the incoming request, so behind a
+         * proxy that terminates TLS without forwarding X-Forwarded-Proto they
+         * come back `http://` while the page is `https://`. The browser sees a
+         * different origin, blocks the request, and the click does nothing.
+         * Only path and query are needed, so the origin is dropped.
          */
         samePage(url) {
             if (!url) return url;

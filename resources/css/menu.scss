@@ -408,16 +408,10 @@ body {
             }
         }
 
-        /* The selected item used to be the one you could not read: the name,
-           the description and the icon were all painted #ffffff, but the row
-           itself was never given a background, so white sat on the white
-           sidebar. It has a ground of its own now, and ink that contrasts with
-           it - the same pairing .lang-menu__item.is-active uses.
-
-           These are the light-mode values; the .dark & block below carries the
-           matching dark pair, because this row needs a ground in both themes
-           and #eef2ff under that block's #a5b4fc text would be the same bug
-           the other way round. */
+        /* The selected item was unreadable: name, description and icon were
+           all #ffffff, but the row was never given a background, so white sat
+           on the white sidebar. Light-mode values; the .dark & block below
+           carries the matching pair, or this would be the same bug inverted. */
         &.active {
             transform: translateX(2px);
             background-color: #eef2ff;

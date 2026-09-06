@@ -12,10 +12,8 @@ use Tests\TestCase;
 /**
  * The user list's search box.
  *
- * It reached first name, last name, phone and email only, so every other column
- * on the page - ចំណងជើង, តួនាទី - and the department someone is filed under
- * returned an empty table when typed in. A search box that cannot find what the
- * list is showing is worse than none.
+ * It reached name, phone and email only, so every other column on the page -
+ * ចំណងជើង, តួនាទី - and the department returned an empty table when typed in.
  */
 class UserSearchTest extends TestCase
 {

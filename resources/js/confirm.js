@@ -1,14 +1,11 @@
 import { reactive } from 'vue';
 
 /**
- * A promise-shaped replacement for window.confirm, so a call site keeps
- * reading like the native one it replaces:
+ * A promise-shaped window.confirm, so call sites keep reading like the native
+ * one: `if (!(await this.$confirm({ message }))) return;`
  *
- *     if (!(await this.$confirm({ message: this.$t('Delete this?') }))) return;
- *
- * The dialog itself is <confirm-dialog />, mounted once in Layout.vue. If it is
- * not on the page - an auth screen, say - this falls back to window.confirm
- * rather than returning a promise that never settles.
+ * The dialog is <confirm-dialog />, mounted once in Layout.vue. Off-layout - an
+ * auth screen - it falls back to window.confirm rather than never settling.
  */
 export const confirmState = reactive({
     mounted: false,

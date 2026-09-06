@@ -24,11 +24,8 @@ class NotificationController extends Controller
     /**
      * The workspace whose menu this page borrows.
      *
-     * The list itself is not scoped to one - it is everything that happened to
-     * this user, wherever it happened. But the page still needs a way back, and
-     * the workspace menu is the one they were looking at a moment ago. First
-     * accessible by name, so it is the same one every visit rather than
-     * something that moves as notifications arrive.
+     * The list spans every workspace, but the page still needs a way back.
+     * First accessible by name, so it does not move as notifications arrive.
      */
     private function sidebarWorkspace(): ?Workspace
     {

@@ -199,20 +199,12 @@ class DocumentSubmissionController extends Controller
     }
 
     /**
-     * The filer's own standing in this workflow, for the pinned "assign this
-     * to me" row.
+     * The filer's own standing, for the pinned "assign this to me" row.
      *
-     * That row is how a document reaches My Tasks, so it is worth saying who
-     * it would actually reach. Someone carrying a responsibility this
-     * workspace's steps name is a doer here, and the row names the
-     * responsibility. Someone carrying none is not: nothing in this flow would
-     * ever hand them the document, so the row is left unticked and points at
-     * the list below instead of quietly filing the document to a plate the
-     * workflow does not reach.
-     *
-     * It stays a suggestion rather than a rule - keeping your own document is
-     * still allowed, the same as it always was - and the registry office is
-     * exempt from it outright.
+     * Someone carrying a responsibility this workspace's steps name is a doer
+     * here and the row names it. Someone carrying none is not, so the row is
+     * left unticked rather than filing the document to a plate the workflow
+     * never reaches. A suggestion, not a rule; the registry office is exempt.
      */
     private function filerStanding(Workspace $workspace, ?User $user): array
     {
@@ -249,18 +241,12 @@ class DocumentSubmissionController extends Controller
 
     /**
      * Everyone this workspace's workflow can put a document on, by
-     * responsibility rather than by team membership.
+     * responsibility rather than team membership.
      *
-     * The chain is the same one a forward walks - workflow step ->
-     * responsible_role code -> sub-role -> the users holding it - read across
-     * every step of the workspace at once instead of just the next one.
-     * Standard and dynamic steps alike: both name a responsibility, and the
-     * difference between them is only how many of its holders end up on the
-     * document, which is the filer's choice to make here.
-     *
-     * A step naming a group (នាយកដ្ឋាន D1-D5) means all of it, so the offices
-     * filed under that group are named too - the same rule
-     * User::responsibleStepsQuery() reads from the other end.
+     * The chain a forward walks, read across every step at once rather than
+     * just the next. A step naming a group (នាយកដ្ឋាន D1-D5) means all of it,
+     * so its offices are named too - the rule User::responsibleStepsQuery()
+     * reads from the other end.
      */
     private function membersByResponsibility(Workspace $workspace, Collection $exclude): Collection
     {
@@ -297,14 +283,9 @@ class DocumentSubmissionController extends Controller
     /**
      * External documents this one can be filed against.
      *
-     * "External" here means simply "not in the workspace being filed into" -
-     * an internal document answers work that came from somewhere else, and
-     * defining it by workspace rather than by a hardcoded workflow name keeps
-     * it working for any flow an administration configures.
-     *
-     * Finished documents are left out: nothing is waiting on them. The list is
-     * capped and searched client-side, which is the same shape the assignee
-     * picker on this form already uses.
+     * "External" means "not in the workspace being filed into" - defined by
+     * workspace rather than a hardcoded workflow name, so it works for any
+     * flow. Finished documents are left out; nothing is waiting on them.
      */
     private function linkableDocuments(Workspace $workspace): array
     {
@@ -618,12 +599,9 @@ class DocumentSubmissionController extends Controller
             }
         }
 
-        // The next step names a responsibility nobody carries. Forwarding
-        // anyway used to be allowed and merely reported afterwards, which left
-        // the document on a board with no plate to sit on and nobody notified -
-        // and off the forwarder's own list, so it disappeared. Refuse while it
-        // is still in the hands of somebody who can go and fix it. Naming
-        // people outright answers the question and moves it anyway.
+        // The next step names a responsibility nobody carries. Forwarding was
+        // allowed and only reported afterwards, which took the document off the
+        // forwarder's list and put it on no other. Naming people still moves it.
         if ($assignTo->isEmpty() && !$this->stepHasAnyHolder($this->stepConfig($task, $next))) {
             return Redirect::back()->with('error', __('Nobody carries :role yet, so :step has no one to receive the document — assign it in Settings → Workflow Roles.', [
                 'role' => $this->stepResponsibilityName($task, $next),
@@ -828,27 +806,17 @@ class DocumentSubmissionController extends Controller
     }
 
     /**
-     * Assign the document to everyone carrying the responsibility the step it
-     * just landed on calls for.
+     * Assign the document to everyone carrying the next step's responsibility.
      *
-     * The chain is board title -> workflow step -> responsible_role code ->
-     * sub-role -> the users holding it. Any missing link simply means nobody is
-     * assigned automatically: an administration that has not configured a step,
-     * or has nobody in that responsibility yet, still gets a working forward.
+     * The chain is board title -> step -> responsible_role -> sub-role -> its
+     * holders; a missing link just means nobody is assigned automatically, so
+     * an unconfigured flow still forwards. The forwarder is always skipped:
+     * putting the document straight back would hide the hand-off.
      *
-     * The forwarder is skipped even when they hold the next responsibility -
-     * they have just handed the document on, and putting it straight back on
-     * their list would make the hand-off look like it had not happened.
-     *
-     * $handTo holds the responsibilities chosen while forwarding into a dynamic
-     * step, already checked by the caller against what that step offers. It may
-     * name several: one document often goes to D1 through D5 at once.
-     *
-     * $assignTo is the forwarder naming people outright. Where it is given it
-     * settles the question - the responsibility decided who *could* receive the
-     * document, and this says who does. It is the only arm that works on a step
-     * carrying no responsibility at all, which is how a document moves through
-     * a flow whose steps have not been configured yet.
+     * $handTo names the responsibilities chosen on a dynamic step (often
+     * several - D1 through D5 at once), already validated by the caller.
+     * $assignTo names people outright and settles the question; it is the only
+     * arm that works on a step carrying no responsibility at all.
      */
     private function assignStepOwners(
         Task $task,
@@ -921,20 +889,10 @@ class DocumentSubmissionController extends Controller
     /**
      * Does anybody at all carry the responsibility this step names?
      *
-     * The question a forward is refused on, and it is narrower than "will this
-     * hand-off put the document on somebody's plate":
-     *
-     *  - A step naming no responsibility is not misconfigured, it is
-     *    unconfigured. A flow still being set up has to stay movable, and
-     *    naming people outright is how a document crosses it.
-     *  - The forwarder counts. Somebody who is the only holder of the next
-     *    step still makes it a step that exists; assignStepOwners will not
-     *    hand the document back to them, and that is deliberate.
-     *  - So does anyone already on the document, who keeps holding it.
-     *
-     * What is left is the case the panel shows in amber: a step that names a
-     * responsibility nobody in the register carries. Nothing about the
-     * document can fix that - only Settings → Workflow Roles can.
+     * Narrower than "will this land on a plate": a step naming no
+     * responsibility is unconfigured, not misconfigured, and stays movable;
+     * the forwarder counts even though assignStepOwners will not hand the
+     * document back to them. Only Settings → Workflow Roles fixes a false.
      */
     private function stepHasAnyHolder(?EdocWorkflowRole $step): bool
     {
@@ -1115,14 +1073,10 @@ class DocumentSubmissionController extends Controller
             // 'people', which leaves the forwarder out: the only holder of the
             // next step sees an empty list and a step that exists all the same.
             'has_holder' => $hasHolder,
-            // Nobody carries the step, so the panel has nobody to offer and the
-            // forward is refused. Offer the workspace's own people instead:
-            // naming somebody outright is the one arm of assignStepOwners that
-            // works on a responsibility with no holders, and without it the
-            // only way past the block is an administrator editing the workflow.
-            // Only built for somebody who can act on it: this is the whole
-            // workspace team by name, where 'people' above is the holders of one
-            // responsibility, and the panel it feeds is itself behind can.forward.
+            // Nobody carries the step, so the panel has nobody to offer.
+            // Naming somebody outright is the one arm of assignStepOwners that
+            // works without a holder. Gated on 'move': this is the whole team,
+            // where 'people' above is the holders of one responsibility.
             'fallback_people' => $hasHolder || !$this->userCan('move', $task)
                 ? []
                 : $this->workspaceCandidates($workspaceId)->all(),
@@ -1184,14 +1138,10 @@ class DocumentSubmissionController extends Controller
     /**
      * The people a step can be handed to, named.
      *
-     * The responsibility the step carries, plus every responsibility filed
-     * under it - the same reach assignStepOwners() has when it hands the
-     * document over, so the names shown before the button is pressed are the
-     * people who will actually receive it.
-     *
-     * Each carries the responsibility code it was reached by, which is what
-     * lets the forward panel narrow the list as a dynamic step's departments
-     * are chosen.
+     * The step's responsibility plus everything filed under it - the same
+     * reach assignStepOwners() has, so the names shown before the button is
+     * pressed are the people who receive it. Each carries the code it was
+     * reached by, which is how the panel narrows on a dynamic step.
      */
     private function stepCandidates(?EdocWorkflowRole $step, ?int $workspaceId): Collection
     {

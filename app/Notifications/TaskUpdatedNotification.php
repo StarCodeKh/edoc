@@ -150,10 +150,9 @@ class TaskUpdatedNotification extends Notification implements ShouldQueue
     /**
      * The change as a translation key and its values.
      *
-     * generateMessage() bakes the sentence in English at write time, which is
-     * fine for the mail and Slack copies - they are sent once, to one place.
-     * The database copy is read back for thirty days by whoever opens the bell,
-     * in whatever language they have chosen, so it carries the parts instead.
+     * generateMessage() bakes English at write time, which suits mail and
+     * Slack. The database copy is read back for thirty days in whatever
+     * language the reader chose, so it carries the parts instead.
      *
      * @return array{message_key: string, message_values: array<string, string>}
      */
@@ -209,15 +208,9 @@ class TaskUpdatedNotification extends Notification implements ShouldQueue
     /**
      * A value the page translates when it reads the row back.
      *
-     * __() here would resolve at write time, inside a queued job running in the
-     * *actor's* locale - so a Khmer clerk moving a task off a since-deleted
-     * board stored "មិនស្គាល់", and an English reader got that word sitting in
-     * an otherwise English sentence. A word standing in for a missing part is
-     * the one piece of a message that has no language of its own, so it travels
-     * as a key and is resolved by whoever is reading.
-     *
-     * A plain string can never be mistaken for one of these: a board really
-     * named "Unknown" arrives as the string, this arrives as an object.
+     * __() would resolve at write time, in the queued job's locale, so a Khmer
+     * clerk's "មិនស្គាល់" reached an English reader. An object can never be
+     * confused with a board genuinely named "Unknown".
      *
      * @return array{translate: string}
      */

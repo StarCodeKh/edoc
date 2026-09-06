@@ -15,10 +15,8 @@ use Tests\TestCase;
 /**
  * What a notification stores for the bell to read back.
  *
- * The message used to be one English sentence baked at write time, which the
- * page could only replay - so a Khmer reader got "moved task ... from ... to
- * ...". It now carries the same sentence as a key and its values, and the page
- * builds it in whoever is reading's language.
+ * The message was one English sentence baked at write time, which the page
+ * could only replay. It now carries a key and its values instead.
  */
 class NotificationMessageTest extends TestCase
 {
@@ -97,11 +95,9 @@ class NotificationMessageTest extends TestCase
     }
 
     /**
-     * A board deleted since the move leaves the id resolving to nothing.
-     *
-     * The stand-in travels as a key, not as text: resolved here it would be
-     * written in the locale of whoever happened to press the button, and then
-     * read back by somebody using the app in another language.
+     * A board deleted since the move leaves the id resolving to nothing. The
+     * stand-in travels as a key: resolved at write time it would carry the
+     * locale of whoever pressed the button.
      */
     public function test_a_missing_board_travels_as_a_key_not_as_text(): void
     {

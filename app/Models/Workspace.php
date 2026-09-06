@@ -28,28 +28,19 @@ class Workspace extends Model
     }
 
     /**
-     * Workspaces a user may open. Admins (and Super Admins) run every board flow,
-     * and the registry office answers for the register across all of them, so
-     * neither is held to workspace membership; everyone else sees the ones they
-     * own, belong to, or carry a workflow responsibility in.
+     * Workspaces a user may open.
      *
-     * That last arm is what a Normal User actually reaches a workspace by. The
-     * administration gives people a responsibility, not a team_members row, so
-     * a rule written on membership alone left them with nothing at all.
+     * Admins and the registry office answer for every board, so neither is held
+     * to membership. Everyone else owns, belongs to, or carries a
+     * responsibility in one - and that last arm is how a Normal User reaches a
+     * workspace at all, since the administration hands out responsibilities
+     * rather than team_members rows.
      *
-     * Holding a document here is the other way in, and it has to be. A dynamic
-     * step is handed to one person as the document is forwarded, and that
-     * hand-off is an assignees row rather than a responsibility - see
-     * User::responsibleStepsQuery(), which deliberately leaves a dynamic group
-     * step out - so the doer of such a step could see the document in My Tasks
-     * and then get a 404 opening the page that listed it.
-     *
-     * Rather than name those connections again here and let the two drift, that
-     * arm asks Task::scopeVisibleTo: a workspace holding a document this user
-     * may read is a workspace they may open. Whatever earns a document a place
-     * in the register earns the register itself, which is the only way a row
-     * that lists can be a row that opens. It grants no more than that - every
-     * action on a document is still TaskAbility's call, one document at a time.
+     * Holding a document is the other way in: a dynamic step is handed over as
+     * an assignees row, not a responsibility, so its doer would otherwise see
+     * the document in My Tasks and 404 opening it. That arm defers to
+     * Task::scopeVisibleTo rather than restating the rule and drifting from it.
+     * It grants listing only; every action is still TaskAbility's call.
      */
     public function scopeAccessibleTo($query, $user = null)
     {

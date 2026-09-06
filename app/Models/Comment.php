@@ -57,17 +57,6 @@ class Comment extends Model
             }
         });
 
-        //        static::updating(function ($comment) {
-        //            Activity::create([
-        //                'user_id' => Auth::id(),
-        //                'task_id' => $comment->task_id,
-        //                'comment_id' => $comment->id,
-        //                'field_changed' => 'comment',
-        //                'old_value' => null,
-        //                'new_value' => $comment->details,
-        //            ]);
-        //        });
-
         // Log activity when a comment is deleted
         static::deleting(function ($comment) {
             Activity::create([

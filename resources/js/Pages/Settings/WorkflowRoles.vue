@@ -809,16 +809,7 @@ export default {
             return this.childCounts[id] || 0;
         },
 
-        /**
-         * What a responsibility may be filed under. Nesting is one level deep,
-         * so only responsibilities that stand on their own are offered, and
-         * one that already stands for others cannot be moved beneath another.
-         */
-        /**
-         * parentOptions in the shape FilterSelect wants. The null row is what the
-         * old <select> had as its first option: a responsibility that stands on
-         * its own rather than under another.
-         */
+        /** parentOptions in the shape FilterSelect wants, plus the null row. */
         parentSelectOptions(subRole) {
             return [
                 { value: null, label: this.$t('Stands on its own') },
@@ -829,6 +820,11 @@ export default {
             ];
         },
 
+        /**
+         * What a responsibility may be filed under. Nesting is one level deep,
+         * so only responsibilities standing on their own are offered, and one
+         * that already stands for others cannot be moved beneath another.
+         */
         parentOptions(subject) {
             if (subject && this.childCount(subject.id)) return [];
 

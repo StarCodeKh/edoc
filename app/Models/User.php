@@ -11,6 +11,15 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\HasApiTokens;
 
+/**
+ * Roles, as the ministry defines them:
+ *   Super Admin - everything in the system   (roles.id 1)
+ *   Admin       - everything on every board  (roles.id 2)
+ *   Normal      - only their own documents   (roles.slug 'normal')
+ *
+ * Super Admin and Admin share the slug 'admin', so they are told apart by name
+ * or id; every existing `slug == 'admin'` check keeps working.
+ */
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
@@ -82,24 +91,11 @@ class User extends Authenticatable
     public const REGISTRY_SUB_ROLE_CODE = 'admin';
 
     /**
-     * Roles, as the ministry defines them:
-     *   Super Admin - everything in the system   (roles.id 1)
-     *   Admin       - everything on every board  (roles.id 2)
-     *   Normal      - only their own documents   (roles.slug 'normal')
+     * The board titles this user is responsible for.
      *
-     * Super Admin and Admin share the slug 'admin', so the two are told apart by
-     * role name / id; every existing `slug == 'admin'` check keeps working.
-     */
-    /**
-     * The board titles this user is responsible for, via their workflow
-     * responsibility.
-     *
-     * Workflow steps are matched to boards by title - that is how
-     * Support\WorkflowStep has always resolved them - so a responsibility
-     * resolves to a set of titles rather than board ids.
-     *
-     * Memoised: visibility is asked once per task in some loops, and this
-     * would otherwise be two queries every time.
+     * Steps are matched to boards by title, the way Support\WorkflowStep has
+     * always resolved them, so a responsibility gives titles rather than ids.
+     * Memoised: some loops ask this once per task.
      */
     public function responsibleListTitles(): array
     {
@@ -154,12 +150,9 @@ class User extends Authenticatable
             // The responsibility this user actually carries.
             $query->where('responsible_role', $role->code);
 
-            // ...and the group it sits under, but only where that step is
-            // standard. A standard step names the group and means all of it, so
-            // a D1 officer holds a "នាយកដ្ឋាន D1-D5" step like everyone else
-            // under it. A dynamic step is handed to one member as it is
-            // forwarded, and only that member should carry it - they get an
-            // assignee row, which is what puts it on their plate instead.
+            // ...and the group above it, but only on a standard step, which
+            // names the group and means all of it. A dynamic step is handed to
+            // one member on forward and reaches them by an assignee row.
             if ($parentCode) {
                 $query->orWhere(function ($group) use ($parentCode) {
                     $group->where('responsible_role', $parentCode)
@@ -217,13 +210,8 @@ class User extends Authenticatable
 
     /**
      * The registry office (ការិយាល័យ រដ្ឋបាល): every document passes through it
-     * on the way in and on the way out, and it has to be able to find any of
-     * them at any point in any flow to answer for the register.
-     *
-     * So it reads the whole register, across every workspace - and reads it
-     * only. Acting on a document is unchanged: the step the document is
-     * waiting on has to be one of theirs, which responsibleListTitles()
-     * answers, for a standard step and a dynamic one alike.
+     * both ways, so it reads the whole register across every workspace - and
+     * reads it only. Acting still needs the step to be one of theirs.
      */
     public function isRegistryOffice(): bool
     {
@@ -316,12 +304,9 @@ class User extends Authenticatable
     /**
      * The user list's search box, matching everything the list shows.
      *
-     * It used to reach first name, last name, phone and email only, so a search
-     * for ចំណងជើង, a responsibility or a department found nobody - the columns
-     * were right there on screen and typing them returned an empty table.
-     *
-     * The two full-name arms matter as much: the names are stored split, so
-     * "ទ្រី គីមហេង" matched neither field on its own.
+     * It reached name/phone/email only, so typing a ចំណងជើង, responsibility or
+     * department returned an empty table. Names are stored split, so the two
+     * full-name arms are what let "ទ្រី គីមហេង" match at all.
      */
     public function scopeFilter($query, array $filters)
     {

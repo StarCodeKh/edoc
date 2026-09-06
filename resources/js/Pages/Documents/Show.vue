@@ -734,10 +734,8 @@
 
                                                 <!-- Nobody carries the next step. Rather than a dead
                                                      end behind a disabled button, offer the workspace's
-                                                     own people: naming somebody outright is what moves
-                                                     a document across a step whose responsibility has
-                                                     no holder. Fixing the workflow is still the better
-                                                     answer, which is why the label says so. -->
+                                                     own people - naming somebody is what moves a
+                                                     document across a step with no holder. -->
                                                 <div
                                                     v-if="!finishes_here && next_step && next_step.has_holder === false"
                                                     class="mt-2"
@@ -843,13 +841,9 @@
                                                         $t('Waiting on the internal document(s) raised from this one.')
                                                     }}
                                                 </p>
-                                                <!-- The step exists but has no holder, so there is
-                                                     nowhere for the document to land by itself. Said
-                                                     in amber next to a disabled button, and said as
-                                                     the two things that unblock it: name somebody
-                                                     from the list above, or go and fix the workflow.
-                                                     Where the workspace has nobody to name either,
-                                                     only the second one is left. -->
+                                                <!-- Amber, and said as the two things that unblock
+                                                     it: name somebody above, or fix the workflow.
+                                                     With nobody to name, only the second is left. -->
                                                 <p
                                                     v-else-if="nextStepHasNobody"
                                                     class="mt-1.5 text-center text-[11px] font-medium text-amber-600"
@@ -1273,11 +1267,9 @@ export default {
          * The next step names a responsibility nobody carries, so forwarding
          * would take the document off this plate and put it on no other.
          *
-         * The answer comes from the server, which counts holders this page
-         * cannot see: next_step.people leaves the forwarder out, so the only
-         * holder of the next step would otherwise read as nobody at all.
-         * Mirrors the gate in DocumentSubmissionController::forward, so the
-         * button refuses for the same reason the server would.
+         * has_holder comes from the server: next_step.people leaves the
+         * forwarder out, so the sole holder would read here as nobody. Mirrors
+         * the gate in DocumentSubmissionController::forward.
          */
         nextStepHasNobody() {
             if (this.finishes_here || !this.next_step) return false;

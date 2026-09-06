@@ -558,31 +558,6 @@ class WorkSpacesController extends Controller
     }
 
     /**
-     * "On my plate": assigned to me, or sitting on a board my workflow
-     * responsibility covers.
-     *
-     * The listing and the sidebar badge both build on this, so the number on
-     * the menu and the number of rows cannot disagree.
-     */
-    /**
-     * The workspace a menu, dashboard or My Tasks route is addressed to.
-     *
-     * Every one of these used to resolve it with
-     * `where('id', $uid)->orWhere('slug', $uid)->whereHas('member')`, which is
-     * two faults in one line.
-     *
-     * SQL binds the AND tighter than the OR, so the membership check only ever
-     * applied to the slug arm - a workspace addressed by its id walked straight
-     * past it. And where it did apply it asked the wrong question: the
-     * administration hands out a responsibility rather than a team_members row,
-     * and a dynamic step is handed over as an assignees row, so the very person
-     * holding a document was counted in the sidebar badge and then met a 404 on
-     * the page that badge links to.
-     *
-     * Workspace::scopeAccessibleTo is the one answer to "may this user open
-     * this workspace", and it is asked here for both arms at once.
-     */
-    /**
      * The role context the dashboard renders against.
      *
      * 'scope' is the one thing the front end branches on: 'all' means the
@@ -828,6 +803,15 @@ class WorkSpacesController extends Controller
         return false;
     }
 
+    /**
+     * The workspace a menu, dashboard or My Tasks route is addressed to.
+     *
+     * These used to resolve it with `where('id')->orWhere('slug')->whereHas
+     * ('member')`. AND binds tighter than OR, so the membership check only
+     * reached the slug arm - and where it applied it asked the wrong question,
+     * since the administration hands out a responsibility rather than a
+     * team_members row. scopeAccessibleTo is the one answer, asked once.
+     */
     private function findWorkspace($uid): ?Workspace
     {
         return Workspace::where(function ($query) use ($uid) {
@@ -838,6 +822,12 @@ class WorkSpacesController extends Controller
             ->first();
     }
 
+    /**
+     * "On my plate": assigned to me, or on a board my responsibility covers.
+     *
+     * The listing and the sidebar badge both build on this, so the number on
+     * the menu and the number of rows cannot disagree.
+     */
     private function onMyPlate($query, ?User $user)
     {
         if (empty($user)) {

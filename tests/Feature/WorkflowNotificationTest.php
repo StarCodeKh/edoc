@@ -23,11 +23,9 @@ use Tests\TestCase;
 /**
  * Who hears about a document when it moves.
  *
- * Forwarding does not notify a workflow responsibility directly - it puts the
- * document on the plates of the people carrying the next step's responsibility,
- * and it is that assignment which notifies them. So the chain under test is
- * forward -> assign the step's doers -> notify each one, and the interesting
- * case is the step nobody carries, where there is nothing to notify.
+ * Forwarding notifies nobody directly: it assigns the next step's holders, and
+ * that assignment is what notifies. So the chain is forward -> assign -> notify,
+ * and the interesting case is the step nobody carries.
  */
 class WorkflowNotificationTest extends TestCase
 {
@@ -149,10 +147,8 @@ class WorkflowNotificationTest extends TestCase
     /**
      * A step naming a responsibility nobody carries is refused, not reported.
      *
-     * Forwarding into it used to be allowed and merely warned about
-     * afterwards, which left the document on a board with no plate to sit on
-     * and off the forwarder's own list - so nobody held it and nobody heard.
-     * The document stays where it is until the responsibility has a holder.
+     * It used to be allowed and warned about afterwards, which took the
+     * document off the forwarder's list and put it on no other.
      */
     public function test_a_step_nobody_carries_refuses_the_forward(): void
     {
@@ -177,12 +173,9 @@ class WorkflowNotificationTest extends TestCase
     }
 
     /**
-     * Naming somebody outright gets past a step nobody carries.
-     *
-     * The block is there so a document is never dropped on an empty plate, not
-     * to hold it hostage to an administrator: the panel offers the workspace's
-     * own people, and picking one answers the same question the responsibility
-     * would have.
+     * Naming somebody outright gets past a step nobody carries. The block
+     * exists so a document is never dropped on an empty plate, not to hold it
+     * hostage to an administrator.
      */
     public function test_naming_somebody_forwards_a_step_nobody_carries(): void
     {

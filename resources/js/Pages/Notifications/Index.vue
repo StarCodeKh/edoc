@@ -25,11 +25,9 @@ const timeAgo = (value) => (value ? at(value).fromNow() : '');
 const timeExact = (value) => (value ? at(value).format('DD MMM YYYY, HH:mm') : '');
 
 /**
- * The sentence, built rather than replayed.
- *
- * A value may itself be a word standing in for a missing part - a deleted
- * board, an unset due date. Those travel as { translate: key } rather than as
- * text, because they have no language of their own until somebody reads them.
+ * A value may itself stand in for a missing part - a deleted board, an unset
+ * due date. Those travel as { translate: key }, having no language of their
+ * own until somebody reads them.
  */
 const resolveValues = (values) =>
     Object.fromEntries(
@@ -40,10 +38,9 @@ const resolveValues = (values) =>
     );
 
 /**
- * Newer rows carry the change as a key and its values, so it renders in the
- * reader's language. Rows written before that carry only the English sentence,
- * which still goes through the catalogue - the fixed phrases have keys and the
- * interpolated ones fall through unchanged rather than breaking.
+ * Newer rows carry a key and its values. Older rows carry only the English
+ * sentence, which still goes through the catalogue: the fixed phrases have
+ * keys, the interpolated ones fall through unchanged rather than breaking.
  */
 const messageOf = (notification) =>
     notification.data.message_key
@@ -57,11 +54,9 @@ const markAllAsRead = () => {
 };
 
 /**
- * One section per day, newest first.
- *
- * The label is translated rather than built from toLocaleDateString('en-US'),
- * which printed "October 15, 2023" over a Khmer page. Older days use the same
- * DD MMM YYYY the rest of the app writes dates in.
+ * One section per day, newest first. The label is translated rather than built
+ * from toLocaleDateString('en-US'), which printed "October 15, 2023" over a
+ * Khmer page.
  */
 const groupedNotifications = computed(() => {
     const today = at().startOf('day');

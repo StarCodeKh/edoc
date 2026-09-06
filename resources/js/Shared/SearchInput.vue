@@ -15,8 +15,8 @@
                 @input="$emit('update:modelValue', $event.target.value)"
             />
         </div>
-        <!-- Only once there is something to reset. As a permanent label it
-             wrapped onto two lines beside the box and read as part of it. -->
+        <!-- Only once there is something to reset: as a permanent label it
+             wrapped beside the box and read as part of it. -->
         <button
             v-if="!disableReset && modelValue"
             class="shrink-0 whitespace-nowrap text-sm text-gray-500 hover:text-gray-700 focus:text-indigo-500 dark:text-gray-400 dark:hover:text-gray-200"

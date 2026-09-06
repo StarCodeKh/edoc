@@ -544,12 +544,9 @@ export default {
     },
     methods: {
         /**
-         * What the status chip says: the board a document is sitting on, or
-         * "Done" once it is closed.
-         *
-         * Also the chip's title, because the list row clips it to one line -
-         * board names here run to "ការិយាល័យ រដ្ឋបាល ពិនិត្យ និងបញ្ជូនឯកសារ",
-         * which no row is wide enough to hold.
+         * The board a document sits on, or "Done" once closed. Also the chip's
+         * title: the list row clips to one line, and board names here run to
+         * "ការិយាល័យ រដ្ឋបាល ពិនិត្យ និងបញ្ជូនឯកសារ".
          */
         statusLabel(doc) {
             return doc.is_done ? this.$t('Done') : doc.status || this.$t('Active');

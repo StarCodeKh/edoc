@@ -49,17 +49,10 @@ class Task extends Model
     /**
      * The next code in the register.
      *
-     * withTrashed() throughout, which is the whole point: Task is soft-deleted,
-     * so both the starting number and the collision check ran under the default
-     * scope and could not see a deleted document. Deleting the newest one
-     * therefore freed its code, and the next document created was handed the
-     * same CGMC number - two documents, one code, in a register where the code
-     * is the identity. There is no unique index on task_code to catch it, so it
-     * happened silently.
-     *
-     * The number is taken from the highest code ever issued rather than from
-     * the highest id, for the same reason. The id is still a floor, so the two
-     * stay aligned on a register that has never had a document deleted.
+     * withTrashed() throughout: Task is soft-deleted, so the default scope
+     * could not see a deleted document and freed its code for reuse - two
+     * documents, one code, with no unique index on task_code to catch it.
+     * Numbered from the highest code ever issued, floored at the highest id.
      */
     private function generateTaskCode(): string
     {
@@ -262,13 +255,10 @@ class Task extends Model
     /**
      * Documents a user is allowed to see at all.
      *
-     * Admins (and Super Admins) see every document. A Normal User sees what is
-     * assigned to them, plus documents they created themselves - they have to
-     * see their own document to review it before it enters the workflow - plus
-     * anything they are merely related to, which lists and opens read-only.
-     *
-     * Every arm here has a twin in Support\TaskAbility::canView. The two have
-     * to agree, or a document would list but refuse to open.
+     * Admins see everything. A Normal User sees what is assigned to them, what
+     * they created (they review it before it enters the workflow), and what
+     * they are merely related to, read-only. Every arm has a twin in
+     * TaskAbility::canView - they must agree, or a document lists but 404s.
      */
     public function scopeVisibleTo($query, $user = null)
     {
