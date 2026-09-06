@@ -61,6 +61,13 @@
     text-align: right;
 }
 
+/* MyTasksDocuments ends each row with a chevron; its label cell is empty and
+   only reserves the column. Without this the reset above would leave it a
+   zero-width span and every column left of it would sit 14px off. */
+.doc-row--labels .doc-row__chevron {
+    color: transparent;
+}
+
 /* Below this the rows wrap into stacked cards and the columns stop existing,
    so labels for them would be pointing at nothing - and nothing needs to line
    up with anything, so the status goes back to sizing on its content. */
@@ -164,6 +171,25 @@
     font-weight: 600;
     color: var(--ink-subtle);
 }
+/* Still in use on MyTasksDocuments, where the whole row is a <Link> and this
+   is its affordance glyph. It went out with the Documents row's own print and
+   chevron controls; without a size an <icon> renders at the SVG's natural
+   size, which filled the listing with one enormous chevron. */
+.doc-row__chevron {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    color: #d1d5db;
+    transition:
+        color 0.12s ease,
+        transform 0.12s ease;
+}
+
+.doc-row:hover .doc-row__chevron {
+    color: #6574cd;
+    transform: translateX(2px);
+}
+
 /* Fixed so the header above can label this column - see .doc-row--labels. The
    width is released below that breakpoint, where the header is gone and the
    row has wrapped: 11rem beside the icon and the code overran a 360px phone. */

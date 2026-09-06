@@ -93,6 +93,23 @@
                     <div
                         class="mt-4 overflow-hidden rounded-2xl border border-gray-200/70 bg-white dark:bg-[#262932] shadow-sm"
                     >
+                        <!-- The register's header, same as Workspaces/Documents:
+                             one more cell than that page, to hold the column the
+                             chevron sits in. -->
+                        <div v-if="documents.data.length" class="doc-row doc-row--labels" aria-hidden="true">
+                            <span class="doc-row__icon"></span>
+                            <span class="doc-row__code">{{ $t('លេខកូដឯកសារ') }}</span>
+                            <span class="doc-row__title">{{ $t('កម្មវត្ថុ') }}</span>
+                            <span class="doc-row__project">{{ $t('គម្រោង') }}</span>
+                            <span class="doc-row__files" :title="$t('Attachments')">
+                                <icon name="attachment" class="h-3 w-3" />
+                            </span>
+                            <span class="doc-row__user">{{ $t('Uploader') }}</span>
+                            <span class="doc-row__date">{{ $t('Received') }}</span>
+                            <span class="doc-row__status">{{ $t('Status') }}</span>
+                            <span class="doc-row__chevron"></span>
+                        </div>
+
                         <div v-if="documents.data.length" class="divide-y divide-gray-100 dark:divide-white/10">
                             <Link
                                 v-for="doc in documents.data"
