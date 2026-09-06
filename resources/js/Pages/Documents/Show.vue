@@ -339,7 +339,10 @@
                                                 <li v-for="(step, index) in steps" :key="step.id" class="trail">
                                                     <span
                                                         class="trail__rail"
-                                                        :class="{ 'is-last': index === steps.length - 1 }"
+                                                        :class="{
+                                                            'is-last': index === steps.length - 1,
+                                                            'is-active': step.state === 'current',
+                                                        }"
                                                     >
                                                         <span class="step-dot" :class="stepBadgeClass(step)">
                                                             <icon
@@ -452,6 +455,7 @@
                                                             class="mt-1.5 flex flex-wrap items-center gap-1.5"
                                                         >
                                                             <span class="step-chip step-chip--waiting">
+                                                                <i class="step-chip__live" aria-hidden="true"></i>
                                                                 {{ $t('Awaiting action') }}
                                                             </span>
                                                             <span
@@ -1867,26 +1871,88 @@ export default {
 .step-chip--waiting {
     background: var(--tint-warn-bg);
     color: var(--tint-warn-ink);
+    align-items: center;
 }
 
-/* A quiet pulse on the one step that is actually waiting. */
+/* The step the document is actually sitting on. Three quiet signals rather
+   than one loud one: a ring off the dot, a live dot in the chip, and the rail
+   below it flowing downwards - the direction the document is going to move.
+   Nothing spins: this is a queue waiting on a person, not a task computing. */
 .step-dot--waiting {
     animation: step-dot-pulse 2.4s ease-in-out infinite;
 }
 
 @keyframes step-dot-pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(var(--accent-fill-rgb), 0.5);
+    }
+    70% {
+        box-shadow: 0 0 0 9px rgba(var(--accent-fill-rgb), 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(var(--accent-fill-rgb), 0);
+    }
+}
+
+.step-chip__live {
+    width: 5px;
+    height: 5px;
+    margin-right: 5px;
+    border-radius: 9999px;
+    background: currentColor;
+    flex-shrink: 0;
+    animation: step-chip-blink 1.6s ease-in-out infinite;
+}
+
+@keyframes step-chip-blink {
     0%,
     100% {
-        box-shadow: 0 0 0 0 rgba(var(--accent-fill-rgb), 0.45);
+        opacity: 1;
+        transform: scale(1);
     }
     50% {
-        box-shadow: 0 0 0 5px rgba(var(--accent-fill-rgb), 0);
+        opacity: 0.35;
+        transform: scale(0.75);
+    }
+}
+
+/* A second layer over the grey rail, so the line keeps its full length while
+   the lit dashes march down it - the direction the document is going to move.
+   Sized in px, not percentages: rows differ in height, and a percentage
+   background-position resolves against (box - image) rather than the box. */
+.trail__rail.is-active:not(.is-last)::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 32px;
+    bottom: -8px;
+    width: 2px;
+    transform: translateX(-50%);
+    background: repeating-linear-gradient(
+        to bottom,
+        rgba(var(--accent-fill-rgb), 0.85) 0 7px,
+        rgba(var(--accent-fill-rgb), 0) 7px 22px
+    );
+    animation: step-rail-flow 1.4s linear infinite;
+}
+
+@keyframes step-rail-flow {
+    to {
+        background-position-y: 22px;
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .step-dot--waiting {
+    .step-dot--waiting,
+    .step-chip__live,
+    .trail__rail.is-active:not(.is-last)::before {
         animation: none;
+    }
+
+    /* Still lit, just not marching - the rail is the one of the three that
+       says nothing at all when it stops moving. */
+    .trail__rail.is-active:not(.is-last)::before {
+        opacity: 0.6;
     }
 }
 
