@@ -35,6 +35,10 @@ class LogReader
 
         return collect(File::files($dir))
             ->filter(fn ($file) => $file->getExtension() === 'log')
+            // An empty log has nothing to show and nothing to clear. The daily
+            // channel leaves one behind for every quiet day, which buried the
+            // files that do carry something under a list of "0 B" rows.
+            ->filter(fn ($file) => $file->getSize() > 0)
             ->sortByDesc(fn ($file) => $file->getMTime())
             ->map(fn ($file) => [
                 'name' => $file->getFilename(),
