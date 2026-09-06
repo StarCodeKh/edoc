@@ -73,7 +73,7 @@ class ErrorLogController extends Controller
 
         // Never write to a path the caller made up.
         if (!$name || !$known->contains($name)) {
-            abort(422, 'Unknown log file.');
+            abort(422, __('Unknown log file.'));
         }
 
         File::put(storage_path('logs/'.$name), '');

@@ -14,19 +14,6 @@
 
         <form method="post" action="{{ route('LaravelInstaller::environmentSaveInfo') }}" class="tabs-wrap">
             <input type="hidden" name="_token" value="{{ csrf_token() }}">
-            <div class="form-group {{ $errors->has('app_pce') ? ' has-error ' : '' }}">
-                <label for="app_pce">
-                    {{ 'Purchase Code' }}
-                </label>
-                <input type="text" name="app_pce" id="app_pce" value="" placeholder="{{ 'input your purchase code' }}" />
-                @if ($errors->has('app_pce'))
-                    <span class="error-block">
-                            <i class="fa fa-fw fa-exclamation-triangle" aria-hidden="true"></i>
-                            {{ 'The purchase code is required.' }}
-                        </span>
-                @endif
-            </div>
-
             <div class="buttons">
                 <button class="button">
                     {{ trans('installer_messages.environment.info.button') }}

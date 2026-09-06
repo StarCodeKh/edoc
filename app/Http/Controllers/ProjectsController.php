@@ -46,7 +46,7 @@ class ProjectsController extends Controller
             $contentType = $file->getClientmimeType();
 
             if (!in_array($contentType, $allowedMimeTypes)) {
-                return response()->json(['error' => true, 'message' => 'File type is not supported!']);
+                return response()->json(['error' => true, 'message' => __('File type is not supported!')]);
             }
             $file_name_origin = $file->getClientOriginalName();
             $file_name = uniqid().'-'.$this->clean(pathinfo($file_name_origin, PATHINFO_FILENAME)).'.'.$file->getClientOriginalExtension();

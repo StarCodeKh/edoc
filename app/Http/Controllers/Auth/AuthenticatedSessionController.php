@@ -76,7 +76,7 @@ class AuthenticatedSessionController extends Controller
 
         event(new ForgotPassword(['email' => $requestData['email'], 'token' => $token]));
 
-        return back()->with('success', 'We have e-mailed your password reset link!');
+        return back()->with('success', __('We have e-mailed your password reset link!'));
     }
 
     public function forgotPasswordToken($token)
@@ -101,13 +101,13 @@ class AuthenticatedSessionController extends Controller
             ->first();
 
         if (!$updatePassword) {
-            return Redirect::back()->with('error', 'Invalid email or token!');
+            return Redirect::back()->with('error', __('Invalid email or token!'));
         }
 
         User::where('email', $requestData['email'])->update(['password' => Hash::make($requestData['password'])]);
         DB::table('password_resets')->where(['email' => $requestData['email']])->delete();
 
-        return Redirect::route('login')->with('success', 'Your password has been changed!');
+        return Redirect::route('login')->with('success', __('Your password has been changed!'));
     }
 
     /**

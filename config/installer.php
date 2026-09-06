@@ -65,7 +65,6 @@ return [
     'info' => [
         'form' => [
             'rules' => [
-                'app_pce' => 'required|string',
             ],
         ],
     ],
@@ -89,7 +88,6 @@ return [
     'environment' => [
         'form' => [
             'rules' => [
-                'app_pce' => 'required|string',
                 'app_name' => 'required|string|max:50',
                 'app_url' => 'required|url',
                 'database_connection' => 'required|string|max:50',

@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Install\Requirement;
 use App\Models\Role;
 use App\Models\User;
-use App\Services\LicenseCore;
 use App\Support\EnvFile;
 use Exception;
 use Illuminate\Http\Request;
@@ -18,13 +17,6 @@ use Illuminate\Support\Facades\Validator;
 
 class ModernInstallerController extends Controller
 {
-    protected $licenseCore;
-
-    public function __construct(LicenseCore $licenseCore)
-    {
-        $this->licenseCore = $licenseCore;
-    }
-
     /**
      * Check system requirements
      */
@@ -66,45 +58,6 @@ class ModernInstallerController extends Controller
     }
 
     /**
-     * Verify purchase code using obfuscated license system
-     */
-    public function verifyLicense(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'purchase_code' => 'required|string',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Purchase code is required',
-            ], 400);
-        }
-
-        $purchaseCode = $request->input('purchase_code');
-
-        // Use obfuscated license system for verification
-        $result = $this->licenseCore->activate($purchaseCode);
-
-        if ($result['success']) {
-            // Store purchase code in .env for installer reference
-            $env = EnvFile::load();
-            $env->setKey('APP_PCE', $purchaseCode);
-            $env->save();
-
-            return response()->json([
-                'success' => true,
-                'message' => $result['message'],
-            ]);
-        }
-
-        return response()->json([
-            'success' => false,
-            'message' => $result['message'],
-        ], 400);
-    }
-
-    /**
      * Test database connection
      */
     public function testDatabase(Request $request)
@@ -121,7 +74,7 @@ class ModernInstallerController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Invalid database configuration',
+                'message' => __('Invalid database configuration'),
             ], 400);
         }
 
@@ -134,7 +87,7 @@ class ModernInstallerController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Database connection successful',
+                'message' => __('Database connection successful'),
             ]);
 
         } catch (Exception $e) {
@@ -177,7 +130,7 @@ class ModernInstallerController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Invalid configuration data',
+                'message' => __('Invalid configuration data'),
                 'errors' => $validator->errors(),
             ], 400);
         }
@@ -241,7 +194,7 @@ class ModernInstallerController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Environment configuration saved successfully',
+                'message' => __('Environment configuration saved successfully'),
             ]);
 
         } catch (Exception $e) {
@@ -272,7 +225,7 @@ class ModernInstallerController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Invalid admin data',
+                'message' => __('Invalid admin data'),
                 'errors' => $validator->errors(),
             ], 400);
         }
@@ -286,7 +239,6 @@ class ModernInstallerController extends Controller
 
                 // Step 2: Migrate temporary license data to database
                 \Log::info('Migrating license data');
-                $this->licenseCore->migrateTempLicenseToDatabase();
                 \Log::info('License data migration completed');
 
                 // Step 3: Seed the database
@@ -296,7 +248,6 @@ class ModernInstallerController extends Controller
             } else {
                 // Database already exists, just migrate temporary license data
                 \Log::info('Database exists, migrating license data only');
-                $this->licenseCore->migrateTempLicenseToDatabase();
                 \Log::info('License data migration completed');
             }
 
@@ -336,7 +287,7 @@ class ModernInstallerController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Installation completed successfully',
+                'message' => __('Installation completed successfully'),
                 'admin' => [
                     'id' => $admin->id,
                     'name' => $admin->name,

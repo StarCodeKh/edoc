@@ -59,19 +59,19 @@ class SignatureRequestController extends Controller
         $list = BoardList::with('project')->find($task->list_id);
 
         if (!WorkflowStep::requiresSignature($list)) {
-            abort(422, 'This board does not require a signature.');
+            abort(422, __('This board does not require a signature.'));
         }
 
         // Who signs is the workflow's answer, not a hardcoded role: whoever
         // carries the responsibility this step names. See TaskAbility::canSign.
         if (!$user || !TaskAbility::canSign($user, $task)) {
-            abort(403, 'Only the reviewer responsible for this step may approve and sign it.');
+            abort(403, __('Only the reviewer responsible for this step may approve and sign it.'));
         }
 
         $next = $this->nextList($task, $list);
 
         if (!$next) {
-            abort(422, 'There is no next board to move this document to.');
+            abort(422, __('There is no next board to move this document to.'));
         }
 
         // Whether signing finishes the document is the workflow's answer, not

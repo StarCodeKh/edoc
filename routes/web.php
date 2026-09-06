@@ -348,7 +348,6 @@ Route::group(['prefix' => 'install', 'middleware' => ['web', 'install']], functi
 
     // API endpoints for installer
     Route::post('/check-requirements', [ModernInstallerController::class, 'checkRequirements'])->name('installer.check-requirements');
-    Route::post('/verify-license', [ModernInstallerController::class, 'verifyLicense'])->name('installer.verify-license');
     Route::post('/test-database', [ModernInstallerController::class, 'testDatabase'])->name('installer.test-database');
     Route::post('/save-environment', [ModernInstallerController::class, 'saveEnvironment'])->name('installer.save-environment');
     Route::post('/run-installation', [ModernInstallerController::class, 'runInstallation'])->name('installer.run-installation');

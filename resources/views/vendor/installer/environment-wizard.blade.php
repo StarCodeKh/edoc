@@ -34,19 +34,6 @@
 {{--                <input type="hidden" name="db_setup" id="db_setup" value="true" />--}}
                 <!-- Hidden inputs -->
 
-                <div class="form-group {{ $errors->has('app_pce') ? ' has-error ' : '' }}">
-                    <label for="app_pce">
-                        {{ 'Purchase Code' }}
-                    </label>
-                    <input type="text" name="app_pce" id="app_pce" value="" placeholder="{{ 'input your purchase code' }}" />
-                    @if ($errors->has('app_pce'))
-                        <span class="error-block">
-                            <i class="fa fa-fw fa-exclamation-triangle" aria-hidden="true"></i>
-                            {{ 'The purchase code is required.' }}
-                        </span>
-                    @endif
-                </div>
-
                 <div class="form-group {{ $errors->has('app_name') ? ' has-error ' : '' }}">
                     <label for="app_name">
                         {{ trans('installer_messages.environment.wizard.form.app_name_label') }}

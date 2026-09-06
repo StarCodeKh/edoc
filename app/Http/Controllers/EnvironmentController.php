@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Events\EnvironmentSaved;
 use App\Helpers\EnvironmentManager;
-use App\Support\EnvFile;
 use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -88,30 +87,14 @@ class EnvironmentController extends Controller
     public function saveInfo(Request $request, Redirector $redirect)
     {
         $rules = config('installer.info.form.rules');
-        $purchaseCode = $request->input('app_pce');
-        $messages = [
-            'app_pce' => 'The purchase code is required.',
-        ];
+        $messages = [];
         $requests = $request->all();
         $validator = Validator::make($requests, $rules, $messages);
         if ($validator->fails()) {
             return $redirect->route('LaravelInstaller::environmentInfo')->withInput()->withErrors($validator->errors());
         }
-        // aff5ae34-96bf-47f2-a03c-994559bb4592
-        if (!empty($purchaseCode) && preg_match("/^(\{)?[a-f\d]{8}(-[a-f\d]{4}){4}[a-f\d]{8}(?(1)\})$/i", $purchaseCode)) {
-            $result = $this->getPurchaseCode($purchaseCode);
-            if (isset($result['item']) && isset($result['item']['id']) && $result['item']['id'] == '49556761') {
-                $env = EnvFile::load();
-                $env->setKey('APP_PCE', $purchaseCode);
-                $env->save();
 
-                return $redirect->route('LaravelInstaller::environmentDatabase');
-            }
-        }
-
-        return $redirect->route('LaravelInstaller::environmentInfo')->withInput()->withErrors([
-            'app_pce' => 'Invalid purchase code, please input a valid purchase code',
-        ]);
+        return $redirect->route('LaravelInstaller::environmentDatabase');
     }
 
     public function saveDatabase(Request $request, Redirector $redirect)
@@ -139,23 +122,6 @@ class EnvironmentController extends Controller
 
         return $redirect->route('LaravelInstaller::database')
             ->with(['results' => $results]);
-    }
-
-    private function getPurchaseCode($product_code)
-    {
-        $url = 'https://api.envato.com/v3/market/author/sale?code='.$product_code;
-        $curl = curl_init($url);
-        $header = [];
-        $header[] = 'Authorization: Bearer FhFGKNQ8n6hkdxLd9zxZfif1qKtxrI0Q';
-        $header[] = 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:41.0) Gecko/20100101 Firefox/41.0';
-        $header[] = 'timeout: 20';
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($curl, CURLOPT_HTTPHEADER, $header);
-        $envatoRes = curl_exec($curl);
-        curl_close($curl);
-        $envatoRes = is_string($envatoRes) ? json_decode($envatoRes, true) : $envatoRes;
-
-        return $envatoRes;
     }
 
     /**

@@ -53,6 +53,6 @@ class NotificationSettingController extends Controller
 
         // A back() redirect with a flash message is the standard, effective
         // way to handle updates in Inertia.
-        return back()->with('success', 'Setting updated successfully!');
+        return back()->with('success', __('Setting updated successfully!'));
     }
 }

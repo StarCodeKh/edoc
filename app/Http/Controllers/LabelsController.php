@@ -105,7 +105,7 @@ class LabelsController extends Controller
 
         Label::create(['name' => $request_data['name'], 'color' => $request_data['color']]);
 
-        return Redirect::route('labels')->with('success', 'Label created.');
+        return Redirect::route('labels')->with('success', __('Label created.'));
     }
 
     public function edit(Label $label)
@@ -129,21 +129,21 @@ class LabelsController extends Controller
             ])
         );
 
-        return Redirect::back()->with('success', 'Label updated.');
+        return Redirect::back()->with('success', __('Label updated.'));
     }
 
     public function destroy(Label $label)
     {
         $label->delete();
 
-        return Redirect::route('labels')->with('success', 'Label deleted.');
+        return Redirect::route('labels')->with('success', __('Label deleted.'));
     }
 
     public function restore(Label $label)
     {
         $label->restore();
 
-        return Redirect::back()->with('success', 'Label restored.');
+        return Redirect::back()->with('success', __('Label restored.'));
     }
 
     public function deleteLabel($id)

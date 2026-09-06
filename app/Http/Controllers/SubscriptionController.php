@@ -15,6 +15,6 @@ class SubscriptionController extends Controller
         ]);
         Contact::create($request);
 
-        return Redirect::back()->with('success', 'You just subscribed for the latest news. Thank You!');
+        return Redirect::back()->with('success', __('You just subscribed for the latest news. Thank You!'));
     }
 }

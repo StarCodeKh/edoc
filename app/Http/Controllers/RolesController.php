@@ -53,7 +53,7 @@ class RolesController extends Controller
 
         Role::create(['slug' => $userRequest['slug'], 'name' => $userRequest['name'], 'create_workspace' => $userRequest['create_workspace'] ?? 0, 'create_project' => $userRequest['create_project'] ?? 0]);
 
-        return Redirect::route('roles')->with('success', 'Role created.');
+        return Redirect::route('roles')->with('success', __('Role created.'));
     }
 
     public function edit(Role $role)
@@ -74,7 +74,7 @@ class RolesController extends Controller
     public function update(Role $role)
     {
         if (config('app.demo')) {
-            return Redirect::back()->with('error', 'Updating role is not allowed for the live demo.');
+            return Redirect::back()->with('error', __('Updating role is not allowed for the live demo.'));
         }
 
         $userRequest = Request::validate([
@@ -86,16 +86,16 @@ class RolesController extends Controller
 
         $role->update(['slug' => $userRequest['slug'], 'name' => $userRequest['name'], 'create_workspace' => $userRequest['create_workspace'] ?? 0, 'create_project' => $userRequest['create_project'] ?? 0]);
 
-        return Redirect::back()->with('success', 'Role updated.');
+        return Redirect::back()->with('success', __('Role updated.'));
     }
 
     public function destroy(Role $role)
     {
         if (config('app.demo')) {
-            return Redirect::back()->with('error', 'Deleting role is not allowed for the live demo.');
+            return Redirect::back()->with('error', __('Deleting role is not allowed for the live demo.'));
         }
         $role->delete();
 
-        return Redirect::route('roles')->with('success', 'The role has been deleted!');
+        return Redirect::route('roles')->with('success', __('The role has been deleted!'));
     }
 }

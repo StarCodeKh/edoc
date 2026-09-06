@@ -17,7 +17,7 @@ class EnsureSuperAdmin
         $user = $request->user();
 
         if (!$user || !$user->isSuperAdmin()) {
-            abort(403, 'This area is limited to the Super Admin.');
+            abort(403, __('This area is limited to the Super Admin.'));
         }
 
         return $next($request);

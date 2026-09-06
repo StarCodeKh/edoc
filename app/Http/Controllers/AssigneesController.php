@@ -40,7 +40,7 @@ class AssigneesController extends Controller
         if (!$user || !$task) {
             return response()->json([
                 'success' => false,
-                'message' => 'User or task not found.',
+                'message' => __('User or task not found.'),
             ], 404);
         }
 

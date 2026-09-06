@@ -101,7 +101,7 @@ class TasksController extends Controller
         $entry = $history->first(fn ($h) => (string) $h['id'] === (string) $validated['history_id']);
 
         if (!$entry) {
-            return response()->json(['message' => 'That item is not in this task\'s merge history.'], 404);
+            return response()->json(['message' => __('That item is not in this task\'s merge history.')], 404);
         }
 
         $restored = null;
@@ -401,7 +401,7 @@ class TasksController extends Controller
             ->first();
 
         if (empty($task)) {
-            abort(404, 'Task not found.');
+            abort(404, __('Task not found.'));
         }
 
         $this->authorizeTaskModel($task->loadMissing('assignees'), 'view');
@@ -477,7 +477,7 @@ class TasksController extends Controller
         if (!$annotated && !WorkflowStep::acceptsAttachment($list)) {
             return response()->json([
                 'error' => true,
-                'message' => 'This step does not take a document. Tick ឯកសារភ្ជាប់ for it in Settings → Workflow Roles to allow one.',
+                'message' => __('This step does not take a document. Tick ឯកសារភ្ជាប់ for it in Settings → Workflow Roles to allow one.'),
             ], 422);
         }
 
@@ -600,7 +600,7 @@ class TasksController extends Controller
         $path = $this->attachmentAbsolutePath($attachment);
 
         if ($path === null) {
-            abort(404, 'The file is no longer on disk.');
+            abort(404, __('The file is no longer on disk.'));
         }
 
         return response()->file($path, [
@@ -628,7 +628,7 @@ class TasksController extends Controller
             ->first();
 
         if (empty($task)) {
-            abort(404, 'Task not found.');
+            abort(404, __('Task not found.'));
         }
 
         $this->authorizeTaskModel($task->loadMissing('assignees'), 'view');
@@ -636,7 +636,7 @@ class TasksController extends Controller
         $attachment = Attachment::where('id', $attachmentId)->where('task_id', $task->id)->first();
 
         if (empty($attachment)) {
-            abort(404, 'Attachment not found.');
+            abort(404, __('Attachment not found.'));
         }
 
         return [$task, $attachment];

@@ -21,7 +21,7 @@
             <input type="hidden" name="_token" value="{{ csrf_token() }}">
 
             <div class="form-group {{ $errors->has('first_name') ? ' has-error ' : '' }}">
-                <label for="app_pce">
+                <label for="first_name">
                     {{ 'First Name' }}
                 </label>
                 <input type="text" name="first_name" id="first_name" value="" placeholder="{{ 'your first name here' }}" />
@@ -34,7 +34,7 @@
             </div>
 
             <div class="form-group {{ $errors->has('last_name') ? ' has-error ' : '' }}">
-                <label for="app_pce">
+                <label for="last_name">
                     {{ 'Last Name' }}
                 </label>
                 <input type="text" name="last_name" id="last_name" value="" placeholder="{{ 'your last name here' }}" />
@@ -47,7 +47,7 @@
             </div>
 
             <div class="form-group {{ $errors->has('email') ? ' has-error ' : '' }}">
-                <label for="app_pce">
+                <label for="email">
                     {{ 'Email' }}
                 </label>
                 <input type="text" name="email" id="email" value="" placeholder="{{ 'your email address to login' }}" />
@@ -60,7 +60,7 @@
             </div>
 
             <div class="form-group {{ $errors->has('password') ? ' has-error ' : '' }}">
-                <label for="app_pce">
+                <label for="password">
                     {{ 'Password' }}
                 </label>
                 <input type="text" name="password" id="password" value="" placeholder="{{ 'a new password to login' }}" />

@@ -86,13 +86,8 @@
                             <InstallerWelcome @next="nextStep" />
                         </div>
 
-                        <!-- Step 2: License Verification -->
+                        <!-- Step 2: Environment Configuration -->
                         <div v-if="currentStep === 1">
-                            <InstallerLicense v-model:form="installData.license" @next="nextStep" @back="prevStep" />
-                        </div>
-
-                        <!-- Step 3: Environment Configuration -->
-                        <div v-if="currentStep === 2">
                             <InstallerEnvironment
                                 v-model:form="installData.environment"
                                 @next="nextStep"
@@ -100,18 +95,18 @@
                             />
                         </div>
 
-                        <!-- Step 4: Database Configuration -->
-                        <div v-if="currentStep === 3">
+                        <!-- Step 3: Database Configuration -->
+                        <div v-if="currentStep === 2">
                             <InstallerDatabase v-model:form="installData.database" @next="nextStep" @back="prevStep" />
                         </div>
 
-                        <!-- Step 5: Admin Setup -->
-                        <div v-if="currentStep === 4">
+                        <!-- Step 4: Admin Setup -->
+                        <div v-if="currentStep === 3">
                             <InstallerAdmin v-model:form="installData.admin" @next="nextStep" @back="prevStep" />
                         </div>
 
-                        <!-- Step 6: Installation Progress -->
-                        <div v-if="currentStep === 5">
+                        <!-- Step 5: Installation Progress -->
+                        <div v-if="currentStep === 4">
                             <InstallerProgress
                                 :install-data="installData"
                                 @complete="nextStep"
@@ -119,8 +114,8 @@
                             />
                         </div>
 
-                        <!-- Step 7: Completion -->
-                        <div v-if="currentStep === 6">
+                        <!-- Step 6: Completion -->
+                        <div v-if="currentStep === 5">
                             <InstallerComplete @finish="finishInstallation" />
                         </div>
                     </div>
@@ -142,7 +137,6 @@
 import { ref, reactive, computed } from 'vue';
 import { Check } from 'lucide-vue-next';
 import InstallerWelcome from './Steps/Welcome.vue';
-import InstallerLicense from './Steps/License.vue';
 import InstallerEnvironment from './Steps/Environment.vue';
 import InstallerDatabase from './Steps/Database.vue';
 import InstallerAdmin from './Steps/Admin.vue';
@@ -154,7 +148,6 @@ export default {
     components: {
         Check,
         InstallerWelcome,
-        InstallerLicense,
         InstallerEnvironment,
         InstallerDatabase,
         InstallerAdmin,
@@ -166,7 +159,6 @@ export default {
 
         const steps = [
             { id: 'welcome', title: 'Welcome' },
-            { id: 'license', title: 'License' },
             { id: 'environment', title: 'Environment' },
             { id: 'database', title: 'Database' },
             { id: 'admin', title: 'Admin Setup' },
@@ -175,10 +167,6 @@ export default {
         ];
 
         const installData = reactive({
-            license: {
-                purchaseCode: '',
-                verified: false,
-            },
             environment: {
                 appName: 'eDoc',
                 appUrl: window.location.origin,

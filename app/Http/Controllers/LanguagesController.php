@@ -36,7 +36,7 @@ class LanguagesController extends Controller
     {
 
         if (config('app.demo')) {
-            return Redirect::back()->with('error', 'Updating language is not allowed for the live demo.');
+            return Redirect::back()->with('error', __('Updating language is not allowed for the live demo.'));
         }
 
         $data = Request::validate([
@@ -47,13 +47,13 @@ class LanguagesController extends Controller
         Language::create($data);
         cache()->forget('available_languages');
 
-        return Redirect::route('languages')->with('success', 'Language created.');
+        return Redirect::route('languages')->with('success', __('Language created.'));
     }
 
     public function delete($language)
     {
         if (config('app.demo')) {
-            return Redirect::back()->with('error', 'Deleting language is not allowed for the live demo.');
+            return Redirect::back()->with('error', __('Deleting language is not allowed for the live demo.'));
         }
         $language = Language::where('id', $language)->first();
         if (!empty($language)) {
@@ -63,9 +63,9 @@ class LanguagesController extends Controller
             $language->delete();
             cache()->forget('available_languages');
 
-            return Redirect::back()->with('success', 'Language deleted!');
+            return Redirect::back()->with('success', __('Language deleted!'));
         } else {
-            return Redirect::back()->with('error', 'Can not delete the language!');
+            return Redirect::back()->with('error', __('Can not delete the language!'));
         }
     }
 
@@ -73,7 +73,7 @@ class LanguagesController extends Controller
     {
 
         if (config('app.demo')) {
-            return Redirect::back()->with('error', 'Updating language is not allowed for the live demo.');
+            return Redirect::back()->with('error', __('Updating language is not allowed for the live demo.'));
         }
 
         $languageItems = Request::input('new_data');
@@ -85,15 +85,15 @@ class LanguagesController extends Controller
             file_put_contents($language_file, json_encode($decoded_file, JSON_UNESCAPED_UNICODE));
         }
 
-        return Redirect::back()->with('success', 'Language data added!');
+        return Redirect::back()->with('success', __('Language data added!'));
     }
 
     public function deleteItem($value)
     {
         if (config('app.demo')) {
-            return Redirect::back()->with('error', 'Deleting language is not allowed for the live demo.');
+            return Redirect::back()->with('error', __('Deleting language is not allowed for the live demo.'));
         } elseif ($value == 'en') {
-            return Redirect::back()->with('error', 'You can not delete the default(english) language.');
+            return Redirect::back()->with('error', __('You can not delete the default(english) language.'));
         }
         $languageItems = Language::get();
         foreach ($languageItems as $languageItem) {
@@ -103,7 +103,7 @@ class LanguagesController extends Controller
             file_put_contents($language_file, json_encode($decoded_file, JSON_UNESCAPED_UNICODE));
         }
 
-        return Redirect::back()->with('success', 'Language item has been deleted!');
+        return Redirect::back()->with('success', __('Language item has been deleted!'));
     }
 
     public function edit(Language $language)
@@ -132,7 +132,7 @@ class LanguagesController extends Controller
     {
 
         if (config('app.demo')) {
-            return Redirect::back()->with('error', 'Updating language is not allowed for the live demo.');
+            return Redirect::back()->with('error', __('Updating language is not allowed for the live demo.'));
         }
 
         $languageData = Request::input('language_values');
@@ -145,7 +145,7 @@ class LanguagesController extends Controller
         $languagePath = lang_path($language->code.'.json');
         file_put_contents($languagePath, json_encode($decodedData, JSON_UNESCAPED_UNICODE));
 
-        return Redirect::back()->with('success', 'Language data updated!');
+        return Redirect::back()->with('success', __('Language data updated!'));
     }
 
     public function newLanguageManually($code)

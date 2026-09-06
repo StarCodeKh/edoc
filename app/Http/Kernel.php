@@ -2,7 +2,6 @@
 
 namespace App\Http;
 
-use App\Http\Middleware\AppIntegrityValidator;
 use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\canInstall;
 use App\Http\Middleware\canUpdate;
@@ -73,7 +72,6 @@ class Kernel extends HttpKernel
             EncryptCookies::class,
             AddQueuedCookiesToResponse::class,
             StartSession::class,
-            AppIntegrityValidator::class,
             SetLocale::class,
             // \Illuminate\Session\Middleware\AuthenticateSession::class,
             ShareErrorsFromSession::class,

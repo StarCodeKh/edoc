@@ -16,7 +16,7 @@ class WatcherController extends Controller
         $modelClass = 'App\\Models\\'.$validated['watchable_type'];
 
         if (!class_exists($modelClass)) {
-            abort(404, 'Invalid type specified.');
+            abort(404, __('Invalid type specified.'));
         }
 
         $watchable = $modelClass::findOrFail($validated['watchable_id']);

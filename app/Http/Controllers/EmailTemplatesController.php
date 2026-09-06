@@ -75,7 +75,7 @@ class EmailTemplatesController extends Controller
     public function update(EmailTemplate $emailTemplate)
     {
         if (config('app.demo')) {
-            return Redirect::back()->with('error', 'Updating template are not allowed for the live demo.');
+            return Redirect::back()->with('error', __('Updating template are not allowed for the live demo.'));
         }
         $emailTemplate->update(
             Request::validate([
@@ -83,6 +83,6 @@ class EmailTemplatesController extends Controller
             ])
         );
 
-        return Redirect::back()->with('success', 'Template updated.');
+        return Redirect::back()->with('success', __('Template updated.'));
     }
 }

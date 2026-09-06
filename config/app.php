@@ -157,7 +157,6 @@ return [
     /**
      * Pate
      */
-    'pce' => env('APP_PCE', null),
 
     /*
     |--------------------------------------------------------------------------
@@ -210,7 +209,6 @@ return [
     */
 
     'key' => env('APP_KEY'),
-    'toc' => 'FhFGKNQ8n6hkdxLd9zxZfif1qKtxrI0Q',
     'cipher' => 'AES-256-CBC',
 
     /*

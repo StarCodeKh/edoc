@@ -83,18 +83,51 @@ class Task extends Model
         return self::CODE_PREFIX.str_pad((string) $number, 9, '0', STR_PAD_LEFT);
     }
 
+    /**
+     * The tracking QR: where scanning the printed slip lands.
+     *
+     * The document's own page, opened on its tracking tab - the slip is scanned
+     * to ask "where is this now", and that tab is the answer. It used to point
+     * at projects.table.with.task, which opens the whole board and leaves the
+     * reader to find the row.
+     *
+     * Falls back to the board route where the workspace cannot be resolved, so
+     * a QR is never generated pointing at nothing.
+     */
     private function generateQrCode($title, $taskCode)
     {
         $taskUid = $this->slug ?: ($this->id ?: $taskCode);
+        $workspaceUid = $this->workspaceUid();
 
-        $qrData = route('projects.table.with.task', [
-            'projectUid' => $this->project_id,
-            'taskUid' => $taskUid,
-        ]);
+        $qrData = $workspaceUid
+            ? route('workspace.documents.show', ['uid' => $workspaceUid, 'taskUid' => $taskUid]).'?tab=tracking'
+            : route('projects.table.with.task', ['projectUid' => $this->project_id, 'taskUid' => $taskUid]);
 
         $svg = QrCode::format('svg')->size(200)->generate($qrData);
 
         return 'data:image/svg+xml;base64,'.base64_encode($svg);
+    }
+
+    /**
+     * The workspace this document is filed in, for the QR's URL.
+     *
+     * The id, not the slug, even though the route takes either. Slugs here are
+     * Khmer - "ឯកសារក្រុមហ៊ុន" percent-encodes to some sixty characters, which
+     * tripled the QR's module count and made a printed slip that much harder to
+     * scan. resolveWorkspace() matches on id or slug, so the short form works.
+     *
+     * Read off the ids rather than the relations: this runs inside the creating
+     * hook, where nothing is loaded yet.
+     */
+    private function workspaceUid(): ?string
+    {
+        if (empty($this->project_id)) {
+            return null;
+        }
+
+        $workspaceId = Project::whereKey($this->project_id)->value('workspace_id');
+
+        return $workspaceId ? (string) $workspaceId : null;
     }
 
     private function generateBarCode($taskCode)

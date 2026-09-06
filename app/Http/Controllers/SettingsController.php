@@ -102,7 +102,7 @@ class SettingsController extends Controller
             }
         }
 
-        return Redirect::route('pre-made-boards')->with('success', 'Pre-made list updated!');
+        return Redirect::route('pre-made-boards')->with('success', __('Pre-made list updated!'));
     }
 
     public function update()
@@ -119,7 +119,7 @@ class SettingsController extends Controller
         }
 
         if (config('app.demo')) {
-            return Redirect::back()->with('error', 'Updating not allowed for some global settings on the live demo.');
+            return Redirect::back()->with('error', __('Updating not allowed for some global settings on the live demo.'));
         }
 
         if (!empty($requests['default_language']) && ($settingData['default_language']['value'] != $requests['default_language'])) {
@@ -185,7 +185,7 @@ class SettingsController extends Controller
 
         Cache::forget('global_settings');
 
-        return Redirect::route('global')->with('success', 'Settings updated.');
+        return Redirect::route('global')->with('success', __('Settings updated.'));
     }
 
     public function smtp()
@@ -204,7 +204,7 @@ class SettingsController extends Controller
     public function updateSmtp()
     {
         if (config('app.demo')) {
-            return Redirect::back()->with('error', 'Updating SMTP setup is not allowed for the live demo.');
+            return Redirect::back()->with('error', __('Updating SMTP setup is not allowed for the live demo.'));
         }
 
         $mailVariables = Request::validate([
@@ -218,7 +218,7 @@ class SettingsController extends Controller
         ]);
         $this->setEnvVariables($mailVariables);
 
-        return Redirect::back()->with('success', 'SMTP configuration updated!');
+        return Redirect::back()->with('success', __('SMTP configuration updated!'));
     }
 
     private function setEnvVariables($data)

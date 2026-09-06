@@ -60,7 +60,7 @@ class Handler extends ExceptionHandler
                 ->setStatusCode($response->status());
         } elseif ($response->status() === 419) {
             return back()->with([
-                'message' => 'The page expired, please try again.',
+                'message' => __('The page expired, please try again.'),
             ]);
         }
 

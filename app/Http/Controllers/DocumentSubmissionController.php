@@ -396,14 +396,14 @@ class DocumentSubmissionController extends Controller
             ->first();
 
         if (empty($task)) {
-            abort(404, 'Document not found.');
+            abort(404, __('Document not found.'));
         }
 
         // Same rule the rest of the app enforces, not just a hidden button.
         $this->authorizeTaskModel($task->loadMissing('assignees'), 'view');
 
         if (empty($task->project) || (int) $task->project->workspace_id !== (int) $workspace->id) {
-            abort(404, 'Document not found.');
+            abort(404, __('Document not found.'));
         }
 
         $activities = Activity::where('task_id', $task->id)
@@ -517,7 +517,7 @@ class DocumentSubmissionController extends Controller
         $task->loadMissing('project');
 
         if (empty($task->project) || (int) $task->project->workspace_id !== (int) $workspace->id) {
-            abort(404, 'Document not found.');
+            abort(404, __('Document not found.'));
         }
 
         $validated = $request->validate([
@@ -693,7 +693,7 @@ class DocumentSubmissionController extends Controller
         $task->loadMissing('project');
 
         if (empty($task->project) || (int) $task->project->workspace_id !== (int) $workspace->id) {
-            abort(404, 'Document not found.');
+            abort(404, __('Document not found.'));
         }
 
         $validated = $request->validate([

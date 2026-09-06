@@ -53,13 +53,13 @@ class WorkspaceTypesController extends Controller
 
         WorkspaceType::create($userRequest);
 
-        return Redirect::route('workspace_types.index')->with('success', 'Workspace type created.');
+        return Redirect::route('workspace_types.index')->with('success', __('Workspace type created.'));
     }
 
     public function update(WorkspaceType $workspaceType, Request $request)
     {
         if (config('app.demo')) {
-            return Redirect::back()->with('error', 'Updating workspace type is not allowed for the live demo.');
+            return Redirect::back()->with('error', __('Updating workspace type is not allowed for the live demo.'));
         }
 
         $userRequest = $request->validate([
@@ -68,7 +68,7 @@ class WorkspaceTypesController extends Controller
 
         $workspaceType->update(['name' => $userRequest['name']]);
 
-        return Redirect::route('workspace_types.index')->with('success', 'Workspace type updated.');
+        return Redirect::route('workspace_types.index')->with('success', __('Workspace type updated.'));
     }
 
     public function edit(WorkspaceType $workspaceType)
@@ -86,11 +86,11 @@ class WorkspaceTypesController extends Controller
     {
 
         if (config('app.demo')) {
-            return Redirect::back()->with('error', 'Deleting workspace type is not allowed for the live demo.');
+            return Redirect::back()->with('error', __('Deleting workspace type is not allowed for the live demo.'));
         }
 
         $workspaceType->delete();
 
-        return Redirect::route('workspace_types.index')->with('success', 'Workspace type deleted!');
+        return Redirect::route('workspace_types.index')->with('success', __('Workspace type deleted!'));
     }
 }

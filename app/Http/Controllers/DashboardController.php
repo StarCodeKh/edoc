@@ -54,7 +54,7 @@ class DashboardController extends Controller
     {
 
         if (config('app.demo')) {
-            return Redirect::back()->with('error', 'Updating user is not allowed for the live demo.');
+            return Redirect::back()->with('error', __('Updating user is not allowed for the live demo.'));
         }
 
         $validated = Request::validate([
@@ -82,6 +82,6 @@ class DashboardController extends Controller
             $user->update(['password' => $validated['password']]);
         }
 
-        return Redirect::back()->with('success', 'Profile updated.');
+        return Redirect::back()->with('success', __('Profile updated.'));
     }
 }

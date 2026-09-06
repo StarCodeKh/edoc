@@ -94,7 +94,6 @@ class EnvironmentManager
         $results = trans('installer_messages.environment.success');
         $envFileData =
         'APP_NAME=\''.$request->app_name."'\n".
-        'APP_PCE='.$request->app_pce."\n".
         'APP_URL='.$request->app_url."\n\n";
 
         try {
@@ -118,7 +117,6 @@ class EnvironmentManager
         $sessionRememberLifetime = $env->getValue('SESSION_REMEMBER_LIFETIME');
         $viteAppName = '${APP_NAME}';
         $recaptchaKey = $env->getValue('RE_CAPTCHA_KEY');
-        $app_pce = $env->getValue('APP_PCE');
         $version = $env->getValue('VERSION');
         $envFileData =
             'APP_NAME=\''.$request->app_name."'\n".
@@ -127,7 +125,6 @@ class EnvironmentManager
             'LOCALE=en'."\n".
             'APP_DEBUG=true'."\n".
             'APP_INSTALLED='.$request->app_installed."\n".
-            'APP_PCE='.$app_pce."\n".
             'DB_SETUP='.$request->db_setup."\n".
             'APP_KEY='.'base64:'.base64_encode(Str::random(32))."\n".
             'APP_URL='.$request->app_url."\n".

@@ -23,7 +23,7 @@ trait AuthorizesTasks
             ->first();
 
         if (empty($task)) {
-            abort(404, 'Document not found.');
+            abort(404, __('Document not found.'));
         }
 
         $this->authorizeTaskModel($task, $ability);

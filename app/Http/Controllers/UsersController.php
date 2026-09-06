@@ -119,7 +119,7 @@ class UsersController extends Controller
 
         //        event(new UserCreated(['id' => $user->id, 'password' => $userRequest['password']]));
 
-        return Redirect::route('users')->with('success', 'User created.');
+        return Redirect::route('users')->with('success', __('User created.'));
     }
 
     public function edit(User $user)
@@ -174,7 +174,7 @@ class UsersController extends Controller
     public function update(User $user)
     {
         if (config('app.demo')) {
-            return Redirect::back()->with('error', 'Updating user is not allowed for the live demo.');
+            return Redirect::back()->with('error', __('Updating user is not allowed for the live demo.'));
         }
 
         Request::validate([
@@ -215,28 +215,28 @@ class UsersController extends Controller
             $user->update(['password' => Request::get('password')]);
         }
 
-        return Redirect::back()->with('success', 'Profile updated.');
+        return Redirect::back()->with('success', __('Profile updated.'));
     }
 
     public function destroy(User $user)
     {
 
         if (config('app.demo')) {
-            return Redirect::back()->with('error', 'Deleting user is not allowed for the live demo.');
+            return Redirect::back()->with('error', __('Deleting user is not allowed for the live demo.'));
         }
 
         $userId = $user->id;
         $user->delete();
         $this->removeUserFromRelatedTables($userId);
 
-        return Redirect::route('users')->with('success', 'User deleted!');
+        return Redirect::route('users')->with('success', __('User deleted!'));
     }
 
     public function restore(User $user)
     {
         $user->restore();
 
-        return Redirect::back()->with('success', 'User restored!');
+        return Redirect::back()->with('success', __('User restored!'));
     }
 
     private function removeUserFromRelatedTables($userId)
