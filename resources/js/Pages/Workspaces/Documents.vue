@@ -149,7 +149,7 @@
                     >
                         <!-- Column labels. Hidden below the breakpoint where the
                              rows stop being columns and become stacked cards. -->
-                        <div v-if="documents.data.length" class="doc-row doc-row--head" aria-hidden="true">
+                        <div v-if="documents.data.length" class="doc-row doc-row--labels" aria-hidden="true">
                             <span class="doc-row__icon"></span>
                             <span class="doc-row__code">{{ $t('លេខកូដឯកសារ') }}</span>
                             <span class="doc-row__title">{{ $t('កម្មវត្ថុ') }}</span>

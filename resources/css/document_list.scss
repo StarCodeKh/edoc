@@ -8,11 +8,16 @@
    focus behaviour, and the responsive rules below re-order them freely.
 
    Qualified with .doc-row on purpose. The header carries both classes, and a
-   bare .doc-row--head ties with .doc-row on specificity - so whichever is
-   written later in the file wins. .doc-row is declared below this block, which
-   is how the header kept .doc-row's padding and, worse, overrode its own
-   display:none on a phone and came back as a jumble of wrapped labels. */
-.doc-row.doc-row--head {
+   bare modifier ties with .doc-row on specificity - so whichever is written
+   later in the file wins. .doc-row is declared below this block, which is how
+   the header kept .doc-row's padding and, worse, overrode its own display:none
+   on a phone and came back as a jumble of wrapped labels.
+
+   Named --labels, not --head, because this file is global and the board tables
+   (Projects/Table, Workspaces/Table) already use .doc-row--labels for a nine
+   column grid of their own. At (0,2,0) this block outranked their md:grid and
+   md:gap-2 utilities and flattened their header into a flex row. */
+.doc-row.doc-row--labels {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -32,7 +37,7 @@
    styling of the data - the code came through as a pill, the subject as a bold
    document title. Every cell is flattened back to a label here; only the widths
    are wanted. */
-.doc-row--head span {
+.doc-row--labels span {
     font: inherit;
     color: inherit;
     background: none;
@@ -42,17 +47,17 @@
     white-space: nowrap;
 }
 
-.doc-row--head .doc-row__status {
+.doc-row--labels .doc-row__status {
     text-align: center;
 }
 
 /* The data code sits in a pill with 6px of side padding, so the label keeps
    that padding to line up with the text inside it rather than with its edge. */
-.doc-row--head .doc-row__code {
+.doc-row--labels .doc-row__code {
     padding: 0 6px;
 }
 
-.doc-row--head .doc-row__date {
+.doc-row--labels .doc-row__date {
     text-align: right;
 }
 
@@ -60,7 +65,7 @@
    so labels for them would be pointing at nothing - and nothing needs to line
    up with anything, so the status goes back to sizing on its content. */
 @media (max-width: 767px) {
-    .doc-row.doc-row--head {
+    .doc-row.doc-row--labels {
         display: none;
     }
 
@@ -159,7 +164,7 @@
     font-weight: 600;
     color: var(--ink-subtle);
 }
-/* Fixed so the header above can label this column - see .doc-row--head. The
+/* Fixed so the header above can label this column - see .doc-row--labels. The
    width is released below that breakpoint, where the header is gone and the
    row has wrapped: 11rem beside the icon and the code overran a 360px phone. */
 .doc-row__status {

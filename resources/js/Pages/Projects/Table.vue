@@ -44,7 +44,7 @@
 
                         <div class="doc-table rounded-xl shadow-sm overflow-x-auto">
                             <div
-                                class="doc-row doc-row--head hidden md:grid gap-3 px-4 py-3 text-sm font-semibold text-white"
+                                class="doc-row doc-row--head hidden md:grid gap-1.5 md:gap-2 md:items-center px-4 py-3 text-sm font-semibold text-white"
                             >
                                 <div></div>
                                 <div>{{ $t('ល.រ.') }}</div>
@@ -59,7 +59,7 @@
                             <draggable
                                 v-model="pageRows"
                                 tag="div"
-                                class="doc-rows flex flex-col gap-2 p-2"
+                                class="doc-rows flex flex-col gap-2 py-2"
                                 handle=".doc-drag-handle"
                                 item-key="id"
                                 @end="afterDrop"
@@ -1027,13 +1027,35 @@ export default {
 
 <style scoped>
 @media (min-width: 768px) {
+    /* display and gap belong here, not on utility classes. document_list.scss
+       is global, defines .doc-row for the register lists, and is imported after
+       Tailwind - so its `display:flex; gap:10px` tied with .md\:grid and
+       .md\:gap-2 on specificity and won on order. Both the header and the rows
+       were laid out as flex, which is why grid-template-columns did nothing and
+       no column ever lined up. Scoped, this rule is (0,2,0) and wins outright. */
     .doc-row {
+        display: grid;
         grid-template-columns: 40px 60px minmax(150px, 1fr) minmax(220px, 1.6fr) 120px 120px 130px 190px 110px;
+        gap: 0.5rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
         min-width: 1080px;
     }
 }
 
 @media (max-width: 767px) {
+    /* Same collision as the grid above, at the other end. The global .doc-row
+       is display:flex and outranks Tailwind on order, so it beat `hidden` on
+       the header - the band showed on phones - and kept the rows horizontal,
+       so the label/value card layout below never engaged. Scoped: (0,2,0). */
+    .doc-row {
+        display: block;
+        padding: 0.75rem 1rem;
+    }
+    .doc-row--head {
+        display: none;
+    }
+
     .doc-row > [data-label] {
         display: flex;
         justify-content: space-between;
@@ -1078,6 +1100,12 @@ export default {
     }
 }
 
+/* The header and the rows are the same grid, so anything that moves a column
+   has to match on both, and that includes what their parents do. Two things
+   were off: the gap (gap-3 against the rows' md:gap-2 drifted 4px further at
+   each of the eight gaps, 32px by the last), and .doc-rows' horizontal
+   padding, which inset every row 8px from a header that is a direct child of
+   the scroll container. The rows keep py-2; the sides have to stay flush. */
 .doc-row--head {
     background: linear-gradient(135deg, #2b6f80, #235a68);
     border-radius: 0.75rem 0.75rem 0 0;
