@@ -382,7 +382,9 @@ class TasksController extends Controller
                 $query->where('slug', $taskUid);
             })
             ->with([
-                'project',
+                // The workspace comes with it: the attachment viewer routes
+                // back to the document page, which is addressed by workspace.
+                'project.workspace',
                 'timer',
                 'cover',
                 'list',

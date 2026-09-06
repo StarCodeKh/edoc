@@ -42,120 +42,6 @@
                 </p>
             </div>
 
-            <!-- Assignees: the same control the in-task preview used to carry. -->
-            <div
-                v-if="task && task.id"
-                class="relative hidden md:flex items-center gap-2 flex-shrink-0"
-                v-click-outside="closeAssigneeBox"
-            >
-                <div class="flex -space-x-2">
-                    <span
-                        v-for="assignee in task.assignees || []"
-                        :key="assignee.id"
-                        :title="assignee.user.name"
-                        class="block rounded-full h-8 w-8 border-2 border-white dark:border-gray-800"
-                    >
-                        <img
-                            v-if="assignee.user.photo_path"
-                            class="h-full w-full rounded-full"
-                            :src="assignee.user.photo_path"
-                            :alt="assignee.user.name"
-                        />
-                        <img
-                            v-else
-                            class="h-full w-full rounded-full"
-                            src="/images/user.svg"
-                            :alt="assignee.user.name"
-                        />
-                    </span>
-                </div>
-
-                <button
-                    type="button"
-                    @click="showAssigneeBox = !showAssigneeBox"
-                    class="w-8 h-8 rounded-full flex items-center justify-center border border-dashed border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                    :title="$t('Assignees')"
-                >
-                    <icon class="h-4 w-4" name="add" />
-                </button>
-
-                <div
-                    v-if="showAssigneeBox"
-                    class="absolute right-0 top-11 z-30 flex w-[300px] text-sm flex-col bg-white dark:bg-gray-800 px-4 py-4 rounded-lg shadow-xl ring-1 ring-black/5 dark:ring-white/10"
-                >
-                    <div class="flex items-start gap-2.5 pr-7 mb-2.5">
-                        <span
-                            class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-300"
-                        >
-                            <icon class="h-4 w-4" name="users" />
-                        </span>
-                        <div class="min-w-0 flex-1">
-                            <div class="flex items-center gap-1.5">
-                                <h4 class="truncate font-bold leading-tight dark:text-white">{{ $t('Assignee') }}</h4>
-                                <span
-                                    v-if="task_assignees().length"
-                                    class="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-indigo-600 px-1.5 text-[10px] font-bold leading-none text-white"
-                                    >{{ task_assignees().length }}</span
-                                >
-                            </div>
-                            <p class="mt-0.5 text-[11px] leading-snug text-gray-500 dark:text-gray-400">
-                                {{ $t('Select who is responsible') }}
-                            </p>
-                        </div>
-                    </div>
-                    <div
-                        class="absolute cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 top-3 right-3 p-1.5 rounded"
-                        @click="showAssigneeBox = false"
-                    >
-                        <icon class="w-4 h-4 dark:text-gray-300" name="close" />
-                    </div>
-                    <div class="-mx-4 mb-3 border-t border-gray-200 dark:border-gray-700"></div>
-                    <input
-                        v-model="user_search"
-                        class="border-[2px] px-2 py-1 border-gray-400 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-[3px] dark:placeholder-gray-400"
-                        :placeholder="$t('Search User')"
-                    />
-                    <ul class="flex flex-col mt-3 gap-1 h-56 max-h-56 overflow-y-auto scroll-smooth overscroll-contain">
-                        <li v-for="(userObject, user_index) in searchUser(user_search)" :key="'assignee_' + user_index">
-                            <label
-                                :for="'doc_u_id_' + user_index"
-                                class="flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 rounded"
-                            >
-                                <input
-                                    :id="'doc_u_id_' + user_index"
-                                    class="w-5 flex-shrink-0"
-                                    type="checkbox"
-                                    :checked="task_assignees().includes(userObject.user_id)"
-                                    @change="assignUserToTask($event.target.checked, userObject.user_id)"
-                                />
-                                <img
-                                    v-if="userObject.user.photo_path"
-                                    :alt="userObject.user.name"
-                                    class="w-6 h-6 rounded-full flex-shrink-0"
-                                    :src="userObject.user.photo_path"
-                                />
-                                <img
-                                    v-else
-                                    :alt="userObject.user.name"
-                                    class="w-6 h-6 rounded-full flex-shrink-0"
-                                    src="/images/user.svg"
-                                />
-                                <span class="flex min-w-0 flex-col leading-tight">
-                                    <span class="truncate text-xs font-bold dark:text-gray-200">{{
-                                        userObject.user.name
-                                    }}</span>
-                                    <span
-                                        v-if="userObject.user.title"
-                                        class="truncate text-[10px] font-semibold text-gray-500 dark:text-gray-400"
-                                        >{{ userObject.user.title }}</span
-                                    >
-                                </span>
-                            </label>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-
             <a
                 v-if="attachment"
                 :href="downloadUrl"
@@ -169,14 +55,14 @@
             <!-- The annotation toolbar below only exists for PDFs, so non-PDF
                  files get the same action up here. -->
             <button
-                v-if="canApproveAndSign && attachment && !isPdf(attachment.name)"
+                v-if="canApproveAndSign && !isAnnotating && attachment && !isPdf(attachment.name)"
                 type="button"
                 @click="approveAndSign"
                 :disabled="signatureSubmitting"
                 class="approve-sign-btn approve-sign-btn--header"
             >
                 <span v-if="signatureSubmitting" class="approve-sign-btn__spinner"></span>
-                {{ $t('Approve & Sign from Secretariat General') }}
+                {{ approveAndSignLabel }}
             </button>
 
             <button
@@ -367,38 +253,29 @@
                             >{{ documentNotesCount }}</span
                         >
                     </button>
-                    <!-- While the document sits at a signature step, the primary
-                         action here becomes the request itself; it saves any
-                         pending notes on the way through. -->
+                    <!-- Save wins while the pen is out; sending the document on
+                         is what the button becomes once the marks are down. -->
                     <button
-                        v-if="canApproveAndSign"
+                        v-if="isAnnotating"
+                        type="button"
+                        @click="manualSaveAnnotation"
+                        :disabled="autoSaving"
+                        class="viewer-save-btn"
+                        :title="hasUnsavedAnnotations ? $t('You have notes that are not saved yet.') : $t('Save')"
+                    >
+                        <span v-if="autoSaving" class="viewer-save-btn__spinner"></span>
+                        <span v-else-if="hasUnsavedAnnotations" class="viewer-save-btn__dot"></span>
+                        {{ autoSaving ? $t('Saving...') : $t('Save') }}
+                    </button>
+                    <button
+                        v-else-if="canApproveAndSign"
                         type="button"
                         @click="approveAndSign"
                         :disabled="signatureSubmitting || autoSaving"
                         class="approve-sign-btn"
                     >
                         <span v-if="signatureSubmitting || autoSaving" class="approve-sign-btn__spinner"></span>
-                        {{
-                            signatureSubmitting || autoSaving
-                                ? $t('Saving...')
-                                : $t('Approve & Sign from Secretariat General')
-                        }}
-                    </button>
-                    <button
-                        v-else-if="canAnnotate && (drawTool !== 'view' || hasUnsavedAnnotations)"
-                        type="button"
-                        @click="manualSaveAnnotation"
-                        :disabled="autoSaving"
-                        class="flex items-center gap-1.5 px-5 py-1.5 rounded-full bg-white text-gray-900 text-xs font-semibold disabled:opacity-50"
-                        :title="
-                            hasUnsavedAnnotations ? $t('You have notes that are not saved yet.') : $t('Save & Close')
-                        "
-                    >
-                        <span
-                            v-if="hasUnsavedAnnotations && !autoSaving"
-                            class="w-1.5 h-1.5 rounded-full bg-blue-600"
-                        ></span>
-                        {{ autoSaving ? $t('Saving...') : $t('Save & Close') }}
+                        {{ signatureSubmitting || autoSaving ? $t('Saving...') : approveAndSignLabel }}
                     </button>
                 </div>
             </div>
@@ -861,9 +738,6 @@ export default {
             loading: true,
             task: {},
             attachment: null,
-            team_members: [],
-            user_search: '',
-            showAssigneeBox: false,
 
             // "Approve & Sign from Secretariat General". The server decides
             // whether this document is at a signature step and the signed-in
@@ -931,9 +805,36 @@ export default {
             return name.split('.').pop().toUpperCase().slice(0, 4);
         },
 
+        /**
+         * The pen is out, or there is ink not yet saved.
+         *
+         * While this holds, Save is the primary action - even on a signature
+         * step. Signing was the only button offered there, so someone drawing
+         * on the file had no way to put the marks down without also sending
+         * the document on.
+         */
+        isAnnotating() {
+            return !!(this.canAnnotate && (this.drawTool !== 'view' || this.hasUnsavedAnnotations));
+        },
+
         /** May this document be approved & signed from here, right now? */
         canApproveAndSign() {
             return !!(this.signatureContext && this.signatureContext.eligible);
+        },
+
+        /**
+         * What the sign button says.
+         *
+         * It named one office - "from Secretariat General" - on every workflow,
+         * whoever the document was actually going to. The next step's
+         * responsibility is what answers that, and it comes down with the
+         * signature context. Falls back to the plain wording when the next step
+         * carries no responsibility, which is a flow still being configured.
+         */
+        approveAndSignLabel() {
+            const role = this.signatureContext?.next_step?.responsible_role_name;
+
+            return role ? this.$t('Approve & Sign, request from :role', { role }) : this.$t('Approve & Sign');
         },
 
         /**
@@ -945,11 +846,30 @@ export default {
             return !!this.can.sign;
         },
 
+        /**
+         * Where "back" goes: the document's own page.
+         *
+         * It used to return to projects.board.with.task, which lands on the
+         * board and pops the card modal open - a different view of the same
+         * document, and not the one the reader left. The board route stays as
+         * the fallback for a task whose workspace did not come down with it.
+         */
         backUrl() {
             if (!this.task?.id || !this.task?.project) return null;
+
+            const workspace = this.task.project.workspace;
+            const taskUid = this.task.slug || this.task.id;
+
+            if (workspace) {
+                return this.route('workspace.documents.show', {
+                    uid: workspace.slug || workspace.id,
+                    taskUid,
+                });
+            }
+
             return this.route('projects.board.with.task', {
                 projectUid: this.task.project.slug || this.task.project.id,
-                taskUid: this.task.slug || this.task.id,
+                taskUid,
             });
         },
 
@@ -1064,8 +984,8 @@ export default {
         /**
          * The viewer is a standalone page with no Layout, and Layout is what
          * loads the signed-in user's language everywhere else. Without this
-         * the whole screen - toolbar, assignee picker, the sign action -
-         * falls back to the 'en' default set in app.js.
+         * the whole screen - toolbar, the sign action, the toasts - falls back
+         * to the 'en' default set in app.js.
          */
         applyUserLocale() {
             const locale = this.$page.props.auth?.user?.locale;
@@ -1134,7 +1054,14 @@ export default {
                 }
 
                 await axios.post(this.route('task.signature.request.store', { taskUid: this.task.id }));
-                this.leaveViewer();
+
+                // Saved, then back the way we came. Not leaveViewer(): that
+                // tries window.close() first, which only works in a tab opened
+                // by script and otherwise leaves the reader waiting out a
+                // close the browser refuses before it redirects anyway.
+                this.toastSuccess(this.$t('Approved and signed.'));
+                this.dirtyPages = {};
+                this.goBack();
             } catch (error) {
                 const message =
                     (error.response && error.response.data && error.response.data.message) ||
@@ -1153,7 +1080,6 @@ export default {
                         project_id: this.task.project_id,
                     })
                 );
-                this.team_members = data.team_members || [];
             } catch (error) {
                 console.error('Could not load the assignable users:', error);
             }
@@ -1262,45 +1188,6 @@ export default {
             return `${value.toFixed(value >= 10 || i === 0 ? 0 : 1)} ${units[i]}`;
         },
 
-        closeAssigneeBox() {
-            this.showAssigneeBox = false;
-        },
-
-        searchUser(input) {
-            const q = (input || '').trim().toLowerCase();
-            if (!q) return this.team_members;
-            return this.team_members.filter((tm) => {
-                const name = (tm.user && tm.user.name) || '';
-                const title = (tm.user && tm.user.title) || '';
-                return name.toLowerCase().includes(q) || title.toLowerCase().includes(q);
-            });
-        },
-
-        task_assignees() {
-            return (this.task.assignees || []).map((item) => Number(item.user_id));
-        },
-
-        assignUserToTask(checked, id) {
-            axios
-                .post(this.route('task.assignees.add'), { task_id: this.task.id, user_id: id })
-                .then((response) => {
-                    if (response.data) {
-                        if (checked && response.data.assignee) {
-                            this.task.assignees.push(response.data.assignee);
-                        } else {
-                            const findIndex = this.task.assignees.findIndex((a) => Number(a.user_id) === Number(id));
-                            if (findIndex > -1) {
-                                this.task.assignees.splice(findIndex, 1);
-                            }
-                        }
-                    }
-                })
-                .catch((error) => {
-                    console.log(error);
-                    this.toastError(this.$t('Failed to update assignees.'));
-                });
-        },
-
         /**
          * Close the viewer. The tab was opened from the attachment list, so
          * closing it is the natural exit - but a browser is free to refuse
@@ -1315,6 +1202,18 @@ export default {
                 if (!ok) return;
             }
             this.leaveViewer();
+        },
+
+        /**
+         * Back to the document, the plain way.
+         *
+         * leaveViewer() is for the tab this page was opened into by script -
+         * it tries window.close() first. Signing happens just as often in
+         * place, where that only costs the reader a stalled 200ms before the
+         * redirect it was always going to do.
+         */
+        goBack() {
+            window.location.href = this.backUrl || '/';
         },
 
         leaveViewer() {
@@ -2183,25 +2082,67 @@ export default {
 
 /* "Approve & Sign from Secretariat General" — stands in for Save & Close
        while the document is at a signature step. */
-.approve-sign-btn {
+/* Save and Approve & Sign take turns in the same slot, so they share their
+   geometry: a different height or radius between them reads as the toolbar
+   jumping when the pen is picked up. Only the tone differs. */
+.approve-sign-btn,
+.viewer-save-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
     flex-shrink: 0;
-    max-width: 34rem;
     padding: 8px 20px;
     border-radius: 999px;
-    background: var(--accent-fill);
-    color: #fff;
     font-size: 12px;
     font-weight: 700;
     line-height: 1.4;
     text-align: center;
-    box-shadow: 0 6px 16px rgba(79, 70, 229, 0.35);
     transition:
         background 0.15s ease,
-        box-shadow 0.15s ease;
+        box-shadow 0.15s ease,
+        opacity 0.15s ease;
+}
+
+.approve-sign-btn {
+    max-width: 34rem;
+    background: var(--accent-fill);
+    color: #fff;
+    box-shadow: 0 6px 16px rgba(79, 70, 229, 0.35);
+}
+
+.viewer-save-btn {
+    background: #fff;
+    color: #0f172a;
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.28);
+}
+
+.viewer-save-btn:hover:not(:disabled) {
+    background: #f1f5f9;
+}
+
+.viewer-save-btn:disabled {
+    opacity: 0.55;
+}
+
+/* Unsaved ink. Replaced by the spinner while it is being written down, so the
+   button never shows both at once. */
+.viewer-save-btn__dot {
+    width: 6px;
+    height: 6px;
+    flex-shrink: 0;
+    border-radius: 999px;
+    background: var(--accent-fill);
+}
+
+.viewer-save-btn__spinner {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+    border: 2px solid rgba(15, 23, 42, 0.25);
+    border-top-color: transparent;
+    border-radius: 999px;
+    animation: approve-sign-spin 0.7s linear infinite;
 }
 .approve-sign-btn:hover:not(:disabled) {
     background: var(--accent-fill-hover);

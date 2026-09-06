@@ -24,6 +24,7 @@ use App\Models\WorkspaceType;
 use App\Support\DocumentChain;
 use App\Support\DocumentMerge;
 use App\Support\DocumentMergeException;
+use App\Support\StepAssignment;
 use App\Support\TaskAbility;
 use App\Support\WorkflowStep;
 use Carbon\Carbon;
@@ -807,16 +808,8 @@ class DocumentSubmissionController extends Controller
 
     /**
      * Assign the document to everyone carrying the next step's responsibility.
-     *
-     * The chain is board title -> step -> responsible_role -> sub-role -> its
-     * holders; a missing link just means nobody is assigned automatically, so
-     * an unconfigured flow still forwards. The forwarder is always skipped:
-     * putting the document straight back would hide the hand-off.
-     *
-     * $handTo names the responsibilities chosen on a dynamic step (often
-     * several - D1 through D5 at once), already validated by the caller.
-     * $assignTo names people outright and settles the question; it is the only
-     * arm that works on a step carrying no responsibility at all.
+     * The rules live in Support\StepAssignment, because signing moves a
+     * document onto a step too and the two must agree on who receives it.
      */
     private function assignStepOwners(
         Task $task,
@@ -824,66 +817,8 @@ class DocumentSubmissionController extends Controller
         BoardList $step,
         ?Collection $handTo = null,
         ?Collection $assignTo = null
-    ) {
-        $alreadyOn = Assignee::where('task_id', $task->id)->pluck('user_id')->all();
-
-        if ($assignTo && $assignTo->isNotEmpty()) {
-            return $this->putOnPlates(
-                $task,
-                User::whereIn('id', $assignTo->all())
-                    ->where('id', '!=', auth()->id())
-                    ->whereNotIn('id', $alreadyOn)
-                    ->get()
-            );
-        }
-
-        $code = EdocWorkflowRole::where('workspace_id', $workspace->id)
-            ->where('list_title', $step->title)
-            ->value('responsible_role');
-
-        if (empty($code)) {
-            return collect();
-        }
-
-        $subRole = WorkflowSubRole::where('code', $code)->first();
-
-        if (empty($subRole)) {
-            return collect();
-        }
-
-        $chosen = $handTo && $handTo->isNotEmpty()
-            ? WorkflowSubRole::whereIn('code', $handTo->all())->get()
-            : collect();
-
-        $holders = function (WorkflowSubRole $role) use ($alreadyOn) {
-            return User::where('workflow_sub_role_id', $role->id)
-                ->where('id', '!=', auth()->id())
-                ->whereNotIn('id', $alreadyOn)
-                ->get();
-        };
-
-        // Several departments can be picked at once, and one person can only be
-        // put on the document once however many of them they carry.
-        $owners = $chosen
-            ->flatMap(fn (WorkflowSubRole $role) => $holders($role))
-            ->unique('id')
-            ->values();
-
-        // Nobody carries the chosen department yet, or nothing was chosen at all
-        // because the step is a standard one. Either way the step falls back to
-        // the responsibility it names - and a responsibility that stands for
-        // others is carried by its members, not by anyone filed directly under
-        // the group. Resolving only the group itself left a standard step on
-        // នាយកដ្ឋាន D1-D5 assigning nobody, while the same step showed D1-D5 as
-        // its doers on the trail and put the document on their plates through
-        // Task::scopeVisibleTo. Three places said the members carry it; this
-        // one said they did not, so a forwarded document landed on no plate and
-        // notified nobody.
-        if ($owners->isEmpty()) {
-            $owners = $this->holdersOfResponsibility($subRole, $alreadyOn);
-        }
-
-        return $this->putOnPlates($task, $owners);
+    ): Collection {
+        return StepAssignment::assign($task, (int) $workspace->id, $step, $handTo, $assignTo);
     }
 
     /**
@@ -907,46 +842,12 @@ class DocumentSubmissionController extends Controller
         }
 
         // A responsibility that stands for others is carried by its members,
-        // the same reach holdersOfResponsibility() hands the document to.
+        // the same reach StepAssignment::holdersOfResponsibility() has.
         $roleIds = WorkflowSubRole::where('id', $role->id)
             ->orWhere('parent_id', $role->id)
             ->pluck('id');
 
         return User::whereIn('workflow_sub_role_id', $roleIds)->exists();
-    }
-
-    /**
-     * Everyone carrying a responsibility: the people filed under it, and the
-     * people filed under anything it stands for.
-     *
-     * The mirror of User::responsibleStepsQuery(), which is what decides that a
-     * D1 officer holds a standard នាយកដ្ឋាន D1-D5 step.
-     *
-     * @param  array<int, int>  $exclude  user ids already on the document
-     */
-    private function holdersOfResponsibility(WorkflowSubRole $role, array $exclude): Collection
-    {
-        $roleIds = WorkflowSubRole::where('id', $role->id)
-            ->orWhere('parent_id', $role->id)
-            ->pluck('id');
-
-        return User::whereIn('workflow_sub_role_id', $roleIds)
-            ->where('id', '!=', auth()->id())
-            ->whereNotIn('id', $exclude)
-            ->get();
-    }
-
-    /** Files the assignee rows and tells each person, in one place. */
-    private function putOnPlates(Task $task, Collection $owners): Collection
-    {
-        $assigner = auth()->user();
-
-        foreach ($owners as $owner) {
-            Assignee::create(['task_id' => $task->id, 'user_id' => $owner->id]);
-            event(new UserAssignedToTask($owner, $task, $assigner));
-        }
-
-        return $owners;
     }
 
     /** Has this step failed to file the document it is configured to produce? */

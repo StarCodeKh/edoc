@@ -4,10 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\AuthorizesTasks;
 use App\Models\Activity;
+use App\Models\Assignee;
 use App\Models\Attachment;
 use App\Models\BoardList;
 use App\Models\Task;
+use App\Models\WorkflowSubRole;
 use App\Support\DocumentChain;
+use App\Support\StepAssignment;
 use App\Support\TaskAbility;
 use App\Support\WorkflowStep;
 use Illuminate\Support\Facades\DB;
@@ -71,16 +74,24 @@ class SignatureRequestController extends Controller
             abort(422, 'There is no next board to move this document to.');
         }
 
-        // This move sets is_done, so it is a finishing move and is held by the
-        // same rule as a forward: internal work raised off the document has to
-        // be finished first.
-        $pending = DocumentChain::pendingChildren($task);
+        // Whether signing finishes the document is the workflow's answer, not
+        // this controller's: it did `is_done = 1` on every signature, closing
+        // documents that still had steps ahead of them. A step is the end of a
+        // flow when it is configured as one - Settings → Workflow Roles.
+        $finishes = WorkflowStep::isTerminal($next);
 
-        if ($pending->isNotEmpty()) {
-            abort(422, DocumentChain::heldMessage($pending));
+        // A finishing move is held by the same rule as a forward: internal work
+        // raised off the document has to be finished first. A move that carries
+        // on to another step is not.
+        if ($finishes) {
+            $pending = DocumentChain::pendingChildren($task);
+
+            if ($pending->isNotEmpty()) {
+                abort(422, DocumentChain::heldMessage($pending));
+            }
         }
 
-        DB::transaction(function () use ($task, $list, $next, $user) {
+        DB::transaction(function () use ($task, $list, $next, $user, $finishes) {
             Activity::create([
                 'user_id' => $user->id,
                 'task_id' => $task->id,
@@ -89,15 +100,26 @@ class SignatureRequestController extends Controller
                 'new_value' => $next->title,
             ]);
 
-            // Land at the bottom of the destination column, signed off.
             $task->list_id = $next->id;
             $task->order = (int) Task::where('list_id', $next->id)->max('order') + 1;
-            $task->is_done = 1;
+            $task->is_done = $finishes ? 1 : 0;
             $task->save();
+
+            // Signing hands the document on, so it lands on the plates of
+            // whoever carries the step it reached - the same rule a forward
+            // follows. Without this it arrived on the next board assigned to
+            // nobody and notified nobody.
+            Assignee::where('task_id', $task->id)->where('user_id', $user->id)->delete();
+
+            if (!$finishes) {
+                StepAssignment::assign($task, (int) $task->project->workspace_id, $next);
+            }
         });
 
-        // Signing finishes the document, which may release an external one.
-        DocumentChain::releaseParents($task->fresh(['list']), $user);
+        // A finishing move may release an external document waiting on this one.
+        if ($finishes) {
+            DocumentChain::releaseParents($task->fresh(['list']), $user);
+        }
 
         return response()->json([
             'moved' => true,
@@ -106,7 +128,7 @@ class SignatureRequestController extends Controller
             'to_list_id' => $next->id,
             'to_list_title' => $next->title,
             'order' => $task->order,
-            'is_done' => 1,
+            'is_done' => $finishes ? 1 : 0,
         ]);
     }
 
@@ -139,6 +161,12 @@ class SignatureRequestController extends Controller
             ->first();
     }
 
+    /** A responsibility code as it reads on screen. */
+    private function roleName(?string $code): ?string
+    {
+        return $code ? (WorkflowSubRole::where('code', $code)->value('name') ?: $code) : null;
+    }
+
     private function stepPayload(?BoardList $list): ?array
     {
         if (!$list) {
@@ -151,6 +179,9 @@ class SignatureRequestController extends Controller
             'list_id' => $list->id,
             'title' => $list->title,
             'responsible_role' => $step->responsible_role ?? null,
+            // The readable name behind that code. The button names whoever the
+            // document is being sent to rather than one hardcoded office.
+            'responsible_role_name' => $this->roleName($step->responsible_role ?? null),
             'requires_signature' => (bool) ($step->requires_signature ?? false),
             'requires_attachment' => (bool) ($step->requires_attachment ?? false),
             'attachment_mode' => $step->attachment_mode ?? 'standard',
