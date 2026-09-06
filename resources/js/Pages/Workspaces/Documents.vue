@@ -147,10 +147,29 @@
                     <div
                         class="mt-4 overflow-hidden rounded-2xl border border-gray-200/70 bg-white dark:bg-[#262932] shadow-sm"
                     >
+                        <!-- Column labels. Hidden below the breakpoint where the
+                             rows stop being columns and become stacked cards. -->
+                        <div v-if="documents.data.length" class="doc-row doc-row--head" aria-hidden="true">
+                            <span class="doc-row__icon"></span>
+                            <span class="doc-row__code">{{ $t('លេខកូដឯកសារ') }}</span>
+                            <span class="doc-row__title">{{ $t('កម្មវត្ថុ') }}</span>
+                            <!-- Short forms: the project column is 8rem and the
+                                 attachments column 3rem, and the full labels
+                                 ("ថ្នាក់/ក្រុម/គម្រោង ឯកសារ", "ឯកសារភ្ជាប់")
+                                 overrun both. The icon says it in the width
+                                 available; the title carries the full word. -->
+                            <span class="doc-row__project">{{ $t('គម្រោង') }}</span>
+                            <span class="doc-row__files" :title="$t('Attachments')">
+                                <icon name="attachment" class="h-3 w-3" />
+                            </span>
+                            <span class="doc-row__user">{{ $t('Uploader') }}</span>
+                            <span class="doc-row__date">{{ $t('Received') }}</span>
+                            <span class="doc-row__status">{{ $t('Status') }}</span>
+                        </div>
+
                         <div v-if="documents.data.length" class="divide-y divide-gray-100 dark:divide-white/10">
-                            <!-- A div rather than a button: the print control sits
-                                 inside the row, and a button inside a button is
-                                 not something a browser will render. -->
+                            <!-- The whole row is the target: everything it used to
+                                 offer separately is in the panel it opens. -->
                             <div
                                 v-for="doc in documents.data"
                                 :key="doc.id"
@@ -192,32 +211,6 @@
                                 >
                                     {{ statusLabel(doc) }}
                                 </span>
-
-                                <!-- The tracking slip, printable straight from the
-                                     register - the row already carries everything
-                                     the slip prints. -->
-                                <button
-                                    type="button"
-                                    class="doc-row__print"
-                                    @click.stop="openReceiptModal(doc, $event)"
-                                    :title="$t('Print tracking document')"
-                                    :aria-label="$t('Print tracking document')"
-                                >
-                                    <printer-icon class="doc-row__print-icon" />
-                                </button>
-
-                                <!-- A real href, so the row can still be opened in
-                                     a new tab; the click itself is handled so it
-                                     does not also open the detail panel behind. -->
-                                <a
-                                    :href="commentsHref(doc)"
-                                    class="doc-row__open"
-                                    :title="$t('Open comments')"
-                                    :aria-label="$t('Open comments')"
-                                    @click.stop.prevent="openComments(doc)"
-                                >
-                                    <icon name="chevron-right" class="doc-row__chevron" />
-                                </a>
                             </div>
                         </div>
 
@@ -405,7 +398,7 @@
 
 <script>
 import Layout from '@/Shared/Layout.vue';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import Icon from '@/Shared/Icon.vue';
 import Pagination from '@/Shared/Pagination.vue';
 import FilterSelect from '@/Shared/Components/FilterSelect.vue';
@@ -578,19 +571,6 @@ export default {
         },
 
         /** The document's own page, opened straight onto its comment thread. */
-        commentsHref(doc) {
-            const base = this.route('workspace.documents.show', [
-                this.workspace.slug || this.workspace.id,
-                doc.slug || doc.id,
-            ]);
-
-            return `${base}?tab=comments`;
-        },
-
-        openComments(doc) {
-            router.visit(this.commentsHref(doc));
-        },
-
         openReceiptModal(doc, event) {
             if (event) {
                 event.preventDefault();
@@ -683,6 +663,7 @@ export default {
     display: flex;
     flex-direction: column;
     width: 100%;
+    min-width: 0;
     max-width: 36rem;
     max-height: 88vh;
     overflow: hidden;
@@ -810,27 +791,6 @@ export default {
     color: var(--ink-subtle);
 }
 
-/* The chevron is the row's way out to the document itself. It sits inside the
-   row, which is itself clickable, so it needs its own hit area and hover. */
-.doc-row__open {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 26px;
-    height: 26px;
-    flex-shrink: 0;
-    border-radius: 8px;
-    color: #cbd5e1;
-}
-.doc-row__open:hover {
-    background: var(--tint-accent-bg);
-    color: var(--accent-ink);
-}
-.doc-row__open:focus-visible {
-    outline: 2px solid var(--accent-ink);
-    outline-offset: 1px;
-}
-
 .doc-panel__sign-hint {
     display: flex;
     align-items: center;
@@ -920,6 +880,7 @@ export default {
 
 .doc-panel__foot {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: flex-end;
     gap: 8px;
@@ -931,6 +892,8 @@ export default {
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    /* The row wraps; a label inside a button does not. */
+    white-space: nowrap;
     padding: 8px 14px;
     border-radius: 8px;
     font-size: 13px;
@@ -1015,14 +978,6 @@ export default {
         margin-left: auto;
         text-align: right;
     }
-    /* The link is what gets pinned to the edge now, not the glyph inside it -
-       otherwise the hit area and the arrow end up in different places. */
-    .doc-row__open {
-        position: absolute;
-        top: 50%;
-        right: 2px;
-        transform: translateY(-50%);
-    }
 }
 
 /* The detail panel comes up from the bottom, the way a sheet does. */
@@ -1038,6 +993,25 @@ export default {
     }
     .doc-panel__head {
         padding: 14px 14px 12px;
+    }
+
+    /* The tracking slip takes its own line - it is the widest thing here, and
+       sharing a row with three buttons is what squeezed them all. The buttons
+       then split the line below it evenly. */
+    .doc-panel__foot {
+        padding: 12px 14px calc(12px + env(safe-area-inset-bottom));
+    }
+    .doc-track {
+        width: 100%;
+        margin-right: 0;
+        justify-content: center;
+    }
+    .doc-btn {
+        /* auto, not 0: with nowrap a zero basis would shrink a button below
+           its label and clip it. Sized to content, sharing the line, and
+           wrapping to another when the three no longer fit. */
+        flex: 1 1 auto;
+        justify-content: center;
     }
 }
 </style>

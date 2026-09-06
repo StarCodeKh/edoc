@@ -3757,29 +3757,12 @@ export default {
     z-index: 1;
 }
 
-.custom-date-picker .calendar-dropdown,
-.custom-datetime-picker .datetime-picker-dropdown,
-.custom-time-picker .time-picker-dropdown {
-    position: fixed !important;
-    z-index: 10000 !important;
-    max-height: 400px;
-    overflow-y: auto;
-}
-
-.custom-date-picker .calendar-dropdown {
-    min-width: 280px;
-    max-width: 320px;
-}
-
-.custom-datetime-picker .datetime-picker-dropdown {
-    min-width: 400px;
-    max-width: 450px;
-}
-
-.custom-time-picker .time-picker-dropdown {
-    min-width: 320px;
-    max-width: 360px;
-}
+/* The three picker dropdowns are styled by their own components. Rules for
+   them lived here and could never apply: scoped CSS puts this file's scope id
+   on the child component's root (.custom-*-picker) but not on anything inside
+   it, so `.custom-datetime-picker .datetime-picker-dropdown[data-v-thisfile]`
+   matched nothing. Reaching in would need :deep(); the components already set
+   their own widths, and DateTimePicker caps itself at calc(100vw - 2rem). */
 
 .toast-stack {
     position: fixed;

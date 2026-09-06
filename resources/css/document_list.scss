@@ -3,6 +3,73 @@
    register (Workspaces/Documents) and the signed-in user's own slice
    (Workspaces/MyTasksDocuments) - and the whole point is that they match. */
 /* ---- one-line rows ---- */
+/* Column labels, laid out by the same classes as a row so the two cannot
+   drift apart. Not a <table>: the rows are links with their own hover and
+   focus behaviour, and the responsive rules below re-order them freely.
+
+   Qualified with .doc-row on purpose. The header carries both classes, and a
+   bare .doc-row--head ties with .doc-row on specificity - so whichever is
+   written later in the file wins. .doc-row is declared below this block, which
+   is how the header kept .doc-row's padding and, worse, overrode its own
+   display:none on a phone and came back as a jumble of wrapped labels. */
+.doc-row.doc-row--head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--line, #eef2f7);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink-subtle);
+    cursor: default;
+    background: transparent;
+}
+
+/* Sharing the row's classes buys the column widths, but it also inherits the
+   styling of the data - the code came through as a pill, the subject as a bold
+   document title. Every cell is flattened back to a label here; only the widths
+   are wanted. */
+.doc-row--head span {
+    font: inherit;
+    color: inherit;
+    background: none;
+    padding: 0;
+    border-radius: 0;
+    overflow: visible;
+    white-space: nowrap;
+}
+
+.doc-row--head .doc-row__status {
+    text-align: center;
+}
+
+/* The data code sits in a pill with 6px of side padding, so the label keeps
+   that padding to line up with the text inside it rather than with its edge. */
+.doc-row--head .doc-row__code {
+    padding: 0 6px;
+}
+
+.doc-row--head .doc-row__date {
+    text-align: right;
+}
+
+/* Below this the rows wrap into stacked cards and the columns stop existing,
+   so labels for them would be pointing at nothing - and nothing needs to line
+   up with anything, so the status goes back to sizing on its content. */
+@media (max-width: 767px) {
+    .doc-row.doc-row--head {
+        display: none;
+    }
+
+    .doc-row__status {
+        width: auto;
+        max-width: 60vw;
+    }
+}
+
 .doc-row {
     display: flex;
     align-items: center;
@@ -15,38 +82,8 @@
 .doc-row:hover {
     background: rgba(238, 242, 255, 0.55);
 }
-.doc-row:hover .doc-row__chevron {
-    color: #6574cd;
-    transform: translateX(2px);
-}
-
 /* Printing the tracking slip straight from the row. Kept quiet until the row
    is hovered - it is an action on one document, not a column of the table. */
-.doc-row__print {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    flex-shrink: 0;
-    border-radius: 8px;
-    color: #cbd5e1;
-    transition:
-        background-color 0.12s ease,
-        color 0.12s ease;
-}
-.doc-row:hover .doc-row__print {
-    color: #6574cd;
-}
-.doc-row__print:hover {
-    background: var(--tint-accent-bg);
-    color: var(--accent-ink);
-}
-.doc-row__print-icon {
-    width: 16px;
-    height: 16px;
-}
-
 .doc-row__icon {
     width: 22px;
     height: 22px;
@@ -122,9 +159,12 @@
     font-weight: 600;
     color: var(--ink-subtle);
 }
+/* Fixed so the header above can label this column - see .doc-row--head. The
+   width is released below that breakpoint, where the header is gone and the
+   row has wrapped: 11rem beside the icon and the code overran a 360px phone. */
 .doc-row__status {
     flex-shrink: 0;
-    max-width: 12rem;
+    width: 11rem;
     padding: 3px 10px;
     border-radius: 999px;
     font-size: 11px;
@@ -140,16 +180,6 @@
 .doc-row__status.is-open {
     background: var(--tint-info-bg);
     color: var(--tint-info-ink);
-}
-
-.doc-row__chevron {
-    width: 14px;
-    height: 14px;
-    flex-shrink: 0;
-    color: #d1d5db;
-    transition:
-        color 0.12s ease,
-        transform 0.12s ease;
 }
 
 /* ---- detail panel ---- */
